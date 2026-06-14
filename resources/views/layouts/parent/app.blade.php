@@ -1,3 +1,4 @@
+{{-- resources/views/layouts/parent/app.blade.php --}}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,7 +17,7 @@
   <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css"/>
 
   <!-- Theme CSS -->
-  <link rel="stylesheet" href="/assets/css/theme.css"/>
+  <link rel="stylesheet" href="{{asset('assets/css/theme.css')}}"/>
   @stack('styles')
   @livewireStyles
 </head>
@@ -54,7 +55,7 @@
 <!-- Dropzone JS -->
 <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
 <!-- Theme JS -->
-<script src="/assets/js/theme.js"></script>
+<script src="{{asset('assets/js/theme.js')}}"></script>
 
 <script>
     // Close Modal

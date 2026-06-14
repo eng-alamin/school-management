@@ -86,7 +86,8 @@
       </div>
 
       <!-- Notifications -->
-      <div class="topnav-dropdown-wrap">
+      @livewire('notification-bell')
+      {{-- <div class="topnav-dropdown-wrap">
         <button class="icon-btn" id="notifBtn" title="Notifications" onclick="toggleDropdown('notifDropdown', event)">
           <span class="material-icons-round">notifications</span>
           <span class="notif-badge">4</span>
@@ -126,27 +127,27 @@
           </div>
           <div class="notif-footer"><a href="#">View all notifications →</a></div>
         </div>
-      </div>
+      </div> --}}
 
       <!-- Profile Avatar -->
       <div class="topnav-dropdown-wrap">
-        <img src="{{ auth()->user()->avatar ? asset(auth()->user()->avatar) : global_asset('assets/img/default-avatar.jpg') }}" class="topnav-avatar" alt="{{ auth()->user()->name}}" onclick="toggleDropdown('profileDropdown', event)" style="cursor:pointer"/>
+        <img src="{{ auth()->user()->avatar ? asset(auth()->user()->avatar) : asset('assets/img/default-avatar.jpg') }}" class="topnav-avatar" alt="{{ auth()->user()->name}}" onclick="toggleDropdown('profileDropdown', event)" style="cursor:pointer"/>
         <div class="topnav-dropdown" id="profileDropdown" style="min-width:220px">
           <div class="profile-dropdown-header">
-            <img src="{{ auth()->user()->avatar ? asset(auth()->user()->avatar) : global_asset('assets/img/default-avatar.jpg') }}" alt="{{ auth()->user()->name}}">
+            <img src="{{ auth()->user()->avatar ? asset(auth()->user()->avatar) : asset('assets/img/default-avatar.jpg') }}" alt="{{ auth()->user()->name}}">
             <div>
               <div class="pd-name">{{ auth()->user()->name}}</div>
               <div class="pd-email">{{ auth()->user()->email}}</div>
             </div>
           </div>
-          <a href="{{ route('accountant.profile.overview', ['tenant' => tenant('id')]) }}" class="pd-menu-item"><span class="material-icons-round">person</span> My Profile</a>
-          <a href="{{ route('accountant.profile.setting', ['tenant' => tenant('id')]) }}" class="pd-menu-item"><span class="material-icons-round">edit</span> Edit Profile</a>
+          <a href="{{ route('accountant.profile.overview') }}" class="pd-menu-item"><span class="material-icons-round">person</span> My Profile</a>
+          <a href="{{ route('accountant.profile.setting') }}" class="pd-menu-item"><span class="material-icons-round">edit</span> Edit Profile</a>
           {{-- <div class="pd-menu-item"><span class="material-icons-round">receipt_long</span> Billing</div>
           <div class="pd-menu-item"><span class="material-icons-round">settings</span> Account Settings</div> --}}
-          <a href="{{route('logout', ['tenant' => tenant('id')]) }} " class="pd-menu-item danger" onclick="event.preventDefault(); document.getElementById('logout-form').submit()">
+          <a href="{{route('logout') }} " class="pd-menu-item danger" onclick="event.preventDefault(); document.getElementById('logout-form').submit()">
               <span class="material-icons-round">logout</span> Logout
           </a>
-          <form id="logout-form" action="{{ route('logout', ['tenant' => tenant('id')]) }}" method="POST" style="display:none;">
+          <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:none;">
               @csrf
           </form>
         </div>

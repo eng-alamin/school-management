@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Teacher\Homework;
+namespace App\Livewire\Teacher\Homework;
 
 use Livewire\Component;
 use App\Models\Homework;
@@ -38,7 +38,7 @@ class HomeworkAddComponent extends Component
         $subjects = \App\Models\AcademicSubject::all();
         $teachers = \App\Models\Employee::all();
 
-        return view('livewire.tenant.teacher.homework.homework-add-component')
+        return view('livewire.teacher.homework.homework-add-component')
         ->with('classes', $classes)
         ->with('sections', $sections)
         ->with('subjects', $subjects)

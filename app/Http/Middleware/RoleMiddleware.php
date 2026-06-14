@@ -10,7 +10,9 @@ use Illuminate\Support\Facades\Auth;
 class RoleMiddleware
 {
     protected $dashboards = [
+        'super_admin'=> 'super_admin.dashboard',
         'admin'      => 'admin.dashboard',
+        'staff'      => 'staff.dashboard',
         'teacher'    => 'teacher.dashboard',
         'accountant' => 'accountant.dashboard',
         'student'    => 'student.dashboard',

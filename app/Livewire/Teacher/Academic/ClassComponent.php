@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Teacher\Academic;
+namespace App\Livewire\Teacher\Academic;
 
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -149,7 +149,7 @@ class ClassComponent extends Component
 
         $sections = AcademicSection::orderBy('name')->get();
 
-        return view('livewire.tenant.teacher.academic.class-component')
+        return view('livewire.teacher.academic.class-component')
             ->with('classes', $classes)
             ->with('sections', $sections)
             ->layout('layouts.teacher.app', [

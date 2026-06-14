@@ -79,7 +79,7 @@
                         <span class="material-icons-round" style="font-size:16px">print</span> Print
                     </button>
 
-                    <a href="{{ route('accountant.student.add', ['tenant' => tenant('id')]) }}" class="btn-outline bg-dark text-white">
+                    <a href="{{ route('accountant.student.add') }}" class="btn-outline bg-dark text-white">
                         <span class="material-icons-round">add</span> Add Student
                     </a>
                 </div>
@@ -106,7 +106,7 @@
                             <tr>
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
-                                        <img src="{{ $student->photo ? asset($student->photo) : global_asset('assets/img/default-user.jpg') }}"
+                                        <img src="{{ $student->photo ? asset('storage/' . $student->photo) : asset('assets/img/default-user.jpg') }}"
                                             style="width:36px;height:36px;border-radius:8px;object-fit:cover;" alt="">
                                         <span class="fw-500">{{ $student->name }}</span>
                                     </div>
@@ -119,11 +119,11 @@
                                 <td>{{ $student->guardians->first()?->name ?? '—' }}</td>
                                 <td class="no-print">
                                     <div class="d-flex gap-1">
-                                        <a href="{{ route('accountant.student.overview', ['tenant' => tenant('id'), 'id' => $student->id]) }}" target="_blank"
+                                        <a href="{{ route('accountant.student.overview', ['id' => $student->id]) }}" target="_blank"
                                             class="act-btn view" title="View">
                                             <span class="material-icons-round">visibility</span>
                                         </a>
-                                        <a href="{{ route('accountant.student.edit', ['tenant' => tenant('id'), 'id' => $student->id]) }}"
+                                        <a href="{{ route('accountant.student.edit', ['id' => $student->id]) }}"
                                             class="act-btn edit" title="Edit">
                                             <span class="material-icons-round">drive_file_rename_outline</span>
                                         </a>

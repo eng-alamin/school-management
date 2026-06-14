@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Teacher\Profile;
+namespace App\Livewire\Teacher\Profile;
 
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
@@ -16,7 +16,7 @@ class OverviewComponent extends Component
 
     public function render()
     {
-        return view('livewire.tenant.teacher.profile.overview-component')
+        return view('livewire.teacher.profile.overview-component')
             ->with('user', $this->user)
             ->layout('layouts.teacher.app', [
                     'title' => "Profile Overview | School SaaS",

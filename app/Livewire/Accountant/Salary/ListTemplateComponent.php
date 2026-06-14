@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Accountant\Salary;
+namespace App\Livewire\Accountant\Salary;
 
 use Livewire\Component;
 use App\Models\SalaryTemplate;
@@ -63,7 +63,7 @@ class ListTemplateComponent extends Component
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
-        return view('livewire.tenant.accountant.salary.list-template-component')
+        return view('livewire.accountant.salary.list-template-component')
             ->with('templates', $templates)
             ->layout('layouts.accountant.app', [
                 'title' => 'Salary Templates | HR',

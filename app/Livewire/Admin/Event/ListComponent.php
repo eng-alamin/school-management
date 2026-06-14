@@ -51,6 +51,14 @@ class ListComponent extends Component
         $record->delete();
         $this->confirmDelete = false;
         $this->deleteId = null;
+
+        // ── Activity Log ───────────────────────────────────────────
+        activity()
+            ->causedBy(auth()->user())
+            ->performedOn($record)
+            ->withProperties(['icon' => 'event', 'type' => 'event'])
+            ->log('Event deleted: ' . $record->title);
+
         session()->flash('success', 'Event deleted successfully!');
     }
 

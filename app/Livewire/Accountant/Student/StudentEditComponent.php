@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Accountant\Student;
+namespace App\Livewire\Accountant\Student;
 
 use Livewire\Component;
 use App\Models\User;
@@ -106,7 +106,7 @@ class StudentEditComponent extends Component
         if ($this->guardian) {
             $this->guardian_exists = true;
             $this->guardian_id     = $this->guardian->id;
-             $this->guardian_photo = $this->guardian->photo;
+            $this->guardian_photo  = $this->guardian->photo;
         }
 
         // Previous school
@@ -148,29 +148,6 @@ class StudentEditComponent extends Component
     public function updated($propertyName)
     {
         $this->validateOnly($propertyName, $this->rules());
-    }
-
-    public function safePreviewUrl($upload): ?string
-    {
-        if (!$upload) return null;
-        try {
-            return $upload->temporaryUrl();
-        } catch (\Throwable $e) {
-            return null;
-        }
-    }
-
-    private function deleteOldFile($path): void
-    {
-        if (!$path) {
-            return;
-        }
-
-        $fullPath = public_path($path);
-
-        if (file_exists($fullPath)) {
-            unlink($fullPath);
-        }
     }
 
     public function update()
@@ -220,15 +197,16 @@ class StudentEditComponent extends Component
             ];
 
             if ($this->student_photo_upload) {
-                $this->deleteOldFile($this->student->photo);
-                $studentData['photo'] = \App\Helpers\TenantFileHelper::store($this->student_photo_upload, 'students');
+                $studentData['photo'] = $this->student_photo_upload->store('students', 'public');
             }
 
             $this->student->update($studentData);
 
             // ── Guardian ─────────────────────────────────────────
             if ($this->guardian_exists) {
-                $this->student->guardians()->sync([$this->guardian_id]);
+                $this->student->guardians()->sync([
+                    $this->guardian_id => ['school_id' => auth()->user()->school_id]
+                ]);
             } else {
                 $guardianPassword = !empty($this->guardian_password)
                     ? $this->guardian_password
@@ -242,11 +220,7 @@ class StudentEditComponent extends Component
                     'password' => $guardianPassword,
                 ]);
 
-                if ($this->student_photo_upload) {
-                    $guardian['photo'] = \App\Helpers\TenantFileHelper::store($this->guardian_photo_upload, 'guardians');
-                }
-
-                $guardian = Guardian::create([
+                $guardianData = [
                     'user_id'     => $userGuardian->id,
                     'name'        => $this->guardian_name,
                     'relation'    => $this->guardian_relation,
@@ -258,9 +232,17 @@ class StudentEditComponent extends Component
                     'mobile'      => $this->guardian_mobile,
                     'email'       => $this->guardian_email,
                     'address'     => $this->guardian_address,
-                ]);
+                ];
 
-                $this->student->guardians()->sync([$guardian->id]);
+                if ($this->guardian_photo_upload) {
+                    $guardianData['photo'] = $this->guardian_photo_upload->store('guardians', 'public');
+                }
+
+                $guardian = Guardian::create($guardianData);
+
+                $this->student->guardians()->sync([
+                    $guardian->id => ['school_id' => auth()->user()->school_id]
+                ]);
             }
 
             $this->dispatch('date-updated', date: $this->admission_date);
@@ -282,7 +264,7 @@ class StudentEditComponent extends Component
         $categories = AcademicCategory::orderBy('name')->get();
         $guardians  = Guardian::orderBy('name')->get();
 
-        return view('livewire.tenant.accountant.student.student-edit-component')
+        return view('livewire.accountant.student.student-edit-component')
             ->with('sessions', $sessions)
             ->with('classes', $classes)
             ->with('sections', $sections)

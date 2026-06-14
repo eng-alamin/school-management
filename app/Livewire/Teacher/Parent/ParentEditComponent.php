@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Teacher\Parent;
+namespace App\Livewire\Teacher\Parent;
 
 use Livewire\Component;
 use App\Models\User;
@@ -159,7 +159,7 @@ class ParentEditComponent extends Component
 
     public function render()
     {
-        return view('livewire.tenant.teacher.parent.parent-edit-component')
+        return view('livewire.teacher.parent.parent-edit-component')
             ->layout('layouts.teacher.app', [
                 'title' => "Edit Parent | Monarchy School",
             ]);

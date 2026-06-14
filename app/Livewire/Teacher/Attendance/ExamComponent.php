@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Teacher\Attendance;
+namespace App\Livewire\Teacher\Attendance;
 
 use Livewire\Component;
 use App\Models\Attendance;
@@ -169,7 +169,7 @@ class ExamComponent extends Component
 
     public function render()
     {
-        return view('livewire.tenant.teacher.attendance.exam-component')
+        return view('livewire.teacher.attendance.exam-component')
             ->with('exams', $this->getExams())
             ->with('classes', $this->getAvailableClasses())
             ->with('sections', $this->getAvailableSections())

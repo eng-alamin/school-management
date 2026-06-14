@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Accountant\OfficeAccounting;
+namespace App\Livewire\Accountant\OfficeAccounting;
 
 use Livewire\Component;
 use App\Models\OfficeAccount;
@@ -125,7 +125,7 @@ class AccountComponent extends Component
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
-        return view('livewire.tenant.accountant.office-accounting.account-component')
+        return view('livewire.accountant.office-accounting.account-component')
             ->with('accounts', $accounts)
             ->layout('layouts.accountant.app', [
                 'title' => "Office Accounting - Account | School SaaS",

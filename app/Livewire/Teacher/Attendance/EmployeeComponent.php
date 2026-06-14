@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Teacher\Attendance;
+namespace App\Livewire\Teacher\Attendance;
 
 use Livewire\Component;
 use App\Models\Attendance;
@@ -124,7 +124,7 @@ class EmployeeComponent extends Component
 
     public function render()
     {
-        return view('livewire.tenant.teacher.attendance.employee-component')
+        return view('livewire.teacher.attendance.employee-component')
             ->layout('layouts.teacher.app', [
                 'title' => "Employee Attendance | School SaaS",
             ]);

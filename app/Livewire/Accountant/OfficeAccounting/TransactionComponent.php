@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Accountant\OfficeAccounting;
+namespace App\Livewire\Accountant\OfficeAccounting;
 
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -106,7 +106,7 @@ class TransactionComponent extends Component
         // ── Accounts for filter ──
         $accounts = \App\Models\OfficeAccount::all();
 
-        return view('livewire.tenant.accountant.office-accounting.transaction-component')
+        return view('livewire.accountant.office-accounting.transaction-component')
             ->with('transactions', $transactions)
             ->with('balanceMap',   $balanceMap)
             ->with('accounts',     $accounts)

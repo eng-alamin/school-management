@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Student;
+namespace App\Livewire\Student;
 
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -52,7 +52,7 @@ class SubjectComponent extends Component
                 ->first()?->teacher;
         }
 
-        return view('livewire.tenant.student.subject-component', [
+        return view('livewire.student.subject-component', [
             'subjects' => $subjects,
             'assign'   => $assign,
             'teacher'  => $teacher,

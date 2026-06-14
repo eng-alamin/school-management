@@ -1667,25 +1667,28 @@ table.mat-table {
     color: var(--pink);
 }
 
-/* ── Import Modal ── */
-.modal-content {
-    border: none;
-    border-radius: 16px;
-    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.18);
-}
+/* ── MODAL ── */
 .modal-header {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+    border-bottom: 1px solid var(--border);
     padding: 20px 24px;
+}
+.modal-footer {
+    border-top: 1px solid var(--border);
 }
 .modal-title {
     font-size: 0.95rem;
     font-weight: 700;
 }
+.modal-content {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.18);
+}
 .modal-footer {
-    border-top: 1px solid rgba(0, 0, 0, 0.07);
+    border-bottom: 1px solid var(--border);
     padding: 16px 24px;
 }
-
+/* ── DROP ZONE ── */
 .drop-zone {
     border: 2px dashed rgba(0, 0, 0, 0.15);
     border-radius: 12px;

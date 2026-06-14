@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Accountant\Salary;
+namespace App\Livewire\Accountant\Salary;
 
 use Livewire\Component;
 use App\Models\SalaryAssign;
@@ -129,7 +129,7 @@ class AssignComponent extends Component
     public function getAvailableRoles(): array
     {
         return [
-            'admin'        => 'Admin',
+            'accountant'        => 'Accountant',
             'teacher'      => 'Teacher',
             'accountant'   => 'Accountant',
             'librarian'    => 'Librarian',
@@ -142,7 +142,7 @@ class AssignComponent extends Component
         $salaryTemplates = SalaryTemplate::orderBy('salary_grade')->get();
         $roles           = $this->getAvailableRoles();
 
-        return view('livewire.tenant.accountant.salary.assign-component')
+        return view('livewire.accountant.salary.assign-component')
             ->with(['salaryTemplates' => $salaryTemplates, 'roles' => $roles])
             ->layout('layouts.accountant.app', ['title' => 'Salary Assign | HR']);
     }

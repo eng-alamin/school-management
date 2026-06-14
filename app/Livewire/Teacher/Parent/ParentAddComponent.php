@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Teacher\Parent;
+namespace App\Livewire\Teacher\Parent;
 
 use Livewire\Component;
 use App\Models\User;
@@ -125,7 +125,7 @@ class ParentAddComponent extends Component
 
     public function render()
     {
-        return view('livewire.tenant.teacher.parent.parent-add-component')
+        return view('livewire.teacher.parent.parent-add-component')
             ->layout('layouts.teacher.app', [
                 'title' => "Create Parent | Monarchy School",
             ]);

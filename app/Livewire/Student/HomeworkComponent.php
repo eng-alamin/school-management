@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Student;
+namespace App\Livewire\Student;
 
 use Livewire\Component;
 use App\Models\Homework;
@@ -57,7 +57,7 @@ class HomeworkComponent extends Component
 
     public function render()
     {
-        return view('livewire.tenant.student.homework-component')
+        return view('livewire.student.homework-component')
             ->layout('layouts.student.app', [
                 'title' => "Homeworks | Monarchy School",
             ]);

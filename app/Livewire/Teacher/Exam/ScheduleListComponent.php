@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Teacher\Exam;
+namespace App\Livewire\Teacher\Exam;
 
 use Livewire\Component;
 use App\Models\ExamSchedule;
@@ -20,8 +20,6 @@ class ScheduleListComponent extends Component
 
     // Modal
     public bool $showViewModal = false;
-    public bool $confirmDelete = false;
-    public ?int $deleteId = null;
     public ?ExamSchedule $viewRecord = null;
 
     public function updatingSearch(): void { $this->resetPage(); }
@@ -51,26 +49,11 @@ class ScheduleListComponent extends Component
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
-        return view('livewire.tenant.teacher.exam.schedule-list-component')
+        return view('livewire.teacher.exam.schedule-list-component')
             ->with('schedules', $schedules)
             ->layout('layouts.teacher.app', [
                 'title' => "Exam Schedule | School SaaS",
             ]);
 
-    }
-
-    public function confirmDeleteRecord(int $id): void
-    {
-        $this->deleteId = $id;
-        $this->confirmDelete = true;
-    }
-
-    public function deleteRecord(): void
-    {
-        $record = ExamSchedule::findOrFail($this->deleteId);
-        $record->delete();
-        $this->confirmDelete = false;
-        $this->deleteId = null;
-        session()->flash('success', 'Data deleted successfully!');
     }
 }

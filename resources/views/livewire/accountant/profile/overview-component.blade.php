@@ -8,7 +8,7 @@
 
         <div class="container-xl mt-4">
 
-            @include('livewire.tenant.accountant.profile.navbar', ['user' => $user])
+            @include('livewire.accountant.profile.navbar', ['user' => $user])
 
             <!-- START CONTENT -->
 
@@ -17,7 +17,7 @@
 
                 <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
                     <span class="fw-bold fs-5">Profile Details</span>
-                    <a href="{{ route('accountant.profile.setting', ['tenant' => tenant('id'), 'id' => $user->id]) }}" class="btn-outline bg-dark text-white">
+                    <a href="{{ route('accountant.profile.setting', ['id' => $user->id]) }}" class="btn-outline bg-dark text-white">
                         Edit Profile
                     </a>
                 </div>

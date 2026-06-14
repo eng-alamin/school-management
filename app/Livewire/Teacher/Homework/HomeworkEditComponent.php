@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Teacher\Homework;
+namespace App\Livewire\Teacher\Homework;
 
 use Livewire\Component;
 use App\Models\Homework;
@@ -47,7 +47,7 @@ class HomeworkEditComponent extends Component
 
     public function render()
     {
-        return view('livewire.tenant.teacher.homework.homework-edit-component')
+        return view('livewire.teacher.homework.homework-edit-component')
         ->with('classes', \App\Models\AcademicClass::all())
         ->with('sections', \App\Models\AcademicSection::all())
         ->with('subjects', \App\Models\AcademicSubject::all())

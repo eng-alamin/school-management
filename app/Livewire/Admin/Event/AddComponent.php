@@ -11,6 +11,8 @@ use Illuminate\Validation\Rule;
 
 class AddComponent extends Component
 {
+    use WithFileUploads;
+    
     public $title = '';
     public $is_holiday = false;
     public $type = '';
@@ -19,7 +21,7 @@ class AddComponent extends Component
     public $date_to = '';
     public $description = '';
     public $show_website = false;
-    public $image = null;
+    public $image_upload = null;
 
     public $selectedClasses = [];
     public $selectedSections = []; 
@@ -45,7 +47,7 @@ class AddComponent extends Component
             'date_to'          => 'nullable|date|after_or_equal:date_from',
             'description'      => 'nullable|string',
             'show_website'     => 'boolean',
-            'image'            => 'nullable|image|max:2048',
+            'image_upload'     => 'nullable|image|max:2048',
 
             'selectedClasses'               => 'required_if:audience,class|array',
             'selectedClasses.*.class_id'    => 'required|exists:academic_classes,id',
@@ -69,7 +71,9 @@ class AddComponent extends Component
         try {
             $this->validate($this->rules());
 
-            $imagePath = $this->image?->store('events', 'public');
+            $imagePath = $this->image_upload
+            ? $this->image_upload->store('events', 'public')
+            : null;
 
             $event = Event::create([
                 'title'        => $this->title,
@@ -104,6 +108,13 @@ class AddComponent extends Component
                     ]);
                 }
             }
+
+            // ── Activity Log ───────────────────────────────────────
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($event)
+                ->withProperties(['icon' => 'event', 'type' => 'event'])
+                ->log('New event created: ' . $event->title);
 
             $this->dispatch('toast', type: 'success', message: 'Event created successfully!');
             $this->resetForm();

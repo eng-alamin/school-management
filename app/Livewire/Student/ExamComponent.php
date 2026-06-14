@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Student;
+namespace App\Livewire\Student;
 
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -50,7 +50,7 @@ class ExamComponent extends Component
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
-        return view('livewire.tenant.student.exam-component')
+        return view('livewire.student.exam-component')
             ->with('schedules', $schedules)
             ->layout('layouts.student.app', [
                 'title' => "Exam Schedule | Monarchy School",

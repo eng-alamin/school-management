@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Student;
+namespace App\Livewire\Student;
 
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -48,7 +48,7 @@ class TeacherComponent extends Component
         ->orderBy($this->sortField, $this->sortDirection)
         ->paginate($this->perPage);
 
-        return view('livewire.tenant.student.teacher-component')
+        return view('livewire.student.teacher-component')
             ->with('teachers', $teachers)
             ->layout('layouts.student.app', [
                 'title' => "Teachers | Monarchy School",

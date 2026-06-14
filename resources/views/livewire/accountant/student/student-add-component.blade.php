@@ -1,10 +1,11 @@
-    <div class="mat-card" style="padding-top:28px">
+<div>
+    <div class="card">
 
-        <!-- Floating Header -->
-        <div class="mat-card-header header-pink-gradient">
-            <h5><span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">how_to_reg</span>Student Admission</h5>
-            <p>Create new student admission record</p>
-        </div>
+      <!-- floating header -->
+      <div class="mat-card-header header-pink-gradient">
+        <h5><span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">how_to_reg</span>Student Admission</h5>
+        <p>Create new student admission record</p>
+      </div>
 
         <!-- ══ ACADEMIC DETAILS ══ -->
         <div class="form-section" style="padding-top:40px">
@@ -173,14 +174,9 @@
                 </label>
                 <div class="photo-upload-box">
                     @if($student_photo_upload)
-                        @if($this->safePreviewUrl($student_photo_upload))
-                            <img src="{{ $this->safePreviewUrl($student_photo_upload) }}" alt="Preview"
-                                style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
-                        @else
-                            <span class="material-icons-round">check_circle</span>
-                            <span class="lbl">File selected</span>
-                        @endif
-                     @else
+                        <img src="{{ $student_photo_upload->temporaryUrl() }}" alt="Preview"
+                            style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
+                    @else
                         <span class="material-icons-round">image</span>
                         <span class="lbl">Click to upload</span>
                     @endif
@@ -329,13 +325,8 @@
                     </label>
                     <div class="photo-upload-box">
                         @if($guardian_photo_upload)
-                            @if($this->safePreviewUrl($guardian_photo_upload))
-                                <img src="{{ $this->safePreviewUrl($guardian_photo_upload) }}" alt="Preview"
-                                    style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
-                            @else
-                                <span class="material-icons-round">check_circle</span>
-                                <span class="lbl">File selected</span>
-                            @endif
+                            <img src="{{ $guardian_photo_upload->temporaryUrl() }}" alt="Preview"
+                                style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
                         @else
                             <span class="material-icons-round">image</span>
                             <span class="lbl">Click to upload</span>
@@ -420,6 +411,26 @@
 
 
     </div>
+</div>
+@push('styles')
+    <style>
+        :root {
+            --primary: rgba(33, 37, 41);
+            --primary-light: rgba(239,84,84,.12);
+        }
+
+        .card { border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
+        .card-header { background: #fff; border-bottom: 1px solid var(--border); border-radius: 12px 12px 0 0 !important; padding: 16px 20px; }
+        .card-header .card-title { font-size: .95rem; font-weight: 600; margin: 0; }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        .btn-sm { font-size: .78rem; padding: .3rem .65rem; border-radius: 6px; }
+
+    </style>
+@endpush
 
 @push('scripts')
     <script>

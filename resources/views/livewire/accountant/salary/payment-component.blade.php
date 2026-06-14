@@ -166,12 +166,12 @@
                         {{-- Actions --}}
                         <td>
                             @if(($employee->salary_status ?? '') === 'paid')
-                                <a class="action-btn btn-payslip" href="{{route('accountant.salary.invoice-payment', ['tenant' => tenant('id'), 'id' => $employee->id, 'month' => $this->month]) }}" target="_blank">
+                                <a class="action-btn btn-payslip" href="{{route('accountant.salary.invoice-payment', ['id' => $employee->id, 'month' => $this->month]) }}" target="_blank">
                                     <span class="material-icons-round" style="font-size:14px;vertical-align:middle">visibility</span>
                                     Payslip
                         </a>
                             @else
-                                <a class="action-btn btn-paynow" href="{{route('accountant.salary.add-payment', ['tenant' => tenant('id'), 'id' => $employee->id, 'month' => $this->month]) }}" target="_blank">
+                                <a class="action-btn btn-paynow" href="{{route('accountant.salary.add-payment', ['id' => $employee->id, 'month' => $this->month]) }}" target="_blank">
                                     <span class="material-icons-round" style="font-size:14px;vertical-align:middle">credit_card</span>
                                     Pay Now
                             </a>

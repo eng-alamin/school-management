@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Accountant\OfficeAccounting;
+namespace App\Livewire\Accountant\OfficeAccounting;
 
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -73,7 +73,7 @@ class ExpenseListComponent extends Component
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
-        return view('livewire.tenant.accountant.office-accounting.expense-list-component')
+        return view('livewire.accountant.office-accounting.expense-list-component')
             ->with('expenses', $expenses)
             ->layout('layouts.accountant.app', [
                 'title' => 'Expenses | Monarchy School',

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Teacher\Academic;
+namespace App\Livewire\Teacher\Academic;
 
 use Livewire\Component;
 use App\Models\AcademicClassSchedule;
@@ -95,7 +95,7 @@ class TeacherScheduleComponent extends Component
             ->orderBy('id', 'asc')
             ->get();
 
-        return view('livewire.tenant.teacher.academic.teacher-schedule-component')
+        return view('livewire.teacher.academic.teacher-schedule-component')
             ->with('teachers', $teachers)
             ->layout('layouts.teacher.app', [
                 'title' => "Teacher Schedule | School SaaS",

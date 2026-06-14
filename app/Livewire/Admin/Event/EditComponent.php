@@ -11,6 +11,8 @@ use Illuminate\Validation\Rule;
 
 class EditComponent extends Component
 {
+    use WithFileUploads;
+
     public $title = '';
     public $is_holiday = false;
     public $type = '';
@@ -20,11 +22,10 @@ class EditComponent extends Component
     public $description = '';
     public $show_website = false;
     public $image = null;
+    public $image_upload = null;
 
     public $selectedClasses = [];
     public $selectedSections = []; 
-
-    public ?string $existingImage = null;
 
     public $event_id;
 
@@ -42,7 +43,7 @@ class EditComponent extends Component
         $this->date_to       = $event->date_to;
         $this->description   = $event->description;
         $this->show_website  = $event->show_website;
-        $this->existingImage = $event->image;
+        $this->image         = $event->image;
 
         $this->selectedClasses  = $event->eventClasses->map(fn($c) => [
             'class_id'   => $c->class_id,
@@ -73,7 +74,7 @@ class EditComponent extends Component
             'date_to'          => 'nullable|date|after_or_equal:date_from',
             'description'      => 'nullable|string',
             'show_website'     => 'boolean',
-            'image'            => 'nullable|image|max:2048',
+            'image_upload'     => 'nullable|image|max:2048',
 
             'selectedClasses'               => 'required_if:audience,class|array',
             'selectedClasses.*.class_id'    => 'required|exists:academic_classes,id',
@@ -100,13 +101,13 @@ class EditComponent extends Component
             $event = Event::findOrFail($this->event_id);
 
             // 🖼️ Image replace logic
-            if ($this->image) {
+            if ($this->image_upload) {
                 // পুরানো image delete
                 if ($event->image && \Storage::disk('public')->exists($event->image)) {
-                    \Storage::disk('public')->delete($event->image);
+                    Storage::disk('public')->delete($event->image);
                 }
 
-                $imagePath = $this->image->store('events', 'public');
+                $imagePath = $this->image_upload->store('events', 'public');
             } else {
                 $imagePath = $event->image;
             }
@@ -149,6 +150,13 @@ class EditComponent extends Component
                     ]);
                 }
             }
+
+            // ── Activity Log ───────────────────────────────────────
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($event)
+                ->withProperties(['icon' => 'event', 'type' => 'event'])
+                ->log('Event updated: ' . $event->title);
 
             $this->dispatch('toast', type: 'success', message: 'Event updated successfully!');
 

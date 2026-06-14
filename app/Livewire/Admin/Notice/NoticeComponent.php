@@ -125,14 +125,30 @@ class NoticeComponent extends Component
         ];
 
         if ($this->editId) {
-            Notice::findOrFail($this->editId)->update($data);
-            session()->flash('success', 'Notice updated successfully!');
+            $record = Notice::findOrFail($this->editId);
+            $record->update($data);
+
+            // ── Activity Log ───────────────────────────────────────
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'campaign', 'type' => 'notice'])
+                ->log('Notice updated: ' . $record->title);
+
+            $this->dispatch('toast', type: 'success', message: 'Data updated successfully!');
         } else {
-            Notice::create($data);
+            $record = Notice::create($data);
 
-            NotificationService::sendToAll(auth()->user()->school_id, 'announcement', 'Notice', $this->title, [], $this->priority);
+            NotificationService::sendToAll(auth()->user()->school_id, 'announcement', 'Notice', $this->title, [], 'high');
 
-            session()->flash('success', 'Notice created successfully!');
+            // ── Activity Log ───────────────────────────────────────
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'campaign', 'type' => 'notice'])
+                ->log('New notice created: ' . $record->title);
+
+            $this->dispatch('toast', type: 'success', message: 'Data created successfully!');
         }
 
         $this->showModal = false;
@@ -148,33 +164,59 @@ class NoticeComponent extends Component
     public function deleteRecord(): void
     {
         $record = Notice::findOrFail($this->deleteId);
+
+        // ── Activity Log ───────────────────────────────────────────
+        activity()
+            ->causedBy(auth()->user())
+            ->performedOn($record)
+            ->withProperties(['icon' => 'campaign', 'type' => 'notice'])
+            ->log('Notice deleted: ' . $record->title);
+
         if ($record->attachment) {
             Storage::disk('public')->delete($record->attachment);
         }
         $record->delete();
         $this->confirmDelete = false;
         $this->deleteId      = null;
-        session()->flash('success', 'Notice deleted successfully!');
+        $this->dispatch('toast', type: 'success', message: 'Data deleted successfully!');
     }
 
     public function toggleStatus(int $id): void
     {
         $record = Notice::findOrFail($id);
-        $record->update(['status' => $record->status === 'active' ? 'inactive' : 'active']);
-        session()->flash('success', 'Status updated!');
+        $newStatus = $record->status === 'active' ? 'inactive' : 'active';
+        $record->update(['status' => $newStatus]);
+
+        // ── Activity Log ───────────────────────────────────────────
+        activity()
+            ->causedBy(auth()->user())
+            ->performedOn($record)
+            ->withProperties(['icon' => 'campaign', 'type' => 'notice'])
+            ->log('Notice status changed to ' . $newStatus . ': ' . $record->title);
+
+        $this->dispatch('toast', type: 'success', message: 'Data updated successfully!');
     }
 
     public function removeAttachment(): void
     {
         if ($this->editId && $this->existingAttachment) {
             Storage::disk('public')->delete($this->existingAttachment);
-            Notice::findOrFail($this->editId)->update([
+            $record = Notice::findOrFail($this->editId);
+            $record->update([
                 'attachment'      => null,
                 'attachment_name' => null,
             ]);
+
+            // ── Activity Log ───────────────────────────────────────
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'campaign', 'type' => 'notice'])
+                ->log('Attachment removed from notice: ' . $record->title);
+
             $this->existingAttachment     = '';
             $this->existingAttachmentName = '';
-            session()->flash('success', 'Attachment removed.');
+            $this->dispatch('toast', type: 'success', message: 'Data removed successfully!');
         }
     }
 

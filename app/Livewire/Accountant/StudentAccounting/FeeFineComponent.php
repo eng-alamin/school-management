@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Accountant\StudentAccounting;
+namespace App\Livewire\Accountant\StudentAccounting;
 
 use Livewire\Component;
 use App\Models\FeeFine;
@@ -158,7 +158,7 @@ class FeeFineComponent extends Component
 
         $feeGroups = FeeGroup::where('status', true)->orderBy('name')->get();
 
-        return view('livewire.tenant.accountant.student-accounting.fee-fine-component')
+        return view('livewire.accountant.student-accounting.fee-fine-component')
             ->with(['feeFines' => $feeFines, 'feeGroups' => $feeGroups])
             ->layout('layouts.accountant.app', [
                 'title' => "Student Accounting - Fee Fine | School SaaS",

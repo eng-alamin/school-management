@@ -7,7 +7,7 @@
 
     <div class="container-xl mt-4">
 
-        @include('livewire.tenant.teacher.parent.parent-navbar', ['parent' => $parent])
+        @include('livewire.teacher.parent.parent-navbar', ['parent' => $parent])
 
         <!-- START CONTENT -->
 
@@ -31,7 +31,7 @@
                 <div class="photo-row">
                     <div class="photo-thumb">
                         @if($parent->photo)
-                            <img src="{{ asset($parent->photo) }}" alt="{{ $parent->name }}" style="width:100%;height:100%;object-fit:cover;border-radius:8px">
+                            <img src="{{ asset('storage/' . $parent->photo) }}" alt="{{ $parent->name }}" style="width:100%;height:100%;object-fit:cover;border-radius:8px">
                         @else
                             <span class="material-icons-round">person</span>
                             <span>No photo</span>
@@ -52,7 +52,7 @@
 
         <!-- Footer -->
         <div class="footer-actions">
-            <a href="{{ route('teacher.parent.edit', ['tenant' => tenant('id'), 'id' => $parent->id]) }}" class="btn btn-ghost">
+            <a href="{{ route('teacher.parent.edit', ['id' => $parent->id]) }}" class="btn btn-ghost">
                 <span class="material-icons-round">edit</span> Edit
             </a>
             <a href="#" class="btn btn-dark">

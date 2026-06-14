@@ -86,67 +86,27 @@
       </div>
 
       <!-- Notifications -->
-      <div class="topnav-dropdown-wrap">
-        <button class="icon-btn" id="notifBtn" title="Notifications" onclick="toggleDropdown('notifDropdown', event)">
-          <span class="material-icons-round">notifications</span>
-          <span class="notif-badge">4</span>
-        </button>
-        <div class="topnav-dropdown" id="notifDropdown">
-          <div class="notif-header">
-            <h6>Notifications</h6>
-            <span class="notif-badge-count">4 New</span>
-          </div>
-          <div class="notif-item">
-            <div class="notif-icon"><span class="material-icons-round">shopping_cart</span></div>
-            <div class="notif-text">
-              <p><strong>New order #1042</strong> received from John Doe</p>
-              <span>2 minutes ago</span>
-            </div>
-          </div>
-          <div class="notif-item">
-            <div class="notif-icon"><span class="material-icons-round">inventory_2</span></div>
-            <div class="notif-text">
-              <p><strong>Low stock alert</strong> — iPhone 15 Pro (3 left)</p>
-              <span>15 minutes ago</span>
-            </div>
-          </div>
-          <div class="notif-item">
-            <div class="notif-icon"><span class="material-icons-round">person_add</span></div>
-            <div class="notif-text">
-              <p><strong>New user registered</strong> — sarah@example.com</p>
-              <span>1 hour ago</span>
-            </div>
-          </div>
-          <div class="notif-item">
-            <div class="notif-icon"><span class="material-icons-round">payments</span></div>
-            <div class="notif-text">
-              <p><strong>Payment received</strong> $2,450 from Acme Corp</p>
-              <span>3 hours ago</span>
-            </div>
-          </div>
-          <div class="notif-footer"><a href="#">View all notifications →</a></div>
-        </div>
-      </div>
+      @livewire('notification-bell')
 
       <!-- Profile Avatar -->
       <div class="topnav-dropdown-wrap">
-        <img src="{{ auth()->user()->avatar ? asset(auth()->user()->avatar) : global_asset('assets/img/default-avatar.jpg') }}" class="topnav-avatar" alt="{{ auth()->user()->name}}" onclick="toggleDropdown('profileDropdown', event)" style="cursor:pointer"/>
+        <img src="{{ auth()->user()->avatar ? asset(auth()->user()->avatar) : asset('assets/img/default-avatar.jpg') }}" class="topnav-avatar" alt="{{ auth()->user()->name}}" onclick="toggleDropdown('profileDropdown', event)" style="cursor:pointer"/>
         <div class="topnav-dropdown" id="profileDropdown" style="min-width:220px">
           <div class="profile-dropdown-header">
-            <img src="{{ auth()->user()->avatar ? asset(auth()->user()->avatar) : global_asset('assets/img/default-avatar.jpg') }}" alt="{{ auth()->user()->name}}">
+            <img src="{{ auth()->user()->avatar ? asset(auth()->user()->avatar) : asset('assets/img/default-avatar.jpg') }}" alt="{{ auth()->user()->name}}">
             <div>
               <div class="pd-name">{{ auth()->user()->name}}</div>
               <div class="pd-email">{{ auth()->user()->email}}</div>
             </div>
           </div>
-          <a href="{{ route('student.profile.detail', ['tenant' => tenant('id')]) }}" class="pd-menu-item"><span class="material-icons-round">person</span> My Profile</a>
-          <a href="{{ route('student.profile.edit', ['tenant' => tenant('id')]) }}" class="pd-menu-item"><span class="material-icons-round">edit</span> Edit Profile</a>
+          <a href="{{ route('student.profile.overview') }}" class="pd-menu-item"><span class="material-icons-round">person</span> My Profile</a>
+          <a href="{{ route('student.profile.setting') }}" class="pd-menu-item"><span class="material-icons-round">edit</span> Edit Profile</a>
           {{-- <div class="pd-menu-item"><span class="material-icons-round">receipt_long</span> Billing</div>
           <div class="pd-menu-item"><span class="material-icons-round">settings</span> Account Settings</div> --}}
-          <a href="{{route('logout', ['tenant' => tenant('id')]) }} " class="pd-menu-item danger" onclick="event.preventDefault(); document.getElementById('logout-form').submit()">
+          <a href="{{route('logout') }} " class="pd-menu-item danger" onclick="event.preventDefault(); document.getElementById('logout-form').submit()">
               <span class="material-icons-round">logout</span> Logout
           </a>
-          <form id="logout-form" action="{{ route('logout', ['tenant' => tenant('id')]) }}" method="POST" style="display:none;">
+          <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:none;">
               @csrf
           </form>
         </div>

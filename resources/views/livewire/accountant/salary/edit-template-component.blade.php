@@ -218,7 +218,7 @@
     <!-- FORM FOOTER -->
     <div class="form-footer">
 
-        <a href="{{ route('accountant.salary.list-template', ['tenant' => tenant('id')]) }}"
+        <a href="{{ route('accountant.salary.list-template') }}"
            class="btn-outline">
             <span class="material-icons-round" style="font-size:16px">arrow_back</span>
             Back

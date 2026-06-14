@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Teacher\Event;
+namespace App\Livewire\Teacher\Event;
 
 use Livewire\Component;
 use App\Models\Event;
@@ -51,6 +51,14 @@ class ListComponent extends Component
         $record->delete();
         $this->confirmDelete = false;
         $this->deleteId = null;
+
+        // ── Activity Log ───────────────────────────────────────────
+        activity()
+            ->causedBy(auth()->user())
+            ->performedOn($record)
+            ->withProperties(['icon' => 'event', 'type' => 'event'])
+            ->log('Event deleted: ' . $record->title);
+
         session()->flash('success', 'Event deleted successfully!');
     }
 
@@ -61,7 +69,7 @@ class ListComponent extends Component
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
-        return view('livewire.tenant.teacher.event.list-component')
+        return view('livewire.teacher.event.list-component')
             ->with('events', $events)
             ->layout('layouts.teacher.app', [
                 'title' => 'Events | School SaaS',

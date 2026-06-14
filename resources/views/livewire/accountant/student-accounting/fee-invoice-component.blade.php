@@ -132,7 +132,7 @@
                         </td>
                         <td>
                             <div class="d-flex gap-1">
-                                <a href="{{ route('accountant.student.invoice', ['tenant' => tenant('id'), 'id' => $student->id]) }}" target="_blank" class="act-btn view" title="View">
+                                <a href="{{ route('accountant.student.invoice', ['id' => $student->id]) }}" target="_blank" class="act-btn view" title="View">
                                     <span class="material-icons-round">arrow_right_alt</span>
                                 </a>
                                 <button class="act-btn delete" title="Delete" wire:click="confirmDeleteRecord({{ $student->id }})">

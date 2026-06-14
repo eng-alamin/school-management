@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Teacher\Attendance;
+namespace App\Livewire\Teacher\Attendance;
 
 use Livewire\Component;
 use App\Models\Attendance;
@@ -73,7 +73,7 @@ class StudentComponent extends Component
 
             return [
                 'student_id'    => $student->id,
-                'name'          => $student->full_name,
+                'name'          => $student->name,
                 'roll_no'       => $student->roll_no,
                 'register_no'   => $student->register_no,
 
@@ -138,7 +138,7 @@ class StudentComponent extends Component
         $classes  = $this->getAvailableClasses();
         $sections = $this->getAvailableSections();
 
-        return view('livewire.tenant.teacher.attendance.student-component')
+        return view('livewire.teacher.attendance.student-component')
             ->with('classes', $classes)
             ->with('sections', $sections)
             ->layout('layouts.teacher.app', [

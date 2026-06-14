@@ -2,8 +2,7 @@
 
     <div class="card">
 
-      <!-- floating header -->
-      <div class="mat-card-header header-pink-gradient">
+      <div class="card-header-floating card-header-gradient">
         <h5 id="cardHeaderTitleAllsections">Event Type</h5>
         <p id="cardHeaderSubtitle">Manage event types, create, update, and organize academic types easily.</p>
       </div>
@@ -30,7 +29,7 @@
                         </select>
                     </div>
                 @endif
-                <a href="{{ route('admin.event.list', ['tenant' => tenant('id')]) }}" class="btn-sm btn-outline bg-dark text-white">
+                <a href="{{ route('admin.event.list') }}" class="btn-sm btn-outline bg-dark text-white">
                     <span class="material-icons-round">keyboard_backspace</span> Back Event
                 </a>
                 <button class="btn-outline bg-dark text-white" wire:click="openCreate">
@@ -148,26 +147,10 @@
 
 @push('styles')
     <style>
-        :root {
-            --primary: rgba(33, 37, 41);
-            --primary-light: rgba(239,84,84,.12);
-        }
-
-        /* ── CARD ── */
-        .card { border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
-        .card-header { background: #fff; border-bottom: 1px solid var(--border); border-radius: 12px 12px 0 0 !important; padding: 16px 20px; }
-        .card-header .card-title { font-size: .95rem; font-weight: 600; margin: 0; }
- 
         /* ── TABLE ── */
         .table th { font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); border-bottom: 2px solid var(--border); }
         .table td { vertical-align: middle; font-size: .875rem; }
         .table > :not(caption) > * > * { padding: .7rem 1rem; }
- 
-        /* ── BADGES ── */
-        .badge-active { background: rgba(34,197,94,.12); color: #16a34a; }
-        .badge-inactive { background: rgba(107,114,128,.12); color: #6b7280; }
-        .badge-expired, .badge-cancelled, .badge-suspended { background: rgba(239,68,68,.12); color: #dc2626; }
-        .badge-used { background: rgba(59,130,246,.12); color: #2563eb; }
  
         /* ── AVATAR ── */
         .avatar { width: 38px; height: 38px; border-radius: 8px; object-fit: cover; }

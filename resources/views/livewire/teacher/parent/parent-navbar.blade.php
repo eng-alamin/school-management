@@ -3,7 +3,7 @@
     <div class="d-flex flex-wrap gap-4 align-items-start">
         <div class="avatar-wrap me-2">
             @if($parent->photo)
-                <img src="{{ asset($parent->photo) }}" alt="{{ $parent->name }}"/>
+                <img src="{{ asset('storage/' . $parent->photo) }}" alt="{{ $parent->name }}"/>
             @else
                 <img src="https://ui-avatars.com/api/?name={{ urlencode($parent->name) }}&size=160&background=random" alt="{{ $parent->name }}"/>
             @endif
@@ -79,8 +79,8 @@
 
     <!-- Profile Tabs -->
     <ul class="nav profile-tabs border-bottom mt-4 flex-nowrap overflow-auto">
-        <li class="nav-item"><a class="nav-link {{ request()->routeIs('teacher.parent.overview') ? 'active' : '' }}" href="{{ route('teacher.parent.overview', ['tenant' => tenant('id'), 'id' => $parent->id]) }}">Overview</a></li>
-        <li class="nav-item"><a class="nav-link {{ request()->routeIs('teacher.parent.child') ? 'active' : '' }}" href="{{ route('teacher.parent.child', ['tenant' => tenant('id'), 'id' => $parent->id]) }}">Children</a></li>
+        <li class="nav-item"><a class="nav-link {{ request()->routeIs('teacher.parent.overview') ? 'active' : '' }}" href="{{ route('teacher.parent.overview', ['id' => $parent->id]) }}">Overview</a></li>
+        <li class="nav-item"><a class="nav-link {{ request()->routeIs('teacher.parent.child') ? 'active' : '' }}" href="{{ route('teacher.parent.child', ['id' => $parent->id]) }}">Children</a></li>
         <li class="nav-item"><a class="nav-link" href="#">Documents</a></li>
         <li class="nav-item"><a class="nav-link" href="#">Activity</a></li>
     </ul>

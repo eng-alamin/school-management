@@ -60,8 +60,8 @@
 
     <!-- Profile Tabs -->
     <ul class="nav profile-tabs border-bottom mt-4 flex-nowrap overflow-auto">
-        <li class="nav-item"><a class="nav-link {{ request()->routeIs('accountant.profile.overview') ? 'active' : '' }}" href="{{ route('accountant.profile.overview', ['tenant' => tenant('id')]) }}">Overview</a></li>
-        <li class="nav-item"><a class="nav-link {{ request()->routeIs('accountant.profile.setting') ? 'active' : '' }}" href="{{ route('accountant.profile.setting', ['tenant' => tenant('id')]) }}">Settings</a></li>
-        <li class="nav-item"><a class="nav-link {{ request()->routeIs('accountant.profile.activity') ? 'active' : '' }}" href="{{ route('accountant.profile.activity', ['tenant' => tenant('id')]) }}">Activity</a></li>
+        <li class="nav-item"><a class="nav-link {{ request()->routeIs('accountant.profile.overview') ? 'active' : '' }}" href="{{ route('accountant.profile.overview') }}">Overview</a></li>
+        <li class="nav-item"><a class="nav-link {{ request()->routeIs('accountant.profile.setting') ? 'active' : '' }}" href="{{ route('accountant.profile.setting') }}">Settings</a></li>
+        <li class="nav-item"><a class="nav-link {{ request()->routeIs('accountant.profile.loginlog') ? 'active' : '' }}" href="{{ route('accountant.profile.loginlog') }}">Login Logs </a></li>
     </ul>
 </div>

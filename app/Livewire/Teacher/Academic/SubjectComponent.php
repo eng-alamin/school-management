@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Teacher\Academic;
+namespace App\Livewire\Teacher\Academic;
 
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -127,7 +127,7 @@ class SubjectComponent extends Component
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
-        return view('livewire.tenant.teacher.academic.subject-component')
+        return view('livewire.teacher.academic.subject-component')
             ->with('subjects', $subjects)
             ->layout('layouts.teacher.app', [
                 'title' => "Subjects | School SaaS",

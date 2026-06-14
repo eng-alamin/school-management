@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Accountant\Leave;
+namespace App\Livewire\Accountant\Leave;
 
 use Livewire\Component;
 use App\Models\LeaveCategory;
@@ -107,7 +107,7 @@ class CategoryComponent extends Component
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
-        return view('livewire.tenant.accountant.leave.category-component')
+        return view('livewire.accountant.leave.category-component')
             ->with('categories', $categories)
             ->layout('layouts.accountant.app', [
                 'title' => "Leave Category | School SaaS",

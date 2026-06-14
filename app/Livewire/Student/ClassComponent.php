@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Student;
+namespace App\Livewire\Student;
 
 use Livewire\Component;
 use App\Models\AcademicClassSchedule;
@@ -42,7 +42,7 @@ class ClassComponent extends Component
 
     public function render()
     {
-        return view('livewire.tenant.student.class-component')
+        return view('livewire.student.class-component')
             ->layout('layouts.student.app', [
                 'title' => "Class Schedule | Monarchy School",
             ]);

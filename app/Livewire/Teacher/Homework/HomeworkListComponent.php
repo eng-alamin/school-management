@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Teacher\Homework;
+namespace App\Livewire\Teacher\Homework;
 
 use Livewire\Component;
 use App\Models\Homework;
@@ -20,7 +20,7 @@ class HomeworkListComponent extends Component
 
     public function render()
     {
-        return view('livewire.tenant.teacher.homework.homework-list-component')
+        return view('livewire.teacher.homework.homework-list-component')
             ->with('classes', AcademicClass::all())
             ->with('sections', AcademicSection::all())
             ->with('subjects', AcademicSubject::all())

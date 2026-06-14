@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Accountant\StudentAccounting;
+namespace App\Livewire\Accountant\StudentAccounting;
 
 use Livewire\Component;
 use App\Models\FeeType;
@@ -121,7 +121,7 @@ class FeeTypeComponent extends Component
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
-        return view('livewire.tenant.accountant.student-accounting.fee-type-component')
+        return view('livewire.accountant.student-accounting.fee-type-component')
             ->with('feeTypes', $feeTypes)
             ->layout('layouts.accountant.app', [
                 'title' => "Student Accounting - Fee Type | School SaaS",

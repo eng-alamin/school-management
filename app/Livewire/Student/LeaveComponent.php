@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Student;
+namespace App\Livewire\Student;
 
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -194,7 +194,7 @@ class LeaveComponent extends Component
 
         $categories = LeaveCategory::orderBy('name')->get();
 
-        return view('livewire.tenant.student.leave-component', compact('applications', 'categories'))
+        return view('livewire.student.leave-component', compact('applications', 'categories'))
             ->layout('layouts.student.app', [
                 'title' => "Leaves | Monarchy School",
             ]);

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Teacher\Student;
+namespace App\Livewire\Teacher\Student;
 
 use Livewire\Component;
 use App\Models\User;
@@ -63,7 +63,7 @@ class StudentAddComponent extends Component
     public function mount()
     {
         $session = AcademicSession::where('is_current', true)->first();
-        $this->session_id = $session->id;
+        $this->session_id = $session?->id;
 
         $this->admission_date = now()->format('Y-m-d');
         $this->gender = 'male';
@@ -111,16 +111,6 @@ class StudentAddComponent extends Component
         $this->validateOnly($propertyName, $this->rules());
     }
 
-    public function safePreviewUrl($upload): ?string
-    {
-        if (!$upload) return null;
-        try {
-            return $upload->temporaryUrl();
-        } catch (\Throwable $e) {
-            return null;
-        }
-    }
-
     public function save()
     {
         try {
@@ -143,13 +133,13 @@ class StudentAddComponent extends Component
             $user = User::create($userData);
 
             // Upload photo
-            $studentPhotoPath = $this->student_photo_upload 
-            ? \App\Helpers\TenantFileHelper::store($this->student_photo_upload, 'students') 
-            : null;
+            $studentPhotoPath = $this->student_photo_upload
+                ? $this->student_photo_upload->store('students', 'public')
+                : null;
 
-            $guardianPhotoPath = $this->guardian_photo_upload 
-            ? \App\Helpers\TenantFileHelper::store($this->guardian_photo_upload, 'students') 
-            : null;
+            $guardianPhotoPath = $this->guardian_photo_upload
+                ? $this->guardian_photo_upload->store('students', 'public')
+                : null;
 
             $student = Student::create([
                 'user_id'     => $user->id,
@@ -175,38 +165,42 @@ class StudentAddComponent extends Component
             ]);
 
             // Guardian
-                if ($this->guardian_exists) {
-                    $student->guardians()->syncWithoutDetaching([$this->guardian_id]);
-                } else {
-                    $guardianPassword = !empty($this->guardian_password)
-                        ? $this->guardian_password
-                        : '1234';
+            if ($this->guardian_exists) {
+                $student->guardians()->syncWithoutDetaching([
+                    $this->guardian_id => ['school_id' => auth()->user()->school_id]
+                ]);
+            } else {
+                $guardianPassword = !empty($this->guardian_password)
+                    ? $this->guardian_password
+                    : '1234';
 
-                    $userGuardian = User::create([
-                        'role'     => 'parent',
-                        'name'     => $this->guardian_name,
-                        'username' => $this->guardian_username,
-                        'email'    => $this->guardian_email,
-                        'password' => $guardianPassword,
-                    ]);
+                $userGuardian = User::create([
+                    'role'     => 'parent',
+                    'name'     => $this->guardian_name,
+                    'username' => $this->guardian_username,
+                    'email'    => $this->guardian_email,
+                    'password' => $guardianPassword,
+                ]);
 
-                    $guardian = Guardian::create([
-                        'user_id'     => $userGuardian->id,
-                        'name' => $this->guardian_name,
-                        'relation' => $this->guardian_relation,
-                        'father_name' => $this->guardian_father_name,
-                        'mother_name' => $this->guardian_mother_name,
-                        'occupation' => $this->guardian_occupation,
-                        'income' => $this->guardian_income,
-                        'education' => $this->guardian_education,
-                        'mobile' => $this->guardian_mobile,
-                        'email' => $this->guardian_email,
-                        'address' => $this->guardian_address,
-                        'photo' => $guardianPhotoPath,
-                    ]);
+                $guardian = Guardian::create([
+                    'user_id'     => $userGuardian->id,
+                    'name' => $this->guardian_name,
+                    'relation' => $this->guardian_relation,
+                    'father_name' => $this->guardian_father_name,
+                    'mother_name' => $this->guardian_mother_name,
+                    'occupation' => $this->guardian_occupation,
+                    'income' => $this->guardian_income,
+                    'education' => $this->guardian_education,
+                    'mobile' => $this->guardian_mobile,
+                    'email' => $this->guardian_email,
+                    'address' => $this->guardian_address,
+                    'photo' => $guardianPhotoPath,
+                ]);
 
-                    $student->guardians()->attach($guardian->id);
-                }
+                $student->guardians()->attach($guardian->id, [
+                    'school_id' => auth()->user()->school_id
+                ]);
+            }
 
             $this->resetForm();
 
@@ -220,6 +214,7 @@ class StudentAddComponent extends Component
             throw $e;
         }
     }
+    
     public function render()
     {
         $sessions = AcademicSession::orderBy('name')->get();
@@ -228,7 +223,7 @@ class StudentAddComponent extends Component
         $categories = AcademicCategory::orderBy('name')->get();
         $guardians = Guardian::all();
 
-        return view('livewire.tenant.teacher.student.student-add-component')
+        return view('livewire.teacher.student.student-add-component')
         ->with('sessions', $sessions)
         ->with('classes', $classes)
         ->with('sections', $sections)

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Accountant\OfficeAccounting;
+namespace App\Livewire\Accountant\OfficeAccounting;
 
 use Livewire\Component;
 use App\Models\OfficeAccount;
@@ -91,7 +91,7 @@ class ExpenseAddComponent extends Component
         $accounts = OfficeAccount::all();
         $heads    = OfficeHead::all();
 
-        return view('livewire.tenant.accountant.office-accounting.expense-add-component')
+        return view('livewire.accountant.office-accounting.expense-add-component')
             ->with('accounts', $accounts)
             ->with('heads', $heads)
             ->layout('layouts.accountant.app', [

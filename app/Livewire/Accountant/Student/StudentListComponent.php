@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Accountant\Student;
+namespace App\Livewire\Accountant\Student;
 
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -96,7 +96,7 @@ class StudentListComponent extends Component
 
         $classes = AcademicClass::orderBy('id')->get();
 
-        return view('livewire.tenant.accountant.student.student-list-component')
+        return view('livewire.accountant.student.student-list-component')
             ->with('students', $students)
             ->with('classes', $classes)
             ->layout('layouts.accountant.app', [

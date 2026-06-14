@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Teacher\Academic;
+namespace App\Livewire\Teacher\Academic;
 
 use Livewire\Component;
 use App\Models\AcademicClassSchedule;
@@ -133,7 +133,7 @@ class ClassScheduleCreateComponent extends Component
             ->orderBy('id', 'asc')
             ->get();
 
-        return view('livewire.tenant.teacher.academic.class-schedule-create-component')
+        return view('livewire.teacher.academic.class-schedule-create-component')
             ->with('classes', $classes)
             ->with('subjects', $subjects)
             ->with('teachers', $teachers)

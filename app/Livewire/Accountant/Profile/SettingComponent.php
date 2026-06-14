@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Accountant\Profile;
+namespace App\Livewire\Accountant\Profile;
 
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
 use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\Storage;
 
 class SettingComponent extends Component
 {
@@ -37,87 +38,73 @@ class SettingComponent extends Component
         $this->avatar = $this->user->avatar;
     }
 
-    public function safePreviewUrl($upload): ?string
-    {
-        if (!$upload) return null;
-        try {
-            return $upload->temporaryUrl();
-        } catch (\Throwable $e) {
-            return null;
-        }
-    }
-
-    private function deleteOldFile($path): void
-    {
-        if (!$path) {
-            return;
-        }
-
-        $fullPath = public_path($path);
-
-        if (file_exists($fullPath)) {
-            unlink($fullPath);
-        }
-    }
-
     public function updateProfile()
     {
         $this->validate([
-            'name'       => 'required|string|max:255',
-            'email'      => 'required|email|unique:users,email,' . $this->user->id,
+            'name'      => 'required|string|max:255',
+            'email'     => 'required|email|unique:users,email,' . $this->user->id,
             'phone'     => 'nullable|string|max:20',
-            'newAvatar'  => 'nullable',
+            'newAvatar' => 'nullable',
         ]);
+
+        $avatarPath = $this->avatar;
+
+        if ($this->newAvatar) {
+            if ($this->avatar && str_starts_with($this->avatar, '/storage/')) {
+                Storage::disk('public')->delete(
+                    str_replace('/storage/', '', $this->avatar)
+                );
+            }
+            $stored     = $this->newAvatar->store('avatars', 'public');
+            $avatarPath = Storage::url($stored);
+        }
 
         $data = [
             'name'   => $this->name,
             'email'  => $this->email,
-            'phone' => $this->phone,
+            'phone'  => $this->phone,
+            'avatar' => $avatarPath,
         ];
 
-        if ($this->newAvatar) {
-            $this->deleteOldFile($this->user->avatar);
-            $data['avatar'] = \App\Helpers\TenantFileHelper::store($this->newAvatar, 'avatars');
-        }
-
         $this->user->update($data);
+        $this->avatar = $avatarPath;
 
         $this->dispatch('toast', type: 'success', message: 'Profile updated successfully!');
     }
 
-public function updatePassword()
-{
-    $this->validate([
-        'current_password' => ['required'],
-        'password' => ['required', 'confirmed', 'min:4'],
-    ]);
+    public function updatePassword()
+    {
+        $this->validate([
+            'current_password' => ['required'],
+            'password' => ['required', 'confirmed', 'min:4'],
+        ]);
 
-    if (! Hash::check($this->current_password, $this->user->password)) {
+        if (! Hash::check($this->current_password, $this->user->password)) {
 
-        $this->addError(
+            $this->addError(
+                'current_password',
+                'Current password is incorrect.'
+            );
+
+            return;
+        }
+
+        $this->user->update([
+            'password' => $this->password,
+        ]);
+
+        $this->reset([
             'current_password',
-            'Current password is incorrect.'
-        );
+            'password',
+            'password_confirmation',
+        ]);
 
-        return;
+        $this->dispatch('toast', type: 'success', message: 'Password updated successfully!');
     }
-
-    $this->user->update([
-        'password' => $this->password,
-    ]);
-
-    $this->reset([
-        'current_password',
-        'password',
-        'password_confirmation',
-    ]);
-
-    $this->dispatch('toast', type: 'success', message: 'Password updated successfully!');
-}
 
     public function render()
     {
-        return view('livewire.tenant.accountant.profile.setting-component')
+        return view('livewire.accountant.profile.setting-component')
             ->with('user', $this->user)
             ->layout('layouts.accountant.app', [
                 'title' => "Profile Setting | School SaaS",

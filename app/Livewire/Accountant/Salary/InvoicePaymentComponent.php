@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Accountant\Salary;
+namespace App\Livewire\Accountant\Salary;
 
 use Livewire\Component;
 use App\Models\Employee;
@@ -150,7 +150,7 @@ class InvoicePaymentComponent extends Component
 
     public function render()
     {
-        return view('livewire.tenant.accountant.salary.invoice-payment-component')
+        return view('livewire.accountant.salary.invoice-payment-component')
             ->layout('layouts.accountant.app', ['title' => 'Salary Payslip']);
     }
 }

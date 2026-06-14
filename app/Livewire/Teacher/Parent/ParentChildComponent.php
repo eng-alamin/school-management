@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Teacher\Parent;
+namespace App\Livewire\Teacher\Parent;
 
 use Livewire\Component;
 use App\Models\Guardian;
@@ -19,7 +19,7 @@ class ParentChildComponent extends Component
 
     public function render()
     {
-        return view('livewire.tenant.teacher.parent.parent-child-component')
+        return view('livewire.teacher.parent.parent-child-component')
             ->with('parent', $this->parent)
             ->layout('layouts.teacher.app', [
                 'title' => "Parent Child | School SaaS",

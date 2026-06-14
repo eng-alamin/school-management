@@ -29,7 +29,7 @@
                     </div>
                 @endif
 
-                <a href="{{route('accountant.office-accounting.deposit.add', ['tenant' => tenant('id')]) }}" class="btn-sm btn-outline bg-dark text-white">
+                <a href="{{route('accountant.office-accounting.deposit.add') }}" class="btn-sm btn-outline bg-dark text-white">
                     <span class="material-icons-round">add</span> Add Deposit
                 </a>
             </div>
@@ -91,7 +91,7 @@
                                 </td>
                                 <td>
                                     <div class="d-flex gap-1">
-                                        <a href="{{ route('accountant.office-accounting.deposit.edit', ['tenant' => tenant('id'), 'id' => $deposit->id]) }}"
+                                        <a href="{{ route('accountant.office-accounting.deposit.edit', ['id' => $deposit->id]) }}"
                                            class="act-btn edit" title="Edit">
                                             <span class="material-icons-round">drive_file_rename_outline</span>
                                         </a>
@@ -107,7 +107,7 @@
                                 <td colspan="9" class="text-center py-5 text-muted">
                                     <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
                                     No deposits found.
-                                    <a href="{{ route('accountant.office-accounting.deposit.add', ['tenant' => tenant('id')]) }}">Create one now</a>.
+                                    <a href="{{ route('accountant.office-accounting.deposit.add') }}">Create one now</a>.
                                 </td>
                             </tr>
                         @endforelse

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Teacher\Academic;
+namespace App\Livewire\Teacher\Academic;
 
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -157,7 +157,7 @@ class ClassAssignComponent extends Component
         $classes  = AcademicClass::orderBy('id')->get();
         $subjects = AcademicSubject::orderBy('name')->pluck('name', 'id');
 
-        return view('livewire.tenant.teacher.academic.class-assign-component')
+        return view('livewire.teacher.academic.class-assign-component')
             ->with('assigns', $assigns)
             ->with('classes', $classes)
             ->with('subjects', $subjects)

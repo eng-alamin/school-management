@@ -24,8 +24,7 @@
                             <option value="admin">Admin</option>
                             <option value="teacher">Teacher</option>
                             <option value="accountant">Accountant</option>
-                            <option value="librarian">Librarian</option>
-                            <option value="receptionist">Receptionist</option>
+                            <option value="staff">Staff</option>
                         </select>
                     </div>
                     @error('role') <span class="text-danger">{{ $message }}</span> @enderror

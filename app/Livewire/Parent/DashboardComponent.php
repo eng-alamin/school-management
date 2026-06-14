@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Parent;
+namespace App\Livewire\Parent;
 
 use Livewire\Component;
 use App\Models\Guardian;
@@ -28,12 +28,12 @@ class DashboardComponent extends Component
 
         request()->session()->regenerate();
 
-        return $this->redirect(route('student.dashboard', ['tenant' => tenant('id')]));
+        return $this->redirect(route('student.dashboard'));
     }
 
     public function render()
     {
-        return view('livewire.tenant.parent.dashboard-component')
+        return view('livewire.parent.dashboard-component')
             ->layout('layouts.parent.app', [
                 'title' => 'Dashboard | Monarchy School',
             ]);

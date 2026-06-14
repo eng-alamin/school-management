@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Teacher\Academic;
+namespace App\Livewire\Teacher\Academic;
 
 use Livewire\Component;
 use App\Models\AcademicClass;
@@ -221,7 +221,7 @@ class StudentPromotionComponent extends Component
         $classes  = AcademicClass::orderBy('id')->get();
         $sessions = AcademicSession::orderBy('name')->get();
 
-        return view('livewire.tenant.teacher.academic.student-promotion-component')
+        return view('livewire.teacher.academic.student-promotion-component')
             ->with('classes', $classes)
             ->with('sessions', $sessions)
             ->layout('layouts.teacher.app', [

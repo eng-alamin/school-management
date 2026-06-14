@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Teacher\Parent;
+namespace App\Livewire\Teacher\Parent;
 
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -50,7 +50,7 @@ class ParentListComponent extends Component
             ->latest()
             ->paginate($this->perPage);
 
-        return view('livewire.tenant.teacher.parent.parent-list-component')
+        return view('livewire.teacher.parent.parent-list-component')
             ->with('parents', $parents)
             ->layout('layouts.teacher.app', [
                 'title' => "Parent List | School SaaS",

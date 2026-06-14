@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Accountant\Salary;
+namespace App\Livewire\Accountant\Salary;
 
 use Livewire\Component;
 use App\Models\Employee;
@@ -227,7 +227,7 @@ class AddPaymentComponent extends Component
     {
         $officeAccounts = DB::table('office_accounts')->get(['id', 'name']);
 
-        return view('livewire.tenant.accountant.salary.add-payment-component', [
+        return view('livewire.accountant.salary.add-payment-component', [
             'officeAccounts' => $officeAccounts,
         ])->layout('layouts.accountant.app', [
             'title' => 'Salary | Add Payment',

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Accountant\Leave;
+namespace App\Livewire\Accountant\Leave;
 
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -53,7 +53,7 @@ class ApplicationComponent extends Component
     // ── Role → Model class map ──
     // আলাদা model থাকলে এখানে map করো, যেমন: 'student' => \App\Models\Student::class
     protected array $roleModelMap = [
-        'admin'        => User::class,
+        'accountant'        => User::class,
         'teacher'      => User::class,
         'accountant'   => User::class,
         'librarian'    => User::class,
@@ -316,7 +316,7 @@ class ApplicationComponent extends Component
 
         $categories = LeaveCategory::orderBy('name')->get();
 
-        return view('livewire.tenant.accountant.leave.application-component', compact('applications', 'categories'))
+        return view('livewire.accountant.leave.application-component', compact('applications', 'categories'))
             ->layout('layouts.accountant.app', [
                 'title' => 'Leave Application | School SaaS',
             ]);

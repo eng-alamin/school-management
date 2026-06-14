@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Student;
+namespace App\Livewire\Student;
 
 use Livewire\Component;
 use App\Models\Event;
@@ -43,7 +43,7 @@ class EventComponent extends Component
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
-        return view('livewire.tenant.student.event-component')
+        return view('livewire.student.event-component')
             ->with('events', $events)
             ->layout('layouts.student.app', [
                 'title' => "Events | Monarchy School",

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Accountant\Salary;
+namespace App\Livewire\Accountant\Salary;
 
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -40,7 +40,7 @@ class PaymentComponent extends Component
 
     // ── Roles map ─────────────────────────────────────────────────
     public array $roles = [
-        'admin'        => 'Admin',
+        'accountant'        => 'Accountant',
         'teacher'      => 'Teacher',
         'accountant'   => 'Accountant',
         'librarian'    => 'Librarian',
@@ -240,7 +240,7 @@ class PaymentComponent extends Component
 
         $officeAccounts = DB::table('office_accounts')->get(['id', 'name']);
 
-        return view('livewire.tenant.accountant.salary.payment-component', [
+        return view('livewire.accountant.salary.payment-component', [
             'employees'      => $employees,
             'officeAccounts' => $officeAccounts,
         ])->layout('layouts.accountant.app', [

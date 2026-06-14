@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Teacher\Event;
+namespace App\Livewire\Teacher\Event;
 
 use Livewire\Component;
 use App\Models\EventType;
@@ -75,15 +75,30 @@ class TypeComponent extends Component
         ];
 
         if ($this->editId) {
-            EventType::findOrFail($this->editId)->update($data);
-            session()->flash('success', 'Data updated successfully!');
+            $record = EventType::findOrFail($this->editId);
+            $record->update($data);
+
+            // ── Activity Log ───────────────────────────────────────
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'category', 'type' => 'event'])
+                ->log('Event type updated: ' . $record->name);
+
         } else {
-            EventType::create($data);
-            session()->flash('success', 'Data created successfully!');
+            $record = EventType::create($data);
+
+            // ── Activity Log ───────────────────────────────────────
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'category', 'type' => 'event'])
+                ->log('New event type created: ' . $record->name);
         }
 
         $this->showModal = false;
         $this->resetForm();
+        session()->flash('success', $this->editId ? 'Data updated successfully!' : 'Data created successfully!');
     }
 
     private function resetForm(): void
@@ -99,12 +114,11 @@ class TypeComponent extends Component
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
-        return view('livewire.tenant.teacher.event.type-component')
+        return view('livewire.teacher.event.type-component')
             ->with('types', $types)
             ->layout('layouts.teacher.app', [
                 'title' => "Event Type | School SaaS",
             ]);
-
     }
 
     public function confirmDeleteRecord(int $id): void
@@ -116,6 +130,14 @@ class TypeComponent extends Component
     public function deleteRecord(): void
     {
         $record = EventType::findOrFail($this->deleteId);
+
+        // ── Activity Log ───────────────────────────────────────────
+        activity()
+            ->causedBy(auth()->user())
+            ->performedOn($record)
+            ->withProperties(['icon' => 'category', 'type' => 'event'])
+            ->log('Event type deleted: ' . $record->name);
+
         $record->delete();
         $this->confirmDelete = false;
         $this->deleteId = null;

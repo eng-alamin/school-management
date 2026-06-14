@@ -7,7 +7,7 @@
 
     <div class="container-xl mt-4">
 
-        @include('livewire.tenant.teacher.parent.parent-navbar', ['parent' => $parent])
+        @include('livewire.teacher.parent.parent-navbar', ['parent' => $parent])
 
         <!-- START CONTENT -->
 
@@ -39,7 +39,7 @@
                                 <td style="font-size:.875rem;vertical-align:middle">{{ $index + 1 }}</td>
                                 <td style="vertical-align:middle">
                                     <div class="d-flex align-items-center gap-2">
-                                        <img src="{{ $student->photo ? asset($student->photo) : 'https://ui-avatars.com/api/?name=' . urlencode($student->name) . '&size=64&background=random' }}"
+                                        <img src="{{ $student->photo ? asset('storage/' . $student->photo) : 'https://ui-avatars.com/api/?name=' . urlencode($student->name) . '&size=64&background=random' }}"
                                             style="width:34px;height:34px;border-radius:8px;object-fit:cover;" alt="{{ $student->name }}">
                                         <span style="font-weight:500;font-size:.875rem">{{ $student->name }}</span>
                                     </div>
@@ -50,7 +50,7 @@
                                 <td style="font-size:.875rem;vertical-align:middle">{{ $student->register_no ?? '—' }}</td>
                                 <td style="font-size:.875rem;vertical-align:middle">{{ ucfirst($student->gender ?? '—') }}</td>
                                 <td style="vertical-align:middle">
-                                    <a href="{{ route('teacher.student.overview', ['tenant' => tenant('id'), 'id' => $student->id]) }}"
+                                    <a href="{{ route('teacher.student.overview', ['id' => $student->id]) }}"
                                         target="_blank" class="act-btn view" title="View Student">
                                         <span class="material-icons-round">visibility</span>
                                     </a>

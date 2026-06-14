@@ -48,10 +48,6 @@
                     <span class="material-icons-round">add</span>
                     <span>Add Leave</span>
                 </button>
-                <a href="{{ route('teacher.leave.categories', ['tenant' => tenant('id')]) }}" target="_blank" class="btn-sm btn-outline bg-dark text-white" wire:click="openCreate">
-                    <span class="material-icons-round">add</span>
-                    <span>Add Category</span>
-                </a>
 
             </div>
         </div>

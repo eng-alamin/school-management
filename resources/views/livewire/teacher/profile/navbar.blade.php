@@ -60,8 +60,8 @@
 
     <!-- Profile Tabs -->
     <ul class="nav profile-tabs border-bottom mt-4 flex-nowrap overflow-auto">
-        <li class="nav-item"><a class="nav-link {{ request()->routeIs('teacher.profile.overview') ? 'active' : '' }}" href="{{ route('teacher.profile.overview', ['tenant' => tenant('id')]) }}">Overview</a></li>
-        <li class="nav-item"><a class="nav-link {{ request()->routeIs('teacher.profile.setting') ? 'active' : '' }}" href="{{ route('teacher.profile.setting', ['tenant' => tenant('id')]) }}">Settings</a></li>
-        <li class="nav-item"><a class="nav-link {{ request()->routeIs('teacher.profile.activity') ? 'active' : '' }}" href="{{ route('teacher.profile.activity', ['tenant' => tenant('id')]) }}">Activity</a></li>
+        <li class="nav-item"><a class="nav-link {{ request()->routeIs('teacher.profile.overview') ? 'active' : '' }}" href="{{ route('teacher.profile.overview') }}">Overview</a></li>
+        <li class="nav-item"><a class="nav-link {{ request()->routeIs('teacher.profile.setting') ? 'active' : '' }}" href="{{ route('teacher.profile.setting') }}">Settings</a></li>
+        <li class="nav-item"><a class="nav-link {{ request()->routeIs('teacher.profile.loginlog') ? 'active' : '' }}" href="{{ route('teacher.profile.loginlog') }}">Login Logs </a></li>
     </ul>
 </div>

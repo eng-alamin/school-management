@@ -54,7 +54,7 @@
         </div>
 
         <div class="col-md-12 text-center">
-            <a href="{{ route('teacher.homework.add', ['tenant' => tenant('id')]) }}" class="btn-pink w-100 d-flex justify-content-center align-items-center">
+            <a href="{{ route('teacher.homework.add') }}" class="btn-pink w-100 d-flex justify-content-center align-items-center">
                 <span class="material-icons-round" style="font-size:16px">add</span><span>New Homework</span>
             </a>
         </div>
@@ -75,7 +75,7 @@
 
                 <!-- buttons right -->
 
-                    <a href="{{ route('teacher.homework.add', ['tenant' => tenant('id')]) }}" target="_blank" id="newHomeworkBtn" class="btn-outline btn-outline bg-dark text-white">
+                    <a href="{{ route('teacher.homework.add') }}" target="_blank" id="newHomeworkBtn" class="btn-outline btn-outline bg-dark text-white">
                     <span class="material-icons-round">add</span> <span id="newHomeworkBtn">New Homework</span>
                 </a>
 

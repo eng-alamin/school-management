@@ -173,15 +173,10 @@
                     </label>
                     <div class="photo-upload-box">
                         @if($student_photo_upload)
-                            @if($this->safePreviewUrl($student_photo_upload))
-                                <img src="{{ $this->safePreviewUrl($student_photo_upload) }}" alt="Preview"
-                                    style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
-                            @else
-                                <span class="material-icons-round">check_circle</span>
-                                <span class="lbl">File selected</span>
-                            @endif
+                            <img src="{{ $student_photo_upload->temporaryUrl() }}" alt="Preview"
+                                style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
                         @elseif($student_photo)
-                            <img src="{{ asset($student_photo) }}" alt="Photo"
+                            <img src="{{ asset('storage/' . $student_photo) }}" alt="Photo"
                                 style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
                         @else
                             <span class="material-icons-round">image</span>
@@ -332,15 +327,10 @@
                     </label>
                     <div class="photo-upload-box">
                         @if($guardian_photo_upload)
-                            @if($this->safePreviewUrl($guardian_photo_upload))
-                                <img src="{{ $this->safePreviewUrl($guardian_photo_upload) }}" alt="Preview"
-                                    style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
-                            @else
-                                <span class="material-icons-round">check_circle</span>
-                                <span class="lbl">File selected</span>
-                            @endif
+                            <img src="{{ $guardian_photo_upload->temporaryUrl() }}" alt="Preview"
+                                style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
                         @elseif($guardian_photo)
-                            <img src="{{ url($guardian_photo) }}" alt="Photo"
+                            <img src="{{ asset('storage/' . $guardian_photo) }}" alt="Photo"
                                 style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
                         @else
                             <span class="material-icons-round">image</span>
@@ -351,6 +341,7 @@
                     </div>
                     @error('guardian_photo_upload') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
+
                 <div class="col-md-4">
                     <div class="input-group input-group-outline">
                         <label class="form-label">Username <span class="req">*</span></label>

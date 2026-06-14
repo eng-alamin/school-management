@@ -8,7 +8,7 @@
 
         <div class="container-xl mt-4">
 
-            @include('livewire.tenant.accountant.profile.navbar', ['user' => $user])
+            @include('livewire.accountant.profile.navbar', ['user' => $user])
 
             <!-- START CONTENT -->
 
@@ -27,13 +27,8 @@
                             <div class="col-lg-9">
                                 <div class="photo-upload-box">
                                     @if($newAvatar)
-                                        @if($this->safePreviewUrl($newAvatar))
-                                            <img src="{{ $this->safePreviewUrl($newAvatar) }}" alt="Preview"
-                                                style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
-                                        @else
-                                            <span class="material-icons-round">check_circle</span>
-                                            <span class="lbl">File selected</span>
-                                        @endif
+                                        <span class="material-icons-round">check_circle</span>
+                                        <span class="lbl">File selected</span>
                                     @elseif($avatar)
                                         <img src="{{ asset($avatar) }}" alt="Photo"
                                             style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">

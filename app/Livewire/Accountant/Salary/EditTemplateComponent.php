@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Tenant\Accountant\Salary;
+namespace App\Livewire\Accountant\Salary;
 
 use Livewire\Component;
 use App\Models\SalaryTemplate;
@@ -182,7 +182,7 @@ class EditTemplateComponent extends Component
 
     public function render()
     {
-        return view('livewire.tenant.accountant.salary.edit-template-component')
+        return view('livewire.accountant.salary.edit-template-component')
             ->layout('layouts.accountant.app', [
                 'title' => 'Edit Salary Template | HR',
             ]);
