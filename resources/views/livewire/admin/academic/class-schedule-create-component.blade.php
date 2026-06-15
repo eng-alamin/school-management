@@ -26,7 +26,7 @@
 
                 <div class="col-md-4">
                     <div class="input-group input-group-outline">
-                        <label class="form-label">Section <span class="req">*</span></label>
+                        <label class="form-label">Section</label>
                         <select wire:model="section_id" class="form-select">
                             <option value="">{{ empty($availableSections) ? 'Select class first' : 'Select Section' }}</option>
                             @foreach ($availableSections as $s)

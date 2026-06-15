@@ -23,10 +23,11 @@ class ClassScheduleCreateComponent extends Component
 
     public function updatedClassId($value): void
     {
-        $this->section_id        = '';
+        $this->section_id;
         $this->availableSections = [];
         $this->hasSchedule       = false;
         $this->data              = [];
+        $this->day = "Sunday";
 
         if ($value) {
             $class = AcademicClass::with('sections')->find($value);
@@ -40,7 +41,7 @@ class ClassScheduleCreateComponent extends Component
 
     public function filter()
     {
-        if (!$this->class_id || !$this->section_id || !$this->day) return;
+        if (!$this->class_id || !$this->day) return;
 
         $schedule = AcademicClassSchedule::where('class_id', $this->class_id)
             ->where('section_id', $this->section_id)
@@ -94,7 +95,7 @@ class ClassScheduleCreateComponent extends Component
     {
         $this->validate([
             'class_id'            => 'required|exists:academic_classes,id',
-            'section_id'          => 'required|exists:academic_sections,id',
+            'section_id'          => 'nullable|exists:academic_sections,id',
             'day'                 => 'required|string|max:20',
             'data.*.subject'      => 'required',
             'data.*.teacher'      => 'required',

@@ -123,4 +123,11 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'aliases' => array_merge(
+        Illuminate\Support\Facades\Facade::defaultAliases()->toArray(),
+        [
+            'Setting' => App\Facades\Setting::class,
+        ]
+    ),
+
 ];

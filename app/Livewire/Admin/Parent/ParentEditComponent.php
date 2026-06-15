@@ -34,7 +34,6 @@ class ParentEditComponent extends Component
 
     public $username;
     public $password;
-    public $password_confirmation;
 
     public function mount($id)
     {
@@ -74,7 +73,7 @@ class ParentEditComponent extends Component
             'photo_upload'       => 'nullable',
 
             'username'    => ['required', Rule::unique('users', 'username')->ignore($this->userId)],
-            'password'    => 'nullable|confirmed|min:4',
+            'password'    => 'nullable',
         ];
     }
 

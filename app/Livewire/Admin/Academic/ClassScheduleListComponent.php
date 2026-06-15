@@ -24,7 +24,7 @@ class ClassScheduleListComponent extends Component
 
     public function updatedClassId($value): void
     {
-        $this->section_id        = '';
+        $this->section_id;
         $this->availableSections = [];
         $this->hasSchedule       = false;
         $this->data              = [];
@@ -43,7 +43,7 @@ class ClassScheduleListComponent extends Component
     {
         $this->validate([
             'class_id'   => 'required|exists:academic_classes,id',
-            'section_id' => 'required|exists:academic_sections,id',
+            'section_id' => 'nullable|exists:academic_sections,id',
         ]);
 
         // সব day এর schedule আনো

@@ -10,8 +10,22 @@ class SchoolScope implements Scope
 {
     public function apply(Builder $builder, Model $model): void
     {
-        if (auth()->check()) {
-            $builder->where($model->getTable() . '.school_id', auth()->user()->school_id);
+        if (!auth()->check()) {
+            return;
         }
+
+        // Super Admin bypass
+        if (auth()->user()->role === 'super_admin') {
+            return;
+        }
+
+        $builder->where(
+            $model->getTable().'.school_id',
+            auth()->user()->school_id
+        );
+
+        // if (auth()->check()) {
+        //     $builder->where($model->getTable() . '.school_id', auth()->user()->school_id);
+        // }
     }
 }

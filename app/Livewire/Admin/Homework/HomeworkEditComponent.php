@@ -66,7 +66,7 @@ class HomeworkEditComponent extends Component
     {
         return [
             'class_id' => 'required|exists:academic_classes,id',
-            'section_id' => 'required|exists:academic_sections,id',
+            'section_id' => 'nullable|exists:academic_sections,id',
             'subject_id' => 'required|exists:academic_subjects,id',
             'teacher_id' => 'nullable|exists:employees,id',
             'title' => 'required|string|max:255',

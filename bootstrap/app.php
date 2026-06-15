@@ -13,6 +13,14 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'billing.check' => \App\Http\Middleware\CheckBillingStatus::class,
+        ]);
+
+        $middleware->validateCsrfTokens(except: [
+            'billing/payment/success',
+            'billing/payment/fail',
+            'billing/payment/cancel',
+            'billing/payment/ipn',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

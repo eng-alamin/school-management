@@ -63,7 +63,7 @@
                         <tr>
                             <td class="text-muted">{{ $classes->firstItem() + $i }}</td>
                             <td>{{ $class->name }}</td>
-                            <td>{{ $class->numeric }}</td>
+                            <td>{{ $class->numeric ?? '—' }}</td>
                             <td>
                                 @forelse($class->sections as $section)
                                     <span class="badge bg-primary">
@@ -121,13 +121,13 @@
                                 @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                             <div class="col-md-12">
-                                <label class="form-label">Numeric <span class="text-danger">*</span></label>
+                                <label class="form-label">Numeric</label>
                                 <input type="number" class="form-control @error('numeric') is-invalid @enderror" wire:model.defer="numeric" placeholder="e.g. 1">
                                 @error('numeric') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                             <div class="col-md-12">
                                 <div wire:ignore>
-                                    <label class="form-label">Section <span class="text-danger">*</span></label>
+                                    <label class="form-label">Section</label>
                                     <select class="form-select w-100 selectpicker @error('sectionIds') is-invalid @enderror" wire:model.defer="sectionIds" multiple title="Select Section...">
                                         @foreach($sections as $section)
                                             <option value="{{ $section->id }}">{{ $section->name }}</option>

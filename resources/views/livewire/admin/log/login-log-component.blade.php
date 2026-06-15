@@ -1,3 +1,4 @@
+{{-- resources/views/livewire/admin/login-log-component.blade.php --}}
 <div>
 
     <div class="card">

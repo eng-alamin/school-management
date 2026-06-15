@@ -26,13 +26,13 @@ class SectionComponent extends Component
     // Form
     public ?int $editId = null;
     public string $name = '';
-    public string $capacity = '';
+    public $capacity;
 
     protected function rules(): array
     {
         return [
             'name'     => 'required|string|max:255',
-            'capacity' => 'required|integer|min:1',
+            'capacity' => 'nullable|integer',
         ];
     }
 
@@ -65,7 +65,7 @@ class SectionComponent extends Component
         $record = AcademicSection::findOrFail($id);
         $this->editId    = $id;
         $this->name      = $record->name;
-        $this->capacity  = (string) $record->capacity;
+        $this->capacity  = $record->capacity;
         $this->showModal = true;
     }
 

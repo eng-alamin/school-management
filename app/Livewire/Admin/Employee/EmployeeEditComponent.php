@@ -102,7 +102,7 @@ class EmployeeEditComponent extends Component
 
             'name' => 'required',
             'mobile' => 'nullable|string|max:20',
-            'email' => 'nullable|email',
+            'email'    => ['nullable', Rule::unique('users', 'email')->ignore($this->userId)],
             'photo_upload' => 'nullable|image|max:2048',
             
             'username'    => ['required', Rule::unique('users', 'username')->ignore($this->userId)],

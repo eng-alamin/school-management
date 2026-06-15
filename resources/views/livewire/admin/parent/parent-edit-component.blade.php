@@ -43,7 +43,7 @@
             </div>
             <div class="col-md-4">
                 <div class="input-group input-group-outline">
-                    <label class="form-label">Occupation <span class="req">*</span></label>
+                    <label class="form-label">Occupation</label>
                     <input type="text" wire:model="occupation" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
                     @error('occupation') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
@@ -78,7 +78,7 @@
             </div>
             <div class="col-12">
                 <div class="input-group input-group-outline">
-                    <label class="form-label">Address <span class="req">*</span></label>
+                    <label class="form-label">Address</label>
                     <textarea wire:model="address" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)"></textarea>
                 </div>
             </div>
@@ -117,7 +117,7 @@
         </div>
 
         <div class="row g-4">
-            <div class="col-md-4">
+            <div class="col-md-6">
                 <div class="input-group input-group-outline">
                     <label class="form-label">Username <span class="req">*</span></label>
                     <input type="text" wire:model="username" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
@@ -125,20 +125,12 @@
                 @error('username') <span class="text-danger">{{ $message }}</span> @enderror
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-6">
                 <div class="input-group input-group-outline">
                     <label class="form-label">Password</label>
                     <input type="password" wire:model="password" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
                 </div>
                 @error('password') <span class="text-danger">{{ $message }}</span> @enderror
-            </div>
-
-            <div class="col-md-4">
-                <div class="input-group input-group-outline">
-                <label class="form-label">Retype Password</label>
-                <input type="password" wire:model="password_confirmation" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
-                @error('password_confirmation') <span class="text-danger">{{ $message }}</span> @enderror
-                </div>
             </div>
 
         </div>

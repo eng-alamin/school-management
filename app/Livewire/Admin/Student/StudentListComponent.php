@@ -17,7 +17,7 @@ class StudentListComponent extends Component
     // Filter
     public string $search           = '';
     public string $filter_class_id  = '';
-    public string $filter_section_id = '';
+    public $filter_section_id;
     public int $perPage             = 10;
     public bool $hasFilter          = false;
 
@@ -33,7 +33,7 @@ class StudentListComponent extends Component
 
     public function updatedFilterClassId(string $value): void
     {
-        $this->filter_section_id = '';
+        $this->filter_section_id;
         $this->availableSections = [];
         $this->hasFilter         = false;
         $this->resetPage();
@@ -50,10 +50,9 @@ class StudentListComponent extends Component
 
     public function filter(): void
     {
-        // BUG FIX 1: correct field names filter_class_id / filter_section_id
         $this->validate([
             'filter_class_id'   => 'required|exists:academic_classes,id',
-            'filter_section_id' => 'required|exists:academic_sections,id',
+            'filter_section_id' => 'nullable|exists:academic_sections,id',
         ]);
 
         $this->hasFilter = true;

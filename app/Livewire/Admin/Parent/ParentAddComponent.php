@@ -28,7 +28,6 @@ class ParentAddComponent extends Component
 
     public $username;
     public $password;
-    public $password_confirmation;
 
     public function rules()
     {
@@ -46,7 +45,7 @@ class ParentAddComponent extends Component
             'photo_upload'       => 'nullable',
 
             'username' => 'required|unique:users,username',
-            'password' => 'nullable|confirmed|min:4',
+            'password' => 'nullable',
         ];
     }
 

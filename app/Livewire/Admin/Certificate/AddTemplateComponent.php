@@ -90,8 +90,6 @@ class AddTemplateComponent extends Component
     {
         $this->validate();
 
-        // dd($this->all());
-
         $data = [
             'certificate_name'    => $this->certificate_name,
             'applicable_user'     => $this->applicable_user,

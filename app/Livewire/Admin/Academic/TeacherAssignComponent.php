@@ -29,7 +29,7 @@ class TeacherAssignComponent extends Component
     // Form
     public ?int $editId = null;
     public string $class_id = '';
-    public string $section_id = '';
+    public $section_id;
     public string $teacher_id = '';
 
     // Dependent dropdown
@@ -39,7 +39,7 @@ class TeacherAssignComponent extends Component
     {
         return [
             'class_id'        => 'required|exists:academic_classes,id',
-            'section_id'      => 'required|exists:academic_sections,id',
+            'section_id'      => 'nullable|exists:academic_sections,id',
 
             'teacher_id' => [
                 'required',
@@ -63,7 +63,7 @@ class TeacherAssignComponent extends Component
 
     public function updatedClassId(string $value): void
     {
-        $this->section_id        = '';
+        $this->section_id;
         $this->availableSections = [];
 
         if ($value) {

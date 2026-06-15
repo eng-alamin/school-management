@@ -52,8 +52,8 @@ class EmployeeAddComponent extends Component
             'department_id'  => 'required|exists:departments,id',
             'name'           => 'required',
             'mobile'         => 'nullable|string|max:20',
-            'email'          => 'nullable|email',
-            'photo_upload' => 'nullable|image|max:2048',
+            'email'          => 'nullable|unique:users,email',
+            'photo_upload'   => 'nullable|image|max:2048',
             'username'       => 'required|unique:users,username',
             'password'       => 'nullable|min:4',
         ];

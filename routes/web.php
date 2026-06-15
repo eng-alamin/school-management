@@ -1,10 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
-Route::get('/', function () {
-    return view('welcome');
-});
+use App\Http\Controllers\SslCommerzPaymentController;
+use App\Http\Controllers\PaymentController;
 
 Route::get('register', \App\Livewire\RegisterComponent::class)->name('register');
 Route::get('login', \App\Livewire\LoginComponent::class)->name('login');
@@ -16,10 +14,9 @@ Route::post('logout', function () {
 })->name('logout');
 
 
- Route::get('/', \App\Livewire\Frontend\HomeComponent::class)->name('home');
+Route::get('/', \App\Livewire\Frontend\HomeComponent::class)->name('home');
 
-
- Route::get('dashboard', function () {
+Route::get('dashboard', function () {
     $role = auth()->user()->role;
 
     return match ($role) {
@@ -33,7 +30,7 @@ Route::post('logout', function () {
 
 
 // Admin
-Route::middleware(['auth', 'role:admin'])->group(function () {
+Route::middleware(['auth', 'role:admin', 'billing.check'])->group(function () {
     Route::get('admin/dashboard', \App\Livewire\Admin\DashboardComponent::class)->name('admin.dashboard');
 
     // Inventory
@@ -161,11 +158,22 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('profile/setting', \App\Livewire\Admin\Profile\SettingComponent::class)->name('admin.profile.setting');
     Route::get('profile/activitylog', \App\Livewire\Admin\Profile\ActivityLogComponent::class)->name('admin.profile.activitylog');
     Route::get('profile/loginlog', \App\Livewire\Admin\Profile\LoginlogComponent::class)->name('admin.profile.loginlog');
+
+    Route::get('/billing', \App\Livewire\Admin\Billing\BillingShow::class)->name('billing.show');
+    Route::get('/billing/{invoice}/pay', [PaymentController::class, 'pay'])->name('billing.pay');
 });
 
+    // SSLCOMMERZ Start
+    Route::post('/billing/payment/success', [PaymentController::class, 'success'])->name('billing.payment.success');
+    Route::post('/billing/payment/fail',    [PaymentController::class, 'fail'])->name('billing.payment.fail');
+    Route::post('/billing/payment/cancel',  [PaymentController::class, 'cancel'])->name('billing.payment.cancel');
+    Route::post('/billing/payment/ipn',     [PaymentController::class, 'ipn'])->name('billing.payment.ipn');
+
+    Route::get('/billing/payment/result', function () { return view('admin.billing.payment-result'); })->name('billing.payment.result');
+    //SSLCOMMERZ END
 
 // Accountant
-Route::middleware(['auth', 'role:accountant'])->group(function () {
+Route::middleware(['auth', 'role:accountant', 'billing.check'])->group(function () {
     Route::get('accountant/dashboard', \App\Livewire\Accountant\DashboardComponent::class)->name('accountant.dashboard');
 
     // Inventory
@@ -273,7 +281,7 @@ Route::middleware(['auth', 'role:accountant'])->group(function () {
 });
 
 // Teacher
-Route::middleware(['auth', 'role:teacher'])->group(function () {
+Route::middleware(['auth', 'role:teacher', 'billing.check'])->group(function () {
     Route::get('teacher/dashboard', \App\Livewire\Teacher\DashboardComponent::class)->name('teacher.dashboard');
 
     // Student
@@ -356,7 +364,7 @@ Route::middleware(['auth', 'role:teacher'])->group(function () {
 });
     
 // Parent
-Route::middleware(['auth', 'role:parent'])->group(function () {
+Route::middleware(['auth', 'role:parent', 'billing.check'])->group(function () {
     Route::get('parent/dashboard', \App\Livewire\Parent\DashboardComponent::class)->name('parent.dashboard');
 
     // Profile
@@ -367,7 +375,7 @@ Route::middleware(['auth', 'role:parent'])->group(function () {
 });
 
 // Student
-Route::middleware(['auth', 'role:student'])->group(function () {
+Route::middleware(['auth', 'role:student', 'billing.check'])->group(function () {
     Route::get('student/dashboard', \App\Livewire\Student\DashboardComponent::class)->name('student.dashboard');
     Route::get('student/teachers', \App\Livewire\Student\TeacherComponent::class)->name('student.teachers');
     Route::get('student/subjects', \App\Livewire\Student\SubjectComponent::class)->name('student.subjects');
@@ -385,14 +393,59 @@ Route::middleware(['auth', 'role:student'])->group(function () {
 });
 
 
-// Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->name('super_admin.')->group(function () {
-//     Route::get('/schools', \App\Livewire\SuperAdmin\School\SchoolListComponent::class)->name('schools');
-
-// });
-
-
-
 // Super Admin
+Route::middleware(['auth', 'role:super_admin'])->prefix('superadmin')->name('superadmin.')->group(function () {
+    Route::get('/dashboard',\App\Livewire\SuperAdmin\DashboardComponent::class)->name('dashboard');
+    Route::get('/schools/index', \App\Livewire\SuperAdmin\School\SchoolListComponent::class)->name('schools.index');
+    Route::get('/schools/admin', \App\Livewire\SuperAdmin\School\AdminListComponent::class)->name('schools.admin');
+
+    Route::get('/billings/invoices', \App\Livewire\SuperAdmin\Billing\InvoiceIndex::class)->name('invoices.index');
+
+    Route::get('/activity-logs', \App\Livewire\SuperAdmin\Log\ActivityLogComponent::class)->name('activitylog');
+    Route::get('/login-logs', \App\Livewire\SuperAdmin\Log\LoginLogComponent::class)->name('loginlog');
+
+    Route::get('/monitoring/server', \App\Livewire\SuperAdmin\Monitoring\ServerStatusComponent::class)->name('monitoring.server');
+    Route::get('/monitoring/queue', \App\Livewire\SuperAdmin\Monitoring\QueueMonitorComponent::class)->name('monitoring.queue');
+    Route::get('/monitoring/logs', \App\Livewire\SuperAdmin\Monitoring\ErrorLogsComponent::class)->name('monitoring.logs');
+    Route::get('/monitoring/performance', \App\Livewire\SuperAdmin\Monitoring\PerformanceMetricsComponent::class)->name('monitoring.performance');
+
+    Route::get('/settings', \App\Livewire\SuperAdmin\Settings\SystemSettingsComponent::class)->name('settings');
+});
+
+
+    Route::get('/run-billing/{command}', function ($command) {
+        $allowed = [
+            'monthly-generate' => 'billing:monthly-generate',
+            'check-overdue'    => 'billing:check-overdue',
+        ];
+        if (!array_key_exists($command, $allowed)) {
+            abort(403, 'Not allowed');
+        }
+        Artisan::call($allowed[$command]);
+        return response()->json(['status' => 'done', 'command' => $command]);
+    })->middleware('auth'); // শুধু logged-in user চালাতে পারবে
+
+
+
+    Route::get('key', function () {
+        Artisan::call('key:generate');
+        return redirect()->back()->with('success','Thanks for the generate key!');
+    })->name('key');
+
+    Route::get('clear', function () {
+        Artisan::call('optimize:clear');
+        return redirect()->back()->with('success','Thanks for the fast site!');
+    })->name('clear');
+
+    Route::get('link', function () {
+        Artisan::call('storage:link');
+        return redirect()->back()->with('success','Thanks for the link storage!');
+    })->name('link');
+
+
+
+
+
 // Route::get('setting/backups', \App\Livewire\Admin\Setting\BackupComponent::class)->name('admin.setting.backups');
 
     // Route::get('try', function () {
@@ -400,19 +453,13 @@ Route::middleware(['auth', 'role:student'])->group(function () {
     //     return redirect()->back()->with('success','Thanks for the fast site!');
     // })->name('try');
 
-    Route::get('clear', function () {
-        Artisan::call('optimize:clear');
-        return redirect()->back()->with('success','Thanks for the fast site!');
-    })->name('clear');
+    
     // Route::get('backup', function () {
     //     // Artisan::call('backup:clean');
     //     Artisan::call('backup:run');
     //     return redirect()->back()->with('success','Thanks for the backup!');
     // })->name('backup');
-    Route::get('link', function () {
-        Artisan::call('storage:link');
-        return redirect()->back()->with('success','Thanks for the link storage!');
-    });
+
     // Route::get('permissionrefresh', function () {
     //     Artisan::call('migrate:refresh --path=/database/migrations/2024_01_15_210628_create_permission_tables.php');
     // });
@@ -425,6 +472,6 @@ Route::middleware(['auth', 'role:student'])->group(function () {
     Route::get('migrate', function () {
         Artisan::call('migrate');
     });
-      Route::get('key', function () {
-        Artisan::call('key:generate');
-    });
+    
+
+    

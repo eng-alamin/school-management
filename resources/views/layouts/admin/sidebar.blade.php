@@ -100,54 +100,6 @@
       </li>
 
       <li class="nav1-item">
-        <div class="nav1-link {{ str_contains(request()->url(), 'card/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
-          <span class="material-icons-round nav-icon">credit_card</span>
-          <span class="nav-label" id="nav-card-management">Card Management</span>
-          <span class="material-icons-round nav-arrow">expand_more</span>
-        </div>
-        <div class="nav2-collapse {{ str_contains(request()->url(), 'card/') == true ? 'show' : '' }}">
-          <ul>
-            <li class="nav2-item"><a href="{{route('admin.card.id-card-templates') }}" class="nav2-link {{ str_contains(request()->url(), 'card/id-card-templates') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-idcard-template">Id Card Templete</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.card.student-id-cards') }}" class="nav2-link {{ str_contains(request()->url(), 'card/student-id-cards') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-student-id-card">Student Id Card</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.card.employee-id-cards') }}" class="nav2-link {{ str_contains(request()->url(), 'card/employee-id-cards') == true ? 'active' : '' }}"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-employee-id-card">Employee Id Card</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.card.admit-card-templates') }}" class="nav2-link {{ str_contains(request()->url(), 'card/admit-card-templates') == true ? 'active' : '' }}"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-admit-card-template">Admit Card Templete</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.card.generate-admit-cards') }}" class="nav2-link {{ str_contains(request()->url(), 'card/generate-admit-cards') == true ? 'active' : '' }}"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-admit-card-generate">Admit Card Generate</span></a></li>
-          </ul>
-        </div>
-      </li>
-
-      <li class="nav1-item">
-        <div class="nav1-link {{ str_contains(request()->url(), 'certificate/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
-          <span class="material-icons-round nav-icon">workspace_premium</span>
-          <span class="nav-label" id="nav-certificate">Certificate</span>
-          <span class="material-icons-round nav-arrow">expand_more</span>
-        </div>
-        <div class="nav2-collapse {{ str_contains(request()->url(), 'certificate/') == true ? 'show' : '' }}">
-          <ul>
-            <li class="nav2-item"><a href="{{route('admin.certificate.list-template') }}" class="nav2-link {{ str_contains(request()->url(), 'certificate/list-template') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-idcard-template">Certificate Templete</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.certificate.generate-student') }}" class="nav2-link {{ str_contains(request()->url(), 'certificate/generate-student') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-student-id-card">Generate Student</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.certificate.generate-employee') }}" class="nav2-link {{ str_contains(request()->url(), 'certificate/generate-employee') == true ? 'active' : '' }}"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-employee-id-card">Generate Employee</span></a></li>
-          </ul>
-        </div>
-      </li>
-
-      <li class="nav1-item">
-        <div class="nav1-link {{ str_contains(request()->url(), 'salary') || str_contains(request()->url(), 'leave') ? 'active open' : '' }}" onclick="toggleNav1(this)">
-          <span class="material-icons-round nav-icon">manage_accounts</span>
-          <span class="nav-label" id="nav-human-resource">Human Resource</span>
-          <span class="material-icons-round nav-arrow">expand_more</span>
-        </div>
-        <div class="nav2-collapse {{ str_contains(request()->url(), 'salary') || str_contains(request()->url(), 'leave') == true ? 'show' : '' }}">
-          <ul>
-            <li class="nav2-item"><a href="{{route('admin.salary.list-template') }}" class="nav2-link {{ str_contains(request()->url(), 'admin.salary.list-template') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-idcard-template">Salary Template</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.salary.assign') }}" class="nav2-link {{ str_contains(request()->url(), 'admin.salary.assign') == true ? 'active' : '' }}"><span class="nav2-icon">A</span><span class="nav2-label" id="nav-idcard-template">Salary Assign</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.salary.payment') }}" class="nav2-link {{ str_contains(request()->url(), 'admin.salary.payment') == true ? 'active' : '' }}"><span class="nav2-icon">P</span><span class="nav2-label" id="nav-idcard-template">Salary Payment</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.leave.applications') }}" class="nav2-link {{ str_contains(request()->url(), 'leave') == true ? 'active' : '' }}"><span class="nav2-icon">P</span><span class="nav2-label" id="nav-idcard-template">Leaves</span></a></li>
-          </ul>
-        </div>
-      </li>
-
-      <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), 'academic') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
           <span class="material-icons-round nav-icon">menu_book</span>
           <span class="nav-label" id="nav-academic">Academic</span>
@@ -203,13 +155,6 @@
         </div>
       </li>
 
-      <li class="nav1-item">
-        <a href="{{route('admin.event.list') }}" class="nav1-link {{ str_contains(request()->url(), 'event') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">event</span>
-          <span class="nav-label" id="nav-events">Events</span>
-        </a>
-      </li>
-
       {{-- <li class="nav1-item">
         <div class="nav1-link" onclick="toggleNav1(this)">
           <span class="material-icons-round nav-icon">sms</span>
@@ -262,6 +207,61 @@
       </li>
 
       <li class="nav1-item">
+        <div class="nav1-link {{ str_contains(request()->url(), 'salary') || str_contains(request()->url(), 'leave') ? 'active open' : '' }}" onclick="toggleNav1(this)">
+          <span class="material-icons-round nav-icon">manage_accounts</span>
+          <span class="nav-label" id="nav-human-resource">Human Resource</span>
+          <span class="material-icons-round nav-arrow">expand_more</span>
+        </div>
+        <div class="nav2-collapse {{ str_contains(request()->url(), 'salary') || str_contains(request()->url(), 'leave') == true ? 'show' : '' }}">
+          <ul>
+            <li class="nav2-item"><a href="{{route('admin.salary.list-template') }}" class="nav2-link {{ str_contains(request()->url(), 'admin.salary.list-template') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-idcard-template">Salary Template</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.salary.assign') }}" class="nav2-link {{ str_contains(request()->url(), 'admin.salary.assign') == true ? 'active' : '' }}"><span class="nav2-icon">A</span><span class="nav2-label" id="nav-idcard-template">Salary Assign</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.salary.payment') }}" class="nav2-link {{ str_contains(request()->url(), 'admin.salary.payment') == true ? 'active' : '' }}"><span class="nav2-icon">P</span><span class="nav2-label" id="nav-idcard-template">Salary Payment</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.leave.applications') }}" class="nav2-link {{ str_contains(request()->url(), 'leave') == true ? 'active' : '' }}"><span class="nav2-icon">P</span><span class="nav2-label" id="nav-idcard-template">Leaves</span></a></li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="nav1-item">
+        <div class="nav1-link {{ str_contains(request()->url(), 'card/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
+          <span class="material-icons-round nav-icon">credit_card</span>
+          <span class="nav-label" id="nav-card-management">Card Management</span>
+          <span class="material-icons-round nav-arrow">expand_more</span>
+        </div>
+        <div class="nav2-collapse {{ str_contains(request()->url(), 'card/') == true ? 'show' : '' }}">
+          <ul>
+            <li class="nav2-item"><a href="{{route('admin.card.id-card-templates') }}" class="nav2-link {{ str_contains(request()->url(), 'card/id-card-templates') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-idcard-template">Id Card Templete</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.card.student-id-cards') }}" class="nav2-link {{ str_contains(request()->url(), 'card/student-id-cards') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-student-id-card">Student Id Card</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.card.employee-id-cards') }}" class="nav2-link {{ str_contains(request()->url(), 'card/employee-id-cards') == true ? 'active' : '' }}"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-employee-id-card">Employee Id Card</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.card.admit-card-templates') }}" class="nav2-link {{ str_contains(request()->url(), 'card/admit-card-templates') == true ? 'active' : '' }}"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-admit-card-template">Admit Card Templete</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.card.generate-admit-cards') }}" class="nav2-link {{ str_contains(request()->url(), 'card/generate-admit-cards') == true ? 'active' : '' }}"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-admit-card-generate">Admit Card Generate</span></a></li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="nav1-item">
+        <div class="nav1-link {{ str_contains(request()->url(), 'certificate/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
+          <span class="material-icons-round nav-icon">workspace_premium</span>
+          <span class="nav-label" id="nav-certificate">Certificate</span>
+          <span class="material-icons-round nav-arrow">expand_more</span>
+        </div>
+        <div class="nav2-collapse {{ str_contains(request()->url(), 'certificate/') == true ? 'show' : '' }}">
+          <ul>
+            <li class="nav2-item"><a href="{{route('admin.certificate.list-template') }}" class="nav2-link {{ str_contains(request()->url(), 'certificate/list-template') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-idcard-template">Certificate Templete</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.certificate.generate-student') }}" class="nav2-link {{ str_contains(request()->url(), 'certificate/generate-student') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-student-id-card">Generate Student</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.certificate.generate-employee') }}" class="nav2-link {{ str_contains(request()->url(), 'certificate/generate-employee') == true ? 'active' : '' }}"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-employee-id-card">Generate Employee</span></a></li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="nav1-item">
+        <a href="{{route('admin.event.list') }}" class="nav1-link {{ str_contains(request()->url(), 'event') == true ? 'active' : '' }}">
+          <span class="material-icons-round nav-icon">event</span>
+          <span class="nav-label" id="nav-events">Events</span>
+        </a>
+      </li>
+
+      <li class="nav1-item">
         <a href="{{route('admin.mailbox.inbox') }}" class="nav1-link {{ str_contains(request()->url(), 'mailbox/') == true ? 'active' : '' }}">
           <span class="material-icons-round nav-icon">chat</span>
           <span class="nav-label" id="nav-message">Message</span>
@@ -272,6 +272,13 @@
         <a href="{{route('admin.notice') }}" class="nav1-link {{ str_contains(request()->url(), 'notice-board') == true ? 'active' : '' }}">
           <span class="material-icons-round nav-icon">chat</span>
           <span class="nav-label" id="nav-message">Notice Board</span>
+        </a>
+      </li>
+
+      <li class="nav1-item">
+        <a href="{{route('billing.show') }}" class="nav1-link {{ str_contains(request()->url(), 'billing') == true ? 'active' : '' }}">
+          <span class="material-icons-round nav-icon">event</span>
+          <span class="nav-label" id="nav-events">Billing</span>
         </a>
       </li>
             

@@ -47,7 +47,6 @@ class StudentEditComponent extends Component
 
     public $username;
     public $password;
-    public $password_confirmation;
 
     public $guardian_id;
     public $guardian_name, $guardian_relation;
@@ -61,7 +60,6 @@ class StudentEditComponent extends Component
 
     public $guardian_username;
     public $guardian_password;
-    public $guardian_password_confirmation;
 
     public $previous_school;
     public $qualification;
@@ -123,18 +121,21 @@ class StudentEditComponent extends Component
         return [
             'session_id'  => 'required',
             'register_no' => ['required', Rule::unique('students', 'register_no')->ignore($this->studentId)],
+            'class_id'    => 'required',
+
             'name'        => 'required',
 
             'student_photo_upload'       => 'nullable',
 
             'username'    => ['required', Rule::unique('users', 'username')->ignore($this->userId)],
-            'password'    => 'nullable|confirmed|min:4',
+            'password'    => 'nullable',
 
             'guardian_id'       => $this->guardian_exists ? 'required' : 'nullable',
             'guardian_name'     => !$this->guardian_exists ? 'required' : 'nullable',
             'guardian_relation' => !$this->guardian_exists ? 'required' : 'nullable',
             'guardian_mobile'   => !$this->guardian_exists ? 'required' : 'nullable',
-            'guardian_email'    => !$this->guardian_exists ? 'required|email' : 'nullable',
+            
+            'guardian_username' => !$this->guardian_exists ? ['required', Rule::unique('users', 'username')->ignore($this->userId)] : 'nullable',
 
             'guardian_photo_upload'       => 'nullable',
         ];

@@ -2,7 +2,7 @@
 
       <!-- floating header -->
       <div class="mat-card-header header-pink-gradient">
-        <h5 id="cardHeaderTitleAllschedules">All Schedules</h5>
+        <h5 id="cardHeaderTitleAllschedules">Class Schedules</h5>
         <p id="cardHeaderSubtitle">A lightweight, extendable, dependency-free javascript HTML table plugin.</p>
       </div>
 
@@ -22,7 +22,7 @@
 
         <div class="col-md-6">
             <div class="input-group input-group-outline">
-                <label class="form-label">Section <span class="req">*</span></label>
+                <label class="form-label">Section</label>
                 <select wire:model="section_id" class="form-select">
                     <option value="">{{ empty($availableSections) ? 'Select class first' : 'Select Section' }}</option>
                     @foreach ($availableSections as $s)

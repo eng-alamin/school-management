@@ -108,7 +108,7 @@
 
                             {{-- Section — dependent on class --}}
                             <div class="col-md-12">
-                                <label class="form-label">Section <span class="text-danger">*</span></label>
+                                <label class="form-label">Section</label>
                                 <select class="form-select @error('section_id') is-invalid @enderror" wire:model.defer="section_id" @disabled(empty($availableSections))>
                                     <option value="">{{ empty($availableSections) ? 'Select class first' : 'Select Section' }}</option>
                                     @foreach($availableSections as $s)

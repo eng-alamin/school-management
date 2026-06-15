@@ -41,7 +41,6 @@ class StudentAddComponent extends Component
 
     public $username;
     public $password; 
-    public $password_confirmation; 
 
     public $guardian_id;
     public $guardian_name, $guardian_relation;
@@ -49,7 +48,7 @@ class StudentAddComponent extends Component
     public $guardian_occupation, $guardian_income, $guardian_education;
     public $guardian_mobile, $guardian_email;
     public $guardian_address;
-    public $guardian_username, $guardian_password, $guardian_password_confirmation;
+    public $guardian_username, $guardian_password;
 
     public $guardian_photo_upload;
 
@@ -76,21 +75,24 @@ class StudentAddComponent extends Component
     public function rules()
     {
         return [
-            'session_id' => 'required',
+            'session_id'  => 'required',
             'register_no' => 'required|unique:students,register_no',
+            'class_id'    => 'required',
+
             'name' => 'required',
 
             'student_photo_upload'       => 'nullable',
 
             'username' => 'required|unique:users,username',
-            'password' => 'nullable|confirmed|min:4',
+            'password' => 'nullable',
 
             'guardian_id' => $this->guardian_exists ? 'required' : 'nullable',
 
-            'guardian_name' => !$this->guardian_exists ? 'required' : 'nullable',
+            'guardian_name'     => !$this->guardian_exists ? 'required' : 'nullable',
             'guardian_relation' => !$this->guardian_exists ? 'required' : 'nullable',
-            'guardian_mobile' => !$this->guardian_exists ? 'required' : 'nullable',
-            'guardian_email' => !$this->guardian_exists ? 'required|email' : 'nullable',
+            'guardian_mobile'   => !$this->guardian_exists ? 'required' : 'nullable',
+            
+            'guardian_username' => !$this->guardian_exists ? 'required|unique:users,username' : 'nullable',
 
             'guardian_photo_upload'       => 'nullable',
         ];
