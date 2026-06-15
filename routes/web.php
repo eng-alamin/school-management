@@ -385,10 +385,10 @@ Route::middleware(['auth', 'role:student'])->group(function () {
 });
 
 
-Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->name('super_admin.')->group(function () {
-    Route::get('/schools', \App\Livewire\SuperAdmin\School\SchoolListComponent::class)->name('schools');
+// Route::middleware(['auth', 'role:super_admin'])->prefix('super-admin')->name('super_admin.')->group(function () {
+//     Route::get('/schools', \App\Livewire\SuperAdmin\School\SchoolListComponent::class)->name('schools');
 
-});
+// });
 
 
 
