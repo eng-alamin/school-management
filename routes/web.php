@@ -467,8 +467,6 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('superadmin')->name('sup
 
 
 
-
-
 // Route::get('setting/backups', \App\Livewire\Admin\Setting\BackupComponent::class)->name('admin.setting.backups');
 
     // Route::get('try', function () {
