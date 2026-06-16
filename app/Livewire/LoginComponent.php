@@ -15,7 +15,7 @@ class LoginComponent extends Component
 
     protected $rules = [
         'email' => 'required|email',
-        'password' => 'required|min:6',
+        'password' => 'required|min:4',
     ];
 
     protected function messages(): array
@@ -24,7 +24,7 @@ class LoginComponent extends Component
             'email.required'    => 'Email address is required.',
             'email.email'       => 'Please enter a valid email address.',
             'password.required' => 'Password is required.',
-            'password.min'      => 'Password must be at least 6 characters.',
+            'password.min'      => 'Password must be at least 4 characters.',
         ];
     }
 

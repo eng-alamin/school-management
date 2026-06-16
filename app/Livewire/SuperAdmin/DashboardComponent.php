@@ -6,7 +6,7 @@ use Livewire\Component;
 use App\Models\School;
 use App\Models\Student;
 use App\Models\Employee;
-use App\Models\Billing;
+use App\Models\Invoice;
 
 class DashboardComponent extends Component
 {
@@ -26,7 +26,7 @@ class DashboardComponent extends Component
 
         $this->totalTeachers = Employee::count();
 
-        $this->totalRevenue = Billing::sum('total_amount'); // adjust field name if needed
+        $this->totalRevenue = Invoice::sum('total_amount'); // adjust field name if needed
     }
 
     public function render()

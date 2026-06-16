@@ -2,13 +2,12 @@
 
 namespace App\Livewire;
 
-use Livewire\Component;
 use App\Models\School;
 use App\Models\User;
-use App\Models\Invoice;
+use Livewire\Component;
 use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 
 class RegisterComponent extends Component
 {
@@ -16,7 +15,12 @@ class RegisterComponent extends Component
 
     public int $currentStep = 1;
 
-    // Step 1 — School Information
+    /*
+    |--------------------------------------------------------------------------
+    | Step 1 — School Information
+    |--------------------------------------------------------------------------
+    */
+
     public string $school_name = '';
     public string $school_type = '';
     public string $phone = '';
@@ -24,11 +28,22 @@ class RegisterComponent extends Component
     public string $timezone = 'Asia/Dhaka';
     public $logo;
 
-    // Step 2 — Admin Account
+    /*
+    |--------------------------------------------------------------------------
+    | Step 2 — Admin Account
+    |--------------------------------------------------------------------------
+    */
+
     public string $admin_name = '';
     public string $admin_email = '';
     public string $password = '';
     public string $password_confirmation = '';
+
+    /*
+    |--------------------------------------------------------------------------
+    | Validation Rules
+    |--------------------------------------------------------------------------
+    */
 
     protected function rules(): array
     {
@@ -38,11 +53,18 @@ class RegisterComponent extends Component
             'phone'       => 'required|string|max:30',
             'email'       => 'required|email|max:255',
             'logo'        => 'nullable|image|max:2048',
+
             'admin_name'  => 'required|min:3|max:255',
             'admin_email' => 'required|email|max:255|unique:users,email',
             'password'    => 'required|min:8|confirmed',
         ];
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Step Validation
+    |--------------------------------------------------------------------------
+    */
 
     public function stepOneValidation(): void
     {
@@ -64,12 +86,17 @@ class RegisterComponent extends Component
         ]);
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Navigation
+    |--------------------------------------------------------------------------
+    */
+
     public function nextStep(): void
     {
         match ($this->currentStep) {
             1 => $this->stepOneValidation(),
             2 => $this->stepTwoValidation(),
-            3 => null,
         };
 
         $this->currentStep++;
@@ -80,45 +107,13 @@ class RegisterComponent extends Component
         $this->currentStep--;
     }
 
-     /*
+    /*
     |--------------------------------------------------------------------------
     | Final Setup
     |--------------------------------------------------------------------------
     */
 
-    public function initiatePayment(): mixed
-    {
-        $this->stepTwoValidation();
-
-        $logoPath = null;
-        if ($this->logo) {
-            $path = $this->logo->storeAs(
-                'logos',
-                time() . '_system.' . $this->logo->getClientOriginalExtension(),
-                'public'
-            );
-            $logoPath = 'storage/' . $path;
-        }
-
-        session([
-            'pending_registration' => [
-                'school_name' => $this->school_name,
-                'school_type' => $this->school_type,
-                'email'       => $this->email,
-                'phone'       => $this->phone,
-                'timezone'    => $this->timezone,
-                'admin_name'  => $this->admin_name,
-                'admin_email' => $this->admin_email,
-                'password'    => $this->password,
-                'tran_id'     => '',
-            ],
-            'pending_logo' => $logoPath,
-        ]);
-
-        return redirect()->route('registration.payment.pay');
-    }
-
-    public function initiateFree(): mixed
+    public function register(): mixed
     {
         $this->stepTwoValidation();
 
@@ -143,29 +138,18 @@ class RegisterComponent extends Component
             }
 
             // 3. Create the super-admin user
-            $user = User::create([
+            User::create([
                 'name'      => $this->admin_name,
                 'email'     => $this->admin_email,
-                'password'  => $this->password,
+                'password'  => Hash::make($this->password),
                 'role'      => 'admin',
                 'school_id' => $school->id,
             ]);
-
-            // 4. Create Invoice
-            Invoice::create([
-                'school_id'      => $school->id,
-                'type'           => 'registration',
-                'invoice_no'     => uniqid('INV_'),
-                'total_amount'     => number_format(setting('register_fee', 0), 0),
-                'status'         => 'free',
-            ]);
-
-            Auth::login($user);
-            session()->regenerate();
-
         });
 
-        return redirect()->route('admin.dashboard')->with('success', 'School setup complete!!');
+        session()->flash('success', 'School setup complete! You can now log in.');
+
+        return redirect()->route('login');
     }
 
     public function render()

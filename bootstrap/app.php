@@ -17,10 +17,8 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->validateCsrfTokens(except: [
-            'billing/payment/success',
-            'billing/payment/fail',
-            'billing/payment/cancel',
-            'billing/payment/ipn',
+            'billing/payment/*',
+            'registration/payment/*',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

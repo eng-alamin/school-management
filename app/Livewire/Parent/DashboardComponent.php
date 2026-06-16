@@ -22,7 +22,7 @@ class DashboardComponent extends Component
 
     public function goToDashboard($studentId)
     {
-    $student = \App\Models\Student::with('user')->findOrFail($studentId);
+        $student = \App\Models\Student::with('user')->findOrFail($studentId);
 
         Auth::login($student->user);
 

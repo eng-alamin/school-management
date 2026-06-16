@@ -8,6 +8,11 @@ class Invoice extends Model
 {
     protected $guarded = [];
 
+    protected $casts = [
+        'due_date' => 'date',
+        'paid_at'  => 'datetime',
+    ];
+
     public function school()
     {
         return $this->belongsTo(School::class)->withoutGlobalScopes();
@@ -20,6 +25,9 @@ class Invoice extends Model
 
     public function isOverdue(): bool
     {
-        return $this->status === 'pending' && $this->due_date->isPast();
+        // due_date null হলে (যেমন registration টাইপ invoice) overdue ধরা যাবে না
+        return $this->status === 'pending'
+            && $this->due_date !== null
+            && $this->due_date->isPast();
     }
 }

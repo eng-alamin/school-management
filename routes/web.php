@@ -1,8 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\SslCommerzPaymentController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\RegistrationPaymentController;
 
 Route::get('register', \App\Livewire\RegisterComponent::class)->name('register');
 Route::get('login', \App\Livewire\LoginComponent::class)->name('login');
@@ -24,6 +24,7 @@ Route::get('dashboard', function () {
         'teacher' => redirect()->route('teacher.dashboard'),
         'student' => redirect()->route('student.dashboard'),
         'parent' => redirect()->route('parent.dashboard'),
+        'super_admin' => redirect()->route('superadmin.dashboard'),
         default => abort(403),
     };
 })->middleware('auth')->name('dashboard');
@@ -158,19 +159,41 @@ Route::middleware(['auth', 'role:admin', 'billing.check'])->group(function () {
     Route::get('profile/setting', \App\Livewire\Admin\Profile\SettingComponent::class)->name('admin.profile.setting');
     Route::get('profile/activitylog', \App\Livewire\Admin\Profile\ActivityLogComponent::class)->name('admin.profile.activitylog');
     Route::get('profile/loginlog', \App\Livewire\Admin\Profile\LoginlogComponent::class)->name('admin.profile.loginlog');
-
-    Route::get('/billing', \App\Livewire\Admin\Billing\BillingShow::class)->name('billing.show');
-    Route::get('/billing/{invoice}/pay', [PaymentController::class, 'pay'])->name('billing.pay');
 });
 
-    // SSLCOMMERZ Start
-    Route::post('/billing/payment/success', [PaymentController::class, 'success'])->name('billing.payment.success');
-    Route::post('/billing/payment/fail',    [PaymentController::class, 'fail'])->name('billing.payment.fail');
-    Route::post('/billing/payment/cancel',  [PaymentController::class, 'cancel'])->name('billing.payment.cancel');
-    Route::post('/billing/payment/ipn',     [PaymentController::class, 'ipn'])->name('billing.payment.ipn');
+    // ════════════════════════════════════════
+    // BILLING (Monthly Invoice Payment)
+    // ════════════════════════════════════════
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/billing', \App\Livewire\Admin\Billing\BillingShow::class)->name('billing.show');
+        Route::get('/billing/{invoice}/pay', [PaymentController::class, 'pay'])->name('billing.pay');
+    });
 
-    Route::get('/billing/payment/result', function () { return view('admin.billing.payment-result'); })->name('billing.payment.result');
-    //SSLCOMMERZ END
+    Route::controller(PaymentController::class)
+    ->prefix('billing/payment')
+    ->name('billing.payment.')
+    ->group(function () {
+        Route::post('success', 'success')->name('success');
+        Route::post('fail',    'fail')->name('fail');
+        Route::post('cancel',  'cancel')->name('cancel');
+        Route::post('ipn',     'ipn')->name('ipn');
+
+        Route::get('result', function () { return view('admin.billing.payment-result'); })->name('result');
+    });
+
+    // ════════════════════════════════════════
+    // REGISTRATION (New School Setup Payment)
+    // ════════════════════════════════════════
+    Route::controller(RegistrationPaymentController::class)
+    ->prefix('registration/payment')
+    ->name('registration.payment.')
+    ->group(function () {
+        Route::get('pay',      'pay')->name('pay');
+        Route::post('success', 'success')->name('success');
+        Route::post('fail',    'fail')->name('fail');
+        Route::post('cancel',  'cancel')->name('cancel');
+        Route::post('ipn',     'ipn')->name('ipn');
+    });
 
 // Accountant
 Route::middleware(['auth', 'role:accountant', 'billing.check'])->group(function () {

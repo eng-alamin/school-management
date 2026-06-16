@@ -99,7 +99,7 @@
                             </td>
 
                             <td class="text-muted" style="font-size:.85rem;">
-                                {{ \Carbon\Carbon::create($invoice->year, $invoice->month, 1)->format('F Y') }}
+                                {{ $invoice->status !== 'free' ? \Carbon\Carbon::create($invoice->year, $invoice->month, 1)->format('F Y') : '-' }}
                             </td>
 
                             <td>৳ {{ number_format($invoice->total_amount, 2) }}</td>
@@ -115,7 +115,7 @@
                             <td class="fw-600">৳ {{ number_format($invoice->payable_amount, 2) }}</td>
 
                             <td class="text-muted" style="font-size:.78rem;">
-                                {{ \Carbon\Carbon::parse($invoice->due_date)->format('d M Y') }}
+                                {{ $invoice->status !== 'free' ? \Carbon\Carbon::parse($invoice->due_date)->format('d M Y') : '-' }}
                             </td>
 
                             <td>
@@ -124,6 +124,7 @@
                                         'paid'    => ['label' => 'Paid',    'color' => 'badge-active'],
                                         'pending' => ['label' => 'Pending', 'color' => 'badge-pending'],
                                         'overdue' => ['label' => 'Overdue', 'color' => 'badge-overdue'],
+                                        'free'    => ['label' => 'Free', 'color' => 'badge-active'],
                                     ];
                                     $sc = $statusMap[$invoice->status] ?? $statusMap['pending'];
                                 @endphp
@@ -137,7 +138,7 @@
                                     <button class="act-btn view" title="View Details" wire:click="openDetail({{ $invoice->id }})">
                                         <span class="material-icons-round">visibility</span>
                                     </button>
-                                    @if($invoice->status !== 'paid')
+                                    @if($invoice->status !== 'paid' && $invoice->status !== 'free')
                                         {{-- ✅ SSLCommerz: full page redirect দরকার, তাই wire:navigate নেই --}}
                                         <a href="{{ route('billing.pay', $invoice->id) }}"
                                            class="act-btn status btn-success pay-now-btn"
@@ -258,7 +259,7 @@
                     </div>
                     <div class="modal-footer">
                         <button class="btn btn-light" wire:click="$set('showDetailModal',false)">Close</button>
-                        @if($viewInvoice->status !== 'paid')
+                        @if($viewInvoice->status !== 'paid' && $viewInvoice->status !== 'free')
                             {{-- ✅ SSLCommerz: full page redirect দরকার, তাই wire:navigate নেই --}}
                             <a href="{{ route('billing.pay', $viewInvoice->id) }}"
                                class="btn btn-primary pay-now-btn"

@@ -89,6 +89,34 @@
 
   });
 </script>
+
+
+{{-- Start Session for Redirect --}}
+@if(session('success'))
+<script>
+    toast(@json(session('success')), "success");
+</script>
+@endif
+
+@if(session('error'))
+<script>
+    toast(@json(session('error')), "error");
+</script>
+@endif
+
+@if(session('warning'))
+<script>
+    toast(@json(session('warning')), "warning");
+</script>
+@endif
+
+@if(session('info'))
+<script>
+    toast(@json(session('info')), "info");
+</script>
+@endif
+{{-- End Session for Redirect --}}
+
 @stack('scripts')
 @livewireScripts
 </body>

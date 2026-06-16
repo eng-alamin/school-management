@@ -75,6 +75,7 @@ class PaymentController extends Controller
             $invoice = Invoice::findOrFail($invoiceId);
 
             $invoice->update([
+                'type'            => 'billing',
                 'status'         => 'paid',
                 'paid_at'        => now(),
                 'payment_method' => 'sslcommerz',

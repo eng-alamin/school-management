@@ -33,15 +33,23 @@ function toast(message, type = "success") {
     const tc = document.getElementById("toastContainer");
     if (!tc) return;
 
+    const iconMap = {
+        success: "check-circle-fill",
+        error: "x-circle-fill",
+        warning: "exclamation-triangle-fill",
+        info: "info-circle-fill",
+    };
+
     const t = document.createElement("div");
     t.className = `toast-item ${type}`;
+
     t.innerHTML = `
-        <i class="bi bi-${type === "success" ? "check-circle-fill" : "exclamation-triangle-fill"}"></i>
+        <i class="bi bi-${iconMap[type] || iconMap.success}"></i>
         <span>${message}</span>
     `;
+
     tc.appendChild(t);
 
-    // Force reflow to trigger transition
     requestAnimationFrame(() => {
         t.style.opacity = "1";
         t.style.transform = "translateX(0)";

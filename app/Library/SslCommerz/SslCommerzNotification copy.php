@@ -301,10 +301,9 @@ class SslCommerzNotification extends AbstractSslCommerz
         $this->setCancelUrl();
         $this->setIPNUrl();
 
-        // controller থেকে $info['success_url'] পাঠানো থাকলে সেটাই ব্যবহার হবে, না থাকলে config থেকে default নেওয়া হবে
-        $this->data['success_url'] = $info['success_url'] ?? $this->getSuccessUrl(); // string (255)	Mandatory - It is the callback URL of your website where user will redirect after successful payment (Length: 255)
-        $this->data['fail_url'] = $info['fail_url'] ?? $this->getFailedUrl(); // string (255)	Mandatory - It is the callback URL of your website where user will redirect after any failure occure during payment (Length: 255)
-        $this->data['cancel_url'] = $info['cancel_url'] ?? $this->getCancelUrl(); // string (255)	Mandatory - It is the callback URL of your website where user will redirect if user canceled the transaction (Length: 255)
+        $this->data['success_url'] = $this->getSuccessUrl(); // string (255)	Mandatory - It is the callback URL of your website where user will redirect after successful payment (Length: 255)
+        $this->data['fail_url'] = $this->getFailedUrl(); // string (255)	Mandatory - It is the callback URL of your website where user will redirect after any failure occure during payment (Length: 255)
+        $this->data['cancel_url'] = $this->getCancelUrl(); // string (255)	Mandatory - It is the callback URL of your website where user will redirect if user canceled the transaction (Length: 255)
 
         /*
          * IPN is very important feature to integrate with your site(s).
@@ -314,7 +313,7 @@ class SslCommerzNotification extends AbstractSslCommerz
          * Important! Not mandatory, however better to use to avoid missing any payment notification - It is the Instant Payment Notification (IPN) URL of your website where SSLCOMMERZ will send the transaction's status (Length: 255).
          * The data will be communicated as SSLCOMMERZ Server to your Server. So, customer session will not work.
 		*/
-        $this->data['ipn_url'] = $info['ipn_url'] ?? $this->getIPNUrl();
+        $this->data['ipn_url'] = $this->getIPNUrl();
 
         /*
          * Type: string (30)

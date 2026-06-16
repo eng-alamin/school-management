@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GovEdu SaaS – জাতীয় বিদ্যালয় ব্যবস্থাপনা সিস্টেম</title>
+    <title>EMS – জাতীয় বিদ্যালয় ব্যবস্থাপনা সিস্টেম</title>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -924,7 +924,7 @@
       <div class="container">
         <a class="navbar-brand" href="#">
           <img
-            src="https://placehold.co/150x40/198754/ffffff?text=GovEdu+SaaS"
+            src="https://placehold.co/150x40/198754/ffffff?text=EMS"
             alt="GovEdu Logo"
             class="rounded"
           />
@@ -2056,10 +2056,10 @@
           </h2>
           <p style="color: rgba(255, 255, 255, 0.6)">
             <span class="lang-bn"
-              >স্কুলের অধ্যক্ষ ও কর্মকর্তারা GovEdu সম্পর্কে যা বলেন</span
+              >স্কুলের অধ্যক্ষ ও কর্মকর্তারা EMS সম্পর্কে যা বলেন</span
             >
             <span class="lang-en"
-              >What school principals and officials say about GovEdu</span
+              >What school principals and officials say about EMS</span
             >
           </p>
         </div>
@@ -2075,11 +2075,11 @@
                 "
               >
                 <span class="lang-bn"
-                  >"GovEdu আমাদের উপস্থিতি ও ফলাফল ব্যবস্থাপনায় সম্পূর্ণ
+                  >"EMS আমাদের উপস্থিতি ও ফলাফল ব্যবস্থাপনায় সম্পূর্ণ
                   পরিবর্তন এনেছে। যা আগে সপ্তাহ লাগতো, এখন ঘণ্টায় হয়।"</span
                 >
                 <span class="lang-en"
-                  >"GovEdu has completely transformed how we manage attendance
+                  >"EMS has completely transformed how we manage attendance
                   and results. What used to take weeks now takes hours."</span
                 >
               </p>
@@ -2502,10 +2502,10 @@
                     data-bs-target="#faq1"
                   >
                     <span class="lang-bn"
-                      >GovEdu কি শিক্ষা মন্ত্রণালয় কর্তৃক অনুমোদিত?</span
+                      >EMS কি শিক্ষা মন্ত্রণালয় কর্তৃক অনুমোদিত?</span
                     >
                     <span class="lang-en"
-                      >Is GovEdu approved by the Ministry of Education?</span
+                      >Is EMS approved by the Ministry of Education?</span
                     >
                   </button>
                 </h2>
@@ -2516,12 +2516,12 @@
                 >
                   <div class="accordion-body">
                     <span class="lang-bn"
-                      >হ্যাঁ, GovEdu SaaS শিক্ষা মন্ত্রণালয়ের জাতীয় ডিজিটাল
+                      >হ্যাঁ, EMS SaaS শিক্ষা মন্ত্রণালয়ের জাতীয় ডিজিটাল
                       শিক্ষা আর্কিটেকচার (NDEA) উদ্যোগের অধীনে একটি
                       আনুষ্ঠানিকভাবে নিবন্ধিত প্ল্যাটফর্ম।</span
                     >
                     <span class="lang-en"
-                      >Yes, GovEdu SaaS is an officially registered platform
+                      >Yes, EMS SaaS is an officially registered platform
                       under the Ministry of Education's National Digital
                       Education Architecture (NDEA) initiative.</span
                     >
@@ -2587,12 +2587,12 @@
                 >
                   <div class="accordion-body">
                     <span class="lang-bn"
-                      >অবশ্যই। GovEdu রিপোর্ট, রেজাল্ট শিট, SMS নোটিফিকেশন এবং
+                      >অবশ্যই। EMS রিপোর্ট, রেজাল্ট শিট, SMS নোটিফিকেশন এবং
                       মোবাইল অ্যাপ UI সহ সমস্ত মডিউলে পূর্ণ বাংলা (ইউনিকোড)
                       সমর্থন করে।</span
                     >
                     <span class="lang-en"
-                      >Absolutely. GovEdu supports full Bangla (Unicode) across
+                      >Absolutely. EMS supports full Bangla (Unicode) across
                       all modules including reports, result sheets, SMS
                       notifications, and the mobile app UI.</span
                     >
@@ -2746,7 +2746,7 @@
                     <span class="lang-bn">ইমেইল</span
                     ><span class="lang-en">Email</span>
                   </h6>
-                  <p>support@govedu.gov.bd</p>
+                  <p>support@ems.gov.bd</p>
                 </div>
               </div>
               <div class="contact-info-item">
@@ -2879,7 +2879,7 @@
       <div class="container position-relative">
         <span
           class="badge bg-light text-dark px-3 py-2 mb-3 rounded-pill d-inline-block"
-          >🚀 <span class="lang-bn">আজই শুরু করুন</span
+          ><span class="lang-bn">আজই শুরু করুন</span
           ><span class="lang-en">Get Started Today</span>
         </span>
         <h2 class="fw-bold fs-1">
@@ -2929,7 +2929,7 @@
         <div class="row">
           <div class="col-md-4 mb-4">
             <img
-              src="https://placehold.co/140x36/198754/ffffff?text=GovEdu+SaaS"
+              src="https://placehold.co/140x36/198754/ffffff?text=EMS"
               alt="GovEdu Logo"
               class="mb-3 rounded"
               height="36"
@@ -3043,7 +3043,7 @@
         </div>
         <hr style="border-color: rgba(255, 255, 255, 0.1); margin-top: 8px" />
         <div class="text-center small" style="color: var(--footer-text)">
-          &copy; 2026 GovEdu SaaS.
+          &copy; 2026 EMS.
           <span class="lang-bn">সর্বস্বত্ব সংরক্ষিত।</span>
           <span class="lang-en">All rights reserved.</span>
           |
