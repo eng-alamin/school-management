@@ -3,11 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\BelongsToSchool;
+// use App\Traits\BelongsToSchool;
 
 class School extends Model
 {
-    use BelongsToSchool;
+    // use BelongsToSchool;
     
     protected $guarded = [];
 
@@ -46,5 +46,10 @@ class School extends Model
         return $this->enable_registration_prefix
             ? $this->institution_code_prefix . $number
             : $number;
+    }
+
+    public function admin() //superadmin
+    {
+        return $this->hasOne(User::class, 'school_id')->where('role', 'admin');
     }
 }

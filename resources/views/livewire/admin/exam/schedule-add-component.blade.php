@@ -29,30 +29,30 @@
 
             {{-- Class --}}
             <div class="col-md-4">
-                <div wire:ignore class="input-group input-group-outline">
+                <div class="input-group input-group-outline">
                     <label class="form-label">Class <span class="req">*</span></label>
-                    <select wire:model="class_id" class="form-select">
+                    <select wire:model.live="class_id" class="form-select">
                         <option value="">Select Class</option>
                         @foreach ($classes as $c)
                             <option value="{{ $c->id }}">{{ $c->name }}</option>
                         @endforeach
                     </select>
                 </div>
-                @error('class_id') <span class="text-danger small">{{ $message }}</span> @enderror
+                @error('class_id') <span class="text-danger">{{ $message }}</span> @enderror
             </div>
 
             {{-- Section --}}
             <div class="col-md-4">
-                <div wire:ignore class="input-group input-group-outline">
-                    <label class="form-label">Section <span class="req">*</span></label>
+                <div class="input-group input-group-outline">
+                    <label class="form-label">Section</label>
                     <select wire:model="section_id" class="form-select">
-                        <option value="">Select Section</option>
-                        @foreach ($sections as $s)
-                            <option value="{{ $s->id }}">{{ $s->name }}</option>
+                        <option value="">{{ empty($availableSections) ? 'Select class first' : 'Select Section' }}</option>
+                        @foreach ($availableSections as $s)
+                            <option value="{{ $s['id'] }}">{{ $s['name'] }}</option>
                         @endforeach
                     </select>
                 </div>
-                @error('section_id') <span class="text-danger small">{{ $message }}</span> @enderror
+                @error('section_id') <span class="text-danger">{{ $message }}</span> @enderror
             </div>
 
             {{-- Filter Button --}}

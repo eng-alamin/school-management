@@ -150,6 +150,7 @@
                                         'paid'    => ['label' => 'Paid',    'color' => 'badge-active'],
                                         'pending' => ['label' => 'Pending', 'color' => 'badge-pending'],
                                         'overdue' => ['label' => 'Overdue', 'color' => 'badge-overdue'],
+                                        'free'    => ['label' => 'Free', 'color' => 'badge-free'],
                                     ];
                                     $sc = $statusMap[$invoice->status] ?? $statusMap['pending'];
                                 @endphp
@@ -364,6 +365,7 @@
         .badge-active   { background: rgba(34,197,94,.12);  color: #16a34a; }
         .badge-pending  { background: rgba(217,119,6,.12);  color: #d97706; }
         .badge-overdue  { background: rgba(220,38,38,.12);  color: #dc2626; }
+        .badge-free     { background: rgba(220,38,38,.12);  color: #0280ce; }
 
         /* ── AVATAR ── */
         .avatar-placeholder {
@@ -374,6 +376,7 @@
         .invoice-avatar-paid    { background: rgba(34,197,94,.12);  color: #16a34a; }
         .invoice-avatar-pending { background: rgba(217,119,6,.12);  color: #d97706; }
         .invoice-avatar-overdue { background: rgba(220,38,38,.12);  color: #dc2626; }
+        .invoice-avatar-free    { background: rgba(220,38,38,.12);  color: #0280ce; }
 
         /* ── STAT BOXES ── */
         .stat-box {

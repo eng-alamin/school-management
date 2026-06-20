@@ -57,6 +57,9 @@ class ListComponent extends Component
             ->causedBy(auth()->user())
             ->performedOn($record)
             ->withProperties(['icon' => 'event', 'type' => 'event'])
+            ->tap(function ($activity) use ($record) {
+                    $activity->school_id = $record->school_id;
+                })
             ->log('Event deleted: ' . $record->title);
 
         session()->flash('success', 'Event deleted successfully!');

@@ -19,11 +19,9 @@
                     <label class="form-label">Role <span class="req">*</span></label>
                     <select wire:model.live="filterRole" class="form-select">
                         <option value="">Select Role</option>
-                        <option value="admin">Admin</option>
                         <option value="teacher">Teacher</option>
                         <option value="accountant">Accountant</option>
-                        <option value="librarian">Librarian</option>
-                        <option value="receptionist">Receptionist</option>
+                        <option value="staff">Staff</option>
                     </select>
                 </div>
                 @error('filterRole') <span class="text-danger small">{{ $message }}</span> @enderror

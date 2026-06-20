@@ -20,6 +20,7 @@ return new class extends Migration
             $table->json('marks')->nullable();
             $table->text('remarks')->nullable();
             $table->boolean('is_published')->default(false);
+            $table->boolean('is_result_published')->default(false);
             $table->timestamps();
         });
     }

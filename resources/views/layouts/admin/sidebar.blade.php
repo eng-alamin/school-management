@@ -13,7 +13,7 @@
 
   <!-- User -->
   <div class="sidebar-user" id="userToggle">
-    <img src="{{ auth()->user()->avatar ? asset(auth()->user()->avatar) : asset('assets/img/default-avatar.jpg') }}" class="user-avatar" alt="{{ auth()->user()->name}}">
+    <img src="{{ auth()->user()->avatar ? asset('storage/' . auth()->user()->avatar) : asset('assets/img/default-avatar.jpg') }}" class="user-avatar" alt="{{ auth()->user()->name}}">
     <span class="user-name">{{ auth()->user()->name}}</span>
     <span class="material-icons-round user-arrow" id="userArrow">expand_more</span>
   </div>

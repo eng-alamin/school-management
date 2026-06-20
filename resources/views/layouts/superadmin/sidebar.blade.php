@@ -40,29 +40,22 @@
       </li>
 
       <li class="nav1-item">
-        <div class="nav1-link {{ str_contains(request()->url(), 'superadmin/schools/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
+        <a href="{{route('superadmin.schools.index') }}" class="nav1-link {{ str_contains(request()->url(), 'superadmin/schools/') == true ? 'active' : '' }}">
           <span class="material-icons-round nav-icon">schools</span>
-          <span class="nav-label" id="nav-schools">Schools</span>
-          <span class="material-icons-round nav-arrow">expand_more</span>
-        </div>
-        <div class="nav2-collapse {{ str_contains(request()->url(), 'superadmin/schools/') == true ? 'show' : '' }}">
-          <ul>
-            <li class="nav2-item"><a href="{{ route('superadmin.schools.index') }}" class="nav2-link {{ Route::is('superadmin.schools.index') == true ? 'active' : '' }}"><span class="nav2-icon">S</span><span class="nav2-label" id="nav-schools">Schools</span></a></li>
-            <li class="nav2-item"><a href="{{route('superadmin.schools.admin') }}" class="nav2-link {{ Route::is('superadmin.schools.admin') == true ? 'active' : '' }}"><span class="nav2-icon">SA</span><span class="nav2-label" id="nav-admins">Admins</span></a></li>
-          </ul>
-        </div>
+            <span class="nav-label" id="nav-schools">Schools</span>
+        </a>
       </li>
 
       <li class="nav1-item">
         <a href="{{route('superadmin.invoices.index') }}" class="nav1-link {{ str_contains(request()->url(), 'superadmin/billings/invoices') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">schools</span>
+          <span class="material-icons-round nav-icon">receipt</span>
           <span class="nav-label" id="nav-schools">Billings Invoice</span>
         </a>
       </li>
 
       <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), 'superadmin/monitoring/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
-          <span class="material-icons-round nav-icon">schools</span>
+          <span class="material-icons-round nav-icon">analytics</span>
           <span class="nav-label" id="nav-schools">Health & Monitoring</span>
           <span class="material-icons-round nav-arrow">expand_more</span>
         </div>
@@ -78,7 +71,7 @@
 
       <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), 'superadmin/activity-logs') || str_contains(request()->url(), 'superadmin/activity-logs') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
-          <span class="material-icons-round nav-icon">schools</span>
+          <span class="material-icons-round nav-icon">security</span>
           <span class="nav-label" id="nav-schools">Audit & Security Logs</span>
           <span class="material-icons-round nav-arrow">expand_more</span>
         </div>
@@ -92,7 +85,7 @@
 
       <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), 'superadmin/settings') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
-          <span class="material-icons-round nav-icon">schools</span>
+          <span class="material-icons-round nav-icon">settings</span>
           <span class="nav-label" id="nav-schools">System Settings</span>
           <span class="material-icons-round nav-arrow">expand_more</span>
         </div>

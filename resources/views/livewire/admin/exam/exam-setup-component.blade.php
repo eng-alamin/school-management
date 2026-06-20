@@ -67,14 +67,32 @@
                     </thead>
                     <tbody>
                         @forelse($setups as $i => $setup)
-                        <tr>
+                        <tr wire:key="setup-{{ $setup->id }}">
                             <td class="text-muted">{{ $setups->firstItem() + $i }}</td>
                             <td> {{ $setup->name }} </td>
                             <td> {{ $setup->type->name ?? 'N/A' }} </td>
                             <td> {{ $setup->term->name ?? 'N/A' }} </td>
                             <td>{{ implode(', ', $setup->marks ?? []) }}</td>
-                            <td> {{ $setup->is_published ? 'Yes' : 'No' }} </td>
-                            <td> {{ $setup->is_result_published ? 'Yes' : 'No' }} </td>
+                            <td>
+                                <label class="toggle-switch" title="{{ $setup->is_published ? 'Published' : 'Not Published' }}">
+                                    <input type="checkbox"
+                                        wire:click="togglePublished({{ $setup->id }})"
+                                        wire:loading.attr="disabled"
+                                        wire:target="togglePublished({{ $setup->id }})"
+                                        @checked($setup->is_published)>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </td>
+                            <td>
+                                <label class="toggle-switch" title="{{ $setup->is_result_published ? 'Result Published' : 'Result Not Published' }}">
+                                    <input type="checkbox"
+                                        wire:click="toggleResultPublished({{ $setup->id }})"
+                                        wire:loading.attr="disabled"
+                                        wire:target="toggleResultPublished({{ $setup->id }})"
+                                        @checked($setup->is_result_published)>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </td>
                             <td> {{ $setup->remarks }} </td>
                             <td>
                                 <div class="d-flex gap-1">
@@ -89,7 +107,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="8" class="text-center py-5 text-muted">
+                            <td colspan="9" class="text-center py-5 text-muted">
                                 <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
                                 No setups found. <a href="#" wire:click.prevent="openCreate">Create one now</a>.
                             </td>
@@ -219,6 +237,21 @@
         .table th { font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); border-bottom: 2px solid var(--border); }
         .table td { vertical-align: middle; font-size: .875rem; }
         .table > :not(caption) > * > * { padding: .7rem 1rem; }
+
+        /* ── TOGGLE SWITCH (Publish / Publish Result) ── */
+        .toggle-switch { position: relative; display: inline-block; width: 42px; height: 22px; vertical-align: middle; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #d1d5db; transition: .2s; border-radius: 999px;
+        }
+        .toggle-slider::before {
+            position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px;
+            background-color: #fff; transition: .2s; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,.3);
+        }
+        .toggle-switch input:checked + .toggle-slider { background: linear-gradient(195deg, #ec407a, #d81b60); }
+        .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
+        .toggle-switch input:disabled + .toggle-slider { opacity: .6; cursor: not-allowed; }
  
         /* ── BADGES ── */
         .badge-active { background: rgba(34,197,94,.12); color: #16a34a; }

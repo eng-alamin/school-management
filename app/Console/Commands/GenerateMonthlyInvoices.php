@@ -7,20 +7,22 @@ use App\Models\User;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\PricingRate;
+use App\Models\SmsLog;
 use Illuminate\Console\Command;
 use Carbon\Carbon;
 
 class GenerateMonthlyInvoices extends Command
 {
     protected $signature = 'billing:monthly-generate {--month=} {--year=}';
-    protected $description = 'Generate monthly per-student invoices for all schools';
+    protected $description = 'Generate monthly per-student and per-SMS invoices for all schools';
 
     public function handle()
     {
         $month = $this->option('month') ?? now()->month;
         $year  = $this->option('year') ?? now()->year;
 
-        $rate = PricingRate::where('type', 'student')->where('is_active', true)->value('rate') ?? 1.00;
+        $studentRate = PricingRate::where('type', 'student')->where('is_active', true)->value('rate') ?? 1.00;
+        $smsRate     = PricingRate::where('type', 'sms')->where('is_active', true)->value('rate') ?? 0;
 
         $schools = School::withoutGlobalScopes()->where('status', 1)->get();
 
@@ -43,12 +45,22 @@ class GenerateMonthlyInvoices extends Command
                 ->where('is_active', true)
                 ->count();
 
-            if ($activeStudentCount < 1) {
-                $this->info("{$school->name}: No active students, skipped.");
+            // ── এই মাসে সফলভাবে পাঠানো SMS সংখ্যা ──
+            $smsCount = SmsLog::where('school_id', $school->id)
+                ->where('status', 'sent')
+                ->whereMonth('created_at', $month)
+                ->whereYear('created_at', $year)
+                ->count();
+
+            // student বা sms কোনোটাই না থাকলে invoice বানানোর দরকার নেই
+            if ($activeStudentCount < 1 && $smsCount < 1) {
+                $this->info("{$school->name}: কোনো active student বা SMS নেই, skip করা হলো।");
                 continue;
             }
 
-            $totalAmount = $activeStudentCount * $rate;
+            $studentAmount = $activeStudentCount * $studentRate;
+            $smsAmount     = $smsCount * $smsRate;
+            $totalAmount   = $studentAmount + $smsAmount;
 
             $invoice = Invoice::create([
                 'school_id'      => $school->id,
@@ -62,15 +74,27 @@ class GenerateMonthlyInvoices extends Command
                 'due_date'       => Carbon::create($year, $month, 1)->addMonth()->addDays(9),
             ]);
 
-            InvoiceItem::create([
-                'invoice_id' => $invoice->id,
-                'type'       => 'student',
-                'quantity'   => $activeStudentCount,
-                'rate'       => $rate,
-                'amount'     => $totalAmount,
-            ]);
+            if ($activeStudentCount > 0) {
+                InvoiceItem::create([
+                    'invoice_id' => $invoice->id,
+                    'type'       => 'student',
+                    'quantity'   => $activeStudentCount,
+                    'rate'       => $studentRate,
+                    'amount'     => $studentAmount,
+                ]);
+            }
 
-            $this->info("Invoice generated for {$school->name}: {$activeStudentCount} students × ৳{$rate} = ৳{$totalAmount}");
+            if ($smsCount > 0) {
+                InvoiceItem::create([
+                    'invoice_id' => $invoice->id,
+                    'type'       => 'sms',
+                    'quantity'   => $smsCount,
+                    'rate'       => $smsRate,
+                    'amount'     => $smsAmount,
+                ]);
+            }
+
+            $this->info("Invoice generated for {$school->name}: {$activeStudentCount} students × ৳{$studentRate} + {$smsCount} SMS × ৳{$smsRate} = ৳{$totalAmount}");
         }
 
         $this->info('Monthly billing generation completed.');

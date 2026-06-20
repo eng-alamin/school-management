@@ -104,7 +104,7 @@
                             <input type="checkbox" class="alloc-checkbox" wire:model.live="selectedStudents" value="{{ $student->id }}">
                         </td>
                         <td>{{ $i + 1 }}</td>
-                        <td>{{ $student->full_name }}</td>
+                        <td>{{ $student->name }}</td>
                         <td>{{ $student->class->name ?? '—' }}</td>
                         <td>{{ $student->section->name ?? '—' }}</td>
                         <td>{{ $student->student_id ?? '—' }}</td>

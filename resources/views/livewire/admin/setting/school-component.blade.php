@@ -421,15 +421,10 @@
                     </label>
                     <div class="photo-upload-box">
                         @if($system_logo_upload)
-                            @if($this->safePreviewUrl($system_logo_upload))
-                                <img src="{{ $this->safePreviewUrl($system_logo_upload) }}" alt="Preview"
-                                     style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
-                            @else
-                                <span class="material-icons-round">check_circle</span>
-                                <span class="lbl">File selected</span>
-                            @endif
+                            <img src="{{ $system_logo_upload->temporaryUrl() }}" alt="Preview"
+                                 style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
                         @elseif($system_logo)
-                            <img src="{{ url($system_logo) }}" alt="System Logo"
+                            <img src="{{ asset('storage/' . $system_logo) }}" alt="System Logo"
                                  style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
                         @else
                             <span class="material-icons-round">image</span>
@@ -448,15 +443,10 @@
                     </label>
                     <div class="photo-upload-box">
                         @if($text_logo_upload)
-                            @if($this->safePreviewUrl($text_logo_upload))
-                                <img src="{{ $this->safePreviewUrl($text_logo_upload) }}" alt="Preview"
-                                     style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
-                            @else
-                                <span class="material-icons-round">check_circle</span>
-                                <span class="lbl">File selected</span>
-                            @endif
+                            <img src="{{ $text_logo_upload->temporaryUrl() }}" alt="Preview"
+                                 style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
                         @elseif($text_logo)
-                            <img src="{{ url($text_logo) }}" alt="Text Logo"
+                            <img src="{{ asset('storage/' . $text_logo) }}" alt="Text Logo"
                                  style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
                         @else
                             <span class="material-icons-round">image</span>
@@ -475,15 +465,10 @@
                     </label>
                     <div class="photo-upload-box">
                         @if($print_logo_upload)
-                            @if($this->safePreviewUrl($print_logo_upload))
-                                <img src="{{ $this->safePreviewUrl($print_logo_upload) }}" alt="Preview"
-                                     style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
-                            @else
-                                <span class="material-icons-round">check_circle</span>
-                                <span class="lbl">File selected</span>
-                            @endif
+                            <img src="{{ $print_logo_upload->temporaryUrl() }}" alt="Preview"
+                                 style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
                         @elseif($print_logo)
-                            <img src="{{ url($print_logo) }}" alt="Printing Logo"
+                            <img src="{{ asset('storage/' . $print_logo) }}" alt="Printing Logo"
                                  style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
                         @else
                             <span class="material-icons-round">image</span>
@@ -502,15 +487,10 @@
                     </label>
                     <div class="photo-upload-box">
                         @if($report_logo_upload)
-                            @if($this->safePreviewUrl($report_logo_upload))
-                                <img src="{{ $this->safePreviewUrl($report_logo_upload) }}" alt="Preview"
-                                     style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
-                            @else
-                                <span class="material-icons-round">check_circle</span>
-                                <span class="lbl">File selected</span>
-                            @endif
+                            <img src="{{ $report_logo_upload->temporaryUrl() }}" alt="Preview"
+                                 style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
                         @elseif($report_logo)
-                            <img src="{{ url($report_logo) }}" alt="Report Card Logo"
+                            <img src="{{ asset('storage/' . $report_logo) }}" alt="Report Card Logo"
                                  style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
                         @else
                             <span class="material-icons-round">image</span>

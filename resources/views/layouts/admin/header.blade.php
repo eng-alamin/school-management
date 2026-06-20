@@ -131,10 +131,10 @@
 
       <!-- Profile Avatar -->
       <div class="topnav-dropdown-wrap">
-        <img src="{{ auth()->user()->avatar ? asset(auth()->user()->avatar) : asset('assets/img/default-avatar.jpg') }}" class="topnav-avatar" alt="{{ auth()->user()->name}}" onclick="toggleDropdown('profileDropdown', event)" style="cursor:pointer"/>
+        <img src="{{ auth()->user()->avatar ? asset('storage/' . auth()->user()->avatar) : asset('assets/img/default-avatar.jpg') }}" class="topnav-avatar" alt="{{ auth()->user()->name}}" onclick="toggleDropdown('profileDropdown', event)" style="cursor:pointer"/>
         <div class="topnav-dropdown" id="profileDropdown" style="min-width:220px">
           <div class="profile-dropdown-header">
-            <img src="{{ auth()->user()->avatar ? asset(auth()->user()->avatar) : asset('assets/img/default-avatar.jpg') }}" alt="{{ auth()->user()->name}}">
+            <img src="{{ auth()->user()->avatar ? asset('storage/' . auth()->user()->avatar) : asset('assets/img/default-avatar.jpg') }}" alt="{{ auth()->user()->name}}">
             <div>
               <div class="pd-name">{{ auth()->user()->name}}</div>
               <div class="pd-email">{{ auth()->user()->email}}</div>

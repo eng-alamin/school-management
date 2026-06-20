@@ -81,7 +81,5 @@
     <ul class="nav profile-tabs border-bottom mt-4 flex-nowrap overflow-auto">
         <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.parent.overview') ? 'active' : '' }}" href="{{ route('admin.parent.overview', ['id' => $parent->id]) }}">Overview</a></li>
         <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.parent.child') ? 'active' : '' }}" href="{{ route('admin.parent.child', ['id' => $parent->id]) }}">Children</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Documents</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Activity</a></li>
     </ul>
 </div>

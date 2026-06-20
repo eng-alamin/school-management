@@ -8,6 +8,7 @@ use Livewire\WithPagination;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
 use App\Services\NotificationService;
+use sms_net_bd\SMS;
 
 class NoticeComponent extends Component
 {
@@ -124,6 +125,8 @@ class NoticeComponent extends Component
             'attachment_name' => $attachmentName ?: null,
         ];
 
+        $sms = new SMS();
+
         if ($this->editId) {
             $record = Notice::findOrFail($this->editId);
             $record->update($data);
@@ -133,6 +136,9 @@ class NoticeComponent extends Component
                 ->causedBy(auth()->user())
                 ->performedOn($record)
                 ->withProperties(['icon' => 'campaign', 'type' => 'notice'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->school_id = $record->school_id;
+                })
                 ->log('Notice updated: ' . $record->title);
 
             $this->dispatch('toast', type: 'success', message: 'Data updated successfully!');
@@ -146,7 +152,15 @@ class NoticeComponent extends Component
                 ->causedBy(auth()->user())
                 ->performedOn($record)
                 ->withProperties(['icon' => 'campaign', 'type' => 'notice'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->school_id = $record->school_id;
+                })
                 ->log('New notice created: ' . $record->title);
+
+            // $response = $sms->sendSMS(
+            //     "Hello, this is a test SMS!",
+            //     "01795041057"
+            // );
 
             $this->dispatch('toast', type: 'success', message: 'Data created successfully!');
         }
@@ -170,6 +184,9 @@ class NoticeComponent extends Component
             ->causedBy(auth()->user())
             ->performedOn($record)
             ->withProperties(['icon' => 'campaign', 'type' => 'notice'])
+            ->tap(function ($activity) use ($record) {
+                    $activity->school_id = $record->school_id;
+                })
             ->log('Notice deleted: ' . $record->title);
 
         if ($record->attachment) {
@@ -192,6 +209,9 @@ class NoticeComponent extends Component
             ->causedBy(auth()->user())
             ->performedOn($record)
             ->withProperties(['icon' => 'campaign', 'type' => 'notice'])
+            ->tap(function ($activity) use ($record) {
+                    $activity->school_id = $record->school_id;
+                })
             ->log('Notice status changed to ' . $newStatus . ': ' . $record->title);
 
         $this->dispatch('toast', type: 'success', message: 'Data updated successfully!');
@@ -212,6 +232,9 @@ class NoticeComponent extends Component
                 ->causedBy(auth()->user())
                 ->performedOn($record)
                 ->withProperties(['icon' => 'campaign', 'type' => 'notice'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->school_id = $record->school_id;
+                })
                 ->log('Attachment removed from notice: ' . $record->title);
 
             $this->existingAttachment     = '';

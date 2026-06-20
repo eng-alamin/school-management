@@ -3,7 +3,7 @@
     <div class="d-flex flex-wrap gap-4 align-items-start">
         <div class="avatar-wrap me-2">
             @if($user->avatar)
-                <img src="{{ asset($user->avatar) }}" alt="{{ $user->name }}"/>
+                <img src="{{ asset('storage/' . $user->avatar) }}" alt="{{ $user->name }}"/>
             @else
                 <img src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&size=160&background=random" alt="{{ $user->name }}"/>
             @endif

@@ -51,15 +51,31 @@ class BillingShow extends Component
             ->where('is_active', true)
             ->count();
 
-        $rate = \App\Models\PricingRate::where('type', 'student')->value('rate') ?? 1.00;
-        $estimatedBill = $activeStudentCount * $rate;
+        // ── এই মাসে পাঠানো SMS সংখ্যা (sms_logs table) ──
+        $smsCount = \App\Models\SmsLog::where('school_id', $schoolId)
+            ->where('status', 'sent')
+            ->whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->count();
+
+        $studentRate = \App\Models\PricingRate::where('type', 'student')->value('rate') ?? 1.00;
+        $smsRate     = \App\Models\PricingRate::where('type', 'sms')->value('rate') ?? 0;
+
+        $studentAmount = $activeStudentCount * $studentRate;
+        $smsAmount     = $smsCount * $smsRate;
+        $estimatedBill = $studentAmount + $smsAmount;
 
         return view('livewire.admin.billing.billing-show')
             ->with([
                 'invoices'           => $invoices,
                 'availableYears'     => $availableYears,
                 'activeStudentCount' => $activeStudentCount,
-                'rate'               => $rate,
+                'smsCount'           => $smsCount,
+                'rate'               => $studentRate,   // backward compatible name (student rate)
+                'studentRate'        => $studentRate,
+                'smsRate'            => $smsRate,
+                'studentAmount'      => $studentAmount,
+                'smsAmount'          => $smsAmount,
                 'estimatedBill'      => $estimatedBill,
             ])
             ->layout('layouts.admin.app', [

@@ -42,7 +42,7 @@ class ParentAddComponent extends Component
             'mobile' => 'required|string|max:20',
             'email' => 'nullable|email',
 
-            'photo_upload'       => 'nullable',
+            'photo_upload'       => 'nullable|image|max:2048',
 
             'username' => 'required|unique:users,username',
             'password' => 'nullable',
@@ -62,16 +62,6 @@ class ParentAddComponent extends Component
     public function updated($propertyName)
     {
         $this->validateOnly($propertyName, $this->rules());
-    }
-
-    public function safePreviewUrl($upload): ?string
-    {
-        if (!$upload) return null;
-        try {
-            return $upload->temporaryUrl();
-        } catch (\Throwable $e) {
-            return null;
-        }
     }
 
     public function save()
@@ -94,8 +84,8 @@ class ParentAddComponent extends Component
             $user = User::create($userData);
 
             // Upload photo
-            $photoPath = $this->photo_upload 
-            ? \App\Helpers\TenantFileHelper::store($this->photo_upload, 'guardians') 
+            $photoPath = $this->photo_upload
+            ? $this->photo_upload->store('guardians', 'public')
             : null;
 
             Guardian::create([

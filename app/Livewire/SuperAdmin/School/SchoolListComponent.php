@@ -2,12 +2,12 @@
 
 namespace App\Livewire\SuperAdmin\School;
 
-use App\Models\School;
 use Livewire\Component;
+use App\Models\School;
+use App\Models\User;
 use Livewire\WithPagination;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Hash;
 
 class SchoolListComponent extends Component
 {
@@ -100,7 +100,7 @@ class SchoolListComponent extends Component
             'email'     => $this->email,
             'phone'     => $this->phone ?: null,
             'address'   => $this->address ?: null,
-            'status' => $this->status,
+            'status'    => $this->status,
             'system_logo'      => $logoPath ?: null,
         ];
 
@@ -117,6 +117,14 @@ class SchoolListComponent extends Component
             $this->dispatch('toast', type: 'success', message: 'Data updated successfully!');
         } else {
             $record = School::create($data);
+
+            $user = User::create([
+                'name'      => $this->name,
+                'email'     => $this->email,
+                'password'  => $this->email,
+                'role'      => 'admin',
+                'school_id' => $record->id,
+            ]);
 
             activity()
                 ->causedBy(auth()->user())

@@ -62,7 +62,7 @@
                         <tr>
                             <td>
                                 <div class="d-flex align-items-center gap-2">
-                                    <img src="{{ $parent->photo ? asset('storage/' . $parent->photo) : asset('assets/img/default-user.jpg') }}"
+                                    <img src="{{ $parent->photo ? asset('storage/' . $parent->photo) : asset('assets/img/parent.jpg') }}"
                                         style="width:36px;height:36px;border-radius:8px;object-fit:cover;" alt="">
                                     <span class="fw-500">{{ $parent->name }}</span>
                                 </div>

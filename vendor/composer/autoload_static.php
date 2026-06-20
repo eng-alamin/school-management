@@ -135,6 +135,10 @@ class ComposerStaticInit53b5d56b3b7e3cbac1713e68c8850f6c
         array (
             'voku\\' => 5,
         ),
+        's' =>
+        array (
+            'sms_net_bd\\' => 11,
+        ),
         'W' =>
         array (
             'Whoops\\' => 7,
@@ -281,6 +285,10 @@ class ComposerStaticInit53b5d56b3b7e3cbac1713e68c8850f6c
         'voku\\' =>
         array (
             0 => __DIR__ . '/..' . '/voku/portable-ascii/src/voku',
+        ),
+        'sms_net_bd\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/sms_net_bd/sms/src',
         ),
         'Whoops\\' =>
         array (
@@ -662,11 +670,13 @@ class ComposerStaticInit53b5d56b3b7e3cbac1713e68c8850f6c
     );
 
     public static $classMap = array (
-        'App\\Console\\Commands\\GenerateBilling' => __DIR__ . '/../..' . '/app/Console/Commands/GenerateBilling.php',
-        'App\\Console\\Commands\\SuspendUnpaidSchools' => __DIR__ . '/../..' . '/app/Console/Commands/SuspendUnpaidSchools.php',
+        'App\\Console\\Commands\\CheckOverdueInvoices' => __DIR__ . '/../..' . '/app/Console/Commands/CheckOverdueInvoices.php',
+        'App\\Console\\Commands\\GenerateMonthlyInvoices' => __DIR__ . '/../..' . '/app/Console/Commands/GenerateMonthlyInvoices.php',
         'App\\Facades\\Setting' => __DIR__ . '/../..' . '/app/Facades/Setting.php',
         'App\\Http\\Controllers\\Controller' => __DIR__ . '/../..' . '/app/Http/Controllers/Controller.php',
-        'App\\Http\\Middleware\\CheckSchoolStatus' => __DIR__ . '/../..' . '/app/Http/Middleware/CheckSchoolStatus.php',
+        'App\\Http\\Controllers\\PaymentController' => __DIR__ . '/../..' . '/app/Http/Controllers/PaymentController.php',
+        'App\\Http\\Controllers\\RegistrationPaymentController' => __DIR__ . '/../..' . '/app/Http/Controllers/RegistrationPaymentController.php',
+        'App\\Http\\Middleware\\CheckBillingStatus' => __DIR__ . '/../..' . '/app/Http/Middleware/CheckBillingStatus.php',
         'App\\Http\\Middleware\\RoleMiddleware' => __DIR__ . '/../..' . '/app/Http/Middleware/RoleMiddleware.php',
         'App\\Library\\SslCommerz\\AbstractSslCommerz' => __DIR__ . '/../..' . '/app/Library/SslCommerz/AbstractSslCommerz.php',
         'App\\Library\\SslCommerz\\SslCommerzInterface' => __DIR__ . '/../..' . '/app/Library/SslCommerz/SslCommerzInterface.php',
@@ -760,6 +770,7 @@ class ComposerStaticInit53b5d56b3b7e3cbac1713e68c8850f6c
         'App\\Livewire\\Admin\\Attendance\\EmployeeComponent' => __DIR__ . '/../..' . '/app/Livewire/Admin/Attendance/EmployeeComponent.php',
         'App\\Livewire\\Admin\\Attendance\\ExamComponent' => __DIR__ . '/../..' . '/app/Livewire/Admin/Attendance/ExamComponent.php',
         'App\\Livewire\\Admin\\Attendance\\StudentComponent' => __DIR__ . '/../..' . '/app/Livewire/Admin/Attendance/StudentComponent.php',
+        'App\\Livewire\\Admin\\Billing\\BillingShow' => __DIR__ . '/../..' . '/app/Livewire/Admin/Billing/BillingShow.php',
         'App\\Livewire\\Admin\\Card\\AdmitCardTemplateComponent' => __DIR__ . '/../..' . '/app/Livewire/Admin/Card/AdmitCardTemplateComponent.php',
         'App\\Livewire\\Admin\\Card\\EmployeeIdCardComponent' => __DIR__ . '/../..' . '/app/Livewire/Admin/Card/EmployeeIdCardComponent.php',
         'App\\Livewire\\Admin\\Card\\GenerateAdmitCardComponent' => __DIR__ . '/../..' . '/app/Livewire/Admin/Card/GenerateAdmitCardComponent.php',
@@ -851,6 +862,7 @@ class ComposerStaticInit53b5d56b3b7e3cbac1713e68c8850f6c
         'App\\Livewire\\Admin\\Student\\StudentInvoiceComponent' => __DIR__ . '/../..' . '/app/Livewire/Admin/Student/StudentInvoiceComponent.php',
         'App\\Livewire\\Admin\\Student\\StudentListComponent' => __DIR__ . '/../..' . '/app/Livewire/Admin/Student/StudentListComponent.php',
         'App\\Livewire\\Admin\\Student\\StudentOverviewComponent' => __DIR__ . '/../..' . '/app/Livewire/Admin/Student/StudentOverviewComponent.php',
+        'App\\Livewire\\Auth\\ForgotPasswordComponent' => __DIR__ . '/../..' . '/app/Livewire/Auth/ForgotPasswordComponent.php',
         'App\\Livewire\\Frontend\\HomeComponent' => __DIR__ . '/../..' . '/app/Livewire/Frontend/HomeComponent.php',
         'App\\Livewire\\LoginComponent' => __DIR__ . '/../..' . '/app/Livewire/LoginComponent.php',
         'App\\Livewire\\NotificationBell' => __DIR__ . '/../..' . '/app/Livewire/NotificationBell.php',
@@ -872,7 +884,7 @@ class ComposerStaticInit53b5d56b3b7e3cbac1713e68c8850f6c
         'App\\Livewire\\Student\\Profile\\SettingComponent' => __DIR__ . '/../..' . '/app/Livewire/Student/Profile/SettingComponent.php',
         'App\\Livewire\\Student\\SubjectComponent' => __DIR__ . '/../..' . '/app/Livewire/Student/SubjectComponent.php',
         'App\\Livewire\\Student\\TeacherComponent' => __DIR__ . '/../..' . '/app/Livewire/Student/TeacherComponent.php',
-        'App\\Livewire\\SuperAdmin\\Billing\\BillingComponent' => __DIR__ . '/../..' . '/app/Livewire/SuperAdmin/Billing/BillingComponent.php',
+        'App\\Livewire\\SuperAdmin\\Billing\\InvoiceIndex' => __DIR__ . '/../..' . '/app/Livewire/SuperAdmin/Billing/InvoiceIndex.php',
         'App\\Livewire\\SuperAdmin\\DashboardComponent' => __DIR__ . '/../..' . '/app/Livewire/SuperAdmin/DashboardComponent.php',
         'App\\Livewire\\SuperAdmin\\Log\\ActivityLogComponent' => __DIR__ . '/../..' . '/app/Livewire/SuperAdmin/Log/ActivityLogComponent.php',
         'App\\Livewire\\SuperAdmin\\Log\\LoginLogComponent' => __DIR__ . '/../..' . '/app/Livewire/SuperAdmin/Log/LoginLogComponent.php',
@@ -880,7 +892,6 @@ class ComposerStaticInit53b5d56b3b7e3cbac1713e68c8850f6c
         'App\\Livewire\\SuperAdmin\\Monitoring\\PerformanceMetricsComponent' => __DIR__ . '/../..' . '/app/Livewire/SuperAdmin/Monitoring/PerformanceMetricsComponent.php',
         'App\\Livewire\\SuperAdmin\\Monitoring\\QueueMonitorComponent' => __DIR__ . '/../..' . '/app/Livewire/SuperAdmin/Monitoring/QueueMonitorComponent.php',
         'App\\Livewire\\SuperAdmin\\Monitoring\\ServerStatusComponent' => __DIR__ . '/../..' . '/app/Livewire/SuperAdmin/Monitoring/ServerStatusComponent.php',
-        'App\\Livewire\\SuperAdmin\\School\\AdminListComponent' => __DIR__ . '/../..' . '/app/Livewire/SuperAdmin/School/AdminListComponent.php',
         'App\\Livewire\\SuperAdmin\\School\\SchoolListComponent' => __DIR__ . '/../..' . '/app/Livewire/SuperAdmin/School/SchoolListComponent.php',
         'App\\Livewire\\SuperAdmin\\Settings\\SystemSettingsComponent' => __DIR__ . '/../..' . '/app/Livewire/SuperAdmin/Settings/SystemSettingsComponent.php',
         'App\\Livewire\\Teacher\\Academic\\CategoryComponent' => __DIR__ . '/../..' . '/app/Livewire/Teacher/Academic/CategoryComponent.php',
@@ -982,6 +993,8 @@ class ComposerStaticInit53b5d56b3b7e3cbac1713e68c8850f6c
         'App\\Models\\InventoryStore' => __DIR__ . '/../..' . '/app/Models/InventoryStore.php',
         'App\\Models\\InventorySupplier' => __DIR__ . '/../..' . '/app/Models/InventorySupplier.php',
         'App\\Models\\InventoryUnit' => __DIR__ . '/../..' . '/app/Models/InventoryUnit.php',
+        'App\\Models\\Invoice' => __DIR__ . '/../..' . '/app/Models/Invoice.php',
+        'App\\Models\\InvoiceItem' => __DIR__ . '/../..' . '/app/Models/InvoiceItem.php',
         'App\\Models\\LeaveApplication' => __DIR__ . '/../..' . '/app/Models/LeaveApplication.php',
         'App\\Models\\LeaveCategory' => __DIR__ . '/../..' . '/app/Models/LeaveCategory.php',
         'App\\Models\\Message' => __DIR__ . '/../..' . '/app/Models/Message.php',
@@ -991,6 +1004,8 @@ class ComposerStaticInit53b5d56b3b7e3cbac1713e68c8850f6c
         'App\\Models\\OfficeDeposit' => __DIR__ . '/../..' . '/app/Models/OfficeDeposit.php',
         'App\\Models\\OfficeExpense' => __DIR__ . '/../..' . '/app/Models/OfficeExpense.php',
         'App\\Models\\OfficeHead' => __DIR__ . '/../..' . '/app/Models/OfficeHead.php',
+        'App\\Models\\PaymentRecord' => __DIR__ . '/../..' . '/app/Models/PaymentRecord.php',
+        'App\\Models\\PricingRate' => __DIR__ . '/../..' . '/app/Models/PricingRate.php',
         'App\\Models\\Purchase' => __DIR__ . '/../..' . '/app/Models/Purchase.php',
         'App\\Models\\PurchaseItem' => __DIR__ . '/../..' . '/app/Models/PurchaseItem.php',
         'App\\Models\\SalaryAssign' => __DIR__ . '/../..' . '/app/Models/SalaryAssign.php',
@@ -1007,9 +1022,7 @@ class ComposerStaticInit53b5d56b3b7e3cbac1713e68c8850f6c
         'App\\Models\\StudentPromotion' => __DIR__ . '/../..' . '/app/Models/StudentPromotion.php',
         'App\\Models\\User' => __DIR__ . '/../..' . '/app/Models/User.php',
         'App\\Providers\\AppServiceProvider' => __DIR__ . '/../..' . '/app/Providers/AppServiceProvider.php',
-        'App\\Services\\BillingService' => __DIR__ . '/../..' . '/app/Services/BillingService.php',
         'App\\Services\\NotificationService' => __DIR__ . '/../..' . '/app/Services/NotificationService.php',
-        'App\\Services\\SchoolAccessService' => __DIR__ . '/../..' . '/app/Services/SchoolAccessService.php',
         'App\\Services\\SettingService' => __DIR__ . '/../..' . '/app/Services/SettingService.php',
         'App\\Traits\\BelongsToSchool' => __DIR__ . '/../..' . '/app/Traits/BelongsToSchool.php',
         'App\\Traits\\HasNotifications' => __DIR__ . '/../..' . '/app/Traits/HasNotifications.php',
@@ -1140,6 +1153,7 @@ class ComposerStaticInit53b5d56b3b7e3cbac1713e68c8850f6c
         'Cron\\MonthField' => __DIR__ . '/..' . '/dragonmantank/cron-expression/src/Cron/MonthField.php',
         'Database\\Factories\\UserFactory' => __DIR__ . '/../..' . '/database/factories/UserFactory.php',
         'Database\\Seeders\\DatabaseSeeder' => __DIR__ . '/../..' . '/database/seeders/DatabaseSeeder.php',
+        'Database\\Seeders\\PricingRateSeeder' => __DIR__ . '/../..' . '/database/seeders/PricingRateSeeder.php',
         'DateError' => __DIR__ . '/..' . '/symfony/polyfill-php83/Resources/stubs/DateError.php',
         'DateException' => __DIR__ . '/..' . '/symfony/polyfill-php83/Resources/stubs/DateException.php',
         'DateInvalidOperationException' => __DIR__ . '/..' . '/symfony/polyfill-php83/Resources/stubs/DateInvalidOperationException.php',
@@ -2018,10 +2032,12 @@ class ComposerStaticInit53b5d56b3b7e3cbac1713e68c8850f6c
         'GuzzleHttp\\Handler\\CurlHandler' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/Handler/CurlHandler.php',
         'GuzzleHttp\\Handler\\CurlMultiHandler' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/Handler/CurlMultiHandler.php',
         'GuzzleHttp\\Handler\\CurlShareHandleState' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/Handler/CurlShareHandleState.php',
+        'GuzzleHttp\\Handler\\CurlVersion' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/Handler/CurlVersion.php',
         'GuzzleHttp\\Handler\\EasyHandle' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/Handler/EasyHandle.php',
         'GuzzleHttp\\Handler\\HeaderProcessor' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/Handler/HeaderProcessor.php',
         'GuzzleHttp\\Handler\\MockHandler' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/Handler/MockHandler.php',
         'GuzzleHttp\\Handler\\Proxy' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/Handler/Proxy.php',
+        'GuzzleHttp\\Handler\\ProxyEnvironment' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/Handler/ProxyEnvironment.php',
         'GuzzleHttp\\Handler\\StreamHandler' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/Handler/StreamHandler.php',
         'GuzzleHttp\\MessageFormatter' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/MessageFormatter.php',
         'GuzzleHttp\\MessageFormatterInterface' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/MessageFormatterInterface.php',
@@ -8091,6 +8107,7 @@ class ComposerStaticInit53b5d56b3b7e3cbac1713e68c8850f6c
         'Whoops\\Util\\Misc' => __DIR__ . '/..' . '/filp/whoops/src/Whoops/Util/Misc.php',
         'Whoops\\Util\\SystemFacade' => __DIR__ . '/..' . '/filp/whoops/src/Whoops/Util/SystemFacade.php',
         'Whoops\\Util\\TemplateHelper' => __DIR__ . '/..' . '/filp/whoops/src/Whoops/Util/TemplateHelper.php',
+        'sms_net_bd\\SMS' => __DIR__ . '/..' . '/sms_net_bd/sms/src/SMS.php',
         'staabm\\SideEffectsDetector\\SideEffect' => __DIR__ . '/..' . '/staabm/side-effects-detector/lib/SideEffect.php',
         'staabm\\SideEffectsDetector\\SideEffectsDetector' => __DIR__ . '/..' . '/staabm/side-effects-detector/lib/SideEffectsDetector.php',
         'voku\\helper\\ASCII' => __DIR__ . '/..' . '/voku/portable-ascii/src/voku/helper/ASCII.php',

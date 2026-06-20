@@ -55,7 +55,7 @@
                             <td class="text-muted">{{ $schedules->firstItem() + $i }}</td>
                             <td> {{ $schedule->exam->name }} </td>
                             <td> {{ $schedule->class->name }} </td>
-                            <td> {{ $schedule->section->name }} </td>
+                            <td> {{ $schedule->section?->name ?? '-' }} </td>
                             <td>
                                 <div class="d-flex gap-1">
                                     <button class="act-btn view" title="View" wire:click="openView({{ $schedule->id }})">
@@ -102,7 +102,7 @@
                                 <tr>
                                     <th colspan="5" class="text-center">
                                         <h6 class="mb-0">Exam : {{ $viewRecord->exam->name }}</h6>
-                                        <p class="mb-0">{{ $viewRecord->class->name }}({{ $viewRecord->section->name }})</p>
+                                        <p class="mb-0">{{ $viewRecord->class->name }} @if($viewRecord->section?->name)({{ $viewRecord->section?->name }})@endif</p>
                                     </th>
                                 </tr>
                             </thead>

@@ -6,6 +6,7 @@ use App\Http\Controllers\RegistrationPaymentController;
 
 Route::get('register', \App\Livewire\RegisterComponent::class)->name('register');
 Route::get('login', \App\Livewire\LoginComponent::class)->name('login');
+Route::get('forgot-password', \App\Livewire\Auth\ForgotPasswordComponent::class)->name('forgot.password');
 Route::post('logout', function () {
     Auth::logout();
     request()->session()->invalidate();
@@ -420,7 +421,6 @@ Route::middleware(['auth', 'role:student', 'billing.check'])->group(function () 
 Route::middleware(['auth', 'role:super_admin'])->prefix('superadmin')->name('superadmin.')->group(function () {
     Route::get('/dashboard',\App\Livewire\SuperAdmin\DashboardComponent::class)->name('dashboard');
     Route::get('/schools/index', \App\Livewire\SuperAdmin\School\SchoolListComponent::class)->name('schools.index');
-    Route::get('/schools/admin', \App\Livewire\SuperAdmin\School\AdminListComponent::class)->name('schools.admin');
 
     Route::get('/billings/invoices', \App\Livewire\SuperAdmin\Billing\InvoiceIndex::class)->name('invoices.index');
 

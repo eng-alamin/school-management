@@ -19,13 +19,21 @@
                         <div style="font-size:1.4rem;font-weight:700;color:var(--dark);margin-top:4px;">
                             ৳ {{ number_format($estimatedBill, 2) }}
                         </div>
-                        <small class="text-muted">
-                            {{ number_format($activeStudentCount) }} active students × ৳{{ number_format($rate, 2) }}/student
-                            — Final bill generated on 1st of next month
+                        <small class="text-muted d-block">
+                            {{ number_format($activeStudentCount) }} active students × ৳{{ number_format($studentRate, 2) }}/student
+                            = ৳ {{ number_format($studentAmount, 2) }}
+                        </small>
+                        <small class="text-muted d-block">
+                            {{ number_format($smsCount) }} SMS sent × ৳{{ number_format($smsRate, 2) }}/SMS
+                            = ৳ {{ number_format($smsAmount, 2) }}
+                        </small>
+                        <small class="text-muted d-block mt-1">
+                            Final bill generated on 1st of next month
                         </small>
                     </div>
-                    <div>
+                    <div class="d-flex gap-2">
                         <span class="material-icons-round" style="font-size:2.5rem;color:var(--primary);opacity:.2;">groups</span>
+                        <span class="material-icons-round" style="font-size:2.5rem;color:var(--primary);opacity:.2;">sms</span>
                     </div>
                 </div>
             </div>

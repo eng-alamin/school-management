@@ -20,25 +20,32 @@ class ScheduleAddComponent extends Component
     public $hasSchedule = false;
     public $schedule_id;
 
-    public function render()
+    public array $availableSections = [];
+
+    public function updatedClassId($value): void
     {
-        $exams = ExamSetup::all();
-        $classes = AcademicClass::all();
-        $sections = AcademicSection::all();
+        $this->section_id = null;
+        $this->availableSections = [];
+        $this->hasSchedule       = false;
+        $this->data              = [];
 
-        return view('livewire.admin.exam.schedule-add-component')
-            ->with('exams', $exams)
-            ->with('classes', $classes)
-            ->with('sections', $sections)
-            ->layout('layouts.admin.app', [
-                'title' => "Exam Schedule | School SaaS",
-            ]);
+        if ($value) {
+            $class = AcademicClass::with('sections')->find($value);
+            if ($class) {
+                $this->availableSections = $class->sections
+                    ->map(fn($s) => ['id' => $s->id, 'name' => $s->name])
+                    ->toArray();
+            }
+        }
     }
-
 
     public function filter()
     {
-        if (!$this->exam_id || !$this->class_id || !$this->section_id) return;
+        $this->validate([
+            'exam_id'    => 'required|exists:exam_setups,id',
+            'class_id'   => 'required|exists:academic_classes,id',
+            'section_id' => 'nullable|exists:academic_sections,id',
+        ]);
 
         $assign   = AcademicClassAssign::where('class_id',   $this->class_id)
             ->where('section_id', $this->section_id)
@@ -102,7 +109,7 @@ class ScheduleAddComponent extends Component
         $this->validate([
             'exam_id' => 'required|exists:exam_setups,id',
             'class_id' => 'required|exists:academic_classes,id',
-            'section_id' => 'required|exists:academic_sections,id',
+            'section_id' => 'nullable|exists:academic_sections,id',
 
             'data.*.subject'                => 'required',
             'data.*.exam_date'              => 'required',
@@ -133,6 +140,21 @@ class ScheduleAddComponent extends Component
         } catch (\Exception $e) {
             $this->dispatch('toast', type: 'error', message: 'Creation failed: ' . $e->getMessage());
         }
+    }
+
+    public function render()
+    {
+        $exams = ExamSetup::all();
+        $classes = AcademicClass::all();
+        $sections = AcademicSection::all();
+
+        return view('livewire.admin.exam.schedule-add-component')
+            ->with('exams', $exams)
+            ->with('classes', $classes)
+            ->with('sections', $sections)
+            ->layout('layouts.admin.app', [
+                'title' => "Exam Schedule | School SaaS",
+            ]);
     }
 }
 

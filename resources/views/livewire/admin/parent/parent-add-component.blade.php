@@ -86,22 +86,17 @@
                 <label style="font-size:.73rem;font-weight:600;color:var(--muted);display:block;margin-bottom:8px">
                     Photo
                 </label>
-                <div class="photo-upload-box">
-                    @if($photo_upload)
-                        @if($this->safePreviewUrl($photo_upload))
-                            <img src="{{ $this->safePreviewUrl($photo_upload) }}" alt="Preview"
+                    <div class="photo-upload-box">
+                        @if($photo_upload)
+                            <img src="{{ $photo_upload->temporaryUrl() }}" 
                                 style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
                         @else
-                            <span class="material-icons-round">check_circle</span>
-                            <span class="lbl">File selected</span>
+                            <span class="material-icons-round">image</span>
+                            <span class="lbl">Click to upload</span>
                         @endif
-                     @else
-                        <span class="material-icons-round">image</span>
-                        <span class="lbl">Click to upload</span>
-                    @endif
-                    <small style="color:#bbb;font-size:.7rem">PNG, JPG up to 2MB</small>
-                    <input type="file" wire:model="photo_upload" accept="image/*">
-                </div>
+                        <small style="color:#bbb;font-size:.7rem">PNG, JPG up to 2MB</small>
+                        <input type="file" wire:model="photo_upload" accept="image/*">
+                    </div>
                 @error('photo_upload') <span class="text-danger">{{ $message }}</span> @enderror
             </div>
         </div>

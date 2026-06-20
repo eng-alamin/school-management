@@ -24,6 +24,8 @@ return new class extends Migration
             $table->string('avatar', 255)->nullable();
             $table->boolean('is_verified')->default(false);
             $table->boolean('is_active')->default(true);
+            $table->timestamp('last_login_at')->nullable();
+            $table->string('last_login_ip', 45)->nullable();
             $table->softDeletes();
             $table->rememberToken();
             $table->timestamps();

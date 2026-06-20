@@ -4,12 +4,15 @@ namespace App\Livewire\Admin\Homework;
 
 use Livewire\Component;
 use App\Models\Homework;
-use Livewire\WithFileUploads;
+
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
+use Livewire\WithFileUploads;
 
 class HomeworkAddComponent extends Component
 {
+    use WithFileUploads;
+
     public $class_id;
     public $section_id;
     public $subject_id;
@@ -88,7 +91,9 @@ class HomeworkAddComponent extends Component
         try {
             $data = $this->validate($this->rules());
 
-            $attachmentPath = $this->attachment?->store('homeworks', 'public');
+            $attachmentPath = $this->attachment
+            ? $this->attachment->store('homeworks', 'public')
+            : null;
 
             Homework::create([
                 'class_id' => $this->class_id,

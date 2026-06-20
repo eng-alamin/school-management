@@ -9,22 +9,21 @@ use Illuminate\Support\Facades\Hash;
 
 class LoginComponent extends Component
 {
-    public $email = '';
+    public $identifier = ''; // email / username / phone
     public $password = '';
     public $remember = false;
 
     protected $rules = [
-        'email' => 'required|email',
-        'password' => 'required|min:4',
+        'identifier' => 'required|string',
+        'password'   => 'required|min:4',
     ];
 
     protected function messages(): array
     {
         return [
-            'email.required'    => 'Email address is required.',
-            'email.email'       => 'Please enter a valid email address.',
-            'password.required' => 'Password is required.',
-            'password.min'      => 'Password must be at least 4 characters.',
+            'identifier.required' => 'Email, Username বা Phone নম্বর দিন।',
+            'password.required'   => 'Password দিন।',
+            'password.min'        => 'Password কমপক্ষে ৪ অক্ষরের হতে হবে।',
         ];
     }
 
@@ -33,26 +32,38 @@ class LoginComponent extends Component
         if (Auth::check()) {
             return redirect('/dashboard');
         }
-        
     }
 
     public function login()
     {
         $this->validate();
 
-        $user = User::where('email', $this->email)->first();
+        // Smart detection — কোন field দিয়ে login করছে
+        $field = filter_var($this->identifier, FILTER_VALIDATE_EMAIL)
+            ? 'email'
+            : (preg_match('/^[0-9+\-\s]+$/', $this->identifier)
+                ? 'phone'
+                : 'username');
 
+        $user = User::where($field, $this->identifier)->first();
+
+        // Password চেক
         if (! $user || ! Hash::check($this->password, $user->password)) {
             $this->password = '';
-            $this->addError('email', 'These credentials do not match our records.');
+            $this->addError('identifier', 'এই তথ্য আমাদের সিস্টেমে নেই।');
+            return;
+        }
+
+        // Account active কিনা চেক
+        if (! $user->is_active) {
+            $this->addError('identifier', 'আপনার একাউন্ট নিষ্ক্রিয়। Admin-এর সাথে যোগাযোগ করুন।');
             return;
         }
 
         Auth::login($user, $this->remember);
-
         session()->regenerate();
 
-        // Update last login info
+        // Last login info আপডেট
         $user->update([
             'last_login_at' => now(),
             'last_login_ip' => request()->ip(),

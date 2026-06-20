@@ -1145,7 +1145,7 @@
           </div>
           <div class="col-lg-6 mt-5 mt-lg-0 text-center">
             <img
-              src="https://images.unsplash.com/photo-1531482615713-2afd69097998?w=700&auto=format&fit=crop&q=80"
+              src="https://6a366b9905d679a122fa1a7d.imgix.net/Image_ycgr8iycgr8iycgr.png?w=1264&h=843&object-removal-rect=1174%2C756%2C67%2C61"
               alt="School Dashboard"
               class="img-fluid hero-img float-anim"
             />
@@ -1601,7 +1601,7 @@
         <div class="row align-items-center g-5 mb-5">
           <div class="col-lg-6">
             <img
-              src="https://images.unsplash.com/photo-1509062522246-3755977927d7?w=600&auto=format&fit=crop&q=80"
+              src="https://6a366b9905d679a122fa1a7d.imgix.net/Image_cjtfbrcjtfbrcjtf.png"
               alt="Student Management"
               class="img-fluid module-img w-100"
             />

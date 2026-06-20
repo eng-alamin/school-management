@@ -31,6 +31,14 @@
                 </div>
             </div>
         </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <h6>Active Students</h6>
+                    <h3 class="text-info">{{ $activeStudents }}</h3>
+                </div>
+            </div>
+        </div>
 
         <!-- Teachers -->
         <div class="col-md-3 col-sm-6">
@@ -38,6 +46,14 @@
                 <div class="card-body text-center">
                     <h6>Total Teachers</h6>
                     <h3 class="text-warning">{{ $totalTeachers }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <h6>Active Teachers</h6>
+                    <h3 class="text-warning">{{ $activeTeachers }}</h3>
                 </div>
             </div>
         </div>

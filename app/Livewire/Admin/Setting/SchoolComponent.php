@@ -49,7 +49,7 @@ class SchoolComponent extends Component
     public bool $auto_generate_student_login  = false;
     public bool $auto_generate_guardian_login = false;
 
-    // Logo paths (stored)
+    // Logo paths (stored — raw relative path, e.g. "schools/logos/xxx.webp")
     public ?string $system_logo = null;
     public ?string $text_logo   = null;
     public ?string $print_logo  = null;
@@ -138,38 +138,11 @@ class SchoolComponent extends Component
         $this->auto_generate_student_login  = (bool) $setting->auto_generate_student_login;
         $this->auto_generate_guardian_login = (bool) $setting->auto_generate_guardian_login;
 
+        // raw path সরাসরি property-তে রাখা হলো (storage/ prefix নেই)
         $this->system_logo  = $setting->system_logo;
         $this->text_logo    = $setting->text_logo;
         $this->print_logo   = $setting->print_logo;
         $this->report_logo  = $setting->report_logo;
-    }
-
-    // ── Logo helpers ──────────────────────────────────────────────────────────
-
-    public function safePreviewUrl($upload): ?string
-    {
-        if (! $upload) return null;
-        try {
-            return $upload->temporaryUrl();
-        } catch (\Throwable) {
-            return null;
-        }
-    }
-
-    private function deleteOldLogo(?string $path): void
-    {
-        if (! $path) return;
-        $relative = ltrim(str_replace('storage/', '', $path), '/');
-        if (Storage::disk('public')->exists($relative)) {
-            Storage::disk('public')->delete($relative);
-        }
-    }
-
-    private function storeLogo($upload, string $prefix): string
-    {
-        $ext  = $upload->getClientOriginalExtension();
-        $path = $upload->storeAs('logos', time() . "_{$prefix}.{$ext}", 'public');
-        return 'storage/' . $path;
     }
 
     // ── Save ──────────────────────────────────────────────────────────────────
@@ -180,19 +153,25 @@ class SchoolComponent extends Component
 
         $setting = School::withoutGlobalScope(\App\Models\Scopes\SchoolScope::class)->find(auth()->user()->school_id);
 
-        // Process logo uploads
+        // চারটা logo field-এর জন্য একই pattern follow করা হলো
         foreach ([
-            'system_logo'  => 'system',
-            'text_logo'    => 'text',
-            'print_logo'   => 'print',
-            'report_logo'  => 'report',
-        ] as $field => $prefix) {
-            $uploadProp = "{$field}_upload";
-            if ($this->{$uploadProp}) {
-                $this->deleteOldLogo($setting->{$field});
-                $setting->{$field} = $this->storeLogo($this->{$uploadProp}, $prefix);
-                $this->{$field}    = $setting->{$field};
+            'system_logo' => $this->system_logo_upload,
+            'text_logo'   => $this->text_logo_upload,
+            'print_logo'  => $this->print_logo_upload,
+            'report_logo' => $this->report_logo_upload,
+        ] as $field => $upload) {
+
+            $logoPath = $setting->{$field};   // আগের logo path
+
+            if ($upload) {
+                if ($logoPath) {
+                    Storage::disk('public')->delete($logoPath);
+                }
+                $logoPath = $upload->store('schools/logos', 'public');
             }
+
+            $setting->{$field} = $logoPath;
+            $this->{$field}    = $logoPath;
         }
 
         $setting->fill([

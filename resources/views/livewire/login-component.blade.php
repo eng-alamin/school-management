@@ -319,49 +319,31 @@
 
                     <form wire:submit.prevent="login">
 
-                        {{-- EMAIL --}}
-
+                        {{-- IDENTIFIER (Email / Username / Phone) --}}
                         <div class="mb-4">
-
-                            <label class="form-label">
-                                Email Address
-                            </label>
-
+                            <label class="form-label">Email / Username / Phone</label>
                             <input
-                                type="email"
-                                class="form-control @error('email') is-invalid @enderror"
-                                wire:model.live="email"
-                                placeholder="admin@example.com"
+                                type="text"
+                                class="form-control @error('identifier') is-invalid @enderror"
+                                wire:model.live="identifier"
+                                placeholder="admin@example.com / admin / 01700000000"
+                                autocomplete="username"
                             >
-
-                            @error('email')
-                                <div class="invalid-feedback">
-                                    {{ $message }}
-                                </div>
-                            @enderror
-
+                            @error('identifier')<div class="invalid-feedback"> {{ $message }} </div>@enderror
                         </div>
 
                         {{-- PASSWORD --}}
-
                         <div class="mb-4">
-
                             <label class="form-label">
                                 Password
                             </label>
-
                             <input
                                 type="password"
                                 class="form-control @error('password') is-invalid @enderror"
                                 wire:model.live="password"
                                 placeholder="********"
                             >
-
-                            @error('password')
-                                <div class="invalid-feedback">
-                                    {{ $message }}
-                                </div>
-                            @enderror
+                            @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
 
                         </div>
 

@@ -32,26 +32,26 @@ class ExamSetupComponent extends Component
     public string $name = '';
     public ?int $exam_term_id = null;
     public ?int $exam_type_id = null;
-    public array $mark_distribution;
+    public array $mark_distribution = [];
     public string $remarks = '';
     public bool $is_published = false;
 
     protected function rules(): array
     {
         return [
-            'name'             => 'required|string|max:255',
-            'exam_term_id'      => 'nullable|exists:exam_terms,id',
-            'exam_type_id'       => 'nullable|exists:exam_types,id',
+            'name'                => 'required|string|max:255',
+            'exam_term_id'        => 'nullable|exists:exam_terms,id',
+            'exam_type_id'        => 'nullable|exists:exam_types,id',
             'mark_distribution'   => 'nullable|array',
             'mark_distribution.*' => 'nullable|string',
-            'remarks'          => 'nullable|string',
-            'is_published'     => 'boolean',
+            'remarks'             => 'nullable|string',
+            'is_published'        => 'boolean',
         ];
     }
 
-    public function updatingSearch(): void 
+    public function updatingSearch(): void
     {
-        $this->resetPage(); 
+        $this->resetPage();
     }
 
     public function sortBy(string $field): void
@@ -94,12 +94,12 @@ class ExamSetupComponent extends Component
         $this->validate();
 
         $data = [
-            'name'             => $this->name,
-            'exam_term_id'     => $this->exam_term_id,
-            'exam_type_id'     => $this->exam_type_id,
-            'marks'             =>  $this->mark_distribution,
-            'remarks'          => $this->remarks,
-            'is_published'     => $this->is_published,
+            'name'         => $this->name,
+            'exam_term_id' => $this->exam_term_id,
+            'exam_type_id' => $this->exam_type_id,
+            'marks'        => $this->mark_distribution,
+            'remarks'      => $this->remarks,
+            'is_published' => $this->is_published,
         ];
 
         if ($this->editId) {
@@ -121,6 +121,20 @@ class ExamSetupComponent extends Component
         $this->resetValidation();
     }
 
+    // ✅ নতুন: list page থেকে এক ক্লিকে Publish টগল করার জন্য
+    public function togglePublished(int $id): void
+    {
+        $setup = ExamSetup::findOrFail($id);
+        $setup->update(['is_published' => ! $setup->is_published]);
+    }
+
+    // ✅ নতুন: list page থেকে এক ক্লিকে Publish Result টগল করার জন্য
+    public function toggleResultPublished(int $id): void
+    {
+        $setup = ExamSetup::findOrFail($id);
+        $setup->update(['is_result_published' => ! $setup->is_result_published]);
+    }
+
     public function render()
     {
         $terms = ExamTerm::pluck('name', 'id');
@@ -140,7 +154,6 @@ class ExamSetupComponent extends Component
             ->layout('layouts.admin.app', [
                 'title' => "Exam Setup | School SaaS",
             ]);
-
     }
 
     public function confirmDeleteRecord(int $id): void

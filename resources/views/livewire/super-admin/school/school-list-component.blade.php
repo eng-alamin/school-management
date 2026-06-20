@@ -5,7 +5,7 @@
 
         <!-- floating header -->
         <div class="mat-card-header header-pink-gradient">
-            <h5 id="cardHeaderTitleAllsections">Schools</h5>
+            <h5 id="cardHeaderTitleAllsections">Manage Schools</h5>
             <p id="cardHeaderSubtitle">Manage all registered schools on the platform.</p>
         </div>
 
@@ -49,7 +49,8 @@
                         <tr>
                             <th>SL</th>
                             <th>School</th>
-                            <th>Email</th>
+                            <th>Admin</th>
+                            <th>Address</th>
                             <th>Phone</th>
                             <th>Status</th>
                             <th>Created</th>
@@ -63,8 +64,8 @@
 
                             <td>
                                 <div class="d-flex align-items-center gap-2">
-                                    @if($school->logo)
-                                        <img src="{{ asset('storage/' . $school->logo) }}" alt="{{ $school->name }}" class="avatar-placeholder" style="object-fit:cover;">
+                                    @if($school->system_logo)
+                                        <img src="{{ asset('storage/' . $school->system_logo) }}" alt="{{ $school->name }}" class="avatar-placeholder" style="object-fit:cover;">
                                     @else
                                         <div class="avatar-placeholder">
                                             <span class="material-icons-round" style="font-size:1rem;">school</span>
@@ -72,14 +73,32 @@
                                     @endif
                                     <div>
                                         <div class="fw-500 text-dark">{{ $school->name }}</div>
-                                        @if($school->address)
-                                            <small class="text-muted">{{ Str::limit($school->address, 40) }}</small>
+                                        @if($school->email)
+                                            <small class="text-muted">{{ Str::limit($school->email, 40) }}</small>
                                         @endif
                                     </div>
                                 </div>
                             </td>
 
-                            <td class="text-muted" style="font-size:.8rem;">{{ $school->email }}</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    @if($school->admin?->avarter)
+                                        <img src="{{ asset('storage/' . $school->admin?->avarter) }}" alt="{{ $school->admin?->name }}" class="avatar-placeholder" style="object-fit:cover;">
+                                    @else
+                                        <div class="avatar-placeholder">
+                                            <span class="material-icons-round" style="font-size:1rem;">account_circle</span>
+                                        </div>
+                                    @endif
+                                    <div>
+                                        <div class="fw-500 text-dark">{{ $school->admin?->name }}</div>
+                                        @if($school->admin?->email)
+                                            <small class="text-muted">{{ Str::limit($school->admin->email, 40) }}</small>
+                                        @endif
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td class="text-muted" style="font-size:.8rem;">{{ $school->address ? Str::limit($school->address, 40) : '-' }}</td>
 
                             <td class="text-muted" style="font-size:.8rem;">{{ $school->phone ?? '—' }}</td>
 
@@ -239,8 +258,8 @@
                     <div class="modal-body">
 
                         <div class="d-flex align-items-center gap-3 mb-3">
-                            @if($viewRecord->logo)
-                                <img src="{{ asset('storage/' . $viewRecord->logo) }}" style="height:56px;width:56px;object-fit:cover;border-radius:10px;border:1px solid var(--border);">
+                            @if($viewRecord->system_logo)
+                                <img src="{{ asset('storage/' . $viewRecord->system_logo) }}" style="height:56px;width:56px;object-fit:cover;border-radius:10px;border:1px solid var(--border);">
                             @else
                                 <div class="avatar-placeholder" style="width:56px;height:56px;">
                                     <span class="material-icons-round">school</span>

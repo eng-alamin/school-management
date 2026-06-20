@@ -7,6 +7,9 @@ use App\Models\Employee;
 use App\Models\Department;
 use App\Models\Designation;
 use App\Models\User;
+
+use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\Rule;
 use Livewire\WithFileUploads;
 
 class EmployeeAddComponent extends Component

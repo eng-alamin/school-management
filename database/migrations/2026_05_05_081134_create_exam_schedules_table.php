@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('school_id')->constrained('schools')->cascadeOnDelete();
             $table->foreignId('exam_id')->constrained('exam_setups')->cascadeOnDelete();
             $table->foreignId('class_id')->constrained('academic_classes')->cascadeOnDelete();
-            $table->foreignId('section_id')->constrained('academic_sections')->cascadeOnDelete();
+            $table->foreignId('section_id')->nullable()->constrained('academic_sections')->nullOnDelete();
             $table->json('data')->nullable();
             $table->unique(['exam_id', 'class_id', 'section_id']);
             $table->timestamps();

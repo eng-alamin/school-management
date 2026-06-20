@@ -9,6 +9,7 @@ use App\Models\Guardian;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
 use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\Storage;
 
 class ParentEditComponent extends Component
 {
@@ -70,7 +71,7 @@ class ParentEditComponent extends Component
             'mobile' => 'required|string|max:20',
             'email' => 'nullable|email',
 
-            'photo_upload'       => 'nullable',
+            'photo_upload' => 'nullable|image|max:2048',
 
             'username'    => ['required', Rule::unique('users', 'username')->ignore($this->userId)],
             'password'    => 'nullable',
@@ -85,29 +86,6 @@ class ParentEditComponent extends Component
     public function updated($propertyName)
     {
         $this->validateOnly($propertyName, $this->rules());
-    }
-
-    public function safePreviewUrl($upload): ?string
-    {
-        if (!$upload) return null;
-        try {
-            return $upload->temporaryUrl();
-        } catch (\Throwable $e) {
-            return null;
-        }
-    }
-
-    private function deleteOldFile($path): void
-    {
-        if (!$path) {
-            return;
-        }
-
-        $fullPath = public_path($path);
-
-        if (file_exists($fullPath)) {
-            unlink($fullPath);
-        }
     }
 
     public function update()
@@ -142,8 +120,13 @@ class ParentEditComponent extends Component
             ];
 
             if ($this->photo_upload) {
-                $this->deleteOldFile($this->student->photo);
-                $guardian['photo'] = \App\Helpers\TenantFileHelper::store($this->photo_upload, 'guardians');
+
+                if ($this->guardian->photo) {
+                    Storage::disk('public')->delete($this->guardian->photo);
+                }
+
+                $guardian['photo'] = $this->photo_upload
+                    ->store('guardians', 'public');
             }
 
             $this->guardian->update($guardian);
