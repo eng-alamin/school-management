@@ -32,14 +32,14 @@
     gap: 10px;
     margin: 0 16px 20px;
     padding: 12px 18px;
-    background: #3b82f6;
-    color: #fff !important;
+    color: #000000 !important;
     border-radius: 8px;
     font-weight: 600;
     text-decoration: none;
     transition: background .2s;
+    border: 1px solid black;
 }
-.compose-btn:hover, .compose-btn.active { background: #2563eb; }
+.compose-btn:hover, .compose-btn.active { background: #01010117}
 .sidebar-nav { display: flex; flex-direction: column; }
 .nav-item {
     display: flex;

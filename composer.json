@@ -34,7 +34,7 @@
         },
         "files": [
             "app/Helpers/school.php",
-            "app/helpers/setting.php"
+            "app/Helpers/setting.php"
         ]
     },
     "autoload-dev": {

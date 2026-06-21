@@ -1,6 +1,6 @@
 {{-- resources/views/livewire/admin/mailbox/partials/sidebar.blade.php --}}
 <div class="mailbox-sidebar">
-    <a href="{{ route('admin.mailbox.compose') }}" class="bg-dark text-white compose-btn {{ request()->routeIs('admin.mailbox.compose') ? 'active' : '' }}">
+    <a href="{{ route('admin.mailbox.compose') }}" class="compose-btn {{ request()->routeIs('admin.mailbox.compose') ? 'active' : '' }}">
         <i class="fas fa-pen"></i>
         <span>Compose</span>
     </a>

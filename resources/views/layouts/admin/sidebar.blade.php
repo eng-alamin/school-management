@@ -269,9 +269,9 @@
       </li>
 
       <li class="nav1-item">
-        <a href="{{route('admin.notice') }}" class="nav1-link {{ str_contains(request()->url(), 'notice-board') == true ? 'active' : '' }}">
+        <a href="{{route('admin.notices') }}" class="nav1-link {{ str_contains(request()->url(), 'notices') == true ? 'active' : '' }}">
           <span class="material-icons-round nav-icon">chat</span>
-          <span class="nav-label" id="nav-message">Notice Board</span>
+          <span class="nav-label" id="nav-message">Notices</span>
         </a>
       </li>
 
@@ -282,7 +282,7 @@
         </a>
       </li>
             
-      <li class="nav1-item">
+      {{-- <li class="nav1-item">
         <div class="nav1-link" onclick="toggleNav1(this)">
           <span class="material-icons-round nav-icon">bar_chart</span>
           <span class="nav-label" id="nav-reports">Reports</span>
@@ -299,7 +299,7 @@
             <li class="nav2-item"><div class="nav2-link"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-inventory">Inventory</span></div></li>
           </ul>
         </div>
-      </li>
+      </li> --}}
 
       {{-- <li class="nav1-item">
         <div class="nav1-link" onclick="toggleNav1(this)">

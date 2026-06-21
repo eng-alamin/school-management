@@ -352,6 +352,7 @@ return array(
     'App\\Models\\School' => $baseDir . '/app/Models/School.php',
     'App\\Models\\Scopes\\SchoolScope' => $baseDir . '/app/Models/Scopes/SchoolScope.php',
     'App\\Models\\Setting' => $baseDir . '/app/Models/Setting.php',
+    'App\\Models\\SmsLog' => $baseDir . '/app/Models/SmsLog.php',
     'App\\Models\\Student' => $baseDir . '/app/Models/Student.php',
     'App\\Models\\StudentEnrollment' => $baseDir . '/app/Models/StudentEnrollment.php',
     'App\\Models\\StudentIdCard' => $baseDir . '/app/Models/StudentIdCard.php',

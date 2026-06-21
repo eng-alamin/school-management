@@ -127,7 +127,7 @@ class ComposerStaticInit53b5d56b3b7e3cbac1713e68c8850f6c
         'ec07570ca5a812141189b1fa81503674' => __DIR__ . '/..' . '/phpunit/phpunit/src/Framework/Assert/Functions.php',
         '72b1e3f4a2af9b30b3f137b3ec2057fc' => __DIR__ . '/..' . '/spatie/laravel-activitylog/src/helpers.php',
         'c539220977c14f287d8b4b7f37db5e17' => __DIR__ . '/../..' . '/app/Helpers/school.php',
-        '23a24de1e0303002a093e7feebb53550' => __DIR__ . '/../..' . '/app/helpers/setting.php',
+        '5179301619630776b3dbb87bd750d6fc' => __DIR__ . '/../..' . '/app/Helpers/setting.php',
     );
 
     public static $prefixLengthsPsr4 = array (
@@ -1016,6 +1016,7 @@ class ComposerStaticInit53b5d56b3b7e3cbac1713e68c8850f6c
         'App\\Models\\School' => __DIR__ . '/../..' . '/app/Models/School.php',
         'App\\Models\\Scopes\\SchoolScope' => __DIR__ . '/../..' . '/app/Models/Scopes/SchoolScope.php',
         'App\\Models\\Setting' => __DIR__ . '/../..' . '/app/Models/Setting.php',
+        'App\\Models\\SmsLog' => __DIR__ . '/../..' . '/app/Models/SmsLog.php',
         'App\\Models\\Student' => __DIR__ . '/../..' . '/app/Models/Student.php',
         'App\\Models\\StudentEnrollment' => __DIR__ . '/../..' . '/app/Models/StudentEnrollment.php',
         'App\\Models\\StudentIdCard' => __DIR__ . '/../..' . '/app/Models/StudentIdCard.php',

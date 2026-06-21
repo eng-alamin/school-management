@@ -18,8 +18,8 @@
     <span class="material-icons-round user-arrow" id="userArrow">expand_more</span>
   </div>
   <div class="user-dropdown" id="userDropdown">
-    <a href="{{ route('admin.profile.overview') }}"><span class="ud-icon">MP</span> <span id="ud-profile">My Profile</span></a>
-    <a href="{{ route('admin.profile.setting') }}"><span class="ud-icon">S</span> <span id="ud-settings">Settings</span></a>
+    <a href="{{ route('superadmin.profile.overview') }}"><span class="ud-icon">MP</span> <span id="ud-profile">My Profile</span></a>
+    <a href="{{ route('superadmin.profile.setting') }}"><span class="ud-icon">S</span> <span id="ud-settings">Settings</span></a>
     <a href="{{route('logout') }} " class="pd-menu-item danger" onclick="event.preventDefault(); document.getElementById('logout-form').submit()">
         <span class="ud-icon">L</span> <span id="ud-logout">Logout</span>
     </a>
@@ -41,8 +41,15 @@
 
       <li class="nav1-item">
         <a href="{{route('superadmin.schools.index') }}" class="nav1-link {{ str_contains(request()->url(), 'superadmin/schools/') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">schools</span>
-            <span class="nav-label" id="nav-schools">Schools</span>
+          <span class="material-icons-round nav-icon">school</span>
+          <span class="nav-label" id="nav-schools">Schools</span>
+        </a>
+      </li>
+
+      <li class="nav1-item">
+        <a href="{{route('superadmin.admins.index') }}" class="nav1-link {{ str_contains(request()->url(), 'superadmin/admins/') == true ? 'active' : '' }}">
+          <span class="material-icons-round nav-icon">school</span>
+          <span class="nav-label" id="nav-admins">Admins</span>
         </a>
       </li>
 
@@ -89,9 +96,10 @@
           <span class="nav-label" id="nav-schools">System Settings</span>
           <span class="material-icons-round nav-arrow">expand_more</span>
         </div>
-        <div class="nav2-collapse {{ str_contains(request()->url(), 'superadmin/settings') == true ? 'show' : '' }}">
+        <div class="nav2-collapse {{ str_contains(request()->url(), 'superadmin/settings') || str_contains(request()->url(), 'superadmin/pricingrates') == true ? 'show' : '' }}">
           <ul>
-            <li class="nav2-item"><a href="{{ route('superadmin.settings') }}" class="nav2-link {{ Route::is('superadmin.settings') == true ? 'active' : '' }}"><span class="nav2-icon">S</span><span class="nav2-label" id="nav-schools">Settings</span></a></li>
+            <li class="nav2-item"><a href="{{ route('superadmin.settings') }}" class="nav2-link {{ Route::is('superadmin.settings') == true ? 'active' : '' }}"><span class="nav2-icon">S</span><span class="nav2-label" id="nav-settings">Settings</span></a></li>
+            <li class="nav2-item"><a href="{{ route('superadmin.pricingrates') }}" class="nav2-link {{ Route::is('superadmin.pricingrates') == true ? 'active' : '' }}"><span class="nav2-icon">PR</span><span class="nav2-label" id="nav-pricingrates">Pricing Rates</span></a></li>
           </ul>
         </div>
       </li>
