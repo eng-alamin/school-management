@@ -137,14 +137,10 @@
                                 <td class="text-muted">{{ $i + 1 }}</td>
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
-                                        @if($student->logo_path)
-                                            <img src="{{ asset('storage/' . $student->logo_path) }}" class="avatar" alt="">
-                                        @else
-                                            <div class="avatar-placeholder">{{ strtoupper(substr($student->name,0,1)) }}</div>
-                                        @endif
-                                        <div>
-                                            <div class="fw-500 text-dark">{{ $student->full_name }}</div>
-                                        </div>
+                                        <img src="{{ $student->photo ? asset('storage/' . $student->photo) : 'https://ui-avatars.com/api/?name=' . urlencode($student->name) . '&size=64&background=random' }}"
+                                            alt="{{ $student->name }}"
+                                            style="width:32px;height:32px;border-radius:50%;object-fit:cover;"/>
+                                        <span>{{ $student->name }}</span>
                                     </div>
                                 </td>
                                 <td>{{$student->class?->name}}</td>

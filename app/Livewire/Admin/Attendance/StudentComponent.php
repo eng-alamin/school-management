@@ -4,7 +4,7 @@ namespace App\Livewire\Admin\Attendance;
 
 use Livewire\Component;
 use App\Models\Attendance;
-use App\Models\Student  ;
+use App\Models\Student;
 use App\Models\AcademicClass;
 use App\Models\AcademicSection;
 use App\Models\AcademicClassAssign;
@@ -46,11 +46,17 @@ class StudentComponent extends Component
             return;
         }
 
-        // 1️⃣ Get students of selected class + section
-        $students = Student::where('class_id', $this->filterClass)
-            ->where('section_id', $this->filterSection)
-            ->orderBy('roll_no')
-            ->get();
+        // 1️⃣ Get students of selected class (+ section, jodi specific section select kora hoy)
+        $studentsQuery = Student::where('class_id', $this->filterClass)
+            ->orderBy('section_id')
+            ->orderBy('roll_no');
+
+        // "All Section" hole section filter lagbe na - class-er shob student ashbe
+        if ($this->filterSection !== 'all') {
+            $studentsQuery->where('section_id', $this->filterSection);
+        }
+
+        $students = $studentsQuery->get();
 
         if ($students->isEmpty()) {
             $this->dispatch('toast', type: 'error', message: 'No students found.');
@@ -58,21 +64,30 @@ class StudentComponent extends Component
             return;
         }
 
+        // Table-e section name dekhanor jonno (jokhon All Section select kora hoy)
+        $sectionNames = AcademicSection::whereIn('id', $students->pluck('section_id')->unique())
+            ->pluck('name', 'id');
+
         // 2️⃣ Check existing attendance for this date
-        $existing = Attendance::where('date', $this->date)
+        $existingQuery = Attendance::where('date', $this->date)
             ->where('type', 'student')
-            ->where('class_id', $this->filterClass)
-            ->where('section_id', $this->filterSection)
-            ->get()
-            ->keyBy('attendable_id');
+            ->where('class_id', $this->filterClass);
+
+        if ($this->filterSection !== 'all') {
+            $existingQuery->where('section_id', $this->filterSection);
+        }
+
+        $existing = $existingQuery->get()->keyBy('attendable_id');
 
         // 3️⃣ Build table data (like your image)
-        $this->data = $students->map(function ($student) use ($existing) {
+        $this->data = $students->map(function ($student) use ($existing, $sectionNames) {
 
             $att = $existing[$student->id] ?? null;
 
             return [
                 'student_id'    => $student->id,
+                'section_id'    => $student->section_id,
+                'section_name'  => $sectionNames[$student->section_id] ?? '',
                 'name'          => $student->name,
                 'roll_no'       => $student->roll_no,
                 'register_no'   => $student->register_no,
@@ -91,12 +106,17 @@ class StudentComponent extends Component
     {
         $this->validate([
             'filterClass' => 'required|exists:academic_classes,id',
-            'filterSection' => 'required|exists:academic_sections,id',
+            'filterSection' => ['required', function ($attribute, $value, $fail) {
+                if ($value !== 'all' && !AcademicSection::where('id', $value)->exists()) {
+                    $fail('Invalid section selected.');
+                }
+            }],
             'date' => 'required|date',
         ]);
 
          try {
             foreach ($this->data as $item) {
+                // filterSection "all" hote pare, tai item['section_id'] (student-er actual section) use kora hocche
                 Attendance::updateOrCreate(
                     [
                         'attendable_id'   => $item['student_id'],
@@ -104,7 +124,7 @@ class StudentComponent extends Component
                         'date'            => $this->date,
                         'type'            => 'student',
                         'class_id'        => $this->filterClass,
-                        'section_id'      => $this->filterSection,
+                        'section_id'      => $item['section_id'],
                     ],
                     [
                         'status'  => $item['status'],

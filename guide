@@ -1,0 +1,3 @@
+routes/console.php
+php artisan schedule:list
+php artisan schedule:run

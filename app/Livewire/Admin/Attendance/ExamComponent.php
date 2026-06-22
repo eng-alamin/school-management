@@ -29,7 +29,7 @@ class ExamComponent extends Component
         $this->date = now()->format('Y-m-d');
     }
 
-    // Exam 
+    // Exam
     public function getExams()
     {
         return ExamSetup::where('is_published', 1)
@@ -41,8 +41,8 @@ class ExamComponent extends Component
     public function getAvailableClasses()
     {
         return AcademicClass::whereIn('id', AcademicClassAssign::distinct()->pluck('class_id'))
-        ->orderBy('name')
-        ->get();
+            ->orderBy('name')
+            ->get();
     }
 
     // Sections
@@ -56,24 +56,51 @@ class ExamComponent extends Component
     }
 
     public function updatedFilterSection()
-{
-    $this->subjects = [];
+    {
+        $this->subjects = [];
+        $this->data = [];
 
-    if (!$this->filterClass || !$this->filterSection) {
-        return;
+        if (!$this->filterClass || !$this->filterSection) {
+            return;
+        }
+
+        // "All Section" select kora hoyeche - class-er shob section-er subject ekshathe (union) dekhabe
+        if ($this->filterSection === 'all') {
+            $rows = AcademicClassAssign::where('class_id', $this->filterClass)->get();
+
+            $subjectNames = $rows->flatMap(function ($row) {
+                $subjects = $row->subjects;
+
+                // 'subjects' column model-e array cast na thakle JSON string hishebe ashte pare,
+                // tai string hole nijei decode kore nicchi
+                if (is_string($subjects)) {
+                    $subjects = json_decode($subjects, true) ?? [];
+                }
+
+                return $subjects ?: [];
+            })
+                ->filter()
+                ->unique()
+                ->values();
+
+            if ($subjectNames->isNotEmpty()) {
+                $this->subjects = AcademicSubject::whereIn('name', $subjectNames)->get();
+            }
+
+            return;
+        }
+
+        $row = AcademicClassAssign::where('class_id', $this->filterClass)
+            ->where('section_id', $this->filterSection)
+            ->first();
+
+        if ($row && $row->subjects) {
+
+            $subjectIds = $row->subjects;
+            $this->subjects = AcademicSubject::whereIn('name', $subjectIds)->get();
+            // $this->subjects = AcademicSubject::whereIn('id', $subjectIds)->get();
+        }
     }
-
-    $row = AcademicClassAssign::where('class_id', $this->filterClass)
-        ->where('section_id', $this->filterSection)
-        ->first();
-
-    if ($row && $row->subjects) {
-
-        $subjectIds = $row->subjects;
-        $this->subjects = AcademicSubject::whereIn('name', $subjectIds)->get();
-        // $this->subjects = AcademicSubject::whereIn('id', $subjectIds)->get();
-    }
-}
 
     public function filter()
     {
@@ -86,10 +113,16 @@ class ExamComponent extends Component
             return;
         }
 
-        $students = Student::where('class_id', $this->filterClass)
-            ->where('section_id', $this->filterSection)
-            ->orderBy('roll_no')
-            ->get();
+        $studentsQuery = Student::where('class_id', $this->filterClass)
+            ->orderBy('section_id')
+            ->orderBy('roll_no');
+
+        // "All Section" hole section filter lagbe na - class-er shob student ashbe
+        if ($this->filterSection !== 'all') {
+            $studentsQuery->where('section_id', $this->filterSection);
+        }
+
+        $students = $studentsQuery->get();
 
         if ($students->isEmpty()) {
             $this->dispatch('toast', type: 'error', message: 'No Exam found.');
@@ -97,26 +130,35 @@ class ExamComponent extends Component
             return;
         }
 
-        $existing = Attendance::where('type', 'exam')
+        // Table-e section name dekhanor jonno (jokhon All Section select kora hoy)
+        $sectionNames = AcademicSection::whereIn('id', $students->pluck('section_id')->unique())
+            ->pluck('name', 'id');
+
+        $existingQuery = Attendance::where('type', 'exam')
             ->where('exam_id', $this->filterExam)
             ->where('class_id', $this->filterClass)
-            ->where('section_id', $this->filterSection)
-            ->where('subject_id', $this->filterSubject)
-            ->get()
-            ->keyBy('attendable_id');
+            ->where('subject_id', $this->filterSubject);
 
-        $this->data = $students->map(function ($student) use ($existing) {
+        if ($this->filterSection !== 'all') {
+            $existingQuery->where('section_id', $this->filterSection);
+        }
+
+        $existing = $existingQuery->get()->keyBy('attendable_id');
+
+        $this->data = $students->map(function ($student) use ($existing, $sectionNames) {
 
             $att = $existing[$student->id] ?? null;
 
             return [
-                'student_id'  => $student->id,
-                'name'        => $student->full_name,
-                'roll_no'     => $student->roll_no,
-                'register_no' => $student->register_no,
+                'student_id'   => $student->id,
+                'section_id'   => $student->section_id,
+                'section_name' => $sectionNames[$student->section_id] ?? '',
+                'name'         => $student->name,
+                'roll_no'      => $student->roll_no,
+                'register_no'  => $student->register_no,
 
-                'status'      => $att->status ?? 'present',
-                'remarks'     => $att->remarks ?? '',
+                'status'       => $att->status ?? 'present',
+                'remarks'      => $att->remarks ?? '',
             ];
         })->toArray();
 
@@ -126,22 +168,27 @@ class ExamComponent extends Component
     public function save()
     {
         $this->validate([
-            'filterExam'   => 'required|exists:exam_setups,id',
+            'filterExam'    => 'required|exists:exam_setups,id',
             'filterClass'   => 'required|exists:academic_classes,id',
-            'filterSection' => 'required|exists:academic_sections,id',
+            'filterSection' => ['required', function ($attribute, $value, $fail) {
+                if ($value !== 'all' && !AcademicSection::where('id', $value)->exists()) {
+                    $fail('Invalid section selected.');
+                }
+            }],
             'filterSubject' => 'required|exists:academic_subjects,id',
         ]);
 
         foreach ($this->data as $item) {
 
+            // filterSection "all" hote pare, tai item['section_id'] (student-er actual section) use kora hocche
             Attendance::updateOrCreate(
                 [
                     'attendable_id'   => $item['student_id'],
                     'attendable_type' => Student::class,
                     'type'            => 'exam',
-                    'exam_id'   => $this->filterExam,
+                    'exam_id'         => $this->filterExam,
                     'class_id'        => $this->filterClass,
-                    'section_id'      => $this->filterSection,
+                    'section_id'      => $item['section_id'],
                     'subject_id'      => $this->filterSubject,
                 ],
                 [
@@ -175,7 +222,7 @@ class ExamComponent extends Component
             ->with('sections', $this->getAvailableSections())
             ->with('subjects', $this->subjects)
             ->layout('layouts.admin.app', [
-                'title' => "Student Attendance | School SaaS",
+                'title' => "Exam Attendance | School SaaS",
             ]);
     }
 }

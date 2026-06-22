@@ -113,14 +113,37 @@ class ScheduleAddComponent extends Component
 
             'data.*.subject'                => 'required',
             'data.*.exam_date'              => 'required',
-            'data.*.start_time'             => 'required|date_format:H:i',
-            'data.*.end_time'               => 'required|date_format:H:i',
+            'data.*.start_time'             => [
+                'required',
+                'date_format:H:i',
+                function ($attribute, $value, $fail) {
+                    $this->failIfSameDateTimeClash($attribute, $value, $fail, 'start_time', 'Starting Time');
+                },
+            ],
+            'data.*.end_time'               => [
+                'required',
+                'date_format:H:i',
+                function ($attribute, $value, $fail) {
+                    $this->failIfSameDateTimeClash($attribute, $value, $fail, 'end_time', 'Ending Time');
+                },
+            ],
             // 'data.*.end_time'               => 'required|date_format:H:i|after:data.*.start_time',
             'data.*.hall_room'              => 'required|string|max:100',
             'data.*.practical_full_mark'    => 'required|numeric|min:0',
             'data.*.practical_pass_mark'    => 'required|numeric|min:0',
             'data.*.written_full_mark'      => 'required|numeric|min:0',
             'data.*.written_pass_mark'      => 'required|numeric|min:0',
+        ], [], [
+            // Custom attribute names - eta diye message-e "data.0.hall_room" er jaygay "Hall Room" dekhabe
+            'data.*.subject'                => 'Subject',
+            'data.*.exam_date'              => 'Date',
+            'data.*.start_time'             => 'Starting Time',
+            'data.*.end_time'               => 'Ending Time',
+            'data.*.hall_room'              => 'Hall Room',
+            'data.*.practical_full_mark'    => 'Practical Full Mark',
+            'data.*.practical_pass_mark'    => 'Practical Pass Mark',
+            'data.*.written_full_mark'      => 'Written Full Mark',
+            'data.*.written_pass_mark'      => 'Written Pass Mark',
         ]);
 
         try {
@@ -142,6 +165,35 @@ class ScheduleAddComponent extends Component
         }
     }
 
+    /**
+     * Same exam_date-e duita subject-er Starting Time ba Ending Time ekই hoye gele
+     * error dekhabe, jate akoi diner exam-gulor somoy clash na kore.
+     */
+    private function failIfSameDateTimeClash($attribute, $value, $fail, string $field, string $label): void
+    {
+        if (!preg_match('/^data\.(\d+)\.' . $field . '$/', $attribute, $matches)) {
+            return;
+        }
+
+        $currentIndex = (int) $matches[1];
+        $currentDate  = $this->data[$currentIndex]['exam_date'] ?? null;
+
+        if (!$currentDate || !$value) {
+            return;
+        }
+
+        foreach ($this->data as $index => $row) {
+            if ($index === $currentIndex) {
+                continue;
+            }
+
+            if (($row['exam_date'] ?? null) === $currentDate && ($row[$field] ?? null) === $value) {
+                $fail("Same date-e {$label} alada hote hobe, dui subject-er somoy ekই rakha jabe na.");
+                return;
+            }
+        }
+    }
+
     public function render()
     {
         $exams = ExamSetup::all();
@@ -157,4 +209,3 @@ class ScheduleAddComponent extends Component
             ]);
     }
 }
-

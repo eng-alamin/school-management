@@ -47,6 +47,7 @@
                     <label class="form-label">Section <span class="req">*</span></label>
                     <select wire:model.live="filterSection" class="form-select">
                         <option value="">Select Section</option>
+                        <option value="all">All Section</option>
                         @foreach ($sections as $item)
                             <option value="{{ $item->id }}">{{ $item->name }}</option>
                         @endforeach
@@ -102,6 +103,7 @@
                     <tr>
                         <th>SL</th>
                         <th>Name</th>
+                        <th>Section</th>
                         <th>Roll</th>
                         <th>Register No</th>
                         <th>Status</th>
@@ -114,6 +116,7 @@
                     <tr wire:key="exam-att-{{ $index }}">
                         <td>{{ $index + 1 }}</td>
                         <td>{{ $item['name'] }}</td>
+                        <td>{{ $item['section_name'] }}</td>
                         <td>{{ $item['roll_no'] }}</td>
                         <td>{{ $item['register_no'] }}</td>
                         <td>
@@ -322,7 +325,7 @@
                         group.classList.toggle('is-filled', !!input.value.trim());
                     });
                 });
-            }, 50);
+            }, 0);
         });
     });
 </script>

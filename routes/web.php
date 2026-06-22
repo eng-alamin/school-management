@@ -427,12 +427,15 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('superadmin')->name('sup
     Route::get('/billings/invoices', \App\Livewire\SuperAdmin\Billing\InvoiceIndex::class)->name('invoices.index');
 
     Route::get('/activity-logs', \App\Livewire\SuperAdmin\Log\ActivityLogComponent::class)->name('activitylog');
+    Route::get('/session-logs', \App\Livewire\SuperAdmin\Log\SessionLogComponent::class)->name('sessionlog');
     Route::get('/login-logs', \App\Livewire\SuperAdmin\Log\LoginLogComponent::class)->name('loginlog');
 
     Route::get('/monitoring/server', \App\Livewire\SuperAdmin\Monitoring\ServerStatusComponent::class)->name('monitoring.server');
     Route::get('/monitoring/queue', \App\Livewire\SuperAdmin\Monitoring\QueueMonitorComponent::class)->name('monitoring.queue');
     Route::get('/monitoring/logs', \App\Livewire\SuperAdmin\Monitoring\ErrorLogsComponent::class)->name('monitoring.logs');
     Route::get('/monitoring/performance', \App\Livewire\SuperAdmin\Monitoring\PerformanceMetricsComponent::class)->name('monitoring.performance');
+    
+    Route::get('/backups', \App\Livewire\SuperAdmin\BackupComponent::class)->name('backups');
 
     Route::get('/settings', \App\Livewire\SuperAdmin\Settings\SystemSettingsComponent::class)->name('settings');
     Route::get('/pricingrates', \App\Livewire\SuperAdmin\Settings\PricingRateComponent::class)->name('pricingrates');
@@ -443,6 +446,11 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('superadmin')->name('sup
     Route::get('/profile/loginlog', \App\Livewire\SuperAdmin\Profile\LoginlogComponent::class)->name('profile.loginlog');
 });
 
+
+    Route::get('schedule', function () {
+        Artisan::call('schedule:run');
+        return redirect()->back()->with('success','Thanks for the generate schedule!');
+    })->name('schedule');
 
     Route::get('/run-billing/{command}', function ($command) {
         $allowed = [

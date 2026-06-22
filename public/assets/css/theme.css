@@ -75,6 +75,15 @@ ul {
 }
 
 /* ═══════════════════════════════════════
+       DARK MODE
+    ═══════════════════════════════════════ */
+body.dark-mode .text-muted,
+body.dark-mode .bg-white {
+    background: rgba(26, 29, 39, 0.92) !important;
+    color: #fff !important;
+}
+
+/* ═══════════════════════════════════════
        SIDEBAR
     ═══════════════════════════════════════ */
 .sidebar {
@@ -583,10 +592,6 @@ body.dark-mode .nav2-link:hover {
     background: linear-gradient(195deg, #444, #111);
     box-shadow: 0 8px 22px var(--pink-shadow);
 }
-body.dark-mode .card-header-gradient {
-    background: linear-gradient(195deg, rgb(96 96 96), rgba(26, 29, 39, 0.92));
-    box-shadow: 0 8px 22px var(--pink-shadow);
-}
 .card-header-floating h5 {
     color: #fff;
     font-size: 1rem;
@@ -625,6 +630,18 @@ body.dark-mode .card-header-gradient {
     color: var(--muted);
     margin: 0;
 }
+body.dark-mode .card,
+body.dark-mode .card-header,
+body.dark-mode .card-body,
+body.dark-mode .card-footer,
+body.dark-mode .card-header-gradient {
+    background: rgba(26, 29, 39, 0.92);
+    color: #fff;
+}
+/* body.dark-mode .card-header-gradient {
+    background: linear-gradient(195deg, rgb(96 96 96), rgba(26, 29, 39, 0.92));
+    box-shadow: 0 8px 22px var(--pink-shadow);
+} */
 /* next start remove */
 .mat-card {
     background: #fff;
@@ -3041,6 +3058,10 @@ body.dark-mode .item-hover:hover {
     color: var(--text-1);
     vertical-align: middle;
     font-size: 0.75rem;
+}
+body.dark-mode .table td {
+    background: rgba(26, 29, 39, 0.92);
+    color: #fff;
 }
 /* END TABLE  */
 

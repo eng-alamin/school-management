@@ -31,6 +31,8 @@ class PerformanceMetricsComponent extends Component
     public function render()
     {
         return view('livewire.super-admin.monitoring.performance-metrics-component')
-            ->layout('layouts.superadmin.app');
+            ->layout('layouts.superadmin.app', [
+                'title' => 'Performance Metrics',
+            ]);
     }
 }

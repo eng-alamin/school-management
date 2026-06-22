@@ -33,6 +33,7 @@
                     <label class="form-label">Section <span class="req">*</span></label>
                     <select wire:model.live="filterSection" class="form-select">
                         <option value="">Select Section</option>
+                        <option value="all">All Section</option>
                         @foreach ($sections as $item)
                             <option value="{{ $item->id }}">{{ $item->name }}</option>
                         @endforeach
@@ -85,6 +86,9 @@
                     <tr>
                         <th>SL</th>
                         <th>Name</th>
+                        @if($filterSection === 'all')
+                        <th>Section</th>
+                        @endif
                         <th>Roll</th>
                         <th>Register No</th>
                         <th>Status</th>
@@ -97,6 +101,9 @@
                     <tr wire:key="student-att-{{ $index }}">
                         <td>{{ $index + 1 }}</td>
                         <td>{{ $item['name'] }}</td>
+                        @if($filterSection === 'all')
+                        <td>{{ $item['section_name'] }}</td>
+                        @endif
                         <td>{{ $item['roll_no'] }}</td>
                         <td>{{ $item['register_no'] }}</td>
                         <td>

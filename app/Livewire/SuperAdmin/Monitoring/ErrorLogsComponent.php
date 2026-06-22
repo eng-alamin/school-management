@@ -31,6 +31,8 @@ class ErrorLogsComponent extends Component
     public function render()
     {
         return view('livewire.super-admin.monitoring.error-logs-component')
-            ->layout('layouts.superadmin.app');
+            ->layout('layouts.superadmin.app', [
+                'title' => 'Error Logs',
+            ]);
     }
 }

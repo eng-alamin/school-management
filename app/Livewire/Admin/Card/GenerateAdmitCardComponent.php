@@ -140,7 +140,7 @@ class GenerateAdmitCardComponent extends Component
                 'expiry_date'    => $this->expiry_date,
                 'template_id'    => $this->filterTemplate,
 
-                'name'           => $student->full_name,
+                'name'           => $student->name,
                 'gender'         => $student->gender,
                 'blood_group'    => $student->full_blood_group,
                 'dob'            => $student->dob,
