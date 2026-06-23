@@ -177,12 +177,11 @@
                                 <label class="form-label">Role <span class="text-danger">*</span></label>
                                 <select wire:model.live="role" class="form-select @error('role') is-invalid @enderror">
                                     <option value="">Select</option>
-                                    <option value="admin">Admin</option>
-                                    <option value="teacher">Teacher</option>
-                                    <option value="accountant">Accountant</option>
-                                    <option value="librarian">Librarian</option>
-                                    <option value="receptionist">Receptionist</option>
-                                    <option value="student">Student</option>
+                                    <option value="admin" @selected($role == 'admin')>Admin</option>
+                                    <option value="teacher" @selected($role == 'teacher')>Teacher</option>
+                                    <option value="accountant" @selected($role == 'accountant')>Accountant</option>
+                                    <option value="staff" @selected($role == 'staff')>Staff</option>
+                                    <option value="student" @selected($role == 'student')>Student</option>
                                 </select>
                                 @error('role') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>

@@ -1,164 +1,169 @@
-<div class="mat-card" style="padding-top:28px">
+<div>
 
-    {{-- Floating Header --}}
-    <div class="mat-card-header header-pink-gradient">
-        <h5><span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">assignment</span>Fee Allocation</h5>
-        <p>Allocate fee groups to students by class and section</p>
-    </div>
+    <div class="card">
 
-    {{-- Select Ground --}}
-    <div class="form-section" style="padding-top:40px; padding-bottom:20px">
-        <div class="section-heading">
-            <span class="material-icons-round">tune</span> Select Ground
+         <div class="mat-card-header header-pink-gradient">
+            <h5><span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">assignment</span>Fee Allocation</h5>
+            <p>Allocate fee groups to students by class and section</p>
         </div>
-        <div class="row g-4">
 
-            {{-- Class --}}
-            <div class="col-md-4">
-                <div wire:ignore class="input-group input-group-outline">
-                    <label class="form-label">Class <span class="req">*</span></label>
-                    <select wire:model.live="class_id" class="form-select">
-                        <option value="">Select Class</option>
-                        @foreach($classes as $class)
-                            <option value="{{ $class->id }}">{{ $class->name }}</option>
-                        @endforeach
-                    </select>
+        {{-- Select Ground --}}
+        <div class="form-section" style="padding-top:40px; padding-bottom:20px">
+            <div class="section-heading">
+                <span class="material-icons-round">tune</span> Select Ground
+            </div>
+            <div class="row g-4">
+
+                {{-- Class --}}
+                <div class="col-md-4">
+                    <div wire:ignore class="input-group input-group-outline">
+                        <label class="form-label">Class <span class="req">*</span></label>
+                        <select wire:model.live="class_id" class="form-select">
+                            <option value="">Select Class</option>
+                            @foreach($classes as $class)
+                                <option value="{{ $class->id }}">{{ $class->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @error('class_id') <span class="text-danger small">{{ $message }}</span> @enderror
                 </div>
-                @error('class_id') <span class="text-danger small">{{ $message }}</span> @enderror
-            </div>
 
-            {{-- Section --}}
-            <div class="col-md-4">
-                <div class="input-group input-group-outline">
-                    <label class="form-label">Section <span class="req">*</span></label>
-                    <select wire:model.live="section_id"
-                            class="form-select"
-                            @if(!$class_id) disabled @endif>
-                        <option value="">Select Section</option>
-                        @if ($this->class_id)
-                            <option value="all">All Section</option>
-                        @endif
-                        @foreach($sections as $section)
-                            <option value="{{ $section['id'] }}">{{ $section['name'] }}</option>
-                        @endforeach
-                    </select>
+                {{-- Section --}}
+                <div class="col-md-4">
+                    <div class="input-group input-group-outline">
+                        <label class="form-label">Section <span class="req">*</span></label>
+                        <select wire:model.live="section_id"
+                                class="form-select"
+                                @if(!$class_id) disabled @endif>
+                            <option value="">Select Section</option>
+                            @if ($this->class_id)
+                                <option value="all">All Section</option>
+                            @endif
+                            @foreach($sections as $section)
+                                <option value="{{ $section['id'] }}">{{ $section['name'] }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @error('section_id') <span class="text-danger small">{{ $message }}</span> @enderror
                 </div>
-                @error('section_id') <span class="text-danger small">{{ $message }}</span> @enderror
-            </div>
 
-            {{-- Fee Group --}}
-            <div class="col-md-4">
-                <div wire:ignore class="input-group input-group-outline">
-                    <label class="form-label">Fee Group <span class="req">*</span></label>
-                    <select wire:model="fee_group_id" class="form-select">
-                        <option value="">Select Group</option>
-                        @foreach($feeGroups as $group)
-                            <option value="{{ $group->id }}">{{ $group->name }}</option>
-                        @endforeach
-                    </select>
+                {{-- Fee Group --}}
+                <div class="col-md-4">
+                    <div wire:ignore class="input-group input-group-outline">
+                        <label class="form-label">Fee Group <span class="req">*</span></label>
+                        <select wire:model="fee_group_id" class="form-select">
+                            <option value="">Select Group</option>
+                            @foreach($feeGroups as $group)
+                                <option value="{{ $group->id }}">{{ $group->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @error('fee_group_id') <span class="text-danger small">{{ $message }}</span> @enderror
                 </div>
-                @error('fee_group_id') <span class="text-danger small">{{ $message }}</span> @enderror
-            </div>
 
-            {{-- Filter Button --}}
-            <div class="col-md-12 text-center">
-                <button wire:click="filter"
-                        wire:loading.attr="disabled"
-                        wire:target="filter"
-                        class="btn-pink w-100 d-flex justify-content-center align-items-center"
-                        type="button">
-                    <span wire:loading.remove wire:target="filter">
-                        <span class="material-icons-round" style="font-size:16px;vertical-align:middle;margin-right:4px">filter_alt</span> Filter
-                    </span>
-                    <span wire:loading wire:target="filter">
-                        <span class="material-icons-round" style="font-size:16px;animation:spin .7s linear infinite">sync</span> Filtering...
-                    </span>
-                </button>
-            </div>
+                {{-- Filter Button --}}
+                <div class="col-md-12 text-center">
+                    <button wire:click="filter"
+                            wire:loading.attr="disabled"
+                            wire:target="filter"
+                            class="btn-pink w-100 d-flex justify-content-center align-items-center"
+                            type="button">
+                        <span wire:loading.remove wire:target="filter">
+                            <span class="material-icons-round" style="font-size:16px;vertical-align:middle;margin-right:4px">filter_alt</span> Filter
+                        </span>
+                        <span wire:loading wire:target="filter">
+                            <span class="material-icons-round" style="font-size:16px;animation:spin .7s linear infinite">sync</span> Filtering...
+                        </span>
+                    </button>
+                </div>
 
-        </div>
-    </div>
-
-    {{-- Student List --}}
-    @if($hasFiltered)
-    <div class="form-section">
-        <div class="section-heading">
-            <span class="material-icons-round">format_list_bulleted</span> Student List
-        </div>
-
-        @if(count($students) > 0)
-        <div class="table-responsive mt-3">
-            <table class="table-loader">
-                <thead>
-                    <tr>
-                        <th style="width:48px">
-                            <input type="checkbox" class="alloc-checkbox" wire:model.live="selectAll">
-                        </th>
-                        <th>Sl</th>
-                        <th>Name</th>
-                        <th>Register No</th>
-                        <th>Roll No</th>
-                        <th>Gender</th>
-                        <th>Mobile No</th>
-                        <th>Email</th>
-                        <th>Guardian Name</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($students as $i => $student)
-                    <tr wire:key="student-{{ $student['id'] }}"
-                        class="{{ in_array($student['id'], $selectedStudents) ? 'row-selected' : '' }}">
-                        <td>
-                            <input type="checkbox" class="alloc-checkbox"
-                                   wire:model.live="selectedStudents"
-                                   value="{{ $student['id'] }}">
-                        </td>
-                        <td>{{ $i + 1 }}</td>
-                        <td>{{ $student['name'] }}</td>
-                        <td>{{ $student['student_id'] ?? '—' }}</td>
-                        <td>{{ $student['roll_no'] ?? '—' }}</td>
-                        <td>{{ $student['gender'] ?? '—' }}</td>
-                        <td>{{ $student['mobile'] ?? '—' }}</td>
-                        <td>{{ $student['email'] ?? '—' }}</td>
-                        <td>{{ collect($student['guardians'])->pluck('name')->join(', ') ?: '—' }}</td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-
-        {{-- Footer --}}
-        <div class="form-footer">
-            <div class="text-muted small">
-                <span class="material-icons-round" style="font-size:15px;vertical-align:middle">people</span>
-                {{ count($selectedStudents) }} of {{ count($students) }} selected
-            </div>
-            <div class="d-flex gap-2">
-                <button class="btn-outline" type="button" wire:click="resetForm">
-                    <span class="material-icons-round" style="font-size:16px">refresh</span> Reset
-                </button>
-                <button class="btn-pink" type="button"
-                        wire:click="save"
-                        wire:loading.attr="disabled"
-                        wire:target="save">
-                    <span wire:loading.remove wire:target="save">
-                        <span class="material-icons-round">save</span> Save
-                    </span>
-                    <span wire:loading wire:target="save">
-                        <span class="material-icons-round" style="font-size:16px;animation:spin .7s linear infinite">sync</span> Saving...
-                    </span>
-                </button>
             </div>
         </div>
 
-        @else
-        <div class="text-center py-5 text-muted">
-            <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
-            No students found for selected class/section.
+        {{-- Student List --}}
+        @if($hasFiltered)
+        <div class="form-section">
+            <div class="section-heading">
+                <span class="material-icons-round">format_list_bulleted</span> Student List
+            </div>
+
+            @if(count($students) > 0)
+            <div class="table-responsive mt-3">
+                <table class="table-loader">
+                    <thead>
+                        <tr>
+                            <th style="width:48px">
+                                <input type="checkbox" class="alloc-checkbox" wire:model.live="selectAll">
+                            </th>
+                            <th>Sl</th>
+                            <th>Name</th>
+                            <th>Section</th>
+                            <th>Register No</th>
+                            <th>Roll No</th>
+                            <th>Gender</th>
+                            <th>Mobile No</th>
+                            <th>Email</th>
+                            <th>Guardian Name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($students as $i => $student)
+                        <tr wire:key="student-{{ $student['id'] }}"
+                            class="{{ in_array($student['id'], $selectedStudents) ? 'row-selected' : '' }}">
+                            <td>
+                                <input type="checkbox" class="alloc-checkbox"
+                                    wire:model.live="selectedStudents"
+                                    value="{{ $student['id'] }}">
+                            </td>
+                            <td>{{ $i + 1 }}</td>
+                            <td>{{ $student['name'] }}</td>
+                            <td>{{ $student['section']['name'] ?? '—' }}</td>
+                            <td>{{ $student['student_id'] ?? '—' }}</td>
+                            <td>{{ $student['roll_no'] ?? '—' }}</td>
+                            <td>{{ $student['gender'] ?? '—' }}</td>
+                            <td>{{ $student['mobile'] ?? '—' }}</td>
+                            <td>{{ $student['email'] ?? '—' }}</td>
+                            <td>{{ collect($student['guardians'])->pluck('name')->join(', ') ?: '—' }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            {{-- Footer --}}
+            <div class="form-footer">
+                <div class="text-muted small">
+                    <span class="material-icons-round" style="font-size:15px;vertical-align:middle">people</span>
+                    {{ count($selectedStudents) }} of {{ count($students) }} selected
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn-outline" type="button" wire:click="resetForm">
+                        <span class="material-icons-round" style="font-size:16px">refresh</span> Reset
+                    </button>
+                    <button class="btn-pink" type="button"
+                            wire:click="save"
+                            wire:loading.attr="disabled"
+                            wire:target="save">
+                        <span wire:loading.remove wire:target="save">
+                            <span class="material-icons-round">save</span> Save
+                        </span>
+                        <span wire:loading wire:target="save">
+                            <span class="material-icons-round" style="font-size:16px;animation:spin .7s linear infinite">sync</span> Saving...
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+            @else
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
+                No students found for selected class/section.
+            </div>
+            @endif
         </div>
         @endif
+
     </div>
-    @endif
 
 </div>
 

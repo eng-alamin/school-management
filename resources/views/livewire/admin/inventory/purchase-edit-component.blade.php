@@ -62,7 +62,8 @@
                 <div class="input-group input-group-outline" wire:ignore>
                     <label class="form-label">Date <span class="req">*</span></label>
                     <input type="date"
-                           wire:model.live="date"
+                           wire:model="date"
+                           data-dp-value="{{ $date }}"
                            class="form-control">
                 </div>
                 @error('date') <span class="text-danger">{{ $message }}</span> @enderror
@@ -88,12 +89,12 @@
             <div class="col-md-6">
                 <div class="input-group input-group-outline">
                     <label class="form-label">Remarks</label>
-                    <textarea wire:model="remarks"
-                              class="form-control"
-                              style="min-height:80px"
-                              placeholder=" "
-                              onfocus="focused(this)"
-                              onfocusout="defocused(this)"></textarea>
+                    <input type="text"
+                           wire:model="remarks"
+                           class="form-control"
+                           placeholder=" "
+                           onfocus="focused(this)"
+                           onfocusout="defocused(this)">
                 </div>
                 @error('remarks') <span class="text-danger">{{ $message }}</span> @enderror
             </div>

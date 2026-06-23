@@ -34,7 +34,7 @@ class SupplierComponent extends Component
     {
         return [
             'name'    => 'required|string|max:255',
-            'mobile'  => 'required|string|max:20',
+            'mobile'  => 'nullable|string|max:20',
             'email'   => 'nullable|email|max:255',
             'address' => 'nullable|string|max:255',
         ];

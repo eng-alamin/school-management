@@ -54,9 +54,9 @@
                         <tr>
                             <td class="text-muted">{{ $suppliers->firstItem() + $i }}</td>
                             <td>{{ $supplier->name }}</td>
-                            <td>{{ $supplier->mobile }}</td>
-                            <td>{{ $supplier->email ?? '—' }}</td>
-                            <td>{{ $supplier->address ?? '—' }}</td>
+                            <td>{{ $supplier->mobile ?: '—' }}</td>
+                            <td>{{ $supplier->email ?: '—' }}</td>
+                            <td>{{ $supplier->address ?: '—' }}</td>
                             <td>
                                 <div class="d-flex gap-1">
                                     <button class="act-btn edit" title="Edit" wire:click="openEdit({{ $supplier->id }})">
@@ -110,7 +110,7 @@
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Mobile <span class="text-danger">*</span></label>
+                                    <label class="form-label">Mobile</label>
                                     <input type="text" class="form-control @error('mobile') is-invalid @enderror" wire:model.defer="mobile" placeholder="e.g. 01700000000">
                                     @error('mobile') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>

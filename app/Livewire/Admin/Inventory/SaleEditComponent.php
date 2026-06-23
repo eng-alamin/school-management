@@ -10,6 +10,7 @@ use App\Models\InventoryProduct;
 use App\Models\AcademicClass;
 use App\Models\Student;
 use App\Models\Employee;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
 class SaleEditComponent extends Component
@@ -38,7 +39,7 @@ class SaleEditComponent extends Component
     protected function rules(): array
     {
         return [
-            'role'                    => 'required|string|in:student,employee,other',
+            'role'                    => 'required|string|in:student,teacher,staff,other',
             'class_id'                => 'nullable|integer',
             'saleable_id'             => 'required|integer',
             'bill_no'                 => "required|string|max:255|unique:inventory_sales,bill_no,{$this->saleId}",
@@ -194,8 +195,9 @@ class SaleEditComponent extends Component
     private function saleableType(): string
     {
         return match($this->role) {
-            'student'  => Student::class,
-            'employee' => Employee::class,
+            'student'  => User::class,
+            'teacher'  => User::class,
+            'staff'    => User::class,
             default    => \App\Models\User::class,
         };
     }
@@ -284,10 +286,12 @@ class SaleEditComponent extends Component
         if ($this->role === 'student') {
             $saleables = Student::query()
                 ->when($this->class_id, fn($q) => $q->where('class_id', $this->class_id))
-                ->orderBy('full_name')
-                ->get(['id', 'full_name']);
-        } elseif ($this->role === 'employee') {
-            $saleables = Employee::orderBy('name')->get(['id', 'name']);
+                ->orderBy('name')
+                ->get(['id', 'name']);
+        } elseif ($this->role === 'teacher') {
+            $saleables = User::where('school_id', auth()->user()->school_id)->where('role', 'teacher')->orderBy('name')->get(['id', 'name']);
+        } elseif ($this->role === 'staff') {
+            $saleables = User::where('school_id', auth()->user()->school_id)->where('role', 'staff')->orderBy('name')->get(['id', 'name']);
         }
 
         return view('livewire.admin.inventory.sale-edit-component', [

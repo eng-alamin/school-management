@@ -10,6 +10,7 @@ use App\Models\InventoryProduct;
 use App\Models\AcademicClass;
 use App\Models\Student;
 use App\Models\Employee;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
 class SaleAddComponent extends Component
@@ -35,7 +36,7 @@ class SaleAddComponent extends Component
     protected function rules(): array
     {
         return [
-            'role'                         => 'required|string|in:student,employee,other',
+            'role'                         => 'required|string|in:student,teacher,staff,other',
             'class_id'                     => 'nullable|integer',
             'saleable_id'                  => 'required|integer',
             'bill_no'                      => 'required|string|max:255|unique:inventory_sales,bill_no',
@@ -73,7 +74,7 @@ class SaleAddComponent extends Component
         $this->addItem();
     }
 
-    // ── Reset saleables when role changes ──
+    // ── Role change হলে saleable reset ──
     public function updatedRole(): void
     {
         $this->saleable_id = '';
@@ -81,32 +82,33 @@ class SaleAddComponent extends Component
         $this->resetValidation(['saleable_id', 'class_id']);
     }
 
-    // ── Reset saleables when class changes (for student filter) ──
+    // ── Class change হলে saleable reset ──
     public function updatedClassId(): void
     {
         $this->saleable_id = '';
         $this->resetValidation('saleable_id');
     }
 
-    // ── Reset product when category changes in a row ──
+    // ── Category change হলে product reset,
+    //    Product select হলে sales_price auto-fill ──
     public function updatedItems($value, $key): void
     {
         $parts = explode('.', $key);
         $index = (int) $parts[0];
         $field = $parts[1] ?? '';
 
-        // Clear product when category changes
+        // category_id change হলে সেই row-এর product ও price clear করো
         if ($field === 'category_id') {
             $this->items[$index]['product_id']  = '';
             $this->items[$index]['unit_price']  = '';
             $this->items[$index]['total_price'] = 0;
         }
 
-        // Auto-fill unit price when product is selected
+        // product_id select হলে sales_price এনে unit_price-এ বসাও
         if ($field === 'product_id' && !empty($value)) {
             $product = InventoryProduct::find($value);
             if ($product) {
-                $this->items[$index]['unit_price'] = $product->price ?? 0;
+                $this->items[$index]['unit_price'] = $product->sales_price;
             }
         }
 
@@ -114,7 +116,7 @@ class SaleAddComponent extends Component
         $this->recalculate();
     }
 
-    // ── Recalculate received_amount triggers due_amount update ──
+    // ── Received amount change হলে recalculate ──
     public function updatedReceivedAmount(): void
     {
         $this->recalculate();
@@ -160,31 +162,34 @@ class SaleAddComponent extends Component
         $this->net_payable    = max(0, $this->sub_total - $this->total_discount);
     }
 
-    // ── Determine saleable_type from role ──
+    // ── Role থেকে saleable_type নির্ধারণ ──
     private function saleableType(): string
     {
         return match($this->role) {
-            'student' => Student::class,
-            'employee'   => Employee::class,
-            default   => \App\Models\User::class,
+            'student'  => User::class,
+            'teacher'  => User::class,
+            'staff'    => User::class,
+            default    => \App\Models\User::class,
         };
     }
 
-    // ── Determine payment_status ──
+    // ── Payment status নির্ধারণ ──
     private function paymentStatus(): string
     {
         $received = (float) $this->received_amount;
-        if ($received <= 0)                        return 'due';
-        if ($received >= $this->net_payable)       return 'paid';
+        if ($received <= 0)                  return 'due';
+        if ($received >= $this->net_payable) return 'paid';
         return 'partial';
     }
 
-    // ── Generate next bill number ──
+    // ── পরবর্তী bill number generate ──
     private function generateBillNo(): string
     {
         $last = InventorySale::latest('id')->value('bill_no');
-        $next = $last ? ((int) preg_replace('/\D/', '', $last)) + 1 : 1;
-        return str_pad($next, 4, '0', STR_PAD_LEFT);
+        $next = $last
+            ? ((int) preg_replace('/\D/', '', $last)) + 1
+            : 1;
+        return 'BILL-' . str_pad($next, 4, '0', STR_PAD_LEFT);
     }
 
     // ── Save sale + items in a transaction ──
@@ -197,19 +202,19 @@ class SaleAddComponent extends Component
             $due = max(0, $this->net_payable - (float) $this->received_amount);
 
             $sale = InventorySale::create([
-                'role'             => $this->role,
-                'saleable_id'      => $this->saleable_id,
-                'saleable_type'    => $this->saleableType(),
-                'bill_no'          => $this->bill_no,
-                'date'             => $this->date,
-                'sub_total'        => $this->sub_total,
-                'discount'         => $this->total_discount,
-                'net_payable'      => $this->net_payable,
-                'received_amount'  => $this->received_amount ?: 0,
-                'due_amount'       => $due,
-                'pay_via'          => $this->pay_via ?: null,
-                'payment_status'   => $this->paymentStatus(),
-                'remarks'          => $this->remarks ?: null,
+                'role'            => $this->role,
+                'saleable_id'     => $this->saleable_id,
+                'saleable_type'   => $this->saleableType(),
+                'bill_no'         => $this->bill_no,
+                'date'            => $this->date,
+                'sub_total'       => $this->sub_total,
+                'discount'        => $this->total_discount,
+                'net_payable'     => $this->net_payable,
+                'received_amount' => $this->received_amount ?: 0,
+                'due_amount'      => $due,
+                'pay_via'         => $this->pay_via ?: null,
+                'payment_status'  => $this->paymentStatus(),
+                'remarks'         => $this->remarks ?: null,
             ]);
 
             foreach ($this->items as $item) {
@@ -245,7 +250,6 @@ class SaleAddComponent extends Component
 
     public function render()
     {
-        // Build saleables list dynamically based on role
         $saleables = collect();
 
         if ($this->role === 'student') {
@@ -253,8 +257,10 @@ class SaleAddComponent extends Component
                 ->when($this->class_id, fn($q) => $q->where('class_id', $this->class_id))
                 ->orderBy('name')
                 ->get(['id', 'name']);
-        } elseif ($this->role === 'employee') {
-            $saleables = Employee::orderBy('name')->get(['id', 'name']);
+        } elseif ($this->role === 'teacher') {
+            $saleables = User::where('school_id', auth()->user()->school_id)->where('role', 'teacher')->orderBy('name')->get(['id', 'name']);
+        } elseif ($this->role === 'staff') {
+            $saleables = User::where('school_id', auth()->user()->school_id)->where('role', 'staff')->orderBy('name')->get(['id', 'name']);
         }
 
         return view('livewire.admin.inventory.sale-add-component', [

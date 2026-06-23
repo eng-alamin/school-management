@@ -39,7 +39,7 @@
             </div>
 
             <!-- Stats -->
-            <div class="d-flex flex-wrap align-items-center gap-3 mt-3">
+            <div class="d-flex flex-wrap align-items-center gap-3 mt-3 no-print">
                 <div class="stat-box">
                     <div class="d-flex align-items-center gap-1">
                         <i class="bi bi-arrow-up text-success"></i>
@@ -74,7 +74,7 @@
     </div>
 
     <!-- Profile Tabs -->
-    <ul class="nav profile-tabs border-bottom mt-4 flex-nowrap overflow-auto">
+    <ul class="nav profile-tabs border-bottom mt-4 flex-nowrap overflow-auto no-print">
         <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.student.overview') ? 'active' : '' }}" href="{{ route('admin.student.overview', ['id' => $student->id]) }}">Overview</a></li>
         <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.student.invoice') ? 'active' : '' }}" href="{{ route('admin.student.invoice', ['id' => $student->id]) }}">Invoice</a></li>
         <li wire:ignore class="nav-item"><a class="nav-link {{ request()->routeIs('admin.student.payment.add') ? 'active' : '' }}" href="{{ route('admin.student.payment.add', ['id' => $student->id]) }}">Payment</a></li>

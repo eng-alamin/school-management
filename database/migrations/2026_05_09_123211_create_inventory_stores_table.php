@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('school_id')->constrained('schools')->cascadeOnDelete();
             $table->string('name');
             $table->string('code')->unique();
-            $table->string('mobile');
+            $table->string('mobile')->nullable();
             $table->string('address')->nullable();
             $table->text('description')->nullable();
             $table->timestamps();

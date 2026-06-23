@@ -1,3 +1,7 @@
 routes/console.php
 php artisan schedule:list
 php artisan schedule:run
+
+
+$this->date = now()->format('Y-m-d');
+data-dp-value="{{ $date }}"

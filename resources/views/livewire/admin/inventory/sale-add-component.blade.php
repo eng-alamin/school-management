@@ -22,7 +22,8 @@
                     <select wire:model.live="role" class="form-select">
                         <option value="" disabled>Select</option>
                         <option value="student">Student</option>
-                        <option value="employee">Employee</option>
+                        <option value="teacher">Teacher</option>
+                        <option value="staff">Staff</option>
                         <option value="other">Other</option>
                     </select>
                 </div>
@@ -53,7 +54,7 @@
                         <option value="" disabled>Select</option>
                         @foreach($saleables as $saleable)
                             @if($role === 'student')
-                                <option value="{{ $saleable->id }}">{{ $saleable->full_name }}</option>
+                                <option value="{{ $saleable->id }}">{{ $saleable->name }}</option>
                             @else
                                 <option value="{{ $saleable->id }}">{{ $saleable->name }}</option>
                             @endif

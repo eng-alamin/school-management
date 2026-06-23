@@ -73,6 +73,7 @@ class EmployeeAddComponent extends Component
             $this->validate($this->rules());
 
             $user = User::create([
+                'school_id'=> auth()->user()->school_id,
                 'role'     => $this->role,
                 'name'     => $this->name,
                 'username' => $this->username,

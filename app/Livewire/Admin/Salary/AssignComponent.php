@@ -132,8 +132,7 @@ class AssignComponent extends Component
             'admin'        => 'Admin',
             'teacher'      => 'Teacher',
             'accountant'   => 'Accountant',
-            'librarian'    => 'Librarian',
-            'receptionist' => 'Receptionist',
+            'staff'        => 'Staff',
         ];
     }
 

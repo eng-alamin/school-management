@@ -88,7 +88,7 @@ class FeeAllocationComponent extends Component
     {
         if (!$this->class_id) return;
 
-        $this->students = Student::with('guardians')
+        $this->students = Student::with('section','guardians')
             ->where('class_id', $this->class_id)
             ->when(
                 $this->section_id && $this->section_id !== 'all',

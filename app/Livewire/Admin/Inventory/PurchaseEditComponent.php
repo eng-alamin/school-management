@@ -68,7 +68,6 @@ class PurchaseEditComponent extends Component
         $this->bill_no         = $purchase->bill_no;
         $this->purchase_status = $purchase->purchase_status;
         $this->date            = $purchase->date;
-        // $this->date            = $purchase->date->format('Y-m-d');
         $this->remarks         = $purchase->remarks ?? '';
 
         $this->items = $purchase->items->map(fn($item) => [
@@ -104,10 +103,21 @@ class PurchaseEditComponent extends Component
         $this->recalculate();
     }
 
-    // ── Recalculate on any item field change ──
+    // ── Product select হলে purchase_price auto-fill হবে,
+    //    অন্য field change হলে শুধু recalculate হবে ──
     public function updatedItems($value, $key): void
     {
-        $index = (int) explode('.', $key)[0];
+        $parts = explode('.', $key);
+        $index = (int) $parts[0];
+        $field = $parts[1] ?? '';
+
+        if ($field === 'product_id' && !empty($value)) {
+            $product = InventoryProduct::find($value);
+            if ($product) {
+                $this->items[$index]['unit_price'] = $product->purchase_price;
+            }
+        }
+
         $this->recalculateRow($index);
         $this->recalculate();
     }
@@ -148,19 +158,19 @@ class PurchaseEditComponent extends Component
                 'remarks'         => $this->remarks ?: null,
             ]);
 
-            // Collect IDs that still exist in the form
+            // Form-এ যে item-গুলো এখনও আছে তাদের ID collect করো
             $keptIds = collect($this->items)
                 ->pluck('id')
                 ->filter()
                 ->values()
                 ->toArray();
 
-            // Delete removed items
+            // Form থেকে বাদ দেওয়া item-গুলো DB থেকে delete করো
             InventoryPurchaseItem::where('purchase_id', $purchase->id)
                 ->whereNotIn('id', $keptIds)
                 ->delete();
 
-            // Update existing / create new items
+            // পুরনো item update করো, নতুন item create করো
             foreach ($this->items as $item) {
                 if (!empty($item['id'])) {
                     InventoryPurchaseItem::where('id', $item['id'])

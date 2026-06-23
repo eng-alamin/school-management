@@ -55,8 +55,8 @@
                             <td class="text-muted">{{ $stores->firstItem() + $i }}</td>
                             <td>{{ $store->name }}</td>
                             <td><span class="badge bg-secondary">{{ $store->code }}</span></td>
-                            <td>{{ $store->mobile }}</td>
-                            <td>{{ $store->address ?? '—' }}</td>
+                            <td>{{ $store->mobile ?: '—' }}</td>
+                            <td>{{ $store->address ?: '—' }}</td>
                             <td>
                                 <div class="d-flex gap-1">
                                     <button class="act-btn edit" title="Edit" wire:click="openEdit({{ $store->id }})">
@@ -110,13 +110,13 @@
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Code <span class="text-danger">*</span></label>
+                                    <label class="form-label">Code</label>
                                     <input type="text" class="form-control @error('code') is-invalid @enderror" wire:model.defer="code" placeholder="e.g. STR-001">
                                     @error('code') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Mobile <span class="text-danger">*</span></label>
+                                    <label class="form-label">Mobile</label>
                                     <input type="text" class="form-control @error('mobile') is-invalid @enderror" wire:model.defer="mobile" placeholder="e.g. 01700000000">
                                     @error('mobile') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>

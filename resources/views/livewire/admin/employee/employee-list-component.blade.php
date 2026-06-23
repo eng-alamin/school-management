@@ -44,6 +44,7 @@
                             <th wire:click="sortBy('name')" style="cursor:pointer">
                                 Name @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
+                            <th>Role</th>
                             <th>Designation</th>
                             <th>Department</th>
                             <th wire:click="sortBy('email')" style="cursor:pointer">
@@ -67,6 +68,7 @@
                                     <span>{{ $employee->name }}</span>
                                 </div>
                             </td>
+                            <td> <span class="badge bg-secondary">{{ $employee->user?->role ?? '—' }} </span></td>
                             <td>{{ $employee->designation?->name ?? '—' }}</td>
                             <td>{{ $employee->department?->name ?? '—' }}</td>
                             <td>{{ $employee->email ?? '—' }}</td>

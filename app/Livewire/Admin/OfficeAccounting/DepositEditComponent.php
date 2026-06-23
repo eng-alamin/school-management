@@ -33,14 +33,14 @@ class DepositEditComponent extends Component
     {
         $deposit = OfficeDeposit::findOrFail($id);
 
-        $this->deposit            = $deposit;
-        $this->account_id         = $deposit->account_id;
-        $this->head_id            = $deposit->head_id ?? '';
-        $this->pay_via            = $deposit->pay_via ?? '';
-        $this->reference          = $deposit->reference ?? '';
-        $this->amount             = $deposit->amount;
-        $this->date               = $deposit->date?->format('Y-m-d');
-        $this->description        = $deposit->description ?? '';
+        $this->deposit             = $deposit;
+        $this->account_id          = $deposit->account_id;
+        $this->head_id             = $deposit->head_id ?? '';
+        $this->pay_via             = $deposit->pay_via ?? '';
+        $this->reference           = $deposit->reference ?? '';
+        $this->amount               = $deposit->amount;
+        $this->date                = $deposit->date?->format('Y-m-d');
+        $this->description         = $deposit->description ?? '';
         $this->existing_attachment = $deposit->attachment;
     }
 

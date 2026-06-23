@@ -78,7 +78,7 @@
 
                                 <td>
                                     @if($sale->role === 'student')
-                                        {{ $sale->saleable->full_name ?? '—' }}
+                                        {{ $sale->saleable->name ?? '—' }}
                                     @else
                                         {{ $sale->saleable->name ?? '—' }}
                                     @endif

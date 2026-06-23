@@ -30,10 +30,10 @@
                     </div>
                 @endif
                 <a href="{{ route('admin.inventory.categories') }}" target="_blank" class="btn-sm btn-outline">
-                    <span class="material-icons-round">add</span> <span id="newCategoryBtn">Category</span>
+                    <span class="material-icons-round">category</span> <span id="newCategoryBtn">Category</span>
                 </a>
                 <a href="{{ route('admin.inventory.units') }}" target="_blank" class="btn-sm btn-outline">
-                    <span class="material-icons-round">add</span> <span id="newUnitBtn">Unit</span>
+                    <span class="material-icons-round">ac_unit</span> <span id="newUnitBtn">Unit</span>
                 </a>
                 <button class="btn-outline bg-dark text-white" wire:click="openCreate">
                     <span class="material-icons-round">add</span> <span id="newProductBtn">Add Product</span>
@@ -122,7 +122,7 @@
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Code <span class="text-danger">*</span></label>
+                                    <label class="form-label">Code</label>
                                     <input type="text" class="form-control @error('code') is-invalid @enderror" wire:model.defer="code" placeholder="e.g. PRD-001">
                                     @error('code') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
