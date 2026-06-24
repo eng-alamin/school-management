@@ -3,11 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\BelongsToSchool;
+use App\Traits\BelongsToInstitution;
 
 class Guardian extends Model
 {
-    use BelongsToSchool;
+    use BelongsToInstitution;
     protected $guarded = [];
 
     public function user()
@@ -18,7 +18,7 @@ class Guardian extends Model
     public function students()
     {
         return $this->belongsToMany(Student::class, 'guardian_student')
-                    ->withPivot('school_id')
+                    ->withPivot('Institution_id')
                     ->withTimestamps();
     }
 

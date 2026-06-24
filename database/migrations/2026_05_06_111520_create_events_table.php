@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('events', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id')->constrained('schools')->cascadeOnDelete();
+            $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
             $table->string('title');
             $table->boolean('is_holiday')->default(false);
             $table->string('type')->nullable(); //exam, notice, event etc.

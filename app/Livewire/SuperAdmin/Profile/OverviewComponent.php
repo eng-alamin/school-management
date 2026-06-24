@@ -19,7 +19,7 @@ class OverviewComponent extends Component
         return view('livewire.super-admin.profile.overview-component')
             ->with('user', $this->user)
             ->layout('layouts.superadmin.app', [
-                    'title' => "Profile Overview | School SaaS",
+                    'title' => 'Profile Overview | ' . setting('app_name', 'EMS'),
                 ]);
     }
 }

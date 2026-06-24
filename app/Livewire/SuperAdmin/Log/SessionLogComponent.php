@@ -95,7 +95,7 @@ class SessionLogComponent extends Component
             'sessions' => $this->getOnlineSessions(),
         ])
         ->layout('layouts.superadmin.app', [
-            'title' => 'Active Sessions',
+            'title' => 'Active Sessions | ' . setting('app_name', 'EMS'),
         ]);
     }
 }

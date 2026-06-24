@@ -25,7 +25,7 @@
             </div>
             <div class="col-md-3">
                 <div class="input-group input-group-outline">
-                    <label class="form-label">Register No <span class="req">*</span></label>
+                    <label class="form-label">Register No</label>
                     <input type="text" wire:model="register_no" class="form-control" value="ISC-0001" onfocus="focused(this)" onfocusout="defocused(this)">
                      @error('register_no') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
@@ -70,15 +70,15 @@
             </div>
             <div class="col-md-4">
                 <div class="input-group input-group-outline" wire:ignore>
-                    <label class="form-label">Category</label>
-                    <select wire:model="category_id" class="form-select">
-                        <option value="">Select Category</option>
-                        @foreach($categories as $category)
-                            <option value="{{ $category->id }}">{{ $category->name }}</option>
+                    <label class="form-label">Group</label>
+                    <select wire:model="group_id" class="form-select">
+                        <option value="">Select Group</option>
+                        @foreach($groups as $group)
+                            <option value="{{ $group->id }}">{{ $group->name }}</option>
                         @endforeach
                     </select>
                 </div>
-                @error('category_id') <span class="text-danger">{{ $message }}</span> @enderror
+                @error('group_id') <span class="text-danger">{{ $message }}</span> @enderror
             </div>
             </div>
         </div>

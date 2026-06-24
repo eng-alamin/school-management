@@ -117,7 +117,7 @@ class HeadComponent extends Component
         return view('livewire.admin.office-accounting.head-component')
             ->with('vouchers', $vouchers)
             ->layout('layouts.admin.app', [
-                'title' => "Office Accounting - Head Voucher | School SaaS",
+                'title' => 'Head Voucher | ' . institution()->name,
             ]);
 
     }

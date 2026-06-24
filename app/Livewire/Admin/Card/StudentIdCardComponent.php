@@ -228,7 +228,7 @@ class StudentIdCardComponent extends Component
             ->with('classes', $classes)
             ->with('selectedTemplate', $selectedTemplate)
             ->layout('layouts.admin.app', [
-                'title' => 'Student ID Cards | School SaaS',
+                'title' => 'Student ID Cards | ' . institution()->name,
             ]);
     }
 }

@@ -112,7 +112,7 @@ class DepartmentComponent extends Component
         return view('livewire.admin.employee.department-component')
             ->with('departments', $departments)
             ->layout('layouts.admin.app', [
-                'title' => "Departments | School SaaS",
+                'title' => 'Departments | ' . institution()->name,
             ]);
     }
 }

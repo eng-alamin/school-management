@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\School;
+use App\Models\Institution;
 use App\Models\User;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
@@ -14,7 +14,7 @@ use Carbon\Carbon;
 class GenerateMonthlyInvoices extends Command
 {
     protected $signature = 'billing:monthly-generate {--month=} {--year=}';
-    protected $description = 'Generate monthly per-student and per-SMS invoices for all schools';
+    protected $description = 'Generate monthly per-student and per-SMS invoices for all institutions';
 
     public function handle()
     {
@@ -24,29 +24,29 @@ class GenerateMonthlyInvoices extends Command
         $studentRate = PricingRate::where('type', 'student')->where('is_active', true)->value('rate') ?? 1.00;
         $smsRate     = PricingRate::where('type', 'sms')->where('is_active', true)->value('rate') ?? 0;
 
-        $schools = School::withoutGlobalScopes()->where('status', 1)->get();
+        $institutions = Institution::withoutGlobalScopes()->where('status', 1)->get();
 
-        foreach ($schools as $school) {
+        foreach ($institutions as $institution) {
 
             // Duplicate invoice check
-            $exists = Invoice::where('school_id', $school->id)
+            $exists = Invoice::where('institution_id', $institution->id)
                 ->where('month', $month)
                 ->where('year', $year)
                 ->exists();
 
             if ($exists) {
-                $this->warn("Invoice already exists for {$school->name} - {$month}/{$year}");
+                $this->warn("Invoice already exists for {$institution->name} - {$month}/{$year}");
                 continue;
             }
 
             // ── Active student count (users table, role=student, is_active=true) ──
-            $activeStudentCount = User::where('school_id', $school->id)
+            $activeStudentCount = User::where('institution_id', $institution->id)
                 ->where('role', 'student')
                 ->where('is_active', true)
                 ->count();
 
             // ── এই মাসে সফলভাবে পাঠানো SMS সংখ্যা ──
-            $smsCount = SmsLog::where('school_id', $school->id)
+            $smsCount = SmsLog::where('institution_id', $institution->id)
                 ->where('status', 'sent')
                 ->whereMonth('created_at', $month)
                 ->whereYear('created_at', $year)
@@ -54,7 +54,7 @@ class GenerateMonthlyInvoices extends Command
 
             // student বা sms কোনোটাই না থাকলে invoice বানানোর দরকার নেই
             if ($activeStudentCount < 1 && $smsCount < 1) {
-                $this->info("{$school->name}: কোনো active student বা SMS নেই, skip করা হলো।");
+                $this->info("{$institution->name}: কোনো active student বা SMS নেই, skip করা হলো।");
                 continue;
             }
 
@@ -63,8 +63,8 @@ class GenerateMonthlyInvoices extends Command
             $totalAmount   = $studentAmount + $smsAmount;
 
             $invoice = Invoice::create([
-                'school_id'      => $school->id,
-                'invoice_no'     => 'INV-' . $school->id . '-' . $year . str_pad($month, 2, '0', STR_PAD_LEFT),
+                'institution_id'      => $institution->id,
+                'invoice_no'     => 'INV-' . $institution->id . '-' . $year . str_pad($month, 2, '0', STR_PAD_LEFT),
                 'month'          => $month,
                 'year'           => $year,
                 'total_amount'   => $totalAmount,
@@ -94,7 +94,7 @@ class GenerateMonthlyInvoices extends Command
                 ]);
             }
 
-            $this->info("Invoice generated for {$school->name}: {$activeStudentCount} students × ৳{$studentRate} + {$smsCount} SMS × ৳{$smsRate} = ৳{$totalAmount}");
+            $this->info("Invoice generated for {$institution->name}: {$activeStudentCount} students × ৳{$studentRate} + {$smsCount} SMS × ৳{$smsRate} = ৳{$totalAmount}");
         }
 
         $this->info('Monthly billing generation completed.');

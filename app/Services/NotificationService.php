@@ -18,7 +18,7 @@ class NotificationService
         array  $data     = [],
         string $priority = 'normal'
     ): Notification {
-        // BelongsToSchool trait creating hook এ school_id auto set করবে
+        // BelongsToInstitution trait creating hook এ institution_id auto set করবে
         return $user->notifications()->create([
             'type'     => $type,
             'title'    => $title,
@@ -31,7 +31,7 @@ class NotificationService
     // ─── একটা role এর সবাইকে পাঠান ──────────────────────────────────────────
 
     public static function sendToRole(
-        int    $schoolId,
+        int    $institutionId,
         string $role,
         string $type,
         string $title,
@@ -39,7 +39,7 @@ class NotificationService
         array  $data     = [],
         string $priority = 'normal'
     ): int {
-        $users = User::where('school_id', $schoolId)
+        $users = User::where('institution_id', $institutionId)
             ->where('role', $role)
             ->get();
 
@@ -49,7 +49,7 @@ class NotificationService
     // ─── একাধিক role কে পাঠান ────────────────────────────────────────────────
 
     public static function sendToRoles(
-        int    $schoolId,
+        int    $institutionId,
         array  $roles,
         string $type,
         string $title,
@@ -57,29 +57,29 @@ class NotificationService
         array  $data     = [],
         string $priority = 'normal'
     ): int {
-        $users = User::where('school_id', $schoolId)
+        $users = User::where('institution_id', $institutionId)
             ->whereIn('role', $roles)
             ->get();
 
         return self::sendToMany($users, $type, $title, $message, $data, $priority);
     }
 
-    // ─── school এর সবাইকে পাঠান ──────────────────────────────────────────────
+    // ─── institution এর সবাইকে পাঠান ──────────────────────────────────────────────
 
     public static function sendToAll(
-        int    $schoolId,
+        int    $institutionId,
         string $type,
         string $title,
         string $message,
         array  $data     = [],
         string $priority = 'normal'
     ): int {
-        $users = User::where('school_id', $schoolId)->get();
+        $users = User::where('institution_id', $institutionId)->get();
 
         return self::sendToMany($users, $type, $title, $message, $data, $priority);
     }
 
-    // ─── Bulk insert — insert() Eloquent bypass করে তাই school_id manually ──
+    // ─── Bulk insert — insert() Eloquent bypass করে তাই institution_id manually ──
 
     public static function sendToMany(
         Collection $users,
@@ -95,7 +95,7 @@ class NotificationService
 
         $now     = now();
         $inserts = $users->map(fn(User $user) => [
-            'school_id'       => $user->school_id, // insert() এ hook কাজ করে না, manually দিতে হবে
+            'institution_id'       => $user->institution_id, // insert() এ hook কাজ করে না, manually দিতে হবে
             'notifiable_id'   => $user->id,
             'notifiable_type' => User::class,
             'type'            => $type,
@@ -161,10 +161,10 @@ class NotificationService
         );
     }
 
-    public static function newAdmission(int $schoolId, string $studentName): int
+    public static function newAdmission(int $institutionId, string $studentName): int
     {
         return self::sendToRole(
-            $schoolId,
+            $institutionId,
             'admin',
             'admission',
             'New Admission',
@@ -174,13 +174,13 @@ class NotificationService
     }
 
     public static function announcement(
-        int    $schoolId,
+        int    $institutionId,
         array  $roles,
         string $title,
         string $message
     ): int {
         return self::sendToRoles(
-            $schoolId,
+            $institutionId,
             $roles,
             'announcement',
             $title,

@@ -178,7 +178,7 @@ class EditComponent extends Component
             ->with('classes', $classes)
             ->with('sections', $sections)
             ->layout('layouts.admin.app', [
-                'title' => 'Edit Event | Monarchy School',
+                'title' => 'Edit Event | ' . institution()->name,
             ]);
     }
 

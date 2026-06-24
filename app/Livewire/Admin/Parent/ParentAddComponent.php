@@ -116,7 +116,7 @@ class ParentAddComponent extends Component
     {
         return view('livewire.admin.parent.parent-add-component')
             ->layout('layouts.admin.app', [
-                'title' => "Create Parent | Monarchy School",
+                'title' => 'Create Parent | ' . institution()->name,
             ]);
     }
 

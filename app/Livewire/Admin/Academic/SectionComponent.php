@@ -120,7 +120,7 @@ class SectionComponent extends Component
         return view('livewire.admin.academic.section-component')
             ->with('sections', $sections)
             ->layout('layouts.admin.app', [
-                'title' => "Sections | School SaaS",
+                'title' => 'Sections | ' . institution()->name,
             ]);
     }
 }

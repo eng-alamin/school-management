@@ -47,7 +47,7 @@ class HomeworkAddComponent extends Component
         ->with('subjects', $subjects)
         ->with('teachers', $teachers)
             ->layout('layouts.admin.app', [
-                'title' => "Create Homework | Monarchy School",
+                'title' => 'Create Homework | ' . institution()->name,
             ]);
     }
 

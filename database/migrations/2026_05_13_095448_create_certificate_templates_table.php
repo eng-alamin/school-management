@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('certificate_templates', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id')->constrained('schools')->cascadeOnDelete();
+            $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
             $table->string('certificate_name');
             $table->enum('applicable_user', ['student', 'employee']);
             $table->enum('page_layout', [

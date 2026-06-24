@@ -1,6 +1,6 @@
 {{-- resources/views/livewire/notification-bell.blade.php --}}
 
-<div class="topnav-dropdown-wrap" wire:poll.5000ms="$refresh">
+<div class="topnav-dropdown-wrap" wire:poll.15000ms="$refresh">
 
     {{-- Bell Button --}}
     <button class="icon-btn" id="notifBtn" title="Notifications"

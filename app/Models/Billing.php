@@ -13,8 +13,8 @@ class Billing extends Model
         'due_date'      => 'date',
     ];
 
-    public function school()
+    public function Institution()
     {
-        return $this->belongsTo(School::class);
+        return $this->belongsTo(Institution::class);
     }
 }

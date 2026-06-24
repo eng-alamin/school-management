@@ -139,7 +139,7 @@ class FeeInvoiceComponent extends Component
         return view('livewire.admin.student-accounting.fee-invoice-component')
             ->with(['feeGroups' => $feeGroups, 'classes' => $classes])
             ->layout('layouts.admin.app', [
-                'title' => "Student Accounting - Fee Invoices | School SaaS",
+                'title' => 'Fee Invoices | ' . institution()->name,
             ]);
     }
 }

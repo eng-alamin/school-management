@@ -139,7 +139,7 @@ class ClassScheduleCreateComponent extends Component
             ->with('subjects', $subjects)
             ->with('teachers', $teachers)
             ->layout('layouts.admin.app', [
-                'title' => "Class Schedule | School SaaS",
+                'title' => 'Class Schedule | ' . institution()->name,
             ]);
     }
 }

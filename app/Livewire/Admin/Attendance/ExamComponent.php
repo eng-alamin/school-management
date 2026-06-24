@@ -222,7 +222,7 @@ class ExamComponent extends Component
             ->with('sections', $this->getAvailableSections())
             ->with('subjects', $this->subjects)
             ->layout('layouts.admin.app', [
-                'title' => "Exam Attendance | School SaaS",
+                'title' => 'Exam Attendance | ' . institution()->name,
             ]);
     }
 }

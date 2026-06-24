@@ -104,7 +104,7 @@ class SettingComponent extends Component
         return view('livewire.super-admin.profile.setting-component')
             ->with('user', $this->user)
             ->layout('layouts.superadmin.app', [
-                'title' => "Profile Setting | School SaaS",
+                'title' => 'Profile Setting | ' . setting('app_name', 'EMS'),
             ]);
     }
 }

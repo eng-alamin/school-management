@@ -54,7 +54,7 @@ class ScheduleListComponent extends Component
         return view('livewire.admin.exam.schedule-list-component')
             ->with('schedules', $schedules)
             ->layout('layouts.admin.app', [
-                'title' => "Exam Schedule | School SaaS",
+                'title' => 'Exam Schedule | ' . institution()->name,
             ]);
 
     }

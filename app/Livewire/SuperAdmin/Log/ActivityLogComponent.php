@@ -35,7 +35,7 @@ class ActivityLogComponent extends Component
         return view('livewire.super-admin.log.activity-log-component')
             ->with('logs', $logs)
             ->layout('layouts.superadmin.app', [
-                'title' => 'Activity Log | Monarchy School',
+                'title' => 'Activity Log | ' . setting('app_name', 'EMS'),
             ]);
     }
 }

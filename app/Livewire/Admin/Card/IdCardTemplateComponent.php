@@ -197,7 +197,7 @@ class IdCardTemplateComponent extends Component
             ->with('templates', $templates)
             ->with('types', IdCardTemplate::getTypes())
             ->layout('layouts.admin.app', [
-                'title' => "ID Card Templates | School SaaS",
+                'title' => 'ID Card Templates | ' . institution()->name,
             ]);
     }
 }

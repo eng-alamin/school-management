@@ -1,12 +1,12 @@
-{{-- resources/views/livewire/super-admin/school/school-list-component.blade.php --}}
+{{-- resources/views/livewire/super-admin/institution/institution-list-component.blade.php --}}
 <div>
 
     <div class="card">
 
         <!-- floating header -->
         <div class="mat-card-header header-pink-gradient">
-            <h5 id="cardHeaderTitleAllsections">Manage Schools</h5>
-            <p id="cardHeaderSubtitle">Manage all registered schools on the platform.</p>
+            <h5 id="cardHeaderTitleAllsections">Manage Institutions</h5>
+            <p id="cardHeaderSubtitle">Manage all registered institutions on the platform.</p>
         </div>
 
         <div class="card-header border-0">
@@ -26,7 +26,7 @@
                     </select>
                 </div>
 
-                @if($schools->total() > 10)
+                @if($institutions->total() > 10)
                     <div class="col-md-2">
                         <select class="form-select form-select-sm" wire:model.live="perPage">
                             <option value="10">10 / page</option>
@@ -37,7 +37,7 @@
                 @endif
 
                 <button class="btn-outline bg-dark text-white" wire:click="openCreate">
-                    <span class="material-icons-round">add</span> <span id="newSectionBtn">Add School</span>
+                    <span class="material-icons-round">add</span> <span id="newSectionBtn">Add Institution</span>
                 </button>
             </div>
         </div>
@@ -48,7 +48,7 @@
                     <thead>
                         <tr>
                             <th>SL</th>
-                            <th>School</th>
+                            <th>Institution</th>
                             <th>Admin</th>
                             <th>Address</th>
                             <th>Phone</th>
@@ -58,23 +58,23 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($schools as $i => $school)
+                        @forelse($institutions as $i => $institution)
                         <tr>
-                            <td class="text-muted">{{ $schools->firstItem() + $i }}</td>
+                            <td class="text-muted">{{ $institutions->firstItem() + $i }}</td>
 
                             <td>
                                 <div class="d-flex align-items-center gap-2">
-                                    @if($school->system_logo)
-                                        <img src="{{ asset('storage/' . $school->system_logo) }}" alt="{{ $school->name }}" class="avatar-placeholder" style="object-fit:cover;">
+                                    @if($institution->system_logo)
+                                        <img src="{{ asset('storage/' . $institution->system_logo) }}" alt="{{ $institution->name }}" class="avatar-placeholder" style="object-fit:cover;">
                                     @else
                                         <div class="avatar-placeholder">
-                                            <span class="material-icons-round" style="font-size:1rem;">school</span>
+                                            <span class="material-icons-round" style="font-size:1rem;">institution</span>
                                         </div>
                                     @endif
                                     <div>
-                                        <div class="fw-500 text-dark">{{ $school->name }}</div>
-                                        @if($school->email)
-                                            <small class="text-muted">{{ Str::limit($school->email, 40) }}</small>
+                                        <div class="fw-500 text-dark">{{ $institution->name }}</div>
+                                        @if($institution->email)
+                                            <small class="text-muted">{{ Str::limit($institution->email, 40) }}</small>
                                         @endif
                                     </div>
                                 </div>
@@ -82,48 +82,48 @@
 
                             <td>
                                 <div class="d-flex align-items-center gap-2">
-                                    @if($school->admin?->avarter)
-                                        <img src="{{ asset('storage/' . $school->admin?->avarter) }}" alt="{{ $school->admin?->name }}" class="avatar-placeholder" style="object-fit:cover;">
+                                    @if($institution->admin?->avarter)
+                                        <img src="{{ asset('storage/' . $institution->admin?->avarter) }}" alt="{{ $institution->admin?->name }}" class="avatar-placeholder" style="object-fit:cover;">
                                     @else
                                         <div class="avatar-placeholder">
                                             <span class="material-icons-round" style="font-size:1rem;">account_circle</span>
                                         </div>
                                     @endif
                                     <div>
-                                        <div class="fw-500 text-dark">{{ $school->admin?->name }}</div>
-                                        @if($school->admin?->email)
-                                            <small class="text-muted">{{ Str::limit($school->admin->email, 40) }}</small>
+                                        <div class="fw-500 text-dark">{{ $institution->admin?->name }}</div>
+                                        @if($institution->admin?->email)
+                                            <small class="text-muted">{{ Str::limit($institution->admin->email, 40) }}</small>
                                         @endif
                                     </div>
                                 </div>
                             </td>
 
-                            <td class="text-muted" style="font-size:.8rem;">{{ $school->address ? Str::limit($school->address, 40) : '-' }}</td>
+                            <td class="text-muted" style="font-size:.8rem;">{{ $institution->address ? Str::limit($institution->address, 40) : '-' }}</td>
 
-                            <td class="text-muted" style="font-size:.8rem;">{{ $school->phone ?? '—' }}</td>
+                            <td class="text-muted" style="font-size:.8rem;">{{ $institution->phone ?? '—' }}</td>
 
                             <td>
-                                <span class="badge rounded-pill {{ $school->status ? 'badge-active' : 'badge-inactive' }}" style="font-size:.72rem;">
-                                    {{ $school->status ? 'Active' : 'Inactive' }}
+                                <span class="badge rounded-pill {{ $institution->status ? 'badge-active' : 'badge-inactive' }}" style="font-size:.72rem;">
+                                    {{ $institution->status ? 'Active' : 'Inactive' }}
                                 </span>
                             </td>
 
                             <td class="text-muted" style="font-size:.78rem;">
-                                {{ $school->created_at->format('d M Y') }}
+                                {{ $institution->created_at->format('d M Y') }}
                             </td>
 
                             <td>
                                 <div class="d-flex gap-1">
-                                    <button class="act-btn view" title="View" wire:click="openView({{ $school->id }})">
+                                    <button class="act-btn view" title="View" wire:click="openView({{ $institution->id }})">
                                         <span class="material-icons-round">visibility</span>
                                     </button>
-                                    <button class="act-btn edit" title="Edit" wire:click="openEdit({{ $school->id }})">
+                                    <button class="act-btn edit" title="Edit" wire:click="openEdit({{ $institution->id }})">
                                         <span class="material-icons-round">drive_file_rename_outline</span>
                                     </button>
-                                    <button class="act-btn status {{ $school->status ? 'btn-warning' : 'btn-success' }}" title="Toggle Status" wire:click="toggleStatus({{ $school->id }})">
-                                        <span class="material-icons-round">{{ $school->status ? 'toggle_off' : 'toggle_on' }}</span>
+                                    <button class="act-btn status {{ $institution->status ? 'btn-warning' : 'btn-success' }}" title="Toggle Status" wire:click="toggleStatus({{ $institution->id }})">
+                                        <span class="material-icons-round">{{ $institution->status ? 'toggle_off' : 'toggle_on' }}</span>
                                     </button>
-                                    <button class="act-btn delete" title="Delete" wire:click="confirmDeleteRecord({{ $school->id }})">
+                                    <button class="act-btn delete" title="Delete" wire:click="confirmDeleteRecord({{ $institution->id }})">
                                         <span class="material-icons-round">delete</span>
                                     </button>
                                 </div>
@@ -133,7 +133,7 @@
                         <tr>
                             <td colspan="7" class="text-center py-5 text-muted">
                                 <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
-                                No schools found. <a href="#" wire:click.prevent="openCreate">Create one now</a>.
+                                No institutions found. <a href="#" wire:click.prevent="openCreate">Create one now</a>.
                             </td>
                         </tr>
                         @endforelse
@@ -143,8 +143,8 @@
         </div>
 
         <div class="card-footer border-0 bg-white d-flex align-items-center justify-content-between flex-wrap gap-2 py-2 px-3">
-            <small class="text-muted">Showing {{ $schools->firstItem() ?? 0 }}–{{ $schools->lastItem() ?? 0 }} of {{ $schools->total() }}</small>
-            {{ $schools->links('vendor.pagination.custom') }}
+            <small class="text-muted">Showing {{ $institutions->firstItem() ?? 0 }}–{{ $institutions->lastItem() ?? 0 }} of {{ $institutions->total() }}</small>
+            {{ $institutions->links('vendor.pagination.custom') }}
         </div>
 
     </div>
@@ -157,7 +157,7 @@
                     <div class="modal-header">
                         <h5 class="modal-title">
                             <i class="bi bi-building me-2 text-danger"></i>
-                            {{ $editId ? 'Edit' : 'Create' }} School
+                            {{ $editId ? 'Edit' : 'Create' }} Institution
                         </h5>
                         <button type="button" class="btn-close" wire:click="$set('showModal',false)"></button>
                     </div>
@@ -167,15 +167,15 @@
 
                                 {{-- Name --}}
                                 <div class="col-12">
-                                    <label class="form-label">School Name <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model.defer="name" placeholder="e.g. Green Valley High School">
+                                    <label class="form-label">Institution Name <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model.defer="name" placeholder="e.g. Green Valley High Institution">
                                     @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 {{-- Email + Phone --}}
                                 <div class="col-md-6">
                                     <label class="form-label">Email <span class="text-danger">*</span></label>
-                                    <input type="email" class="form-control @error('email') is-invalid @enderror" wire:model.defer="email" placeholder="school@example.com">
+                                    <input type="email" class="form-control @error('email') is-invalid @enderror" wire:model.defer="email" placeholder="institution@example.com">
                                     @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
@@ -238,7 +238,7 @@
                         <button type="button" class="btn btn-light" wire:click="$set('showModal',false)">Cancel</button>
                         <button type="button" class="btn btn-primary" wire:click="save" wire:loading.attr="disabled">
                             <span wire:loading wire:target="save" class="spinner-border spinner-border-sm me-1"></span>
-                            {{ $editId ? 'Update' : 'Create' }} School
+                            {{ $editId ? 'Update' : 'Create' }} Institution
                         </button>
                     </div>
                 </div>
@@ -252,7 +252,7 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">School Details</h5>
+                        <h5 class="modal-title">Institution Details</h5>
                         <button class="btn-close" wire:click="$set('showViewModal',false)"></button>
                     </div>
                     <div class="modal-body">
@@ -262,7 +262,7 @@
                                 <img src="{{ asset('storage/' . $viewRecord->system_logo) }}" style="height:56px;width:56px;object-fit:cover;border-radius:10px;border:1px solid var(--border);">
                             @else
                                 <div class="avatar-placeholder" style="width:56px;height:56px;">
-                                    <span class="material-icons-round">school</span>
+                                    <span class="material-icons-round">institution</span>
                                 </div>
                             @endif
                             <div>
@@ -312,7 +312,7 @@
                         <div style="width:56px;height:56px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
                             <i class="bi bi-exclamation-triangle text-danger" style="font-size:1.5rem;"></i>
                         </div>
-                        <h6 class="fw-700">Delete School?</h6>
+                        <h6 class="fw-700">Delete Institution?</h6>
                         <p class="text-muted small">This action cannot be undone.</p>
                     </div>
                     <div class="modal-footer justify-content-center border-0 pt-0">

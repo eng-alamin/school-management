@@ -299,7 +299,7 @@ class SaleEditComponent extends Component
             'classes'    => AcademicClass::orderBy('name')->get(),
             'saleables'  => $saleables,
         ])->layout('layouts.admin.app', [
-            'title' => 'Edit Sale | School SaaS',
+            'title' => 'Edit Sale | ' . institution()->name,
         ]);
     }
 }

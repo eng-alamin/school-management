@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('office_expenses', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id')->constrained('schools')->cascadeOnDelete();
+            $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
             $table->foreignId('account_id')->constrained('office_accounts')->cascadeOnDelete();
             $table->foreignId('head_id')->nullable()->constrained('office_heads')->nullOnDelete();
             $table->string('pay_via')->nullable();

@@ -145,7 +145,7 @@ class AddTemplateComponent extends Component
     {
         return view('livewire.admin.salary.add-template-component')
             ->layout('layouts.admin.app', [
-                'title' => 'Salary Template | HR',
+                'title' => 'Salary Template | ' . institution()->name,
             ]);
     }
 }

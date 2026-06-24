@@ -128,7 +128,7 @@ class DepositEditComponent extends Component
             ->with('accounts', $accounts)
             ->with('heads', $heads)
             ->layout('layouts.admin.app', [
-                'title' => 'Edit Deposit | Monarchy School',
+                'title' => 'Edit Deposit | ' . institution()->name,
             ]);
     }
 }

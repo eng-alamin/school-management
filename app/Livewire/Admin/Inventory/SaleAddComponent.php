@@ -268,7 +268,7 @@ class SaleAddComponent extends Component
             'classes'    => AcademicClass::orderBy('name')->get(),
             'saleables'  => $saleables,
         ])->layout('layouts.admin.app', [
-            'title' => 'Add Sale | School SaaS',
+            'title' => 'Add Sale | ' . institution()->name,
         ]);
     }
 }

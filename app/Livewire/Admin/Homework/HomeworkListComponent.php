@@ -79,7 +79,7 @@ class HomeworkListComponent extends Component
             ->with('subjects', AcademicSubject::orderBy('name')->get())
             ->with('homeworks', $this->homeworks ?? [])
             ->layout('layouts.admin.app', [
-                'title' => "Homework List | School SaaS",
+                'title' => 'Homework List | ' . institution()->name,
             ]);
     }
 }

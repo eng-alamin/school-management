@@ -130,7 +130,7 @@ class SubjectComponent extends Component
         return view('livewire.admin.academic.subject-component')
             ->with('subjects', $subjects)
             ->layout('layouts.admin.app', [
-                'title' => "Subjects | School SaaS",
+                'title' => 'Subjects | ' . institution()->name,
             ]);
     }
 }

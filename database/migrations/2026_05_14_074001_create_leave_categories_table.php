@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('leave_categories', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id')->constrained('schools')->cascadeOnDelete();
+            $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
             $table->string('name');
             $table->string('role');
             $table->unsignedInteger('days')->default(0);

@@ -162,7 +162,7 @@ class ProductComponent extends Component
             ->with('categories', $categories)
             ->with('units', $units)
             ->layout('layouts.admin.app', [
-                'title' => "Inventory Product | School SaaS",
+                'title' => 'Inventory Product | ' . institution()->name,
             ]);
     }
 

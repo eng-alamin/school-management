@@ -2,7 +2,7 @@
 
 namespace App\Livewire\SuperAdmin\Admin;
 
-use App\Models\School;
+use App\Models\Institution;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
@@ -17,7 +17,7 @@ class AdminListComponent extends Component
 
     // List
     public string $search       = '';
-    public string $filterSchool = '';
+    public string $filterInstitution = '';
     public string $filterStatus = '';
     public int    $perPage      = 10;
 
@@ -34,7 +34,7 @@ class AdminListComponent extends Component
     public string  $username               = '';
     public string  $phone                  = '';
     public string  $email                  = '';
-    public ?int    $school_id              = null;
+    public ?int    $institution_id              = null;
     public string  $password               = '';
     public string  $password_confirmation  = '';
     public string  $is_active              = '1';
@@ -48,7 +48,7 @@ class AdminListComponent extends Component
             'username'  => 'nullable|max:100|unique:users,username,' . $this->editId,
             'phone'     => 'nullable|max:15|unique:users,phone,' . $this->editId,
             'email'     => 'nullable|email|max:150|unique:users,email,' . $this->editId,
-            'school_id' => 'required|exists:schools,id',
+            'institution_id' => 'required|exists:institutions,id',
             'password'  => $this->editId ? 'nullable|min:6|confirmed' : 'required|min:6|confirmed',
             'avatar'    => 'nullable|image|max:2048',
             'is_active' => 'required|in:0,1',
@@ -56,7 +56,7 @@ class AdminListComponent extends Component
     }
 
     public function updatingSearch(): void       { $this->resetPage(); }
-    public function updatingFilterSchool(): void { $this->resetPage(); }
+    public function updatingFilterInstitution(): void { $this->resetPage(); }
     public function updatingFilterStatus(): void { $this->resetPage(); }
 
     public function openCreate(): void
@@ -75,7 +75,7 @@ class AdminListComponent extends Component
         $this->username       = $record->username ?? '';
         $this->phone          = $record->phone ?? '';
         $this->email          = $record->email ?? '';
-        $this->school_id      = $record->school_id;
+        $this->institution_id      = $record->institution_id;
         $this->is_active      = (string) (int) $record->is_active;
         $this->existingAvatar = $record->avatar ?? '';
         $this->password               = '';
@@ -86,7 +86,7 @@ class AdminListComponent extends Component
 
     public function openView(int $id): void
     {
-        $this->viewRecord    = User::where('role', 'admin')->with('school')->findOrFail($id);
+        $this->viewRecord    = User::where('role', 'admin')->with('institution')->findOrFail($id);
         $this->showViewModal = true;
     }
 
@@ -108,7 +108,7 @@ class AdminListComponent extends Component
             'username'  => $this->username ?: null,
             'phone'     => $this->phone ?: null,
             'email'     => $this->email ?: null,
-            'school_id' => $this->school_id,
+            'institution_id' => $this->institution_id,
             'is_active' => $this->is_active,
             'avatar'    => $avatarPath ?: null,
         ];
@@ -126,7 +126,7 @@ class AdminListComponent extends Component
                 ->performedOn($record)
                 ->withProperties(['icon' => 'admin_panel_settings', 'type' => 'admin'])
                 ->tap(function ($activity) use ($record) {
-                    $activity->school_id = $record->school_id;
+                    $activity->institution_id = $record->institution_id;
                 })
                 ->log('Admin updated: ' . $record->name);
 
@@ -142,7 +142,7 @@ class AdminListComponent extends Component
                 ->performedOn($record)
                 ->withProperties(['icon' => 'admin_panel_settings', 'type' => 'admin'])
                 ->tap(function ($activity) use ($record) {
-                    $activity->school_id = $record->school_id;
+                    $activity->institution_id = $record->institution_id;
                 })
                 ->log('New admin created: ' . $record->name);
 
@@ -169,7 +169,7 @@ class AdminListComponent extends Component
             ->performedOn($record)
             ->withProperties(['icon' => 'admin_panel_settings', 'type' => 'admin'])
             ->tap(function ($activity) use ($record) {
-                $activity->school_id = $record->school_id;
+                $activity->institution_id = $record->institution_id;
             })
             ->log('Admin deleted: ' . $record->name);
 
@@ -195,7 +195,7 @@ class AdminListComponent extends Component
             ->performedOn($record)
             ->withProperties(['icon' => 'admin_panel_settings', 'type' => 'admin'])
             ->tap(function ($activity) use ($record) {
-                $activity->school_id = $record->school_id;
+                $activity->institution_id = $record->institution_id;
             })
             ->log('Admin status changed to ' . ($newStatus ? 'Active' : 'Inactive') . ': ' . $record->name);
 
@@ -215,7 +215,7 @@ class AdminListComponent extends Component
                 ->performedOn($record)
                 ->withProperties(['icon' => 'admin_panel_settings', 'type' => 'admin'])
                 ->tap(function ($activity) use ($record) {
-                    $activity->school_id = $record->school_id;
+                    $activity->institution_id = $record->institution_id;
                 })
                 ->log('Avatar removed from admin: ' . $record->name);
 
@@ -227,7 +227,7 @@ class AdminListComponent extends Component
     private function resetForm(): void
     {
         $this->reset([
-            'name', 'username', 'phone', 'email', 'school_id',
+            'name', 'username', 'phone', 'email', 'institution_id',
             'password', 'password_confirmation', 'avatar', 'existingAvatar', 'editId',
         ]);
         $this->is_active = '1';
@@ -237,7 +237,7 @@ class AdminListComponent extends Component
     public function render()
     {
         $admins = User::where('role', 'admin')
-            ->with('school')
+            ->with('institution')
             ->when($this->search, fn ($q) =>
                 $q->where(fn ($q2) =>
                     $q2->where('name', 'like', "%{$this->search}%")
@@ -245,18 +245,18 @@ class AdminListComponent extends Component
                        ->orWhere('phone', 'like', "%{$this->search}%")
                 )
             )
-            ->when($this->filterSchool, fn ($q) => $q->where('school_id', $this->filterSchool))
+            ->when($this->filterInstitution, fn ($q) => $q->where('institution_id', $this->filterInstitution))
             ->when($this->filterStatus !== '', fn ($q) => $q->where('is_active', $this->filterStatus))
             ->latest()
             ->paginate($this->perPage);
 
-        $schools = School::orderBy('name')->get(['id', 'name']);
+        $institutions = Institution::orderBy('name')->get(['id', 'name']);
 
         return view('livewire.super-admin.admin.admin-list-component')
             ->with('admins', $admins)
-            ->with('schools', $schools)
+            ->with('institutions', $institutions)
             ->layout('layouts.superadmin.app', [
-                'title' => "Admins | School SaaS",
+                'title' => 'Admins | ' . setting('app_name', 'EMS'),
             ]);
     }
 }

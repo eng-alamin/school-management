@@ -3,8 +3,8 @@
     <div class="card">
 
         <div class="mat-card-header header-pink-gradient">
-            <h5 id="cardHeaderTitleAllcategories">All Categories</h5>
-            <p id="cardHeaderSubtitle">Manage categories, create, update, and organize easily.</p>
+            <h5 id="cardHeaderTitleAllgroups">All Groups</h5>
+            <p id="cardHeaderSubtitle">Manage groups, create, update, and organize easily.</p>
         </div>
 
         <div class="card-header border-0">
@@ -16,7 +16,7 @@
                     </div>
                 </div>
 
-                @if($categories->total() > 10)
+                @if($groups->total() > 10)
                     <div class="col-md-2">
                         <select class="form-select form-select-sm" wire:model.live="perPage">
                             <option value="10">10 / page</option>
@@ -32,12 +32,12 @@
                 <a href="{{ route('admin.academic.sections') }}" class="btn-outline">
                     <span class="material-icons-round" style="font-size:16px">border_inner</span><span>Section</span>
                 </a>
-                <a href="{{ route('admin.academic.categories') }}" class="btn-outline bg-dark text-white">
-                    <span class="material-icons-round" style="font-size:16px">category</span><span>Category</span>
+                <a href="{{ route('admin.academic.groups') }}" class="btn-outline bg-dark text-white">
+                    <span class="material-icons-round" style="font-size:16px">group</span><span>Group</span>
                 </a>
 
                 <button class="btn-outline bg-dark text-white" wire:click="openCreate">
-                    <span class="material-icons-round">add</span> <span>New Category</span>
+                    <span class="material-icons-round">add</span> <span>New group</span>
                 </button>
             </div>
         </div>
@@ -55,16 +55,16 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($categories as $i => $category)
+                        @forelse($groups as $i => $group)
                         <tr>
-                            <td class="text-muted">{{ $categories->firstItem() + $i }}</td>
-                            <td>{{ $category->name }}</td>
+                            <td class="text-muted">{{ $groups->firstItem() + $i }}</td>
+                            <td>{{ $group->name }}</td>
                             <td>
                                 <div class="d-flex gap-1">
-                                    <button class="act-btn edit" title="Edit" wire:click="openEdit({{ $category->id }})">
+                                    <button class="act-btn edit" title="Edit" wire:click="openEdit({{ $group->id }})">
                                         <span class="material-icons-round">drive_file_rename_outline</span>
                                     </button>
-                                    <button class="act-btn delete" title="Delete" wire:click="confirmDeleteRecord({{ $category->id }})">
+                                    <button class="act-btn delete" title="Delete" wire:click="confirmDeleteRecord({{ $group->id }})">
                                         <span class="material-icons-round">delete</span>
                                     </button>
                                 </div>
@@ -74,7 +74,7 @@
                         <tr>
                             <td colspan="3" class="text-center py-5 text-muted">
                                 <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
-                                No categories found. <a href="#" wire:click.prevent="openCreate">Create one now</a>.
+                                No groups found. <a href="#" wire:click.prevent="openCreate">Create one now</a>.
                             </td>
                         </tr>
                         @endforelse
@@ -84,8 +84,8 @@
         </div>
 
         <div class="card-footer border-0 bg-white d-flex align-items-center justify-content-between flex-wrap gap-2 py-2 px-3">
-            <small class="text-muted">Showing {{ $categories->firstItem() ?? 0 }}–{{ $categories->lastItem() ?? 0 }} of {{ $categories->total() }}</small>
-            {{ $categories->links('vendor.pagination.custom') }}
+            <small class="text-muted">Showing {{ $groups->firstItem() ?? 0 }}–{{ $groups->lastItem() ?? 0 }} of {{ $groups->total() }}</small>
+            {{ $groups->links('vendor.pagination.custom') }}
         </div>
 
     </div>
@@ -96,7 +96,7 @@
             <div class="modal-dialog modal-md modal-dialog-scrollable">
                 <div class="modal-content">
                     <div class="modal-header border-0">
-                        <h5 class="modal-title">{{ $editId ? 'Edit' : 'Create' }} Category</h5>
+                        <h5 class="modal-title">{{ $editId ? 'Edit' : 'Create' }} Group</h5>
                         <button type="button" class="btn-close" wire:click="$set('showModal', false)"></button>
                     </div>
                     <div class="modal-body">
@@ -129,7 +129,7 @@
                         <div style="width:56px;height:56px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
                             <i class="bi bi-exclamation-triangle text-danger" style="font-size:1.5rem;"></i>
                         </div>
-                        <h6 class="fw-700">Delete Category?</h6>
+                        <h6 class="fw-700">Delete group?</h6>
                         <p class="text-muted small">This action cannot be undone.</p>
                     </div>
                     <div class="modal-footer justify-content-center border-0 pt-0">

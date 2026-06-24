@@ -3,7 +3,7 @@
 namespace App\Livewire;
 
 use Livewire\Component;
-use App\Models\School;
+use App\Models\Institution;
 use App\Models\User;
 use App\Models\Invoice;
 use Livewire\WithFileUploads;
@@ -16,9 +16,9 @@ class RegisterComponent extends Component
 
     public int $currentStep = 1;
 
-    // Step 1 — School Information
-    public string $school_name = '';
-    public string $school_type = '';
+    // Step 1 — Institution Information
+    public string $institution_name = '';
+    public string $institution_type = '';
     public string $phone = '';
     public string $email = '';
     public string $timezone = 'Asia/Dhaka';
@@ -33,8 +33,8 @@ class RegisterComponent extends Component
     protected function rules(): array
     {
         return [
-            'school_name' => 'required|min:3|max:255',
-            'school_type' => 'required|string',
+            'institution_name' => 'required|min:3|max:255',
+            'institution_type' => 'required|string',
             'phone'       => 'required|string|max:30',
             'email'       => 'required|email|max:255',
             'logo'        => 'nullable|image|max:2048',
@@ -47,8 +47,8 @@ class RegisterComponent extends Component
     public function stepOneValidation(): void
     {
         $this->validate([
-            'school_name' => 'required|min:3|max:255',
-            'school_type' => 'required|string',
+            'institution_name' => 'required|min:3|max:255',
+            'institution_type' => 'required|string',
             'phone'       => 'required|string|max:30',
             'email'       => 'required|email|max:255',
             'logo'        => 'nullable|image|max:2048',
@@ -92,18 +92,13 @@ class RegisterComponent extends Component
 
         $logoPath = null;
         if ($this->logo) {
-            $path = $this->logo->storeAs(
-                'logos',
-                time() . '_system.' . $this->logo->getClientOriginalExtension(),
-                'public'
-            );
-            $logoPath = 'storage/' . $path;
+            $logoPath = $this->logo->store('institution/system/logo', 'public');
         }
 
         session([
             'pending_registration' => [
-                'school_name' => $this->school_name,
-                'school_type' => $this->school_type,
+                'institution_name' => $this->institution_name,
+                'institution_type' => $this->institution_type,
                 'email'       => $this->email,
                 'phone'       => $this->phone,
                 'timezone'    => $this->timezone,
@@ -123,9 +118,10 @@ class RegisterComponent extends Component
         $this->stepTwoValidation();
 
         DB::transaction(function () {
-            // 1. Create the school record
-            $school = School::create([
-                'name'     => $this->school_name,
+            // 1. Create the institution record
+            $institution = Institution::create([
+                'name'     => $this->institution_name,
+                'type'     => $this->institution_type,
                 'email'    => $this->email,
                 'phone'    => $this->phone,
                 'timezone' => $this->timezone,
@@ -139,7 +135,7 @@ class RegisterComponent extends Component
                     time() . '_system.' . $this->logo->getClientOriginalExtension(),
                     'public'
                 );
-                $school->update(['system_logo' => 'storage/' . $path]);
+                $institution->update(['system_logo' => 'storage/' . $path]);
             }
 
             // 3. Create the super-admin user
@@ -148,14 +144,14 @@ class RegisterComponent extends Component
                 'email'     => $this->admin_email,
                 'password'  => $this->password,
                 'role'      => 'admin',
-                'school_id' => $school->id,
+                'institution_id' => $institution->id,
             ]);
 
             // 4. Create Invoice
             Invoice::create([
-                'school_id'      => $school->id,
+                'institution_id'      => $institution->id,
                 'type'           => 'registration',
-                'invoice_no'     => uniqid('INV_'),
+                'invoice_no'     => 'REG_' . strtoupper(uniqid()),
                 'total_amount'     => number_format(setting('register_fee', 0), 0),
                 'status'         => 'free',
             ]);
@@ -165,14 +161,14 @@ class RegisterComponent extends Component
 
         });
 
-        return redirect()->route('admin.dashboard')->with('success', 'School setup complete!!');
+        return redirect()->route('admin.dashboard')->with('success', 'Institution setup complete!!');
     }
 
     public function render()
     {
         return view('livewire.register-component')
             ->layout('layouts.app', [
-                'title' => 'School Setup',
+                'title' => 'Institution Setup',
             ]);
     }
 }

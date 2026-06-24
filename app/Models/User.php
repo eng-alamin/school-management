@@ -16,9 +16,11 @@ class User extends Authenticatable
 
     // Role constants — magic string এর বদলে constant ব্যবহার করো
     const ROLE_ADMIN    = 'admin';
+    const ROLE_TEACHER  = 'teacher';
+    const ROLE_STAFF    = 'staff';
+    const ROLE_ACCOUNTANT    = 'accountant';
     const ROLE_STUDENT  = 'student';
     const ROLE_PARENT   = 'parent';
-    const ROLE_TEACHER = 'teacher';
 
     /**
      * The attributes that are mass assignable.
@@ -57,9 +59,9 @@ class User extends Authenticatable
     // Relationships
     // =====================
 
-    public function school()
+    public function institution()
     {
-        return $this->belongsTo(School::class);
+        return $this->belongsTo(Institution::class);
     }
 
     public function student()
@@ -86,6 +88,21 @@ class User extends Authenticatable
         return $this->role === self::ROLE_ADMIN;
     }
 
+    public function isTeacher(): bool
+    {
+        return $this->role === self::ROLE_TEACHER;
+    }
+
+    public function isStaff(): bool
+    {
+        return $this->role === self::ROLE_STAFF;
+    }
+
+    public function isAccountant(): bool
+    {
+        return $this->role === self::ROLE_ACCOUNTANT;
+    }
+
     public function isStudent(): bool
     {
         return $this->role === self::ROLE_STUDENT;
@@ -94,11 +111,6 @@ class User extends Authenticatable
     public function isParent(): bool
     {
         return $this->role === self::ROLE_PARENT;
-    }
-
-    public function isEmployee(): bool
-    {
-        return $this->role === self::ROLE_EMPLOYEE;
     }
 
     // =====================
@@ -114,7 +126,7 @@ class User extends Authenticatable
         return match($this->role) {
             self::ROLE_STUDENT  => $this->student,
             self::ROLE_PARENT   => $this->guardian,
-            self::ROLE_EMPLOYEE => $this->employee,
+            self::ROLE_TEACHER => $this->teacher,
             default             => null,
         };
     }

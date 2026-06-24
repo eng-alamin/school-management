@@ -171,7 +171,7 @@ class PricingRateComponent extends Component
         return view('livewire.super-admin.settings.pricing-rate-component')
             ->with('rates', $rates)
             ->layout('layouts.superadmin.app', [
-                'title' => "Pricing Rates | School SaaS",
+                'title' => 'Pricing Rates | ' . setting('app_name', 'EMS'),
             ]);
     }
 }

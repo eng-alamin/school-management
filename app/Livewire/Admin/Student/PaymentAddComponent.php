@@ -150,7 +150,7 @@ class PaymentAddComponent extends Component
         return view('livewire.admin.student.payment-add-component')
             ->with(['invoices' => $invoices, 'officeAccounts' => $officeAccounts])
             ->layout('layouts.admin.app', [
-                'title' => "Payment Add | School SaaS",
+                'title' => 'Payment Add | ' . institution()->name,
             ]);
     }
 }

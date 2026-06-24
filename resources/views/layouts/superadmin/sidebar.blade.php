@@ -6,7 +6,7 @@
       <span class="material-icons-round">dashboard</span>
     </div>
     <div class="brand-text">
-      <div class="brand-name">Super Admin Dashboard</div>
+      <div class="brand-name">Dashboard</div>
       <div class="brand-sub">{{ auth()->user()->name }}</div>
     </div>
   </div>
@@ -40,9 +40,9 @@
       </li>
 
       <li class="nav1-item">
-        <a href="{{route('superadmin.schools.index') }}" class="nav1-link {{ str_contains(request()->url(), 'superadmin/schools/') == true ? 'active' : '' }}">
+        <a href="{{route('superadmin.institutions.index') }}" class="nav1-link {{ str_contains(request()->url(), 'superadmin/institutions/') == true ? 'active' : '' }}">
           <span class="material-icons-round nav-icon">school</span>
-          <span class="nav-label" id="nav-schools">Schools</span>
+          <span class="nav-label" id="nav-schools">Institutions</span>
         </a>
       </li>
 

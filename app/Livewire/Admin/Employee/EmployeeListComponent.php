@@ -69,7 +69,7 @@ class EmployeeListComponent extends Component
         return view('livewire.admin.employee.employee-list-component')
             ->with('employees', $employees)
             ->layout('layouts.admin.app', [
-                'title' => "Employee List | School SaaS",
+                'title' => 'Employee List | ' . institution()->name,
             ]);
     }
 }

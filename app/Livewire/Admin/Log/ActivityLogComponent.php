@@ -38,7 +38,7 @@ class ActivityLogComponent extends Component
         return view('livewire.admin.log.activity-log-component')
             ->with('logs', $logs)
             ->layout('layouts.admin.app', [
-                'title' => 'Activity Log | Monarchy School',
+                'title' => 'Activity Log | ' . institution()->name,
             ]);
     }
 }

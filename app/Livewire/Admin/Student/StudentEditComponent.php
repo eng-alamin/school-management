@@ -9,7 +9,7 @@ use App\Models\Guardian;
 use App\Models\AcademicSession;
 use App\Models\AcademicClass;
 use App\Models\AcademicSection;
-use App\Models\AcademicCategory;
+use App\Models\AcademicGroup;
 
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
@@ -30,7 +30,7 @@ class StudentEditComponent extends Component
     public $admission_date;
     public $class_id;
     public $section_id;
-    public $category_id;
+    public $group_id;
 
     public $name;
     public $gender;
@@ -81,7 +81,7 @@ class StudentEditComponent extends Component
         $this->admission_date = $this->student->admission_date;
         $this->class_id       = $this->student->class_id;
         $this->section_id     = $this->student->section_id;
-        $this->category_id    = $this->student->category_id;
+        $this->group_id    = $this->student->group_id;
 
         // Personal
         $this->name              = $this->student->name;
@@ -120,7 +120,7 @@ class StudentEditComponent extends Component
     {
         return [
             'session_id'  => 'required',
-            'register_no' => ['required', Rule::unique('students', 'register_no')->ignore($this->studentId)],
+            'register_no' => ['nullable', Rule::unique('students', 'register_no')->ignore($this->studentId)],
             'class_id'    => 'required',
 
             'name'        => 'required',
@@ -180,7 +180,7 @@ class StudentEditComponent extends Component
                 'admission_date'   => $this->admission_date,
                 'class_id'         => $this->class_id,
                 'section_id'       => $this->section_id,
-                'category_id'      => $this->category_id,
+                'group_id'      => $this->group_id,
 
                 'name'             => $this->name,
                 'gender'           => $this->gender,
@@ -262,17 +262,17 @@ class StudentEditComponent extends Component
         $sessions   = AcademicSession::orderBy('name')->get();
         $classes    = AcademicClass::orderBy('id')->get();
         $sections   = AcademicSection::orderBy('name')->get();
-        $categories = AcademicCategory::orderBy('name')->get();
+        $groups = AcademicGroup::orderBy('name')->get();
         $guardians  = Guardian::orderBy('name')->get();
 
         return view('livewire.admin.student.student-edit-component')
             ->with('sessions', $sessions)
             ->with('classes', $classes)
             ->with('sections', $sections)
-            ->with('categories', $categories)
+            ->with('groups', $groups)
             ->with('guardians', $guardians)
             ->layout('layouts.admin.app', [
-                'title' => "Edit Student | Monarchy School",
+                'title' => 'Edit Student | ' . institution()->name,
             ]);
     }
 }

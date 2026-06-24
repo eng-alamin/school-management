@@ -274,7 +274,7 @@ class NoticeComponent extends Component
         return view('livewire.admin.notice.notice-component')
             ->with('notices', $notices)
             ->layout('layouts.admin.app', [
-                'title' => "Notice Board | School SaaS",
+                'title' => 'Notice Board | ' . institution()->name,
             ]);
     }
 }

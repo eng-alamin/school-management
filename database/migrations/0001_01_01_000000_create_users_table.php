@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignId('institution_id')->nullable()->constrained()->cascadeOnDelete();
             $table->enum('role', ['super_admin', 'admin', 'staff', 'teacher', 'accountant', 'student', 'parent',])->default('student');
             $table->string('name', 100);
             $table->string('username', 100)->nullable()->unique();

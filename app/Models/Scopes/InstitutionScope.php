@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
 
-class SchoolScope implements Scope
+class InstitutionScope implements Scope
 {
     public function apply(Builder $builder, Model $model): void
     {
@@ -20,12 +20,12 @@ class SchoolScope implements Scope
         }
 
         $builder->where(
-            $model->getTable().'.school_id',
-            auth()->user()->school_id
+            $model->getTable().'.institution_id',
+            auth()->user()->institution_id
         );
 
         // if (auth()->check()) {
-        //     $builder->where($model->getTable() . '.school_id', auth()->user()->school_id);
+        //     $builder->where($model->getTable() . '.institution_id', auth()->user()->institution_id);
         // }
     }
 }

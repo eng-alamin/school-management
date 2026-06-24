@@ -24,7 +24,7 @@ class QueueMonitorComponent extends Component
     {
         return view('livewire.super-admin.monitoring.queue-monitor-component')
             ->layout('layouts.superadmin.app', [
-                'title' => 'Queue Monitor',
+                'title' => 'Queue Monitor | ' . setting('app_name', 'EMS'),
             ]);
     }
 }

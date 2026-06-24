@@ -75,7 +75,7 @@ class ListComponent extends Component
         return view('livewire.admin.event.list-component')
             ->with('events', $events)
             ->layout('layouts.admin.app', [
-                'title' => 'Events | School SaaS',
+                'title' => 'Events | ' . institution()->name,
             ]);
     }
 }

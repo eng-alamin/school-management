@@ -204,7 +204,7 @@ class AdmitCardTemplateComponent extends Component
             ->with('templates', $templates)
             ->with('examTypes', AdmitCardTemplate::getExamTypes())
             ->layout('layouts.admin.app', [
-                'title' => "Admit Card Templates | School SaaS",
+                'title' => 'Admit Card Templates | ' . institution()->name,
             ]);
     }
 }

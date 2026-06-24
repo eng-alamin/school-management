@@ -5,21 +5,21 @@
     {{-- ══ Welcome Header ══════════════════════════════════════════════════ --}}
     <div class="dash-header px-3 pt-3 pb-2">
         <h5 class="fw-bold mb-0 text-dark">Super Admin Panel 🛡️</h5>
-        <p class="text-secondary mb-0" style="font-size:12px;">Platform-wide overview — all schools</p>
+        <p class="text-secondary mb-0" style="font-size:12px;">Platform-wide overview — all institutions</p>
     </div>
 
     {{-- ══ Stat Cards ══════════════════════════════════════════════════════ --}}
     <div class="px-3 pt-2">
         <div class="row g-3">
 
-            {{-- Total Schools --}}
+            {{-- Total Institutions --}}
             <div class="col-6 col-md-3">
                 <div class="dash-stat-card">
                     <div class="dash-stat-icon" style="background:#eef2ff;">
                         <span class="material-icons-round" style="color:#4f46e5;">account_balance</span>
                     </div>
-                    <p class="dash-stat-label">Total Schools</p>
-                    <h4 class="dash-stat-value">{{ number_format($totalSchools) }}</h4>
+                    <p class="dash-stat-label">Total Institutions</p>
+                    <h4 class="dash-stat-value">{{ number_format($totalInstitutions) }}</h4>
                     <span class="dash-stat-badge text-success">
                         <span class="material-icons-round" style="font-size:11px;vertical-align:middle;">arrow_upward</span>
                         Platform total
@@ -27,17 +27,17 @@
                 </div>
             </div>
 
-            {{-- Active Schools --}}
+            {{-- Active Institutions --}}
             <div class="col-6 col-md-3">
                 <div class="dash-stat-card">
                     <div class="dash-stat-icon" style="background:#d1fae5;">
                         <span class="material-icons-round" style="color:#059669;">check_circle</span>
                     </div>
-                    <p class="dash-stat-label">Active Schools</p>
-                    <h4 class="dash-stat-value">{{ number_format($activeSchools) }}</h4>
+                    <p class="dash-stat-label">Active Institutions</p>
+                    <h4 class="dash-stat-value">{{ number_format($activeInstitutions) }}</h4>
                     <span class="dash-stat-badge text-secondary">
-                        @if($totalSchools > 0)
-                            {{ round(($activeSchools / $totalSchools) * 100) }}% active
+                        @if($totalInstitutions > 0)
+                            {{ round(($activeInstitutions / $totalInstitutions) * 100) }}% active
                         @else
                             0% active
                         @endif
@@ -49,13 +49,13 @@
             <div class="col-6 col-md-3">
                 <div class="dash-stat-card">
                     <div class="dash-stat-icon" style="background:#fef3c7;">
-                        <span class="material-icons-round" style="color:#d97706;">school</span>
+                        <span class="material-icons-round" style="color:#d97706;">institution</span>
                     </div>
                     <p class="dash-stat-label">Total Students</p>
                     <h4 class="dash-stat-value">{{ number_format($totalStudents) }}</h4>
                     <span class="dash-stat-badge text-success">
                         <span class="material-icons-round" style="font-size:11px;vertical-align:middle;">arrow_upward</span>
-                        All schools
+                        All institutions
                     </span>
                 </div>
             </div>
@@ -70,7 +70,7 @@
                     <h4 class="dash-stat-value">{{ number_format($totalTeachers) }}</h4>
                     <span class="dash-stat-badge text-success">
                         <span class="material-icons-round" style="font-size:11px;vertical-align:middle;">arrow_upward</span>
-                        All schools
+                        All institutions
                     </span>
                 </div>
             </div>
@@ -135,14 +135,14 @@
                 </div>
             </div>
 
-            {{-- Inactive Schools --}}
+            {{-- Inactive Institutions --}}
             <div class="col-6 col-md-3">
                 <div class="dash-stat-card">
                     <div class="dash-stat-icon" style="background:#fef2f2;">
                         <span class="material-icons-round" style="color:#dc2626;">warning_amber</span>
                     </div>
-                    <p class="dash-stat-label">Inactive Schools</p>
-                    <h4 class="dash-stat-value">{{ $inactiveSchools }}</h4>
+                    <p class="dash-stat-label">Inactive Institutions</p>
+                    <h4 class="dash-stat-value">{{ $inactiveInstitutions }}</h4>
                     <span class="dash-stat-badge text-danger">Needs attention</span>
                 </div>
             </div>
@@ -150,31 +150,31 @@
         </div>
     </div>
 
-    {{-- ══ Recent Schools ═══════════════════════════════════════════════════ --}}
+    {{-- ══ Recent Institutions ═══════════════════════════════════════════════════ --}}
     <div class="px-3 mt-4">
         <div class="dash-section-card">
             <div class="d-flex align-items-center justify-content-between mb-3">
                 <div class="dash-section-title mb-0">
                     <span class="material-icons-round text-primary" style="font-size:18px;">account_balance</span>
-                    Recent Schools
+                    Recent Institutions
                 </div>
-                <a href="{{ route('superadmin.schools.index') }}" class="dash-view-all">View all</a>
+                <a href="{{ route('superadmin.institutions.index') }}" class="dash-view-all">View all</a>
             </div>
 
-            @forelse($recentSchools as $school)
-                <div class="dash-school-row">
-                    <div class="dash-school-avatar">
-                        {{ strtoupper(substr($school->name, 0, 1)) }}
+            @forelse($recentInstitutions as $institution)
+                <div class="dash-institution-row">
+                    <div class="dash-institution-avatar">
+                        {{ strtoupper(substr($institution->name, 0, 1)) }}
                     </div>
                     <div class="flex-grow-1 min-w-0">
                         <p class="mb-0 fw-semibold text-truncate" style="font-size:13px;">
-                            {{ $school->name }}
+                            {{ $institution->name }}
                         </p>
                         <small class="text-secondary" style="font-size:11px;">
-                            {{ $school->email }}
+                            {{ $institution->email }}
                         </small>
                     </div>
-                    @if($school->status)
+                    @if($institution->status)
                         <span class="dash-status-badge dash-badge-active">Active</span>
                     @else
                         <span class="dash-status-badge dash-badge-inactive">Inactive</span>
@@ -182,7 +182,7 @@
                 </div>
             @empty
                 <p class="text-center text-secondary py-2 mb-0" style="font-size:13px;">
-                    কোনো school নেই এখনো
+                    কোনো institution নেই এখনো
                 </p>
             @endforelse
         </div>
@@ -200,10 +200,10 @@
             </div>
 
             @forelse($recentInvoices as $inv)
-                <div class="dash-school-row">
+                <div class="dash-institution-row">
                     <div class="flex-grow-1 min-w-0">
                         <p class="mb-0 fw-semibold text-truncate" style="font-size:13px;">
-                            {{ $inv->school_name }}
+                            {{ $inv->institution_name }}
                         </p>
                         <small class="text-secondary" style="font-size:11px;">
                             {{ $inv->invoice_no }} · Due: {{ \Carbon\Carbon::parse($inv->due_date)->format('d M Y') }}
@@ -290,14 +290,14 @@
     }
     .dash-view-all { font-size: 12px; color: #e94d82; font-weight: 500; text-decoration: none; }
 
-    .dash-school-row {
+    .dash-institution-row {
         display: flex; align-items: center; gap: 10px;
         padding: 10px 12px; border-radius: 10px;
         background: #f9fafb; margin-bottom: 8px;
     }
-    .dash-school-row:last-child { margin-bottom: 0; }
+    .dash-institution-row:last-child { margin-bottom: 0; }
 
-    .dash-school-avatar {
+    .dash-institution-avatar {
         width: 36px; height: 36px; border-radius: 10px;
         background: linear-gradient(135deg, #e94d82, #f4a8c5);
         color: #fff; font-size: 14px; font-weight: 700;

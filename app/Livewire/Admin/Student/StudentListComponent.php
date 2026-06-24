@@ -99,7 +99,7 @@ class StudentListComponent extends Component
             ->with('students', $students)
             ->with('classes', $classes)
             ->layout('layouts.admin.app', [
-                'title' => "Student List | School SaaS",
+                'title' => 'Student List | ' . institution()->name,
             ]);
     }
 }

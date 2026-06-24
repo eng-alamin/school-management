@@ -102,7 +102,7 @@ class TermComponent extends Component
         return view('livewire.admin.exam.term-component')
             ->with('terms', $terms)
             ->layout('layouts.admin.app', [
-                'title' => "Exam Term | School SaaS",
+                'title' => 'Exam Term | ' . institution()->name,
             ]);
 
     }

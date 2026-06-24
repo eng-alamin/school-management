@@ -40,7 +40,7 @@ class InvoiceIndex extends Component
 
     public function openDetail(int $id): void
     {
-        $this->viewInvoice = Invoice::with(['items', 'school'])->findOrFail($id);
+        $this->viewInvoice = Invoice::with(['items', 'institution'])->findOrFail($id);
         $this->showDetailModal = true;
     }
 
@@ -117,11 +117,11 @@ class InvoiceIndex extends Component
 
     public function render()
     {
-        $invoices = Invoice::with('school')
+        $invoices = Invoice::with('institution')
             ->when($this->search, fn ($q) =>
                 $q->where(fn ($q2) =>
                     $q2->where('invoice_no', 'like', "%{$this->search}%")
-                       ->orWhereHas('school', fn ($q3) =>
+                       ->orWhereHas('institution', fn ($q3) =>
                            $q3->where('name', 'like', "%{$this->search}%")
                        )
                 )
@@ -148,7 +148,7 @@ class InvoiceIndex extends Component
                 'totalOverdue'   => $totalOverdue,
             ])
             ->layout('layouts.superadmin.app', [
-                'title' => "Manage Invoices | School SaaS",
+                'title' => 'Manage Invoices | ' . setting('app_name', 'EMS'),
             ]);
     }
 }

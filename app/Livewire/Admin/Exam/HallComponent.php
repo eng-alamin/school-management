@@ -106,7 +106,7 @@ class HallComponent extends Component
         return view('livewire.admin.exam.hall-component')
             ->with('halls', $halls)
             ->layout('layouts.admin.app', [
-                'title' => "Exam Term | School SaaS",
+                'title' => 'Exam Term | ' . institution()->name,
             ]);
 
     }

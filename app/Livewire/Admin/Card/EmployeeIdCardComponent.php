@@ -203,7 +203,7 @@ class EmployeeIdCardComponent extends Component
             ->with('roles', $roles)
             ->with('selectedTemplate', $selectedTemplate)
             ->layout('layouts.admin.app', [
-                'title' => 'Employee ID Cards | School SaaS',
+                'title' => 'Employee ID Cards | ' . institution()->name,
             ]);
     }
 }

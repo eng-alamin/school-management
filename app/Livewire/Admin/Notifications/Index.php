@@ -88,7 +88,7 @@ class Index extends Component
             'unreadCount'   => auth()->user()->unreadNotificationsCount(),
             'typeLabels'    => Notification::typeLabels(),
         ])->layout('layouts.admin.app', [
-                'title' => "Notifications | School SaaS",
+                'title' => 'Notifications | ' . institution()->name,
             ]);
     }
 }

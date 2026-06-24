@@ -326,7 +326,7 @@ class ApplicationComponent extends Component
 
         return view('livewire.admin.leave.application-component', compact('applications', 'categories'))
             ->layout('layouts.admin.app', [
-                'title' => 'Leave Application | School SaaS',
+                'title' => 'Leave Application | ' . institution()->name,
             ]);
     }
 }

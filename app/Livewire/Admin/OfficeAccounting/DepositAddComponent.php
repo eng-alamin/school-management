@@ -95,7 +95,7 @@ class DepositAddComponent extends Component
             ->with('accounts', $accounts)
             ->with('heads', $heads)
             ->layout('layouts.admin.app', [
-                'title' => 'Add Deposit | Monarchy School',
+                'title' => 'Add Deposit | ' . institution()->name,
             ]);
     }
 }

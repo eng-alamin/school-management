@@ -2,21 +2,22 @@
 
 namespace App\Livewire\Admin\Setting;
 
-use App\Models\School;
+use App\Models\Institution;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Cache;
 
-class SchoolComponent extends Component
+class InstitutionComponent extends Component
 {
     use WithFileUploads;
 
     // Single-tenant: always id = 1
-    protected const SCHOOL_ID = 1;
+    protected const INSTITUTION_ID = 1;
 
     // General
     public string $name         = '';
+    public ?string $eiin         = null;
     public ?string $email       = null;
     public ?string $phone       = null;
     public ?string $city        = null;
@@ -49,7 +50,7 @@ class SchoolComponent extends Component
     public bool $auto_generate_student_login  = false;
     public bool $auto_generate_guardian_login = false;
 
-    // Logo paths (stored — raw relative path, e.g. "schools/logos/xxx.webp")
+    // Logo paths (stored — raw relative path, e.g. "institutions/logos/xxx.webp")
     public ?string $system_logo = null;
     public ?string $text_logo   = null;
     public ?string $print_logo  = null;
@@ -65,6 +66,7 @@ class SchoolComponent extends Component
     {
         return [
             'name'              => 'required|string|max:255',
+            'eiin'              => 'nullable|string|max:255',
             'email'             => 'nullable|email|max:255',
             'phone'             => 'nullable|string|max:30',
             'city'              => 'nullable|string|max:100',
@@ -103,13 +105,14 @@ class SchoolComponent extends Component
 
     public function mount()
     {
-        $setting = School::withoutGlobalScope(\App\Models\Scopes\SchoolScope::class)->find(auth()->user()->school_id);
+        $setting = Institution::withoutGlobalScope(\App\Models\Scopes\InstitutionScope::class)->find(auth()->user()->institution_id);
 
         if (! $setting) {
             return;
         }
 
         $this->name                         = $setting->name;
+        $this->eiin                         = $setting->eiin;
         $this->email                        = $setting->email;
         $this->phone                        = $setting->phone;
         $this->city                         = $setting->city;
@@ -151,7 +154,7 @@ class SchoolComponent extends Component
     {
         $this->validate();
 
-        $setting = School::withoutGlobalScope(\App\Models\Scopes\SchoolScope::class)->find(auth()->user()->school_id);
+        $setting = Institution::withoutGlobalScope(\App\Models\Scopes\InstitutionScope::class)->find(auth()->user()->institution_id);
 
         // চারটা logo field-এর জন্য একই pattern follow করা হলো
         foreach ([
@@ -167,7 +170,7 @@ class SchoolComponent extends Component
                 if ($logoPath) {
                     Storage::disk('public')->delete($logoPath);
                 }
-                $logoPath = $upload->store('schools/logos', 'public');
+                $logoPath = $upload->store('institutions/logos', 'public');
             }
 
             $setting->{$field} = $logoPath;
@@ -176,6 +179,7 @@ class SchoolComponent extends Component
 
         $setting->fill([
             'name'                           => $this->name,
+            'eiin'                           => $this->eiin,
             'email'                          => $this->email,
             'phone'                          => $this->phone,
             'city'                           => $this->city,
@@ -207,8 +211,8 @@ class SchoolComponent extends Component
 
         $setting->save();
 
-        // Clear school settings cache
-        Cache::forget('school_settings');
+        // Clear institution settings cache
+        Cache::forget('institution_settings');
 
         // Reset upload fields after save
         $this->reset([
@@ -216,14 +220,14 @@ class SchoolComponent extends Component
             'print_logo_upload',  'report_logo_upload',
         ]);
 
-        $this->dispatch('toast', type: 'success', message: 'School settings saved successfully.');
+        $this->dispatch('toast', type: 'success', message: 'Institution settings saved successfully.');
     }
 
     public function render()
     {
-        return view('livewire.admin.setting.school-component')
+        return view('livewire.admin.setting.institution-component')
             ->layout('layouts.admin.app', [
-                'title' => 'School Settings',
+                'title' => 'Institution Settings | ' . institution()->name,
             ]);
     }
 }

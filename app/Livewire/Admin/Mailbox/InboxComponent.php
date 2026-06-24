@@ -117,7 +117,7 @@ class InboxComponent extends Component
 
         return view('livewire.admin.mailbox.inbox-component', compact('messages', 'unreadCount'))
             ->layout('layouts.admin.app', [
-                'title' => "MailBox | School SaaS",
+                'title' => 'MailBox | ' . institution()->name,
             ]);
     }
 }

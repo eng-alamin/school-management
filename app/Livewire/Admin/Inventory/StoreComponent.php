@@ -132,7 +132,7 @@ class StoreComponent extends Component
         return view('livewire.admin.inventory.store-component')
             ->with('stores', $stores)
             ->layout('layouts.admin.app', [
-                'title' => "Inventory Store | School SaaS",
+                'title' => 'Inventory Store | ' . institution()->name,
             ]);
     }
 

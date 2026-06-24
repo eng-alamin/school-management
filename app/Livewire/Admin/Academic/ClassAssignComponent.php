@@ -162,7 +162,7 @@ class ClassAssignComponent extends Component
             ->with('classes', $classes)
             ->with('subjects', $subjects)
             ->layout('layouts.admin.app', [
-                'title' => "Class Assignments | School SaaS",
+                'title' => 'Class Assignments | ' . institution()->name,
             ]);
     }
 }

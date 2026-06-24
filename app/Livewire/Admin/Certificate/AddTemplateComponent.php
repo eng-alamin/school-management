@@ -145,7 +145,7 @@ class AddTemplateComponent extends Component
     {
         return view('livewire.admin.certificate.add-template-component')
             ->layout('layouts.admin.app', [
-                'title' => 'Add Certificate Template | Monarchy School',
+                'title' => 'Add Certificate Template | ' . institution()->name,
             ]);
     }
 }

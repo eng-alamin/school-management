@@ -243,7 +243,7 @@ class PaymentComponent extends Component
             'employees'      => $employees,
             'officeAccounts' => $officeAccounts,
         ])->layout('layouts.admin.app', [
-            'title' => 'Payroll | Salary Payments',
+            'title' => 'Payroll | ' . institution()->name,
         ]);
     }
 }

@@ -104,7 +104,7 @@ class SettingComponent extends Component
         return view('livewire.admin.profile.setting-component')
             ->with('user', $this->user)
             ->layout('layouts.admin.app', [
-                'title' => "Profile Setting | School SaaS",
+                'title' => 'Profile Setting | ' . institution()->name,
             ]);
     }
 }

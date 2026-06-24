@@ -237,7 +237,7 @@ class GenerateEmployeeComponent extends Component
         return view('livewire.admin.certificate.generate-employee-component')
             ->with(compact('templates', 'employees', 'roles', 'selectedTemplate'))
             ->layout('layouts.admin.app', [
-                'title' => 'Generate Employee Certificates | Monarchy School',
+                'title' => 'Generate Employee Certificates | ' . institution()->name,
             ]);
     }
 }

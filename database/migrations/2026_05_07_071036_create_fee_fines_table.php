@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('fee_fines', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id')->constrained('schools')->cascadeOnDelete();
+            $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
             $table->foreignId('fee_group_id')->constrained('fee_groups')->cascadeOnDelete();
             $table->foreignId('fee_group_item_id')->nullable()->constrained('fee_group_items')->nullOnDelete();
             $table->enum('fine_type', ['fixed', 'percentage'])->default('fixed');

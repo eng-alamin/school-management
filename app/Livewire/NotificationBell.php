@@ -26,7 +26,7 @@ class NotificationBell extends Component
 
     public function markAsRead(int $id): void
     {
-        // BelongsToSchool SchoolScope automatically school filter করবে
+        // BelongsToInstitution InstitutionScope automatically institution filter করবে
         Notification::whereKey($id)
             ->where('notifiable_id', auth()->id())
             ->where('notifiable_type', auth()->user()::class)

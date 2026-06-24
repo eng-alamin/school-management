@@ -7,7 +7,7 @@
     </div>
     <div class="brand-text">
       <div class="brand-name">Admin Dashboard</div>
-      <div class="brand-sub">{{ school()->name }}</div>
+      <div class="brand-sub">{{ institution()->name }}</div>
     </div>
   </div>
 
@@ -107,6 +107,7 @@
         </div>
         <div class="nav2-collapse {{ str_contains(request()->url(), 'academic') == true ? 'show' : '' }}">
           <ul>
+            <li class="nav2-item"><a href="{{route('admin.academic.sessions') }}" class="nav2-link {{ str_contains(request()->url(), 'academic/sessions') == true ? 'active' : '' }}"><span class="nav2-icon">S</span><span class="nav2-label" id="nav-session-settings">Sessions</span></a></li>
             <li class="nav2-item"><a href="{{route('admin.academic.classes') }}" class="nav2-link {{ str_contains(request()->url(), 'academic/classes') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-class-section">Class & Section</span></a></li>
             <li class="nav2-item"><a href="{{route('admin.academic.subjects') }}" class="nav2-link {{ str_contains(request()->url(), 'academic/subjects') == true ? 'active' : '' }}"><span class="nav2-icon">S</span><span class="nav2-label" id="nav-subject">Subject</span></a></li>
             <li class="nav2-item"><a href="{{route('admin.academic.class-assign') }}" class="nav2-link {{ str_contains(request()->url(), 'academic/class-assign') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-class-assign">Class Assign</span></a></li>
@@ -329,12 +330,12 @@
         </div>
         <div class="nav2-collapse {{ request()->is('setting/*', 'notifications', 'activity-logs', 'login-logs') ? 'show' : '' }}">
           <ul>
-            <li class="nav2-item"><a href="{{route('admin.setting.school') }}" class="nav2-link {{ str_contains(request()->url(), 'setting/school') == true ? 'active' : '' }}"><span class="nav2-icon">S</span><span class="nav2-label" id="nav-school-settings">School Settings</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.setting.sessions') }}" class="nav2-link {{ str_contains(request()->url(), 'setting/sessions') == true ? 'active' : '' }}"><span class="nav2-icon">S</span><span class="nav2-label" id="nav-session-settings">Session Settings</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.setting.institution') }}" class="nav2-link {{ str_contains(request()->url(), 'setting/institution') == true ? 'active' : '' }}"><span class="nav2-icon">S</span><span class="nav2-label" id="nav-institution-settings">Institution Settings</span></a></li>
             <li class="nav2-item"><div class="nav2-link"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-cronjob">Cron Job</span></div></li>
             <li class="nav2-item"><a href="{{route('admin.notifications.index') }}" class="nav2-link {{ str_contains(request()->url(), 'notifications') == true ? 'active' : '' }}"><span class="nav2-icon">AL</span><span class="nav2-label" id="nav-activity-log">Notifications</span></a></li>
             <li class="nav2-item"><a href="{{route('admin.activitylog') }}" class="nav2-link {{ str_contains(request()->url(), 'activity-log') == true ? 'active' : '' }}"><span class="nav2-icon">AL</span><span class="nav2-label" id="nav-activity-log">Activity Logs</span></a></li>
             <li class="nav2-item"><a href="{{route('admin.loginlog') }}" class="nav2-link {{ str_contains(request()->url(), 'login-log') == true ? 'active' : '' }}"><span class="nav2-icon">LL</span><span class="nav2-label" id="nav-login-log">Login Logs</span></a></li>
+            <li class="nav2-item"><a href="{{route('clear') }}" class="nav2-link"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-login-log">Clear Cache</span></a></li>
           </ul>
         </div>
       </li>

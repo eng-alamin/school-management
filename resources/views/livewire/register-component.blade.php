@@ -423,11 +423,11 @@
                                 </div>
 
                                 <h2 class="sidebar-title">
-                                    Setup Your School
+                                    Setup Your Institution
                                 </h2>
 
                                 <p class="sidebar-subtitle">
-                                    Get your school management system
+                                    Get your institution management system
                                     up and running in less than
                                     2 minutes.
                                 </p>
@@ -449,8 +449,8 @@
                                             @endif
                                         </div>
                                         <div>
-                                            <div class="step-title">School Information</div>
-                                            <div class="step-desc">Setup school profile</div>
+                                            <div class="step-title">Institution Information</div>
+                                            <div class="step-desc">Setup institution profile</div>
                                         </div>
                                     </div>
 
@@ -522,36 +522,36 @@
                                 </div>
 
                                 {{-- =====================================================
-                                    STEP 1 — School Information
+                                    STEP 1 — Institution Information
                                 ====================================================== --}}
 
                                 @if($currentStep === 1)
 
                                     <div wire:key="step-1">
 
-                                        <h2 class="wizard-heading">School Information</h2>
+                                        <h2 class="wizard-heading">Institution Information</h2>
                                         <p class="wizard-text">Tell us about your institution.</p>
 
                                         <div class="row">
 
                                             <div class="col-md-6 mb-4">
-                                                <label class="form-label">School Name</label>
+                                                <label class="form-label">Institution Name</label>
                                                 <input
                                                     type="text"
-                                                    class="form-control @error('school_name') is-invalid @enderror"
-                                                    wire:model.live="school_name"
-                                                    placeholder="Green Valley School"
+                                                    class="form-control @error('institution_name') is-invalid @enderror"
+                                                    wire:model.live="institution_name"
+                                                    placeholder="Green Valley Institution"
                                                 >
-                                                @error('school_name')
+                                                @error('institution_name')
                                                     <div class="invalid-feedback">{{ $message }}</div>
                                                 @enderror
                                             </div>
 
                                             <div class="col-md-6 mb-4">
-                                                <label class="form-label">School Type</label>
+                                                <label class="form-label">Institution Type</label>
                                                 <select
-                                                    class="form-select @error('school_type') is-invalid @enderror"
-                                                    wire:model.live="school_type"
+                                                    class="form-select @error('institution_type') is-invalid @enderror"
+                                                    wire:model.live="institution_type"
                                                 >
                                                     <option value="">Select Type</option>
                                                     <option value="school">School</option>
@@ -559,7 +559,7 @@
                                                     <option value="madrasa">Madrasa</option>
                                                     <option value="university">University</option>
                                                 </select>
-                                                @error('school_type')
+                                                @error('institution_type')
                                                     <div class="invalid-feedback">{{ $message }}</div>
                                                 @enderror
                                             </div>
@@ -570,7 +570,7 @@
                                                     type="email"
                                                     class="form-control @error('email') is-invalid @enderror"
                                                     wire:model.live="email"
-                                                    placeholder="school@example.com"
+                                                    placeholder="institution@example.com"
                                                 >
                                                 @error('email')
                                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -591,7 +591,7 @@
                                             </div>
 
                                             <div class="col-12 mb-4">
-                                                <label class="form-label">School Logo</label>
+                                                <label class="form-label">Institution Logo</label>
                                                 <label class="upload-box w-100">
                                                     <input
                                                         type="file"
@@ -611,7 +611,7 @@
                                                         </div>
                                                     @else
                                                         <i class="bi bi-cloud-arrow-up-fill fs-1 text-primary"></i>
-                                                        <div class="mt-3 fw-bold">Upload School Logo</div>
+                                                        <div class="mt-3 fw-bold">Upload Institution Logo</div>
                                                         <div class="text-muted small mt-2">PNG, JPG up to 2MB</div>
                                                     @endif
                                                 </label>
@@ -754,7 +754,7 @@
 
                                         <h2 class="wizard-heading">Registration Payment</h2>
                                         <p class="wizard-text">
-                                            একটি one-time registration fee পরিশোধ করুন এবং আপনার school activate করুন।
+                                            একটি one-time registration fee পরিশোধ করুন এবং আপনার institution activate করুন।
                                         </p>
 
                                         {{-- AMOUNT BOX --}}
@@ -844,8 +844,8 @@
                                                 Order Summary
                                             </h6>
                                             <div class="summary-item mt-3">
-                                                <div class="summary-label">School Name</div>
-                                                <div class="summary-value">{{ $school_name }}</div>
+                                                <div class="summary-label">Institution Name</div>
+                                                <div class="summary-value">{{ $institution_name }}</div>
                                             </div>
                                             <div class="summary-item">
                                                 <div class="summary-label">Admin Email</div>
@@ -890,15 +890,15 @@
                                         <div class="summary-box mt-4">
                                             <h5 class="fw-bold mb-3">Setup Summary</h5>
                                             <div class="summary-item">
-                                                <div class="summary-label">School Name</div>
-                                                <div class="summary-value">{{ $school_name }}</div>
+                                                <div class="summary-label">Institution Name</div>
+                                                <div class="summary-value">{{ $institution_name }}</div>
                                             </div>
                                             <div class="summary-item">
-                                                <div class="summary-label">School Type</div>
-                                                <div class="summary-value">{{ ucfirst($school_type) }}</div>
+                                                <div class="summary-label">Institution Type</div>
+                                                <div class="summary-value">{{ ucfirst($institution_type) }}</div>
                                             </div>
                                             <div class="summary-item">
-                                                <div class="summary-label">School Email</div>
+                                                <div class="summary-label">Institution Email</div>
                                                 <div class="summary-value">{{ $email }}</div>
                                             </div>
                                             <div class="summary-item">
@@ -978,7 +978,7 @@
                                                 >
                                                     <span wire:loading.remove wire:target="initiatePayment">
                                                         <i class="bi bi-rocket-takeoff me-2"></i>
-                                                        Launch School
+                                                        Launch Institution
                                                     </span>
                                                     <span wire:loading wire:target="initiatePayment">
                                                         <span class="spinner-border spinner-border-sm me-2"></span>
@@ -996,7 +996,7 @@
                                                 >
                                                     <span wire:loading.remove wire:target="initiateFree">
                                                         <i class="bi bi-rocket-takeoff me-2"></i>
-                                                        Launch School
+                                                        Launch Institution
                                                     </span>
                                                     <span wire:loading wire:target="initiateFree">
                                                         <span class="spinner-border spinner-border-sm me-2"></span>

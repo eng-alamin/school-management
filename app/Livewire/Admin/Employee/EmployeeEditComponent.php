@@ -208,7 +208,7 @@ class EmployeeEditComponent extends Component
         ->with('departments', $departments)
         ->with('designations', $designations)
         ->layout('layouts.admin.app', [
-            'title' => "Edit Employee | Monarchy School",
+            'title' => 'Edit Employee | ' . institution()->name,
         ]);
     }
 

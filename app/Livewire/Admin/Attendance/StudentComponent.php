@@ -162,7 +162,7 @@ class StudentComponent extends Component
             ->with('classes', $classes)
             ->with('sections', $sections)
             ->layout('layouts.admin.app', [
-                'title' => "Student Attendance | School SaaS",
+                'title' => 'Student Attendance | ' . institution()->name,
             ]);
     }
 }

@@ -152,7 +152,7 @@ class ExamSetupComponent extends Component
             ->with('marks', $marks)
             ->with('setups', $setups)
             ->layout('layouts.admin.app', [
-                'title' => "Exam Setup | School SaaS",
+                'title' => 'Exam Setup | ' . institution()->name,
             ]);
     }
 

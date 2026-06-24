@@ -153,7 +153,7 @@ class ClassComponent extends Component
             ->with('classes', $classes)
             ->with('sections', $sections)
             ->layout('layouts.admin.app', [
-                'title' => "Classes | School SaaS",
+                'title' => 'Classes | ' . institution()->name,
             ]);
     }
 }

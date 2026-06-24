@@ -143,6 +143,8 @@ class AssignComponent extends Component
 
         return view('livewire.admin.salary.assign-component')
             ->with(['salaryTemplates' => $salaryTemplates, 'roles' => $roles])
-            ->layout('layouts.admin.app', ['title' => 'Salary Assign | HR']);
+            ->layout('layouts.admin.app', [
+                'title' => 'Salary Assign | ' . institution()->name,
+            ]);
     }
 }

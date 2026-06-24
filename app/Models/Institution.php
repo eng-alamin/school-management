@@ -3,11 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-// use App\Traits\BelongsToSchool;
+// use App\Traits\BelongsToInstitution;
 
-class School extends Model
+class Institution extends Model
 {
-    // use BelongsToSchool;
+    // use BelongsToInstitution;
     
     protected $guarded = [];
 
@@ -48,8 +48,8 @@ class School extends Model
             : $number;
     }
 
-    public function admin() //superadmin
+    public function admin()
     {
-        return $this->hasOne(User::class, 'school_id')->where('role', 'admin');
+        return $this->hasOne(User::class, 'institution_id')->where('role', 'admin');
     }
 }

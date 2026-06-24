@@ -126,7 +126,7 @@ class EmployeeComponent extends Component
     {
         return view('livewire.admin.attendance.employee-component')
             ->layout('layouts.admin.app', [
-                'title' => "Employee Attendance | School SaaS",
+                'title' => 'Employee Attendance | ' . institution()->name,
             ]);
     }
 }

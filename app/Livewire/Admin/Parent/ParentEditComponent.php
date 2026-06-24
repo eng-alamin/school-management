@@ -143,7 +143,7 @@ class ParentEditComponent extends Component
     {
         return view('livewire.admin.parent.parent-edit-component')
             ->layout('layouts.admin.app', [
-                'title' => "Edit Parent | Monarchy School",
+                'title' => 'Edit Parent | ' . institution()->name,
             ]);
     }
 }

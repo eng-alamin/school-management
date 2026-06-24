@@ -205,7 +205,7 @@ class ScheduleAddComponent extends Component
             ->with('classes', $classes)
             ->with('sections', $sections)
             ->layout('layouts.admin.app', [
-                'title' => "Exam Schedule | School SaaS",
+                'title' => 'Exam Schedule | ' . institution()->name,
             ]);
     }
 }

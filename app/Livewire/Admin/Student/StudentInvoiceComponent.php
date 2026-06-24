@@ -93,7 +93,7 @@ class StudentInvoiceComponent extends Component
     {
         return view('livewire.admin.student.student-invoice-component')
             ->layout('layouts.admin.app', [
-                'title' => "Student Invoice | School SaaS",
+                'title' => 'Student Invoice | ' . institution()->name,
             ]);
     }
 }

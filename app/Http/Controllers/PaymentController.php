@@ -10,7 +10,7 @@ class PaymentController extends Controller
 {
     public function pay(Invoice $invoice)
     {
-        if ($invoice->school_id !== auth()->user()->school_id) {
+        if ($invoice->institution_id !== auth()->user()->institution_id) {
             abort(403, 'Unauthorized');
         }
 
@@ -19,7 +19,7 @@ class PaymentController extends Controller
                 ->with('error', 'এই Invoice ইতিমধ্যে পরিশোধ করা হয়েছে।');
         }
 
-        $school  = $invoice->school;
+        $institution  = $invoice->institution;
         $tran_id = uniqid('INV_');
 
         $post_data = [
@@ -32,20 +32,20 @@ class PaymentController extends Controller
             'cancel_url'    => route('billing.payment.cancel'),
             'ipn_url'       => route('billing.payment.ipn'),
 
-            'cus_name'      => $school->name,
+            'cus_name'      => $institution->name,
             'cus_email'     => auth()->user()->email ?? 'noemail@example.com',
-            'cus_add1'      => $school->address ?? 'Dhaka',
+            'cus_add1'      => $institution->address ?? 'Dhaka',
             'cus_city'      => 'Dhaka',
             'cus_country'   => 'Bangladesh',
             'cus_phone'     => auth()->user()->phone ?? '01700000000',
 
             'shipping_method'  => 'NO',
-            'product_name'     => 'School Monthly Invoice - ' . $invoice->invoice_no,
+            'product_name'     => 'Institution Monthly Invoice - ' . $invoice->invoice_no,
             'product_category' => 'Service',
             'product_profile'  => 'general',
 
             'value_a' => $invoice->id,
-            'value_b' => $invoice->school_id,
+            'value_b' => $invoice->institution_id,
         ];
 
         $sslc = new SslCommerzNotification();

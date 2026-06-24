@@ -35,7 +35,7 @@ class LoginLogComponent extends Component
         return view('livewire.super-admin.log.login-log-component')
             ->with('logs', $logs)
             ->layout('layouts.superadmin.app', [
-                'title' => 'Login Log',
+                'title' => 'Login Log | ' . setting('app_name', 'EMS'),
             ]);
     }
 }

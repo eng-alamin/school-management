@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Admin\Setting;
+namespace App\Livewire\Admin\Academic;
 
 use Livewire\Component;
 use App\Models\AcademicSession;
@@ -29,6 +29,18 @@ class SessionComponent extends Component
     public string $start_date = '';
     public string $end_date = '';
     public bool $is_current = true;
+
+    public function mount()
+    {
+        if (! AcademicSession::exists()) {
+            AcademicSession::create([
+                'name'       => now()->year,
+                'start_date' => now()->startOfYear()->toDateString(),
+                'end_date'   => now()->endOfYear()->toDateString(),
+                'is_current' => true,
+            ]);
+        }
+    }
 
     protected function rules(): array
     {
@@ -121,10 +133,10 @@ class SessionComponent extends Component
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
-        return view('livewire.admin.setting.session-component')
+        return view('livewire.admin.academic.session-component')
             ->with('sessions', $sessions)
             ->layout('layouts.admin.app', [
-                'title' => "Academic Session | School SaaS",
+                'title' => 'Academic Session | ' . institution()->name,
             ]);
     }
 

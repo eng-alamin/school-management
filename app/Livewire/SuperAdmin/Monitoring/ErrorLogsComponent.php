@@ -32,7 +32,7 @@ class ErrorLogsComponent extends Component
     {
         return view('livewire.super-admin.monitoring.error-logs-component')
             ->layout('layouts.superadmin.app', [
-                'title' => 'Error Logs',
+                'title' => 'Error Logs | ' . setting('app_name', 'EMS'),
             ]);
     }
 }

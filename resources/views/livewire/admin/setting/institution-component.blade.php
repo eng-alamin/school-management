@@ -19,14 +19,23 @@
 
         <div class="form-section">
             <div class="row g-4">
-                <!-- School Name -->
+                <!-- Institution Name -->
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
-                        <label class="form-label">School Name <span class="req">*</span></label>
+                        <label class="form-label">Institution Name <span class="req">*</span></label>
                         <input type="text" wire:model="name" class="form-control"
                                placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
                     </div>
                     @error('name') <span class="text-danger">{{ $message }}</span> @enderror
+                </div>
+                 <!-- EIIN/কোড -->
+                <div class="col-md-6">
+                    <div class="input-group input-group-outline">
+                        <label class="form-label">EIIN/কোড</label>
+                        <input type="text" wire:model="eiin" class="form-control"
+                               placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
+                    </div>
+                    @error('eiin') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
 
                 <!-- Email -->

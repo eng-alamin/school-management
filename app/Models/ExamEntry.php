@@ -3,10 +3,10 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\BelongsToSchool;
+use App\Traits\BelongsToInstitution;
 
 class ExamEntry extends Model
 {
-    use BelongsToSchool;
+    use BelongsToInstitution;
     //
 }

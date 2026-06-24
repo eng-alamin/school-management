@@ -230,7 +230,7 @@ class FeeAllocationComponent extends Component
         return view('livewire.admin.student-accounting.fee-allocation-component')
             ->with(['feeGroups' => $feeGroups, 'classes' => $classes])
             ->layout('layouts.admin.app', [
-                'title' => "Student Accounting - Fee Allocation | School SaaS",
+                'title' => 'Fee Allocation | ' . institution()->name,
             ]);
     }
 }

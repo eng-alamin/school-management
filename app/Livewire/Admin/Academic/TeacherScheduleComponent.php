@@ -98,7 +98,7 @@ class TeacherScheduleComponent extends Component
         return view('livewire.admin.academic.teacher-schedule-component')
             ->with('teachers', $teachers)
             ->layout('layouts.admin.app', [
-                'title' => "Teacher Schedule | School SaaS",
+                'title' => 'Teacher Schedule | ' . institution()->name,
             ]);
     }
 }

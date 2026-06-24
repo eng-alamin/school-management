@@ -90,7 +90,7 @@ class LoginlogComponent extends Component
         return view('livewire.super-admin.profile.loginlog-component')
             ->with(['user' => $this->user, 'sessions' => $this->sessions])
             ->layout('layouts.superadmin.app', [
-                'title' => "Login Logs | School SaaS",
+                'title' => 'Login Logs | ' . setting('app_name', 'EMS'),
             ]);
     }
 }

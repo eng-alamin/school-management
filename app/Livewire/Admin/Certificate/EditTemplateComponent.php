@@ -217,7 +217,7 @@ class EditTemplateComponent extends Component
     {
         return view('livewire.admin.certificate.edit-template-component')
             ->layout('layouts.admin.app', [
-                'title' => 'Edit Certificate Template | Monarchy School',
+                'title' => 'Edit Certificate Template | ' . institution()->name,
             ]);
     }
 }

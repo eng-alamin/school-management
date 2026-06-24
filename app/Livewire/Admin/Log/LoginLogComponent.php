@@ -138,7 +138,7 @@ class LoginLogComponent extends Component
             'allUsers'       => $this->getAllUsers(),
         ])
         ->layout('layouts.admin.app', [
-            'title' => 'School Settings',
+            'title' => 'School Settings | ' . institution()->name,
         ]);
     }
 }

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('admit_cards', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id')->constrained('schools')->cascadeOnDelete();
+            $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
             $table->foreignId('template_id')->nullable()->constrained('admit_card_templates')->nullOnDelete();
             $table->string('student_id')->unique();
             $table->string('institute_name')->nullable();

@@ -13,17 +13,18 @@ return new class extends Migration
     {
         Schema::create('students', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id')->constrained('schools')->cascadeOnDelete();
+            $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
 
             // Academic
             $table->foreignId('session_id')->nullable()->constrained('academic_sessions')->nullOnDelete();
-            $table->string('register_no')->unique();
+            $table->string('student_id')->unique();
+            $table->string('registration_no')->nullable()->unique();
             $table->string('roll_no')->nullable();
             $table->date('admission_date')->nullable();
             $table->foreignId('class_id')->nullable()->constrained('academic_classes')->nullOnDelete();
             $table->foreignId('section_id')->nullable()->constrained('academic_sections')->nullOnDelete();
-            $table->foreignId('category_id')->nullable()->constrained('academic_categories')->nullOnDelete();
+            $table->foreignId('group_id')->nullable()->constrained('academic_groups')->nullOnDelete();
 
             // Student Info
             $table->string('name');
@@ -37,8 +38,8 @@ return new class extends Migration
             $table->text('permanent_address')->nullable();
             $table->string('photo')->nullable();
 
-            // Previous School
-            $table->text('previous_school')->nullable();
+            // Previous institution
+            $table->text('previous_institution')->nullable();
             $table->text('qualification')->nullable();
             $table->text('remarks')->nullable();
 

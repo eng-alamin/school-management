@@ -137,7 +137,7 @@ class AddComponent extends Component
             ->with('classes', $classes)
             ->with('sections', $sections)
             ->layout('layouts.admin.app', [
-                'title' => 'Create Event | Monarchy School',
+                'title' => 'Create Event | ' . institution()->name,
             ]);
     }
 

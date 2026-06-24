@@ -13,9 +13,9 @@ class Invoice extends Model
         'paid_at'  => 'datetime',
     ];
 
-    public function school()
+    public function institution()
     {
-        return $this->belongsTo(School::class)->withoutGlobalScopes();
+        return $this->belongsTo(Institution::class)->withoutGlobalScopes();
     }
 
     public function items()

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('salary_templates', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id')->constrained('schools')->cascadeOnDelete();
+            $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
             // Basic Info
             $table->string('salary_grade');
             $table->decimal('basic_salary', 12, 2)->default(0);

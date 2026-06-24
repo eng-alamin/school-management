@@ -117,7 +117,7 @@ class GradeComponent extends Component
         return view('livewire.admin.exam.grade-component')
             ->with('grades', $grades)
             ->layout('layouts.admin.app', [
-                'title' => "Grades Range | School SaaS",
+                'title' => 'Grades Range | ' . institution()->name,
             ]);
 
     }

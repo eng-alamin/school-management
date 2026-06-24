@@ -25,7 +25,7 @@ class BillingShow extends Component
     public function openDetail(int $id): void
     {
         $this->viewInvoice = Invoice::with('items')
-            ->where('school_id', auth()->user()->school_id)
+            ->where('institution_id', auth()->user()->institution_id)
             ->findOrFail($id);
 
         $this->showDetailModal = true;
@@ -33,26 +33,26 @@ class BillingShow extends Component
 
     public function render()
     {
-        $schoolId = auth()->user()->school_id;
+        $institutionId = auth()->user()->institution_id;
 
-        $invoices = Invoice::where('school_id', $schoolId)
+        $invoices = Invoice::where('institution_id', $institutionId)
             ->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus))
             ->when($this->filterYear, fn ($q) => $q->where('year', $this->filterYear))
             ->orderByDesc('year')
             ->orderByDesc('month')
             ->paginate($this->perPage);
 
-        $availableYears = Invoice::where('school_id', $schoolId)
+        $availableYears = Invoice::where('institution_id', $institutionId)
             ->select('year')->distinct()->orderByDesc('year')->pluck('year');
 
         // ── Active Student Count (users table) ──
-        $activeStudentCount = \App\Models\User::where('school_id', $schoolId)
+        $activeStudentCount = \App\Models\User::where('institution_id', $institutionId)
             ->where('role', 'student')
             ->where('is_active', true)
             ->count();
 
         // ── এই মাসে পাঠানো SMS সংখ্যা (sms_logs table) ──
-        $smsCount = \App\Models\SmsLog::where('school_id', $schoolId)
+        $smsCount = \App\Models\SmsLog::where('institution_id', $institutionId)
             ->where('status', 'sent')
             ->whereMonth('created_at', now()->month)
             ->whereYear('created_at', now()->year)
@@ -79,7 +79,7 @@ class BillingShow extends Component
                 'estimatedBill'      => $estimatedBill,
             ])
             ->layout('layouts.admin.app', [
-                'title' => "Billing | School SaaS",
+                'title' => 'Billing | ' . institution()->name,
             ]);
     }
 }

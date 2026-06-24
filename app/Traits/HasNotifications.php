@@ -10,14 +10,14 @@ trait HasNotifications
     public function notifications(): MorphMany
     {
         return $this->morphMany(Notification::class, 'notifiable')
-            ->forSchool($this->school_id)
+            ->forInstitution($this->institution_id)
             ->latest();
     }
 
     public function unreadNotifications(): MorphMany
     {
         return $this->morphMany(Notification::class, 'notifiable')
-            ->forSchool($this->school_id)
+            ->forInstitution($this->institution_id)
             ->unread()
             ->latest();
     }

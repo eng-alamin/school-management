@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('invoices', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id')->nullable()->constrained()->onDelete('cascade'); // registration এর সময় school থাকে না
+            $table->foreignId('institution_id')->nullable()->constrained()->onDelete('cascade'); // registration এর সময় institution থাকে না
             $table->string('type')->default('registration'); // 'registration' বা 'billing'
             $table->string('invoice_no')->nullable()->unique(); // registration এর invoice_no লাগে না
             $table->unsignedTinyInteger('month')->nullable();

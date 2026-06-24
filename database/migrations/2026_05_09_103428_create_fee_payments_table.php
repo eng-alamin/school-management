@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('fee_payments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id')->constrained('schools')->cascadeOnDelete();
+            $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
             $table->foreignId('student_id')->constrained('students')->cascadeOnDelete();
             $table->foreignId('fee_allocation_id')->constrained('fee_allocations')->cascadeOnDelete();
             $table->foreignId('fee_group_item_id')->constrained('fee_group_items')->cascadeOnDelete();

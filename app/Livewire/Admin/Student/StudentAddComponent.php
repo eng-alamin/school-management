@@ -9,7 +9,7 @@ use App\Models\Guardian;
 use App\Models\AcademicSession;
 use App\Models\AcademicClass;
 use App\Models\AcademicSection;
-use App\Models\AcademicCategory;
+use App\Models\AcademicGroup;
 
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
@@ -25,7 +25,7 @@ class StudentAddComponent extends Component
     public $admission_date;
     public $class_id;
     public $section_id;
-    public $category_id;
+    public $group_id;
 
     public $name;
     public $gender;
@@ -56,6 +56,7 @@ class StudentAddComponent extends Component
     public $qualification;
     public $remarks;
 
+    public $studentId;
 
     public bool $guardian_exists = false;
 
@@ -63,6 +64,13 @@ class StudentAddComponent extends Component
     {
         $session = AcademicSession::where('is_current', true)->first();
         $this->session_id = $session?->id;
+
+        // Student ID Generate SCH0126001234 SCH01 26 001234
+        $schoolCode = 'SCH01';
+        $year = now()->format('y'); // 26
+        $lastStudent = Student::where('institution_id', auth()->user()->institution_id)->latest('id')->first();
+        $serial = $lastStudent ? ((int) substr($lastStudent->student_id, -6)) + 1 : 1;
+        $this->studentId = $schoolCode . $year . str_pad($serial, 4, '0', STR_PAD_LEFT);
 
         $this->admission_date = now()->format('Y-m-d');
         $this->gender = 'male';
@@ -76,7 +84,7 @@ class StudentAddComponent extends Component
     {
         return [
             'session_id'  => 'required',
-            'register_no' => 'required|unique:students,register_no',
+            'register_no' => 'nullable|unique:students,register_no',
             'class_id'    => 'required',
 
             'name' => 'required',
@@ -147,12 +155,13 @@ class StudentAddComponent extends Component
                 'user_id'     => $user->id,
 
                 'session_id' => $this->session_id,
+                'student_id' => $this->studentId,
                 'register_no' => $this->register_no,
                 'roll_no' => $this->roll_no,
                 'admission_date' => $this->admission_date,
                 'class_id' => $this->class_id,
                 'section_id' => $this->section_id,
-                'category_id' => $this->category_id,
+                'group_id' => $this->group_id,
 
                 'name' => $this->name,
                 'gender' => $this->gender,
@@ -169,7 +178,7 @@ class StudentAddComponent extends Component
             // Guardian
             if ($this->guardian_exists) {
                 $student->guardians()->syncWithoutDetaching([
-                    $this->guardian_id => ['school_id' => auth()->user()->school_id]
+                    $this->guardian_id => ['institution_id' => auth()->user()->institution_id]
                 ]);
             } else {
                 $guardianPassword = !empty($this->guardian_password)
@@ -200,7 +209,7 @@ class StudentAddComponent extends Component
                 ]);
 
                 $student->guardians()->attach($guardian->id, [
-                    'school_id' => auth()->user()->school_id
+                    'institution_id' => auth()->user()->institution_id
                 ]);
             }
 
@@ -222,17 +231,17 @@ class StudentAddComponent extends Component
         $sessions = AcademicSession::orderBy('name')->get();
         $classes = AcademicClass::orderBy('id')->get();
         $sections = AcademicSection::orderBy('name')->get();
-        $categories = AcademicCategory::orderBy('name')->get();
+        $groups = AcademicGroup::orderBy('name')->get();
         $guardians = Guardian::all();
 
         return view('livewire.admin.student.student-add-component')
         ->with('sessions', $sessions)
         ->with('classes', $classes)
         ->with('sections', $sections)
-        ->with('categories', $categories)
+        ->with('groups', $groups)
         ->with('guardians', $guardians)
         ->layout('layouts.admin.app', [
-            'title' => "Create Admission | Monarchy School",
+            'title' => 'Create Admission | ' . institution()->name,
         ]);
     }
 }

@@ -8,8 +8,8 @@ class SmsLog extends Model
 {
     protected $guarded = [];
     
-    public function school()
+    public function institution()
     {
-        return $this->belongsTo(School::class);
+        return $this->belongsTo(Institution::class);
     }
 }

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('exam_halls', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id')->constrained('schools')->cascadeOnDelete();
+            $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
             $table->string('hall_no')->nullable();
             $table->string('no_of_seat')->nullable();
             $table->timestamps();

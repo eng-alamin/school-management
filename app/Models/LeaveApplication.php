@@ -3,12 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\BelongsToSchool;
+use App\Traits\BelongsToInstitution;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class LeaveApplication extends Model
 {
-    use BelongsToSchool;
+    use BelongsToInstitution;
     use SoftDeletes;
  
     protected $guarded = [];

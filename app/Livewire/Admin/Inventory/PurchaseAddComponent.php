@@ -181,7 +181,7 @@ class PurchaseAddComponent extends Component
             'stores'    => InventoryStore::orderBy('name')->get(),
             'products'  => InventoryProduct::orderBy('name')->get(),
         ])->layout('layouts.admin.app', [
-            'title' => 'Add Purchase | School SaaS',
+            'title' => 'Add Purchase | ' . institution()->name,
         ]);
     }
 }

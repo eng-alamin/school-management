@@ -53,7 +53,7 @@ class HomeworkEditComponent extends Component
         ->with('subjects', \App\Models\AcademicSubject::all())
         ->with('teachers', \App\Models\Employee::all())
             ->layout('layouts.admin.app', [
-                'title' => "Edit Homework | Monarchy School",
+                'title' => 'Edit Homework | ' . institution()->name,
             ]);
     }
 

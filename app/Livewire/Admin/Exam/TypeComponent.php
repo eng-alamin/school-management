@@ -102,7 +102,7 @@ class TypeComponent extends Component
         return view('livewire.admin.exam.type-component')
             ->with('types', $types)
             ->layout('layouts.admin.app', [
-                'title' => "Exam Type | School SaaS",
+                'title' => 'Exam Type | ' . institution()->name,
             ]);
 
     }

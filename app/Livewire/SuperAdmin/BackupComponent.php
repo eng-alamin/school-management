@@ -170,7 +170,7 @@ class BackupComponent extends Component
             'from'         => $total ? $offset + 1 : 0,
             'to'           => min($offset + $this->perPage, $total),
         ])->layout('layouts.superadmin.app', [
-            'title' => 'Database Backup | School SaaS',
+            'title' => 'Database Backup | ' . setting('app_name', 'EMS'),
         ]);
     }
 }

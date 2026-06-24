@@ -74,7 +74,7 @@ class ListTemplateComponent extends Component
         return view('livewire.admin.certificate.list-template-component')
             ->with('templates', $templates)
             ->layout('layouts.admin.app', [
-                'title' => 'Certificate Templates | Monarchy School',
+                'title' => 'Certificate Templates | ' . institution()->name,
             ]);
     }
 }

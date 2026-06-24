@@ -204,7 +204,7 @@ class PurchaseEditComponent extends Component
             'stores'    => InventoryStore::orderBy('name')->get(),
             'products'  => InventoryProduct::orderBy('name')->get(),
         ])->layout('layouts.admin.app', [
-            'title' => 'Edit Purchase | School SaaS',
+            'title' => 'Edit Purchase | ' . institution()->name,
         ]);
     }
 }

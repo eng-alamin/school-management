@@ -21,7 +21,7 @@ class ParentOverviewComponent extends Component
         return view('livewire.admin.parent.parent-overview-component')
             ->with('parent', $this->parent)
             ->layout('layouts.admin.app', [
-                'title' => "Parent Overview | School SaaS",
+                'title' => 'Parent Overview | ' . institution()->name,
             ]);
     }
 }

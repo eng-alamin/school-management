@@ -259,7 +259,7 @@ class GenerateAdmitCardComponent extends Component
             ->with('exams', $exams)
             ->with('selectedTemplate', $selectedTemplate)
             ->layout('layouts.admin.app', [
-                'title' => "Admit Cards | School SaaS",
+                'title' => 'Admit Cards | ' . institution()->name,
             ]);
     }
 }

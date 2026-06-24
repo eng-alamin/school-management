@@ -116,7 +116,7 @@ class SupplierComponent extends Component
         return view('livewire.admin.inventory.supplier-component')
             ->with('suppliers', $suppliers)
             ->layout('layouts.admin.app', [
-                'title' => "Inventory Supplier | School SaaS",
+                'title' => 'Inventory Supplier | ' . institution()->name,
             ]);
     }
 

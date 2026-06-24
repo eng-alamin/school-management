@@ -102,7 +102,7 @@ class MarkComponent extends Component
         return view('livewire.admin.exam.mark-component')
             ->with('marks', $marks)
             ->layout('layouts.admin.app', [
-                'title' => "Exam Mark | School SaaS",
+                'title' => 'Exam Mark | ' . institution()->name,
             ]);
 
     }

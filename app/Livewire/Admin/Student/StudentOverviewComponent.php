@@ -26,7 +26,7 @@ class StudentOverviewComponent extends Component
         return view('livewire.admin.student.student-overview-component')
             ->with('student', $this->student)
             ->layout('layouts.admin.app', [
-                'title' => "Student Overview | School SaaS",
+                'title' => 'Student Overview | ' . institution()->name,
             ]);
     }
 }

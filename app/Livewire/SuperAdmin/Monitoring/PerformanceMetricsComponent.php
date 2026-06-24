@@ -32,7 +32,7 @@ class PerformanceMetricsComponent extends Component
     {
         return view('livewire.super-admin.monitoring.performance-metrics-component')
             ->layout('layouts.superadmin.app', [
-                'title' => 'Performance Metrics',
+                'title' => 'Performance Metrics | ' . setting('app_name', 'EMS'),
             ]);
     }
 }

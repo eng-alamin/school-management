@@ -57,7 +57,8 @@ Route::middleware(['auth', 'role:admin', 'billing.check'])->group(function () {
     Route::get('student/{id}/payment/add', \App\Livewire\Admin\Student\PaymentAddComponent::class)->name('admin.student.payment.add');
 
     // Academic
-    Route::get('/academic/categories', \App\Livewire\Admin\Academic\CategoryComponent::class)->name('admin.academic.categories');
+    Route::get('/academic/sessions', \App\Livewire\Admin\Academic\SessionComponent::class)->name('admin.academic.sessions');
+    Route::get('/academic/groups', \App\Livewire\Admin\Academic\GroupComponent::class)->name('admin.academic.groups');
     Route::get('/academic/classes', \App\Livewire\Admin\Academic\ClassComponent::class)->name('admin.academic.classes');
     Route::get('/academic/sections', \App\Livewire\Admin\Academic\SectionComponent::class)->name('admin.academic.sections');
     Route::get('/academic/subjects', \App\Livewire\Admin\Academic\SubjectComponent::class)->name('admin.academic.subjects');
@@ -154,8 +155,7 @@ Route::middleware(['auth', 'role:admin', 'billing.check'])->group(function () {
     Route::get('login-logs', \App\Livewire\Admin\Log\LoginLogComponent::class)->name('admin.loginlog');
     Route::get('notifications', \App\Livewire\Admin\Notifications\Index::class)->name('admin.notifications.index');
 
-    Route::get('setting/school', \App\Livewire\Admin\Setting\SchoolComponent::class)->name('admin.setting.school');
-    Route::get('setting/sessions', \App\Livewire\Admin\Setting\SessionComponent::class)->name('admin.setting.sessions');
+    Route::get('setting/institution', \App\Livewire\Admin\Setting\InstitutionComponent::class)->name('admin.setting.institution');
 
     Route::get('profile/overview', \App\Livewire\Admin\Profile\OverviewComponent::class)->name('admin.profile.overview');
     Route::get('profile/setting', \App\Livewire\Admin\Profile\SettingComponent::class)->name('admin.profile.setting');
@@ -184,7 +184,7 @@ Route::middleware(['auth', 'role:admin', 'billing.check'])->group(function () {
     });
 
     // ════════════════════════════════════════
-    // REGISTRATION (New School Setup Payment)
+    // REGISTRATION (New Institution Setup Payment)
     // ════════════════════════════════════════
     Route::controller(RegistrationPaymentController::class)
     ->prefix('registration/payment')
@@ -421,7 +421,7 @@ Route::middleware(['auth', 'role:student', 'billing.check'])->group(function () 
 // Super Admin
 Route::middleware(['auth', 'role:super_admin'])->prefix('superadmin')->name('superadmin.')->group(function () {
     Route::get('/dashboard',\App\Livewire\SuperAdmin\DashboardComponent::class)->name('dashboard');
-    Route::get('/schools/index', \App\Livewire\SuperAdmin\School\SchoolListComponent::class)->name('schools.index');
+    Route::get('/institutions/index', \App\Livewire\SuperAdmin\Institution\InstitutionListComponent::class)->name('institutions.index');
     Route::get('/admins/index', \App\Livewire\SuperAdmin\Admin\AdminListComponent ::class)->name('admins.index');
 
     Route::get('/billings/invoices', \App\Livewire\SuperAdmin\Billing\InvoiceIndex::class)->name('invoices.index');

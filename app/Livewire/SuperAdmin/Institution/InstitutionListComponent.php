@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Livewire\SuperAdmin\School;
+namespace App\Livewire\SuperAdmin\Institution;
 
 use Livewire\Component;
-use App\Models\School;
+use App\Models\Institution;
 use App\Models\User;
 use Livewire\WithPagination;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
 
-class SchoolListComponent extends Component
+class InstitutionListComponent extends Component
 {
     use WithPagination, WithFileUploads;
 
@@ -25,7 +25,7 @@ class SchoolListComponent extends Component
     public bool    $showViewModal = false;
     public bool    $confirmDelete = false;
     public ?int    $deleteId      = null;
-    public ?School $viewRecord    = null;
+    public ?Institution $viewRecord    = null;
 
     // Form
     public ?int   $editId    = null;
@@ -41,7 +41,7 @@ class SchoolListComponent extends Component
     {
         $rules = [
             'name'      => 'required|min:3|max:255',
-            'email'     => 'required|email|unique:schools,email,' . $this->editId,
+            'email'     => 'required|email|unique:institutions,email,' . $this->editId,
             'phone'     => 'nullable|string|max:20',
             'address'   => 'nullable|string|max:500',
             'status' => 'required|in:0,1',
@@ -63,7 +63,7 @@ class SchoolListComponent extends Component
 
     public function openEdit(int $id): void
     {
-        $record = School::findOrFail($id);
+        $record = Institution::findOrFail($id);
 
         $this->editId       = $id;
         $this->name         = $record->name;
@@ -78,7 +78,7 @@ class SchoolListComponent extends Component
 
     public function openView(int $id): void
     {
-        $this->viewRecord    = School::findOrFail($id);
+        $this->viewRecord    = Institution::findOrFail($id);
         $this->showViewModal = true;
     }
 
@@ -92,7 +92,7 @@ class SchoolListComponent extends Component
             if ($logoPath) {
                 Storage::disk('public')->delete($logoPath);
             }
-            $logoPath = $this->logo->store('schools/logos', 'public');
+            $logoPath = $this->logo->store('institutions/logos', 'public');
         }
 
         $data = [
@@ -105,32 +105,32 @@ class SchoolListComponent extends Component
         ];
 
         if ($this->editId) {
-            $record = School::findOrFail($this->editId);
+            $record = Institution::findOrFail($this->editId);
             $record->update($data);
 
             activity()
                 ->causedBy(auth()->user())
                 ->performedOn($record)
-                ->withProperties(['icon' => 'school', 'type' => 'school'])
-                ->log('School updated: ' . $record->name);
+                ->withProperties(['icon' => 'institution', 'type' => 'institution'])
+                ->log('Institution updated: ' . $record->name);
 
             $this->dispatch('toast', type: 'success', message: 'Data updated successfully!');
         } else {
-            $record = School::create($data);
+            $record = Institution::create($data);
 
             $user = User::create([
                 'name'      => $this->name,
                 'email'     => $this->email,
                 'password'  => $this->email,
                 'role'      => 'admin',
-                'school_id' => $record->id,
+                'institution_id' => $record->id,
             ]);
 
             activity()
                 ->causedBy(auth()->user())
                 ->performedOn($record)
-                ->withProperties(['icon' => 'school', 'type' => 'school'])
-                ->log('New school created: ' . $record->name);
+                ->withProperties(['icon' => 'institution', 'type' => 'institution'])
+                ->log('New institution created: ' . $record->name);
 
             $this->dispatch('toast', type: 'success', message: 'Data created successfully!');
         }
@@ -147,13 +147,13 @@ class SchoolListComponent extends Component
 
     public function deleteRecord(): void
     {
-        $record = School::findOrFail($this->deleteId);
+        $record = Institution::findOrFail($this->deleteId);
 
         activity()
             ->causedBy(auth()->user())
             ->performedOn($record)
-            ->withProperties(['icon' => 'school', 'type' => 'school'])
-            ->log('School deleted: ' . $record->name);
+            ->withProperties(['icon' => 'institution', 'type' => 'institution'])
+            ->log('Institution deleted: ' . $record->name);
 
         if ($record->logo) {
             Storage::disk('public')->delete($record->logo);
@@ -167,7 +167,7 @@ class SchoolListComponent extends Component
 
     public function toggleStatus(int $id): void
     {
-        $record    = School::findOrFail($id);
+        $record    = Institution::findOrFail($id);
         $newStatus = $record->status ? 0 : 1;
 
         $record->update(['status' => $newStatus]);
@@ -175,8 +175,8 @@ class SchoolListComponent extends Component
         activity()
             ->causedBy(auth()->user())
             ->performedOn($record)
-            ->withProperties(['icon' => 'school', 'type' => 'school'])
-            ->log('School status changed to ' . ($newStatus ? 'Active' : 'Inactive') . ': ' . $record->name);
+            ->withProperties(['icon' => 'institution', 'type' => 'institution'])
+            ->log('Institution status changed to ' . ($newStatus ? 'Active' : 'Inactive') . ': ' . $record->name);
 
         $this->dispatch('toast', type: 'success', message: 'Data updated successfully!');
     }
@@ -186,14 +186,14 @@ class SchoolListComponent extends Component
         if ($this->editId && $this->existingLogo) {
             Storage::disk('public')->delete($this->existingLogo);
 
-            $record = School::findOrFail($this->editId);
+            $record = Institution::findOrFail($this->editId);
             $record->update(['logo' => null]);
 
             activity()
                 ->causedBy(auth()->user())
                 ->performedOn($record)
-                ->withProperties(['icon' => 'school', 'type' => 'school'])
-                ->log('Logo removed from school: ' . $record->name);
+                ->withProperties(['icon' => 'institution', 'type' => 'institution'])
+                ->log('Logo removed from institution: ' . $record->name);
 
             $this->existingLogo = '';
             $this->dispatch('toast', type: 'success', message: 'Data removed successfully!');
@@ -211,7 +211,7 @@ class SchoolListComponent extends Component
 
     public function render()
     {
-        $schools = School::query()
+        $institutions = Institution::query()
             ->when($this->search, fn ($q) =>
                 $q->where(fn ($q2) =>
                     $q2->where('name', 'like', "%{$this->search}%")
@@ -222,10 +222,10 @@ class SchoolListComponent extends Component
             ->latest()
             ->paginate($this->perPage);
 
-        return view('livewire.super-admin.school.school-list-component')
-            ->with('schools', $schools)
+        return view('livewire.super-admin.institution.institution-list-component')
+            ->with('institutions', $institutions)
             ->layout('layouts.superadmin.app', [
-                'title' => "Schools | School SaaS",
+                'title' => 'Institutions | ' . setting('app_name', 'EMS'),
             ]);
     }
 }

@@ -3,12 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\BelongsToSchool;
+use App\Traits\BelongsToInstitution;
 use Illuminate\Database\Eloquent\Builder;
 
 class Notification extends Model
 {
-    use BelongsToSchool;
+    use BelongsToInstitution;
     
     protected $guarded = [];
 
@@ -19,9 +19,9 @@ class Notification extends Model
 
     // ─── Relationships ────────────────────────────────────────────────────────
 
-    public function school(): BelongsTo
+    public function Institution(): BelongsTo
     {
-        return $this->belongsTo(School::class);
+        return $this->belongsTo(Institution::class);
     }
 
     public function notifiable(): MorphTo

@@ -178,7 +178,7 @@ class TeacherAssignComponent extends Component
             ->with('classes', $classes)
             ->with('teachers', $teachers)
             ->layout('layouts.admin.app', [
-                'title' => "Class Assignments | School SaaS",
+                'title' => 'Class Assignments | ' . institution()->name,
             ]);
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\School;
+use App\Models\Institution;
 use App\Models\User;
 use App\Models\Invoice;
 use Illuminate\Http\Request;
@@ -26,8 +26,10 @@ class RegistrationPaymentController extends Controller
 
         session(['pending_registration' => array_merge($data, ['tran_id' => $tran_id])]);
 
+        $fee = (float) setting('register_fee', 5000);
+
         $post_data = [
-            'total_amount'     => number_format(setting('register_fee', 0), 0),
+            'total_amount'     => number_format($fee, 0, '.', ''),
             'currency'         => 'BDT',
             'tran_id'          => $tran_id,
 
@@ -44,7 +46,7 @@ class RegistrationPaymentController extends Controller
             'cus_country'      => 'Bangladesh',
 
             'shipping_method'  => 'NO',
-            'product_name'     => 'School Registration - ' . $data['school_name'],
+            'product_name'     => 'Institution Registration - ' . $data['institution_name'],
             'product_category' => 'Education',
             'product_profile'  => 'general',
 
@@ -52,22 +54,24 @@ class RegistrationPaymentController extends Controller
         ];
 
         // meta তে সব data রাখো — session হারালেও কাজ করবে
-        // school_id, invoice_no, month, year ফাঁকা থাকবে — registration এর সময় এগুলো প্রযোজ্য নয়
+        // institution_id, month, year ফাঁকা থাকবে — registration এর সময় এগুলো প্রযোজ্য নয়
         Invoice::withoutGlobalScopes()->create([
-            'transaction_id'  => $tran_id,
-            'type'            => 'registration',
-            'total_amount'    => 5000,
-            'payable_amount'  => 5000,
-            'status'          => 'pending',
-            'meta'            => json_encode([
-                'school_name' => $data['school_name'],
-                'school_type' => $data['school_type'] ?? '',
-                'email'       => $data['email'],
-                'phone'       => $data['phone'],
-                'timezone'    => $data['timezone'] ?? 'Asia/Dhaka',
-                'admin_name'  => $data['admin_name'],
-                'admin_email' => $data['admin_email'],
-                'password'    => $data['password'],
+            'invoice_no'     => 'REG_' . strtoupper(uniqid()),
+            'transaction_id' => $tran_id,
+            'type'           => 'registration',
+            'total_amount'   => $fee,
+            'payable_amount' => $fee,
+            'status'         => 'pending',
+            'meta'           => json_encode([
+                'institution_name' => $data['institution_name'],
+                'institution_type' => $data['institution_type'] ?? '',
+                'email'            => $data['email'],
+                'phone'            => $data['phone'],
+                'timezone'         => $data['timezone'] ?? 'Asia/Dhaka',
+                'admin_name'       => $data['admin_name'],
+                'admin_email'      => $data['admin_email'],
+                'password'         => $data['password'],
+                'system_logo'             => session('pending_logo'),
             ]),
         ]);
 
@@ -106,7 +110,7 @@ class RegistrationPaymentController extends Controller
         $validation = $sslc->orderValidate(
             $request->all(),
             $tran_id,
-            5000,
+            $record->payable_amount, // ✅ DB থেকে নাও — hardcoded নয়
             'BDT'
         );
 
@@ -117,49 +121,48 @@ class RegistrationPaymentController extends Controller
 
         $meta = json_decode($record->meta, true);
 
-        $data = session('pending_registration');
-
         // duplicate check
-        $existing = School::withoutGlobalScopes()
+        $existing = Institution::withoutGlobalScopes()
             ->where('email', $meta['email'])
             ->first();
 
         if ($existing) {
             session()->forget(['pending_registration', 'pending_logo']);
             return redirect()->route('login')
-                ->with('success', 'School already registered। Login করুন।');
+                ->with('success', 'Institution already registered। Login করুন।');
         }
 
         $user = null; // transaction এর বাইরে use করার জন্য আগে থেকেই declare করে রাখছি
 
         try {
-            DB::transaction(function () use ($data, $meta, $tran_id, $request, &$user) {
-                $school = School::create([
-                    'name'     => $meta['school_name'],
+            DB::transaction(function () use ($meta, $tran_id, $request, &$user) {
+                $institution = Institution::create([
+                    'name'     => $meta['institution_name'],
+                    'type'     => $meta['institution_type'] ?? null,
                     'email'    => $meta['email'],
                     'phone'    => $meta['phone'],
                     'timezone' => $meta['timezone'],
                     'status'   => true,
                 ]);
 
-                if (session('pending_logo')) {
-                    $school->update(['system_logo' => session('pending_logo')]);
+                if (!empty($meta['system_logo'])) {
+                    $institution->update(['system_logo' => $meta['system_logo']]);
                 }
 
                 $user = User::create([
-                    'name'      => $meta['admin_name'],
-                    'email'     => $meta['admin_email'],
-                    'password'  => $meta['password'],
-                    'role'      => 'admin',
-                    'school_id' => $school->id,
+                    'name'           => $meta['admin_name'],
+                    'email'          => $meta['admin_email'],
+                    'password'       => $meta['password'],
+                    'role'           => 'admin',
+                    'institution_id' => $institution->id,
                 ]);
 
-                // এখন স্কুল তৈরি হয়ে গেছে — invoice row-টাকে এই স্কুলের সাথে link করে দিচ্ছি
+                // এখন institution তৈরি হয়ে গেছে — invoice row-টাকে এই institution এর সাথে link করে দিচ্ছি
                 Invoice::withoutGlobalScopes()
                     ->where('transaction_id', $tran_id)
                     ->update([
-                        'school_id'      => $school->id,
-                        'status'         => 'paid',   
+                        'institution_id' => $institution->id,
+                        'status'         => 'paid',
                         'paid_at'        => now(),
                         'payment_method' => 'sslcommerz',
                         'val_id'         => $request->input('val_id'),
@@ -171,7 +174,8 @@ class RegistrationPaymentController extends Controller
             Auth::login($user);
             $request->session()->regenerate();
 
-            return redirect()->route('admin.dashboard')->with('success', 'School setup complete!!');
+            return redirect()->route('admin.dashboard')
+                ->with('success', 'Institution setup complete!!');
 
         } catch (\Exception $e) {
             Log::error('Registration failed after payment', [
@@ -200,11 +204,20 @@ class RegistrationPaymentController extends Controller
     {
         $tran_id = $request->input('tran_id');
 
+        $record = Invoice::withoutGlobalScopes()
+            ->where('transaction_id', $tran_id)
+            ->first();
+
+        if (!$record) {
+            Log::warning('IPN: Invoice not found', ['tran_id' => $tran_id]);
+            return response()->json(['status' => 'not_found']);
+        }
+
         $sslc       = new SslCommerzNotification();
         $validation = $sslc->orderValidate(
             $request->all(),
             $tran_id,
-            5000,
+            $record->payable_amount,
             'BDT'
         );
 

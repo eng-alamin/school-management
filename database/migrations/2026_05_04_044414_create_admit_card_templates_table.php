@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('admit_card_templates', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id')->constrained('schools')->cascadeOnDelete();
+            $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
             $table->string('name');
             $table->string('exam_type')->nullable(); // annual, half-yearly, quarterly, etc.
             $table->string('background_color')->default('#ffffff');

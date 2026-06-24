@@ -3,7 +3,7 @@
 namespace App\Livewire\SuperAdmin;
 
 use Livewire\Component;
-use App\Models\School;
+use App\Models\Institution;
 use App\Models\User;
 use App\Models\Student;
 use App\Models\Employee;
@@ -13,10 +13,10 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardComponent extends Component
 {
-    // ── Schools ────────────────────────────────────────────────────────────
-    public int   $totalSchools       = 0;
-    public int   $activeSchools      = 0;
-    public int   $inactiveSchools    = 0;
+    // ── Institutions ────────────────────────────────────────────────────────────
+    public int   $totalInstitutions       = 0;
+    public int   $activeInstitutions      = 0;
+    public int   $inactiveInstitutions    = 0;
 
     // ── Students & Teachers ────────────────────────────────────────────────
     public int   $totalStudents      = 0;
@@ -30,16 +30,16 @@ class DashboardComponent extends Component
     public float $pendingAmount      = 0;
 
     // ── Recent Lists ───────────────────────────────────────────────────────
-    public $recentSchools;
+    public $recentInstitutions;
     public $recentInvoices;
     public $recentActivities;
 
     public function mount(): void
     {
-        // ── Schools ────────────────────────────────────────────────────────
-        $this->totalSchools    = School::count();
-        $this->activeSchools   = School::where('status', true)->count();
-        $this->inactiveSchools = $this->totalSchools - $this->activeSchools;
+        // ── Institutions ────────────────────────────────────────────────────────
+        $this->totalInstitutions    = Institution::count();
+        $this->activeInstitutions   = Institution::where('status', true)->count();
+        $this->inactiveInstitutions = $this->totalInstitutions - $this->activeInstitutions;
 
         // ── Students ───────────────────────────────────────────────────────
         $this->totalStudents = Student::whereRelation('user', 'is_active', true)->count();
@@ -49,7 +49,7 @@ class DashboardComponent extends Component
         $this->activeTeachers = Employee::whereRelation('user', 'role', 'teacher')->whereRelation('user', 'is_active', true)->count();
 
         // ── Revenue ────────────────────────────────────────────────────────
-        // type = 'billing' মানে school subscription invoice
+        // type = 'billing' মানে institution subscription invoice
         $this->totalRevenue = (float) Invoice::where('type', 'billing')
             ->where('status', 'paid')
             ->sum('payable_amount');
@@ -69,18 +69,18 @@ class DashboardComponent extends Component
             ->where('status', 'pending')
             ->sum('payable_amount');
 
-        // ── Recent Schools ─────────────────────────────────────────────────
-        $this->recentSchools = School::orderByDesc('created_at')
+        // ── Recent Institutions ─────────────────────────────────────────────────
+        $this->recentInstitutions = Institution::orderByDesc('created_at')
             ->limit(5)
             ->select('id', 'name', 'email', 'status', 'created_at')
             ->get();
 
         // ── Recent Billing Invoices ────────────────────────────────────────
-        $this->recentInvoices = Invoice::with('school:id,name')
+        $this->recentInvoices = Invoice::with('institution:id,name')
             ->where('type', 'billing')
             ->orderByDesc('created_at')
             ->limit(5)
-            ->select('id', 'school_id', 'invoice_no', 'payable_amount', 'status', 'due_date')
+            ->select('id', 'institution_id', 'invoice_no', 'payable_amount', 'status', 'due_date')
             ->get();
 
         // ── Recent Activities ──────────────────────────────────────────────
@@ -100,7 +100,7 @@ class DashboardComponent extends Component
     {
         return view('livewire.super-admin.dashboard-component')
             ->layout('layouts.superadmin.app', [
-                'title' => 'Super Admin Dashboard',
+                'title' => 'Dashboard | ' . setting('app_name', 'EMS'),
             ]);
     }
 }

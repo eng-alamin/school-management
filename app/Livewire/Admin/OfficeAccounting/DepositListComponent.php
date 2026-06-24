@@ -76,7 +76,7 @@ class DepositListComponent extends Component
         return view('livewire.admin.office-accounting.deposit-list-component')
             ->with('deposits', $deposits)
             ->layout('layouts.admin.app', [
-                'title' => 'Deposits | Monarchy School',
+                'title' => 'Deposits | ' . institution()->name,
             ]);
     }
 }

@@ -156,6 +156,8 @@ class SystemSettingsComponent extends Component
     public function render()
     {
         return view('livewire.super-admin.settings.system-settings-component')
-            ->layout('layouts.superadmin.app');
+            ->layout('layouts.superadmin.app', [
+                'title' => 'System Settings | ' . setting('app_name', 'EMS'),
+            ]);
     }
 }

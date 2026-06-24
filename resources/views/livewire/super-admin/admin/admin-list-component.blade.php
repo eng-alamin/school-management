@@ -6,7 +6,7 @@
         <!-- floating header -->
         <div class="mat-card-header header-pink-gradient">
             <h5 id="cardHeaderTitleAllsections">Manage Admins</h5>
-            <p id="cardHeaderSubtitle">Manage school admin accounts across the platform.</p>
+            <p id="cardHeaderSubtitle">Manage institution admin accounts across the platform.</p>
         </div>
 
         <div class="card-header border-0">
@@ -19,10 +19,10 @@
                 </div>
 
                 <div class="col-md-2">
-                    <select class="form-select form-select-sm" wire:model.live="filterSchool">
-                        <option value="">All Schools</option>
-                        @foreach($schools as $school)
-                            <option value="{{ $school->id }}">{{ $school->name }}</option>
+                    <select class="form-select form-select-sm" wire:model.live="filterInstitution">
+                        <option value="">All Institutions</option>
+                        @foreach($institutions as $institution)
+                            <option value="{{ $institution->id }}">{{ $institution->name }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -58,7 +58,7 @@
                         <tr>
                             <th>SL</th>
                             <th>Admin</th>
-                            <th>School</th>
+                            <th>Institution</th>
                             <th>Phone</th>
                             <th>Status</th>
                             <th>Created</th>
@@ -88,7 +88,7 @@
                                 </div>
                             </td>
 
-                            <td class="text-muted" style="font-size:.8rem;">{{ $admin->school?->name ?? '—' }}</td>
+                            <td class="text-muted" style="font-size:.8rem;">{{ $admin->institution?->name ?? '—' }}</td>
 
                             <td class="text-muted" style="font-size:.8rem;">{{ $admin->phone ?? '—' }}</td>
 
@@ -162,16 +162,16 @@
                                     @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
-                                {{-- School --}}
+                                {{-- Institution --}}
                                 <div class="col-12">
-                                    <label class="form-label">Assign School <span class="text-danger">*</span></label>
-                                    <select class="form-select @error('school_id') is-invalid @enderror" wire:model.defer="school_id">
-                                        <option value="">-- Select School --</option>
-                                        @foreach($schools as $school)
-                                            <option value="{{ $school->id }}">{{ $school->name }}</option>
+                                    <label class="form-label">Assign Institution <span class="text-danger">*</span></label>
+                                    <select class="form-select @error('institution_id') is-invalid @enderror" wire:model.defer="institution_id">
+                                        <option value="">-- Select Institution --</option>
+                                        @foreach($institutions as $institution)
+                                            <option value="{{ $institution->id }}">{{ $institution->name }}</option>
                                         @endforeach
                                     </select>
-                                    @error('school_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    @error('institution_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 {{-- Username + Phone --}}
@@ -296,8 +296,8 @@
 
                         <table class="table table-sm">
                             <tr>
-                                <th class="text-muted" style="width:40%">School</th>
-                                <td>{{ $viewRecord->school?->name ?? '—' }}</td>
+                                <th class="text-muted" style="width:40%">Institution</th>
+                                <td>{{ $viewRecord->institution?->name ?? '—' }}</td>
                             </tr>
                             <tr>
                                 <th class="text-muted">Username</th>

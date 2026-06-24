@@ -112,7 +112,7 @@ class DesignationComponent extends Component
         return view('livewire.admin.employee.designation-component')
             ->with('designations', $designations)
             ->layout('layouts.admin.app', [
-                'title' => "Designation | School SaaS",
+                'title' => 'Designation | ' . institution()->name,
             ]);
     }
 }

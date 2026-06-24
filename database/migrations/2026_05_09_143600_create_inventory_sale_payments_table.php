@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('inventory_sale_payments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_id')->constrained('schools')->cascadeOnDelete();
+            $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
             $table->foreignId('sale_id')->constrained('inventory_sales')->cascadeOnDelete();
             $table->decimal('amount', 15, 2);
             $table->string('pay_via')->nullable();

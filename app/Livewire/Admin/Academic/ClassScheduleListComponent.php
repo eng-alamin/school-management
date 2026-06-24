@@ -79,7 +79,7 @@ class ClassScheduleListComponent extends Component
             ->with('sections', $sections)
             ->with('days', $this->days)
             ->layout('layouts.admin.app', [
-                'title' => "Class Schedule | School SaaS",
+                'title' => 'Class Schedule | ' . institution()->name,
             ]);
     }
 

@@ -111,7 +111,7 @@ class TransactionComponent extends Component
             ->with('balanceMap',   $balanceMap)
             ->with('accounts',     $accounts)
             ->layout('layouts.admin.app', [
-                'title' => 'Transactions | Monarchy School',
+                'title' => 'Transactions | ' . institution()->name,
             ]);
     }
 }

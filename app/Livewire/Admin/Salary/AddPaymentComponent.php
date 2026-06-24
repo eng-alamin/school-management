@@ -226,7 +226,7 @@ class AddPaymentComponent extends Component
         return view('livewire.admin.salary.add-payment-component', [
             'officeAccounts' => $officeAccounts,
         ])->layout('layouts.admin.app', [
-            'title' => 'Salary | Add Payment',
+            'title' => 'Salary | ' . institution()->name,
         ]);
     }
 }

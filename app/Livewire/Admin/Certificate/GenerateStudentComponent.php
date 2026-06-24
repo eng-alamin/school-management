@@ -260,7 +260,7 @@ class GenerateStudentComponent extends Component
         return view('livewire.admin.certificate.generate-student-component')
             ->with(compact('templates', 'students', 'sections', 'classes', 'selectedTemplate'))
             ->layout('layouts.admin.app', [
-                'title' => 'Generate Student Certificates | Monarchy School',
+                'title' => 'Generate Student Certificates | ' . institution()->name,
             ]);
     }
 }

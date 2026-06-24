@@ -3,10 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\BelongsToSchool;
+use App\Traits\BelongsToInstitution;
 
-class AcademicCategory extends Model
+class AcademicGroup extends Model
 {
-    use BelongsToSchool;
+    use BelongsToInstitution;
+
     protected $guarded = [];
 }

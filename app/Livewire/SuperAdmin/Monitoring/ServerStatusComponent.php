@@ -33,7 +33,7 @@ class ServerStatusComponent extends Component
     {
         return view('livewire.super-admin.monitoring.server-status-component')
             ->layout('layouts.superadmin.app', [
-                'title' => 'Server Status',
+                'title' => 'Server Status | ' . setting('app_name', 'EMS'),
             ]);
     }
 }

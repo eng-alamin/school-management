@@ -12,11 +12,11 @@ class CheckBillingStatus
     {
         $user = auth()->user();
 
-        if (!$user || !$user->school_id) {
+        if (!$user || !$user->institution_id) {
             return $next($request);
         }
 
-        $overdueInvoice = Invoice::where('school_id', $user->school_id)
+        $overdueInvoice = Invoice::where('institution_id', $user->institution_id)
             ->where('status', 'overdue')
             ->first();
 
