@@ -16,13 +16,9 @@ return [
 		'refund_status' => "/validator/api/merchantTransIDvalidationAPI.php",
 	],
 	'apiDomain' => $apiDomain,
-	'connect_from_localhost' => env("IS_LOCALHOST", true), // For Sandbox, use "true", For Live, use "false"
-	'success_url' => url('/billing/payment/success'),
-    'failed_url'  => url('/billing/payment/fail'),
-    'cancel_url'  => url('/billing/payment/cancel'),
-    'ipn_url'     => url('/billing/payment/ipn'),
-	// 'success_url' => '/billing/payment/success',
-	// 'failed_url' => '/billing/payment/fail',
-	// 'cancel_url' => '/billing/payment/cancel',
-	// 'ipn_url' => '/billing/payment/ipn',
+	'connect_from_localhost' => env("IS_LOCALHOST", false), // For Sandbox, use "true", For Live, use "false"
+	'success_url' => '/billing/payment/success',
+	'failed_url' => '/billing/payment/fail',
+	'cancel_url' => '/billing/payment/cancel',
+	'ipn_url' => '/billing/payment/ipn',
 ];
