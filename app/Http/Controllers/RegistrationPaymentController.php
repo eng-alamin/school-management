@@ -94,45 +94,60 @@ class RegistrationPaymentController extends Controller
     {
         $tran_id = $request->input('tran_id');
 
-        // DB থেকে record খোঁজো — session এর উপর নির্ভর নয়
         $record = Invoice::withoutGlobalScopes()
             ->where('transaction_id', $tran_id)
             ->where('type', 'registration')
-            ->where('status', 'pending')
+            ->whereIn('status', ['pending', 'paid'])
             ->first();
 
         if (!$record) {
+            Log::error('Record not found', ['tran_id' => $tran_id]);
             return redirect()->route('register')
-                ->with('error', 'Invalid বা already processed transaction।');
-        }
-
-        $sslc       = new SslCommerzNotification();
-        $validation = $sslc->orderValidate(
-            $request->all(),
-            $tran_id,
-            $record->payable_amount, // ✅ DB থেকে নাও — hardcoded নয়
-            'BDT'
-        );
-
-        if (!$validation) {
-            return redirect()->route('register')
-                ->with('error', 'Payment যাচাই করা যায়নি। Tran ID: ' . $tran_id);
+                ->with('error', 'Invalid transaction।');
         }
 
         $meta = json_decode($record->meta, true);
 
-        // duplicate check
         $existing = Institution::withoutGlobalScopes()
             ->where('email', $meta['email'])
             ->first();
 
         if ($existing) {
+            // Institution আছে মানে IPN আগেই সব করে দিয়েছে
+            // শুধু login করিয়ে দাও
+            $user = User::withoutGlobalScopes()
+                ->where('institution_id', $existing->id)
+                ->where('role', 'admin')
+                ->first();
+
+            if ($user) {
+                Auth::login($user);
+                $request->session()->regenerate();
+            }
+
             session()->forget(['pending_registration', 'pending_logo']);
-            return redirect()->route('login')
-                ->with('success', 'Institution already registered। Login করুন।');
+
+            return redirect()->route('admin.dashboard')
+                ->with('success', 'Institution setup complete!');
         }
 
-        $user = null; // transaction এর বাইরে use করার জন্য আগে থেকেই declare করে রাখছি
+        // Institution নেই — validation করে তৈরি করো
+        $sslc = new SslCommerzNotification();
+        $validation = $sslc->orderValidate(
+            $request->all(),
+            $tran_id,
+            $record->payable_amount,
+            'BDT'
+        );
+
+        Log::info('Validation result', ['result' => $validation]);
+
+        if (!$validation) {
+            return redirect()->route('register')
+                ->with('error', 'Payment যাচাই করা যায়নি।');
+        }
+
+        $user = null;
 
         try {
             DB::transaction(function () use ($meta, $tran_id, $request, &$user) {
@@ -157,7 +172,6 @@ class RegistrationPaymentController extends Controller
                     'institution_id' => $institution->id,
                 ]);
 
-                // এখন institution তৈরি হয়ে গেছে — invoice row-টাকে এই institution এর সাথে link করে দিচ্ছি
                 Invoice::withoutGlobalScopes()
                     ->where('transaction_id', $tran_id)
                     ->update([
@@ -170,12 +184,11 @@ class RegistrationPaymentController extends Controller
             });
 
             session()->forget(['pending_registration', 'pending_logo']);
-
             Auth::login($user);
             $request->session()->regenerate();
 
             return redirect()->route('admin.dashboard')
-                ->with('success', 'Institution setup complete!!');
+                ->with('success', 'Institution setup complete!');
 
         } catch (\Exception $e) {
             Log::error('Registration failed after payment', [
