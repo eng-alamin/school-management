@@ -4,8 +4,8 @@
 
       <!-- floating header -->
       <div class="mat-card-header header-pink-gradient">
-        <h5 id="cardHeaderTitleAllsections">Inventory Store</h5>
-        <p id="cardHeaderSubtitle">Manage inventory stores, create, update, and organize stores easily.</p>
+        <h5 id="inventory-store-title">Inventory Store</h5>
+        <p id="inventory-store-subtitle">Manage inventory stores, create, update, and organize stores easily.</p>
       </div>
 
         <div class="card-header border-0">
@@ -15,7 +15,7 @@
                 <div class="card-toolbar-title">
                     <div style="position:relative;display:inline-flex;align-items:center">
                         <span class="material-icons-round" style="position:absolute;left:10px;font-size:17px;color:var(--muted);pointer-events:none">search</span>
-                        <input type="text" wire:model.live.debounce.300ms="search" id="tableSearch" placeholder="Search" style="border:1px solid rgba(0,0,0,.1);border-radius:8px;padding:7px 12px 7px 32px;font-size:.78rem;font-family:inherit;color:var(--dark);outline:none;background:#f8f9fa;width:220px"/>
+                        <input type="text" wire:model.live.debounce.300ms="search" id="inventory-store-search" placeholder="Search" style="border:1px solid rgba(0,0,0,.1);border-radius:8px;padding:7px 12px 7px 32px;font-size:.78rem;font-family:inherit;color:var(--dark);outline:none;background:#f8f9fa;width:220px"/>
                     </div>
                 </div>
 
@@ -30,7 +30,7 @@
                     </div>
                 @endif
                 <button class="btn-outline bg-dark text-white" wire:click="openCreate">
-                    <span class="material-icons-round">add</span> <span id="newSectionBtn">Add Store</span>
+                    <span class="material-icons-round">add</span> <span id="inventory-store-add-btn">Add Store</span>
                 </button>
 
             </div>
@@ -41,12 +41,12 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>SL</th>
-                            <th wire:click="sortBy('name')" style="cursor:pointer">Name @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif</th>
-                            <th wire:click="sortBy('code')" style="cursor:pointer">Code @if($sortField === 'code') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif</th>
-                            <th>Mobile</th>
-                            <th>Address</th>
-                            <th>Actions</th>
+                            <th id="store-th-sl">SL</th>
+                            <th id="store-th-name" wire:click="sortBy('name')" style="cursor:pointer">Name @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif</th>
+                            <th id="store-th-code" wire:click="sortBy('code')" style="cursor:pointer">Code @if($sortField === 'code') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif</th>
+                            <th id="store-th-mobile">Mobile</th>
+                            <th id="store-th-address">Address</th>
+                            <th id="store-th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -55,8 +55,8 @@
                             <td class="text-muted">{{ $stores->firstItem() + $i }}</td>
                             <td>{{ $store->name }}</td>
                             <td><span class="badge bg-secondary">{{ $store->code }}</span></td>
-                            <td>{{ $store->mobile }}</td>
-                            <td>{{ $store->address ?? '—' }}</td>
+                            <td>{{ $store->mobile ?: '—' }}</td>
+                            <td>{{ $store->address ?: '—' }}</td>
                             <td>
                                 <div class="d-flex gap-1">
                                     <button class="act-btn edit" title="Edit" wire:click="openEdit({{ $store->id }})">
@@ -110,13 +110,13 @@
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Code <span class="text-danger">*</span></label>
+                                    <label class="form-label">Code</label>
                                     <input type="text" class="form-control @error('code') is-invalid @enderror" wire:model.defer="code" placeholder="e.g. STR-001">
                                     @error('code') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Mobile <span class="text-danger">*</span></label>
+                                    <label class="form-label">Mobile</label>
                                     <input type="text" class="form-control @error('mobile') is-invalid @enderror" wire:model.defer="mobile" placeholder="e.g. 01700000000">
                                     @error('mobile') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
@@ -157,8 +157,8 @@
                         <div style="width:56px;height:56px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
                             <i class="bi bi-exclamation-triangle text-danger" style="font-size:1.5rem;"></i>
                         </div>
-                        <h6 class="fw-700">Delete Store?</h6>
-                        <p class="text-muted small">This action cannot be undone.</p>
+                        <h6 id="store-delete-title" class="fw-700">Delete Store?</h6>
+                        <p id="store-delete-msg" class="text-muted small">This action cannot be undone.</p>
                     </div>
                     <div class="modal-footer justify-content-center border-0 pt-0">
                         <button class="btn btn-light btn-sm" wire:click="$set('confirmDelete',false)">Cancel</button>

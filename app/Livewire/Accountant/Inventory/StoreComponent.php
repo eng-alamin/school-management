@@ -5,6 +5,7 @@ namespace App\Livewire\Accountant\Inventory;
 use Livewire\Component;
 use App\Models\InventoryStore;
 use Livewire\WithPagination;
+use Illuminate\Support\Str;
 
 class StoreComponent extends Component
 {
@@ -35,8 +36,8 @@ class StoreComponent extends Component
     {
         return [
             'name'        => 'required|string|max:255',
-            'code'        => 'required|string|max:255|unique:inventory_stores,code' . ($this->editId ? ",{$this->editId}" : ''),
-            'mobile'      => 'required|string|max:20',
+            'code'        => 'nullable|string|max:255|unique:inventory_stores,code' . ($this->editId ? ",{$this->editId}" : ''),
+            'mobile'      => 'nullable|string|max:20',
             'address'     => 'nullable|string|max:255',
             'description' => 'nullable|string',
         ];
@@ -91,10 +92,22 @@ class StoreComponent extends Component
         ];
 
         if ($this->editId) {
+            $store = InventoryStore::findOrFail($this->editId);
+            if (empty($data['code'])) {
+                $data['code'] = Str::slug($this->name) . '-' . $store->id;
+            }
+
             InventoryStore::findOrFail($this->editId)->update($data);
             $this->dispatch('toast', type: 'success', message: 'Data updated successfully!');
         } else {
-            InventoryStore::create($data);
+            $store = InventoryStore::create($data);
+
+            if (empty($this->code)) {
+                $store->update([
+                    'code' => Str::slug($this->name) . '-' . $store->id,
+                ]);
+            }
+
             $this->dispatch('toast', type: 'success', message: 'Data created successfully!');
         }
 
@@ -119,7 +132,7 @@ class StoreComponent extends Component
         return view('livewire.accountant.inventory.store-component')
             ->with('stores', $stores)
             ->layout('layouts.accountant.app', [
-                'title' => "Inventory Store | School SaaS",
+                'title' => 'Inventory Store | ' . institution()->name,
             ]);
     }
 

@@ -16,58 +16,71 @@
             <p id="cardHeaderSubtitle">A lightweight, extendable, dependency-free javascript HTML table plugin.</p>
         </div>
 
-        <div class="row g-4 p-5">
-
+        <div class="row g-4 mt-2 px-4">
+            {{-- Class --}}
             <div class="col-md-4">
-                <div wire:ignore class="input-group input-group-outline">
-                    <label class="form-label">Class</label>
-                    <select wire:model.lazy="filterClass" class="form-select">
+                <div class="input-group input-group-outline">
+                    <label class="form-label">Class <span class="req">*</span></label>
+                    <select wire:model.live="filterClass" class="form-select">
                         <option value="">Select Class</option>
-                        @foreach($classes as $class)
-                            <option value="{{ $class['id'] }}">{{ $class['name'] }}</option>
+                        @foreach ($classes as $item)
+                            <option value="{{ $item->id }}">{{ $item->name }}</option>
                         @endforeach
                     </select>
                 </div>
-                @error('filterClass') <span class="text-danger">{{ $message }}</span> @enderror
-            </div>
-            
-            <div class="col-md-4">
-            <div wire:ignore class="input-group input-group-outline">
-                <label class="form-label">Section</label>
-                <select wire:model.lazy="filterSection" class="form-select">
-                    <option value="">Select Section</option>
-                    <option value="all">All Sections</option>
-                    @foreach($sections as $section)
-                        <option value="{{ $section['id'] }}">{{ $section['name'] }}</option>
-                    @endforeach
-                </select>
-            </div>
-            @error('filterSection') <span class="text-danger">{{ $message }}</span> @enderror
+                @error('filterClass') <span class="text-danger small">{{ $message }}</span> @enderror
             </div>
 
+            {{-- Section --}}
             <div class="col-md-4">
-            <div wire:ignore class="input-group input-group-outline">
-                <label class="form-label">Template</label>
-                <select wire:model.lazy="filterTemplate" class="form-select">
-                    <option value="">Select Template</option>
-                    @foreach($templates as $template)
-                        <option value="{{ $template->id }}">{{ $template->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            @error('filterTemplate') <span class="text-danger">{{ $message }}</span> @enderror
+                <div class="input-group input-group-outline">
+                    <label class="form-label">Section</label>
+                    <select wire:model.live="filterSection" class="form-select"
+                        {{ $sections->isEmpty() ? 'disabled' : '' }}>
+                        <option value="">{{ !$filterClass ? 'Select Class First' : 'Select Section' }}</option>
+                        @if ($sections->isNotEmpty())
+                            <option value="all">All Section</option>
+                            @foreach ($sections as $item)
+                                <option value="{{ $item->id }}">{{ $item->name }}</option>
+                            @endforeach
+                        @endif
+                    </select>
+                </div>
             </div>
 
+            {{-- Template --}}
+            <div class="col-md-4">
+                <div class="input-group input-group-outline">
+                    <label class="form-label">Template <span class="req">*</span></label>
+                    <select wire:model.live="filterTemplate" class="form-select">
+                        <option value="">Select Template</option>
+                        @foreach ($templates as $template)
+                            <option value="{{ $template->id }}">{{ $template->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                @error('filterTemplate') <span class="text-danger small">{{ $message }}</span> @enderror
+            </div>
+
+            {{-- Filter Button --}}
             <div class="col-md-12 text-center">
-                <button class="btn-pink w-100 d-flex justify-content-center align-items-center" wire:click="applyFilter" wire:loading.attr="disabled">
-                    <span wire:loading wire:target="applyFilter" class="spinner-border spinner-border-sm"></span>
-                    <i class="bi bi-funnel" wire:loading.remove wire:target="applyFilter"></i>
-                    Filter
+                <button wire:click="applyFilter"
+                        wire:loading.attr="disabled"
+                        wire:target="applyFilter"
+                        class="btn-pink w-100 d-flex justify-content-center align-items-center"
+                        type="button">
+                    <span wire:loading.remove wire:target="applyFilter">
+                        <span class="material-icons-round" style="font-size:16px;vertical-align:middle;margin-right:4px">filter_alt</span> Filter
+                    </span>
+                    <span wire:loading wire:target="applyFilter">
+                        <span class="material-icons-round" style="font-size:16px;animation:spin .7s linear infinite">sync</span> Filtering...
+                    </span>
                 </button>
             </div>
+
         </div>
 
-        @if($filtered)
+        @if($hasFiltered)
             <div class="card-header bg-white border-0">
                 <!-- toolbar -->
                 <div class="card-toolbar">
@@ -94,7 +107,7 @@
                     <button class="btn-outline bg-dark text-white"
                             wire:click="generateCards"
                             wire:loading.attr="disabled"
-                            @if(!$filtered || $students->isEmpty()) disabled @endif>
+                            @if(!$hasFiltered || $students->isEmpty()) disabled @endif>
                         <span wire:loading wire:target="generateCards" class="spinner-border spinner-border-sm"></span>
                         <i class="bi bi-printer" wire:loading.remove wire:target="generateCards"></i>
                         Generate
@@ -119,7 +132,7 @@
                                 <th>Student Name</th>
                                 <th>Class</th>
                                 <th>Section</th>
-                                <th>Category</th>
+                                <th>Group</th>
                                 <th>Register No</th>
                                 <th>Roll No</th>
                                 <th>Mobile No</th>
@@ -137,19 +150,15 @@
                                 <td class="text-muted">{{ $i + 1 }}</td>
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
-                                        @if($student->logo_path)
-                                            <img src="{{ asset('storage/' . $student->logo_path) }}" class="avatar" alt="">
-                                        @else
-                                            <div class="avatar-placeholder">{{ strtoupper(substr($student->name,0,1)) }}</div>
-                                        @endif
-                                        <div>
-                                            <div class="fw-500 text-dark">{{ $student->full_name }}</div>
-                                        </div>
+                                        <img src="{{ $student->photo ? asset('storage/' . $student->photo) : 'https://ui-avatars.com/api/?name=' . urlencode($student->name) . '&size=64&background=random' }}"
+                                            alt="{{ $student->name }}"
+                                            style="width:32px;height:32px;border-radius:50%;object-fit:cover;"/>
+                                        <span>{{ $student->name }}</span>
                                     </div>
                                 </td>
                                 <td>{{$student->class?->name}}</td>
                                 <td>{{$student->section?->name}}</td>
-                                <td>{{$student->category?->name}}</td>
+                                <td>{{$student->group?->name}}</td>
                                 <td>{{$student->register_no}}</td>
                                 <td>{{$student->roll_no}}</td>
                                 <td>{{$student->mobile}}</td>
@@ -515,4 +524,40 @@
         .gen-section-body .row > div { margin-bottom: 12px; }
     }
 </style>
+@endpush
+
+
+@push('scripts')
+<script>
+    document.addEventListener('livewire:initialized', () => {
+        Livewire.hook('morph.updated', ({ el }) => {
+            setTimeout(() => {
+                el.querySelectorAll('.input-group-outline .form-select').forEach(function(select) {
+                    if (!select.nextElementSibling || !select.nextElementSibling.classList.contains('custom-select-wrapper')) {
+                        buildCustomSelect(select);
+                    }
+                });
+                el.querySelectorAll('.input-group-outline input').forEach(function(input) {
+                    var group = input.closest('.input-group');
+                    if (!group) return;
+                    if (input.value && input.value.trim() !== '') {
+                        group.classList.add('is-filled');
+                    } else {
+                        group.classList.remove('is-filled');
+                    }
+                    if (input._materialInit) return;
+                    input._materialInit = true;
+                    input.addEventListener('focus', function() { group.classList.add('is-focused'); });
+                    input.addEventListener('blur', function() {
+                        group.classList.remove('is-focused');
+                        group.classList.toggle('is-filled', !!input.value.trim());
+                    });
+                    input.addEventListener('input', function() {
+                        group.classList.toggle('is-filled', !!input.value.trim());
+                    });
+                });
+            }, 0);
+        });
+    });
+</script>
 @endpush

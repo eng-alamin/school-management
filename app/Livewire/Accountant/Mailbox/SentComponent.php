@@ -83,7 +83,7 @@ class SentComponent extends Component
 
         return view('livewire.accountant.mailbox.sent-component', compact('messages'))
             ->layout('layouts.accountant.app', [
-                'title' => "MailBox | School SaaS",
+                'title' => 'MailBox | ' . institution()->name,
             ]);
     }
 }

@@ -56,8 +56,7 @@ class ApplicationComponent extends Component
         'teacher'        => User::class,
         'teacher'      => User::class,
         'accountant'   => User::class,
-        'librarian'    => User::class,
-        'receptionist' => User::class,
+        'staff'        => User::class,
         'student'      => User::class,
     ];
 
@@ -104,18 +103,7 @@ class ApplicationComponent extends Component
         if (!$modelClass) return;
 
         $this->applicable_type = $modelClass;
-
-        // User model হলে role দিয়ে filter করো
-        if ($modelClass === User::class) {
-            $this->applicants = $modelClass::where('role', $value)
-                ->orderBy('name')
-                ->get(['id', 'name'])
-                ->toArray();
-        } else {
-            $this->applicants = $modelClass::orderBy('name')
-                ->get(['id', 'name'])
-                ->toArray();
-        }
+        $this->applicants      = $this->loadApplicantsForRole($value);
     }
 
     public function sortBy(string $field): void
@@ -136,6 +124,25 @@ class ApplicationComponent extends Component
                 ->diffInDays(Carbon::parse($this->end_date)) + 1;
         }
         return 0;
+    }
+
+    // role অনুযায়ী applicant list লোড করার জন্য আলাদা helper —
+    // এটা applicable_id রিসেট করে না, তাই edit মোডে নিরাপদে ব্যবহার করা যায়
+    private function loadApplicantsForRole(string $value): array
+    {
+        if (!$value) return [];
+
+        $modelClass = $this->roleModelMap[$value] ?? null;
+        if (!$modelClass) return [];
+
+        if ($modelClass === User::class) {
+            return $modelClass::where('role', $value)
+                ->orderBy('name')
+                ->get(['id', 'name'])
+                ->toArray();
+        }
+
+        return $modelClass::orderBy('name')->get(['id', 'name'])->toArray();
     }
 
     private function resetForm(): void
@@ -165,7 +172,7 @@ class ApplicationComponent extends Component
     // ──────────────────────────────────────────
     public function openEdit(int $id): void
     {
-        $record = LeaveApplication::findOrFail($id);
+        $record = LeaveApplication::with('applicable')->findOrFail($id);
 
         $this->editId            = $id;
         $this->applicable_type   = $record->applicable_type;
@@ -178,11 +185,12 @@ class ApplicationComponent extends Component
         $this->status            = $record->status;
         $this->document_path     = $record->document_path;
 
-        // applicable_type থেকে role বের করো
-        $this->role = array_search($record->applicable_type, $this->roleModelMap) ?: '';
+        // applicable_type দিয়ে role বের করা সম্ভব না কারণ সব role-ই User::class এর সাথে map করা।
+        // আসল role আসবে সম্পর্কিত User রেকর্ডের 'role' column থেকে।
+        $this->role = optional($record->applicable)->role ?? '';
 
-        // Applicant list লোড করো (role set হওয়ার পর)
-        $this->updatedRole($this->role);
+        // updatedRole() কল করলে applicable_id null হয়ে যেত, তাই সরাসরি applicants লোড করি
+        $this->applicants = $this->loadApplicantsForRole($this->role);
 
         $this->showDetail = false;
         $this->showModal  = true;
@@ -318,7 +326,7 @@ class ApplicationComponent extends Component
 
         return view('livewire.teacher.leave.application-component', compact('applications', 'categories'))
             ->layout('layouts.teacher.app', [
-                'title' => 'Leave Application | School SaaS',
+                'title' => 'Leave Application | ' . institution()->name,
             ]);
     }
 }

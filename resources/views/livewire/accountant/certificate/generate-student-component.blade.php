@@ -19,36 +19,40 @@
         {{-- ── FILTER SECTION ── --}}
         <div class="row g-4 p-5">
 
+            {{-- Class --}}
             <div class="col-md-4">
-                <div class="input-group input-group-outline" wire:ignore>
-                    <label class="form-label">Class <span class="req">*</span></label>
+                <div class="input-group input-group-outline">
+                    <label class="form-label">Class</label>
                     <select wire:model.live="filterClass" class="form-select">
                         <option value="">Select Class</option>
-                        @foreach($classes as $class)
-                            <option value="{{ $class['id'] }}">{{ $class['name'] }}</option>
+                        @foreach ($classes as $item)
+                            <option value="{{ $item->id }}">{{ $item->name }}</option>
                         @endforeach
                     </select>
                 </div>
                 @error('filterClass') <span class="text-danger small">{{ $message }}</span> @enderror
             </div>
 
+            {{-- Section --}}
             <div class="col-md-4">
-                <div class="input-group input-group-outline" wire:ignore>
+                <div class="input-group input-group-outline">
                     <label class="form-label">Section</label>
-                    <select wire:model.live="filterSection" class="form-select">
-                        <option value="">Select Section</option>
-                        <option value="all">All Sections</option>
-                        @foreach($sections as $section)
-                            <option value="{{ $section['id'] }}">{{ $section['name'] }}</option>
-                        @endforeach
+                    <select wire:model.live="filterSection" class="form-select"
+                        {{ empty($sections) ? 'disabled' : '' }}>
+                        <option value="">{{ !$filterClass ? 'Select Class First' : 'Select Section' }}</option>
+                        @if(!empty($sections))
+                            <option value="all">All Section</option>
+                            @foreach ($sections as $item)
+                                <option value="{{ $item->id }}">{{ $item->name }}</option>
+                            @endforeach
+                        @endif
                     </select>
                 </div>
-                @error('filterSection') <span class="text-danger small">{{ $message }}</span> @enderror
             </div>
 
             <div class="col-md-4">
                 <div class="input-group input-group-outline" wire:ignore>
-                    <label class="form-label">Certificate Template <span class="req">*</span></label>
+                    <label class="form-label">Certificate Template</label>
                     <select wire:model.live="filterTemplate" class="form-select">
                         <option value="">Select Template</option>
                         @foreach($templates as $template)
@@ -152,7 +156,7 @@
                                     <td>
                                         <div class="d-flex align-items-center gap-2">
                                             @if($student->photo)
-                                                <img src="{{ asset($student->photo) }}"
+                                                <img src="{{ asset('storage/' . $student->photo) }}"
                                                      class="avatar" alt="">
                                             @else
                                                 <div class="avatar-placeholder">
@@ -244,7 +248,7 @@
 
                                 {{-- Background image --}}
                                 @if($tmpl->background_image)
-                                    <img src="{{ asset($tmpl->background_image) }}"
+                                    <img src="{{ asset('storage/' . $tmpl->background_image) }}"
                                          style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;opacity:.18;">
                                 @endif
 
@@ -256,7 +260,7 @@
 
                                         {{-- Logo --}}
                                         @if($tmpl->logo_image)
-                                            <img src="{{ asset($tmpl->logo_image) }}"
+                                            <img src="{{ asset('storage/' . $tmpl->logo_image) }}"
                                                  style="height:64px;object-fit:contain;">
                                         @else
                                             <div style="width:64px;"></div>
@@ -276,7 +280,7 @@
                                     {{-- Footer: Signature --}}
                                     @if($tmpl->signature_image)
                                         <div style="margin-top:40px;text-align:right;">
-                                            <img src="{{ asset($tmpl->signature_image) }}"
+                                            <img src="{{ asset('storage/' . $tmpl->signature_image) }}"
                                                  style="height:48px;object-fit:contain;">
                                             <div style="font-size:.72rem;color:#888;margin-top:4px;border-top:1px solid #ddd;padding-top:4px;">
                                                 Authorized Signature
@@ -343,14 +347,14 @@
                     position:relative;overflow:hidden;page-break-after:always;">
 
             @if($tmpl->background_image)
-                <img src="{{ asset($tmpl->background_image) }}"
+                <img src="{{ asset('storage/' . $tmpl->background_image) }}"
                      style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;opacity:.18;">
             @endif
 
             <div style="position:relative;z-index:1;">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
                     @if($tmpl->logo_image)
-                        <img src="{{ asset($tmpl->logo_image) }}" style="height:64px;object-fit:contain;">
+                        <img src="{{ asset('storage/' . $tmpl->logo_image) }}" style="height:64px;object-fit:contain;">
                     @else
                         <div style="width:64px;"></div>
                     @endif
@@ -361,7 +365,7 @@
 
                 @if($tmpl->signature_image)
                     <div style="margin-top:40px;text-align:right;">
-                        <img src="{{ asset($tmpl->signature_image) }}" style="height:48px;object-fit:contain;">
+                        <img src="{{ asset('storage/' . $tmpl->signature_image) }}" style="height:48px;object-fit:contain;">
                         <div style="font-size:.72rem;color:#888;margin-top:4px;border-top:1px solid #ddd;padding-top:4px;">
                             Authorized Signature
                         </div>
@@ -463,4 +467,45 @@
         font-size: .8rem; font-weight: 700;
     }
 </style>
+@endpush
+
+
+@push('scripts')
+<script>
+    document.addEventListener('livewire:initialized', () => {
+        Livewire.hook('morph.updated', ({ el }) => {
+            setTimeout(() => {
+                el.querySelectorAll('.input-group-outline .form-select').forEach(function(select) {
+                    if (!select.nextElementSibling || !select.nextElementSibling.classList.contains('custom-select-wrapper')) {
+                        buildCustomSelect(select);
+                    }
+                });
+
+                el.querySelectorAll('.input-group-outline input').forEach(function(input) {
+                    var group = input.closest('.input-group');
+                    if (!group) return;
+                    if (input.value && input.value.trim() !== '') {
+                        group.classList.add('is-filled');
+                    } else {
+                        group.classList.remove('is-filled');
+                    }
+                    if (input._materialInit) return;
+                    input._materialInit = true;
+                    input.addEventListener('focus', function() { group.classList.add('is-focused'); });
+                    input.addEventListener('blur', function() {
+                        group.classList.remove('is-focused');
+                        group.classList.toggle('is-filled', !!input.value.trim());
+                    });
+                    input.addEventListener('input', function() {
+                        group.classList.toggle('is-filled', !!input.value.trim());
+                    });
+                });
+
+                el.querySelectorAll('.input-group-outline input[type="date"]').forEach(function(input) {
+                    if (!input._dpInit) { _initDatepickers(); }
+                });
+            }, 0);
+        });
+    });
+</script>
 @endpush

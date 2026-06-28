@@ -66,7 +66,7 @@ class ListTemplateComponent extends Component
         return view('livewire.accountant.salary.list-template-component')
             ->with('templates', $templates)
             ->layout('layouts.accountant.app', [
-                'title' => 'Salary Templates | HR',
+                'title' => 'Salary Templates | ' . institution()->name,
             ]);
     }
 }

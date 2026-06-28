@@ -3,7 +3,7 @@
     {{-- Floating Header --}}
     <div class="mat-card-header header-pink-gradient">
         <h5><span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">event_note</span>Student Attendance</h5>
-        <p>Create or update exam schedule</p>
+        <p>Mark or update student attendance</p>
     </div>
 
     {{-- Select Ground --}}
@@ -16,7 +16,7 @@
             {{-- Class --}}
             <div class="col-md-4">
                 <div class="input-group input-group-outline">
-                    <label class="form-label">Class <span class="req">*</span></label>
+                    <label class="form-label">Class</label>
                     <select wire:model.live="filterClass" class="form-select">
                         <option value="">Select Class</option>
                         @foreach ($classes as $item)
@@ -29,28 +29,29 @@
 
             {{-- Section --}}
             <div class="col-md-4">
-                <div wire:ignore.self class="input-group input-group-outline">
-                    <label class="form-label">Section <span class="req">*</span></label>
-                    <select wire:model.live="filterSection" class="form-select">
-                        <option value="">Select Section</option>
-                        <option value="all">All Section</option>
-                        @foreach ($sections as $item)
-                            <option value="{{ $item->id }}">{{ $item->name }}</option>
-                        @endforeach
+                <div class="input-group input-group-outline">
+                    <label class="form-label">Section</label>
+                    <select wire:model.live="filterSection" class="form-select"
+                        {{ empty($sections) ? 'disabled' : '' }}>
+                        <option value="">{{ !$filterClass ? 'Select Class First' : 'Select Section' }}</option>
+                        @if(!empty($sections))
+                            <option value="all">All Section</option>
+                            @foreach ($sections as $item)
+                                <option value="{{ $item->id }}">{{ $item->name }}</option>
+                            @endforeach
+                        @endif
                     </select>
                 </div>
-                @error('filterSection') <span class="text-danger small">{{ $message }}</span> @enderror
             </div>
-            {{-- Date  --}}
+
+            {{-- Date --}}
             <div class="col-md-4">
-                <div wire:ignore class="input-groupp input-group-outlinee">
-                    <input wire:model.live="date" type="date" class="form-control">
+                <div class="input-group input-group-outline" wire:ignore>
+                    <label class="form-label">Date</label>
+                    <input wire:model="filterDate" type="date" class="form-control" data-dp-value="{{ $filterDate }}"
+                        onfocus="focused(this)" onfocusout="defocused(this)">
                 </div>
-                {{-- <div wire:ignore class="input-group input-group-outline">
-                    <label class="form-label">Date <span class="req">*</span></label>
-                    <input wire:model.live="date" type="date" class="form-control">
-                </div> --}}
-                @error('date') <span class="text-danger small">{{ $message }}</span> @enderror
+                @error('filterDate') <span class="text-danger small">{{ $message }}</span> @enderror
             </div>
 
             {{-- Filter Button --}}
@@ -81,62 +82,43 @@
 
         <div class="table-responsive mt-3">
             <table class="schedule-table">
-
                 <thead>
                     <tr>
                         <th>SL</th>
                         <th>Name</th>
-                        @if($filterSection === 'all')
                         <th>Section</th>
-                        @endif
                         <th>Roll</th>
                         <th>Register No</th>
                         <th>Status</th>
                         <th>Remarks</th>
                     </tr>
                 </thead>
-
                 <tbody>
                     @foreach($data as $index => $item)
                     <tr wire:key="student-att-{{ $index }}">
                         <td>{{ $index + 1 }}</td>
                         <td>{{ $item['name'] }}</td>
-                        @if($filterSection === 'all')
                         <td>{{ $item['section_name'] }}</td>
-                        @endif
                         <td>{{ $item['roll_no'] }}</td>
                         <td>{{ $item['register_no'] }}</td>
                         <td>
                             <div class="status-group">
-
                                 <label>
-                                    <input type="radio"
-                                        wire:model="data.{{ $index }}.status"
-                                        value="present">
+                                    <input type="radio" wire:model="data.{{ $index }}.status" value="present">
                                     <span class="text-success">Present</span>
                                 </label>
-
                                 <label>
-                                    <input type="radio"
-                                        wire:model="data.{{ $index }}.status"
-                                        value="absent">
+                                    <input type="radio" wire:model="data.{{ $index }}.status" value="absent">
                                     <span class="text-danger">Absent</span>
                                 </label>
-
                                 <label>
-                                    <input type="radio"
-                                        wire:model="data.{{ $index }}.status"
-                                        value="late">
+                                    <input type="radio" wire:model="data.{{ $index }}.status" value="late">
                                     <span class="text-warning">Late</span>
                                 </label>
-
                                 <label>
-                                    <input type="radio"
-                                        wire:model="data.{{ $index }}.status"
-                                        value="leave">
+                                    <input type="radio" wire:model="data.{{ $index }}.status" value="leave">
                                     <span class="text-info">Leave</span>
                                 </label>
-
                             </div>
                         </td>
                         <td>
@@ -148,7 +130,6 @@
                     </tr>
                     @endforeach
                 </tbody>
-
             </table>
         </div>
     </div>
@@ -158,7 +139,6 @@
         <button class="btn-outline" type="button" wire:click="resetForm">
             <span class="material-icons-round" style="font-size:16px">refresh</span> Reset
         </button>
-
         <button class="btn-pink" type="button"
                 wire:click="save"
                 wire:loading.attr="disabled"
@@ -174,7 +154,6 @@
     @endif
 
 </div>
-
 
 @push('styles')
 <style>
@@ -193,22 +172,10 @@
     }
     .schedule-table tbody td {
         padding: 7px 8px;
-        vertical-align: top;
-    }
-    .marks-sub-header {
-        display: flex;
-        gap: 4px;
-        margin-top: 3px;
-        font-size: 10px;
-        color: #666;
-        font-weight: 400;
-    }
-    .marks-sub-header span {
-        width: 64px;
-        text-align: center;
+        vertical-align: middle;
     }
     .schedule-input {
-       border: 1px solid #3d3d3d;
+        border: 1px solid #3d3d3d;
         padding: 6px 10px;
         border-radius: 4px;
         font-size: 12px;
@@ -219,71 +186,18 @@
     .schedule-input:focus {
         border-color: #e05252;
     }
-    .schedule-date {
-        width: 140px;
-        cursor: pointer;
+    .status-group {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
     }
-    .schedule-date::-webkit-calendar-picker-indicator {
-        filter: invert(0.6);
-        cursor: pointer;
-    }
-    .schedule-time-wrap {
+    .status-group label {
         display: flex;
         align-items: center;
-        gap: 6px;
-        border: 1px solid #3d3d3d;
-        border-radius: 4px;
-        padding: 5px 8px;
-        width: 148px;
-        transition: border-color 0.2s;
-    }
-    .schedule-time-wrap:focus-within {
-        border-color: #e05252;
-    }
-    .schedule-time-icon {
-        font-size: 15px !important;
-        color: #888;
-        flex-shrink: 0;
-    }
-    .schedule-time {
-        background: transparent;
-        border: none;
-        padding: 0;
-        width: 100%;
-    }
-    .schedule-time:focus {
-        border-color: transparent;
-    }
-    input[type="time"]::-webkit-calendar-picker-indicator {
-        display: none;
-    }
-    .schedule-number {
-        width: 64px;
-        text-align: center;
-        -moz-appearance: textfield;
-    }
-    .schedule-number::-webkit-outer-spin-button,
-    .schedule-number::-webkit-inner-spin-button {
-        -webkit-appearance: none;
-    }
-    /* .schedule-remove-btn {
-        background: transparent;
-        border: 1px solid #3d3d3d;
-        color: #e05252;
-        border-radius: 4px;
-        padding: 5px 7px;
+        gap: 4px;
         cursor: pointer;
-        display: flex;
-        align-items: center;
-        transition: background 0.15s, border-color 0.15s;
+        font-size: 12px;
     }
-    .schedule-remove-btn:hover {
-        background: #3a2020;
-        border-color: #e05252;
-    }
-    .schedule-remove-btn .material-icons-round {
-        font-size: 16px;
-    } */
 </style>
 @endpush
 
@@ -292,14 +206,12 @@
     document.addEventListener('livewire:initialized', () => {
         Livewire.hook('morph.updated', ({ el }) => {
             setTimeout(() => {
-                // Re-init custom selects
                 el.querySelectorAll('.input-group-outline .form-select').forEach(function(select) {
                     if (!select.nextElementSibling || !select.nextElementSibling.classList.contains('custom-select-wrapper')) {
                         buildCustomSelect(select);
                     }
                 });
 
-                // Re-init text/time inputs
                 el.querySelectorAll('.input-group-outline input').forEach(function(input) {
                     var group = input.closest('.input-group');
                     if (!group) return;
@@ -319,7 +231,11 @@
                         group.classList.toggle('is-filled', !!input.value.trim());
                     });
                 });
-            }, 50);
+
+                el.querySelectorAll('.input-group-outline input[type="date"]').forEach(function(input) {
+                    if (!input._dpInit) { _initDatepickers(); }
+                });
+            }, 0);
         });
     });
 </script>

@@ -202,10 +202,16 @@ class GenerateEmployeeComponent extends Component
     // ── Helpers ──
     private function getEmployees()
     {
-        if (!$this->filtered) return collect();
+        if (!$this->filtered) {
+            return collect();
+        }
 
-        return Employee::with(['department', 'designation'])
-            ->when($this->filterRole, fn($q) => $q->where('role', $this->filterRole))
+        return Employee::with(['user', 'department', 'designation'])
+            ->when($this->filterRole, function ($query) {
+                $query->whereHas('user', function ($q) {
+                    $q->where('role', $this->filterRole);
+                });
+            })
             ->orderBy('name')
             ->get();
     }
@@ -216,8 +222,7 @@ class GenerateEmployeeComponent extends Component
             'admin'        => 'Admin',
             'teacher'      => 'Teacher',
             'accountant'   => 'Accountant',
-            'librarian'    => 'Librarian',
-            'receptionist' => 'Receptionist',
+            'staff'        => 'Staff',
         ];
     }
 

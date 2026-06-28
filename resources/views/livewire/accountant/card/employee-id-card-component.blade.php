@@ -26,8 +26,7 @@
                         <option value="admin">Admin</option>
                         <option value="teacher">Teacher</option>
                         <option value="accountant">Accountant</option>
-                        <option value="librarian">Librarian</option>
-                        <option value="receptionist">Receptionist</option>
+                        <option value="staff">Staff</option>
                     </select>
                 </div>
                 @error('filterRole') <span class="text-danger">{{ $message }}</span> @enderror
@@ -62,7 +61,7 @@
                     {{-- Left side --}}
                     <div class="card-toolbar-title d-flex align-items-center gap-2">
                         <span class="material-icons-round">people</span>
-                        <h5 id="cardHeaderTitleAllsections">Student List</h5>
+                        <h5 id="cardHeaderTitleAllsections">Staff List</h5>
                     </div>
 
                     <!-- Right Side -->

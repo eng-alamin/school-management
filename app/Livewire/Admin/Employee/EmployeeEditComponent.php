@@ -4,9 +4,10 @@ namespace App\Livewire\Admin\Employee;
 
 use Livewire\Component;
 use App\Models\Employee;
-use App\Models\Department;
-use App\Models\Designation;
+use App\Models\EmployeeDepartment;
+use App\Models\EmployeeDesignation;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
@@ -57,24 +58,24 @@ class EmployeeEditComponent extends Component
     public function mount($id)
     {
         $this->employeeId = $id;
-        $this->employee = Employee::with('user')->findOrFail($id);
-        $this->userId = $this->employee->user_id;
+        $this->employee   = Employee::with('user')->findOrFail($id);
+        $this->userId     = $this->employee->user_id;
 
-        $this->role = $this->employee->user->role;
-        $this->joining_date = $this->employee->joining_date;
-        $this->designation_id = $this->employee->designation_id;
-        $this->department_id = $this->employee->department_id;
-        $this->qualification = $this->employee->qualification;
-        $this->experience_detail = $this->employee->experience_detail;
-        $this->total_experience = $this->employee->total_experience;
+        $this->role               = $this->employee->user->role;
+        $this->joining_date       = $this->employee->joining_date;
+        $this->designation_id     = $this->employee->designation_id;
+        $this->department_id      = $this->employee->department_id;
+        $this->qualification      = $this->employee->qualification;
+        $this->experience_detail  = $this->employee->experience_detail;
+        $this->total_experience   = $this->employee->total_experience;
 
         // Employee Details
-        $this->name = $this->employee->name;
-        $this->dob = $this->employee->dob;
-        $this->religion = $this->employee->religion;
-        $this->mobile = $this->employee->mobile;
-        $this->email = $this->employee->email;
-        $this->present_address = $this->employee->present_address;
+        $this->name              = $this->employee->name;
+        $this->dob               = $this->employee->dob;
+        $this->religion          = $this->employee->religion;
+        $this->mobile            = $this->employee->mobile;
+        $this->email             = $this->employee->email;
+        $this->present_address   = $this->employee->present_address;
         $this->permanent_address = $this->employee->permanent_address;
 
         $this->photo = $this->employee->photo;
@@ -83,28 +84,27 @@ class EmployeeEditComponent extends Component
         $this->username = $this->employee->user->username;
 
         // Bank Info
-        $this->bank_name = $this->employee->bank_name;
-        $this->holder_name = $this->employee->holder_name;
-        $this->bank_branch = $this->employee->bank_branch;
+        $this->bank_name    = $this->employee->bank_name;
+        $this->holder_name  = $this->employee->holder_name;
+        $this->bank_branch  = $this->employee->bank_branch;
         $this->bank_address = $this->employee->bank_address;
-        $this->ifsc_code = $this->employee->ifsc_code;
-        $this->account_no = $this->employee->account_no;
+        $this->ifsc_code    = $this->employee->ifsc_code;
+        $this->account_no   = $this->employee->account_no;
     }
-
 
     public function rules()
     {
         return [
             'role' => 'required',
             // 'joining_date' => 'required|date',
-            'designation_id' => 'required|exists:designations,id',
-            'department_id' => 'required|exists:departments,id',
+            'designation_id' => 'required|exists:employee_designations,id',
+            'department_id' => 'required|exists:employee_departments,id',
 
             'name' => 'required',
             'mobile' => 'nullable|string|max:20',
             'email'    => ['nullable', Rule::unique('users', 'email')->ignore($this->userId)],
             'photo_upload' => 'nullable|image|max:2048',
-            
+
             'username'    => ['required', Rule::unique('users', 'username')->ignore($this->userId)],
             'password'    => 'nullable|min:4',
         ];
@@ -114,7 +114,7 @@ class EmployeeEditComponent extends Component
     {
         $this->dispatch('validation-failed');
     }
-    
+
     public function updated($propertyName)
     {
         $this->validateOnly($propertyName, $this->rules());
@@ -122,10 +122,13 @@ class EmployeeEditComponent extends Component
 
     public function update()
     {
+        DB::beginTransaction();
+
         try {
 
-            $this->validate();
+            $this->validate($this->rules());
 
+            // ── User update ──────────────────────────────
             $userData = [
                 'role'     => $this->role,
                 'name'     => $this->name,
@@ -140,6 +143,7 @@ class EmployeeEditComponent extends Component
             $user = User::findOrFail($this->userId);
             $user->update($userData);
 
+            // ── Employee update ───────────────────────────
             $employeeData = [
                 'joining_date'      => $this->joining_date,
                 'designation_id'    => $this->designation_id,
@@ -166,51 +170,42 @@ class EmployeeEditComponent extends Component
 
             if ($this->photo_upload) {
 
-                if ($this->employee->photo) {
-                    Storage::disk('public')->delete($this->employee->photo);
-                }
+                $oldPhoto = $this->employee->photo;
 
-                $employeeData['photo'] = $this->photo_upload
-                    ->store('employees', 'public');
+                $employeeData['photo'] = $this->photo_upload->store('employees', 'public');
+
+                if ($oldPhoto) {
+                    Storage::disk('public')->delete($oldPhoto);
+                }
             }
 
             $this->employee->update($employeeData);
 
-            $this->dispatch(
-                'toast',
-                type: 'success',
-                message: 'Employee updated successfully!'
-            );
+            DB::commit();
 
-        } catch (ValidationException $e) {
-
-            $this->dispatch('validation-failed');
-            throw $e;
+            $this->dispatch('toast', type: 'success', message: 'Employee updated successfully!');
 
         } catch (\Throwable $e) {
 
-            $this->dispatch(
-                'toast',
-                type: 'error',
-                message: $e->getMessage()
-            );
+            DB::rollBack();
+
+            $this->dispatch('toast', type: 'error', message: 'Something went wrong!');
+            throw $e;
         }
     }
 
     public function render()
     {
-        $employees = Employee::all();
-        $departments = Department::all();
-        $designations = Designation::all();
+        $employees    = Employee::all();
+        $departments  = EmployeeDepartment::all();
+        $designations = EmployeeDesignation::all();
 
         return view('livewire.admin.employee.employee-edit-component')
-        ->with('employees', $employees)
-        ->with('departments', $departments)
-        ->with('designations', $designations)
-        ->layout('layouts.admin.app', [
-            'title' => 'Edit Employee | ' . institution()->name,
-        ]);
+            ->with('employees', $employees)
+            ->with('departments', $departments)
+            ->with('designations', $designations)
+            ->layout('layouts.admin.app', [
+                'title' => 'Edit Employee | ' . institution()->name,
+            ]);
     }
-
-
 }

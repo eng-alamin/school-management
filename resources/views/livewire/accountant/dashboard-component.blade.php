@@ -1,10 +1,10 @@
-{{-- resources/views/livewire/accountant/dashboard-component.blade.php --}}
+{{-- resources/views/livewire/admin/dashboard-component.blade.php --}}
 
 <div class="dash-wrap">
 
     {{-- ══ Welcome Header ══════════════════════════════════════════════════ --}}
     <div class="dash-header px-3 pt-3 pb-2">
-        <h5 class="fw-bold mb-0 text-dark">Welcome back, Accountant! 👋</h5>
+        <h5 class="fw-bold mb-0 text-dark">Welcome back, Admin! 👋</h5>
         <p class="text-secondary mb-0" style="font-size:12px;">Here's what's happening at your school today</p>
     </div>
 
@@ -177,11 +177,11 @@
             </div>
             <div class="row g-2 mt-1">
                 @foreach([
-                    ['icon'=>'person_add',  'label'=>'Add Student',  'color'=>'#4f46e5', 'bg'=>'#eef2ff', 'href'=>'#'],
-                    ['icon'=>'how_to_reg',  'label'=>'Attendance',   'color'=>'#059669', 'bg'=>'#d1fae5', 'href'=>'#'],
-                    ['icon'=>'receipt',     'label'=>'Fee Invoice',  'color'=>'#d97706', 'bg'=>'#fef3c7', 'href'=>'#'],
-                    ['icon'=>'campaign',    'label'=>'Notice',       'color'=>'#db2777', 'bg'=>'#fce7f3', 'href'=>'#'],
-                    ['icon'=>'event_note',  'label'=>'Add Exam',     'color'=>'#0891b2', 'bg'=>'#ecfeff', 'href'=>'#'],
+                    ['icon'=>'person_add',  'label'=>'Add Student',  'color'=>'#4f46e5', 'bg'=>'#eef2ff', 'href'=>route('admin.student.add')],
+                    ['icon'=>'how_to_reg',  'label'=>'Attendance',   'color'=>'#059669', 'bg'=>'#d1fae5', 'href'=>route('admin.attendance.students')],
+                    ['icon'=>'receipt',     'label'=>'Fee Invoice',  'color'=>'#d97706', 'bg'=>'#fef3c7', 'href'=>route('admin.student-accounting.fee.invoices')],
+                    ['icon'=>'campaign',    'label'=>'Notice',       'color'=>'#db2777', 'bg'=>'#fce7f3', 'href'=>route('admin.notices')],
+                    ['icon'=>'event_note',  'label'=>'Add Exam',     'color'=>'#0891b2', 'bg'=>'#ecfeff', 'href'=>route('admin.exam.setups')],
                     ['icon'=>'sms',         'label'=>'Send SMS',     'color'=>'#7c3aed', 'bg'=>'#ede9fe', 'href'=>'#'],
                 ] as $action)
                     <div class="col-4">

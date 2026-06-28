@@ -1,6 +1,6 @@
-{{-- resources/views/livewire/teacher/mailbox/compose.blade.php --}}
+{{-- resources/views/livewire/admin/mailbox/compose.blade.php --}}
 <div class="mailbox-wrapper">
-    @include('livewire.teacher.mailbox.partials.sidebar')
+    @include('livewire.admin.mailbox.partials.sidebar')
 
     <div class="mailbox-content">
         {{-- Page Header --}}
@@ -99,11 +99,11 @@
                     </span>
                 </button>
 
-                <a href="{{ route('teacher.mailbox.inbox') }}" class="btn btn-light ms-2">
+                <a href="{{ route('admin.mailbox.inbox') }}" class="btn btn-light ms-2">
                     <i class="fas fa-times me-1"></i> Discard
                 </a>
             </div>
         </div>
     </div>
 </div>
-@include('livewire.teacher.mailbox.partials.styles')
+@include('livewire.admin.mailbox.partials.styles')

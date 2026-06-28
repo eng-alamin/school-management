@@ -30,18 +30,6 @@ class SessionComponent extends Component
     public string $end_date = '';
     public bool $is_current = true;
 
-    public function mount()
-    {
-        if (! AcademicSession::exists()) {
-            AcademicSession::create([
-                'name'       => now()->year,
-                'start_date' => now()->startOfYear()->toDateString(),
-                'end_date'   => now()->endOfYear()->toDateString(),
-                'is_current' => true,
-            ]);
-        }
-    }
-
     protected function rules(): array
     {
         return [

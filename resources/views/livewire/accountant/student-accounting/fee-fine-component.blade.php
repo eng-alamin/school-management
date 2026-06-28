@@ -69,7 +69,7 @@
                                 @if($fine->fine_type === 'percentage')
                                     {{ $fine->fine_value }}%
                                 @else
-                                    ৳{{ number_format($fine->fine_value, 2) }}
+                                    ৳{{ number_format($fine->fine_value, 0) }}
                                 @endif
                             </td>
                             <td>

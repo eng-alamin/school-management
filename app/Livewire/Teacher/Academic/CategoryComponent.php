@@ -112,7 +112,7 @@ class CategoryComponent extends Component
         return view('livewire.teacher.academic.category-component')
             ->with('categories', $categories)
             ->layout('layouts.teacher.app', [
-                'title' => "Categories | School SaaS",
+                'title' => 'Categories | ' . institution()->name,
             ]);
     }
 }

@@ -161,6 +161,12 @@
             transform: translateY(-2px);
         }
 
+        .login-btn:disabled {
+            opacity: 1;
+            background: var(--primary-dark);
+            cursor: not-allowed;
+        }
+
         .extra-links { margin-top: 25px; }
 
         .extra-links a {
@@ -279,7 +285,7 @@
                             <input
                                 type="text"
                                 class="form-control @error('identifier') is-invalid @enderror"
-                                wire:model.live="identifier"
+                                wire:model="identifier"
                                 placeholder="admin@example.com / admin / 01700000000"
                                 autocomplete="username"
                             >
@@ -295,11 +301,12 @@
                             type="submit"
                             class="btn login-btn text-white w-100"
                             wire:loading.attr="disabled"
+                            wire:target="sendResetLink"
                         >
-                            <span wire:loading.remove>
+                            <span wire:loading.remove wire:target="sendResetLink">
                                 Reset Link পাঠান
                             </span>
-                            <span wire:loading>
+                            <span wire:loading wire:target="sendResetLink">
                                 <span class="spinner-border spinner-border-sm me-2"></span>
                                 পাঠানো হচ্ছে...
                             </span>

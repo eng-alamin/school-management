@@ -110,7 +110,7 @@ class CategoryComponent extends Component
         return view('livewire.teacher.leave.category-component')
             ->with('categories', $categories)
             ->layout('layouts.teacher.app', [
-                'title' => "Leave Category | School SaaS",
+                'title' => 'Leave Category | ' . institution()->name,
             ]);
     }
 

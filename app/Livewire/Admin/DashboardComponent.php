@@ -278,7 +278,7 @@ class DashboardComponent extends Component
             ->get();
 
         $employeeBirthdays = DB::table('employees as e')
-            ->leftJoin('designations as d', 'd.id', '=', 'e.designation_id')
+            ->leftJoin('employee_designations as d', 'd.id', '=', 'e.designation_id')
             ->where('e.institution_id', $institutionId)
             ->whereRaw("DATE_FORMAT(e.dob, '%m-%d') = ?", [$todayMD])
             ->select(

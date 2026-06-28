@@ -57,7 +57,7 @@
                                         @foreach($feeGroup->items as $item)
                                             <div class="fee-item-row">
                                                 <span class="fee-item-name">{{ $item->feeType->name }}</span>
-                                                <span class="fee-item-amount">- ৳{{ number_format($item->amount, 2) }}</span>
+                                                <span class="fee-item-amount">- ৳{{ number_format($item->amount, 0) }}</span>
                                             </div>
                                         @endforeach
                                     </div>

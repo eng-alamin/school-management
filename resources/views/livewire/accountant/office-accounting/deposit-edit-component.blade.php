@@ -19,10 +19,12 @@
             <div class="col-md-12">
                 <div class="input-group input-group-outline" wire:ignore>
                     <label class="form-label">Account <span class="req">*</span></label>
-                    <select class="form-select" id="accountSelect">
+                    <select wire:model="account_id" class="form-select" id="accountSelect">
                         <option value="">Select</option>
                         @foreach($accounts as $account)
-                            <option value="{{ $account->id }}">{{ $account->name }}</option>
+                            <option value="{{ $account->id }}" @selected($account_id == $account->id)>
+                                {{ $account->name }}
+                            </option>
                         @endforeach
                     </select>
                 </div>
@@ -33,10 +35,12 @@
             <div class="col-md-12">
                 <div class="input-group input-group-outline" wire:ignore>
                     <label class="form-label">Head</label>
-                    <select class="form-select" id="headSelect">
+                    <select wire:model="head_id" class="form-select" id="headSelect">
                         <option value="">Select (Optional)</option>
                         @foreach($heads as $head)
-                            <option value="{{ $head->id }}">{{ $head->name }}</option>
+                            <option value="{{ $head->id }}" @selected($head_id == $head->id)>
+                                {{ $head->name }}
+                            </option>
                         @endforeach
                     </select>
                 </div>
@@ -47,13 +51,13 @@
             <div class="col-md-6">
                 <div class="input-group input-group-outline" wire:ignore>
                     <label class="form-label">Pay Via</label>
-                    <select class="form-select" id="payViaSelect">
+                    <select wire:model="pay_via" class="form-select" id="payViaSelect">
                         <option value="">Select</option>
-                        <option value="Cash">Cash</option>
-                        <option value="Bank Transfer">Bank Transfer</option>
-                        <option value="Cheque">Cheque</option>
-                        <option value="Mobile Banking">Mobile Banking</option>
-                        <option value="Card">Card</option>
+                        <option value="Cash" @selected($pay_via == 'Cash')>Cash</option>
+                        <option value="Bank Transfer" @selected($pay_via == 'Bank Transfer')>Bank Transfer</option>
+                        <option value="Cheque" @selected($pay_via == 'Cheque')>Cheque</option>
+                        <option value="Mobile Banking" @selected($pay_via == 'Mobile Banking')>Mobile Banking</option>
+                        <option value="Card" @selected($pay_via == 'Card')>Card</option>
                     </select>
                 </div>
                 @error('pay_via') <span class="text-danger">{{ $message }}</span> @enderror
@@ -95,6 +99,7 @@
                     <label class="form-label">Date <span class="req">*</span></label>
                     <input type="date"
                            wire:model="date"
+                           data-dp-value="{{ $date }}"
                            class="form-control">
                 </div>
                 @error('date') <span class="text-danger">{{ $message }}</span> @enderror
@@ -160,21 +165,18 @@
 
 
 @push('scripts')
-    <script src="/assets/js/datepicker.js"></script>
-
     <script>
         document.addEventListener('livewire:initialized', () => {
 
             setTimeout(() => initAllFields(), 100);
 
             Livewire.hook('morph.updated', ({ el }) => {
-                setTimeout(() => initAllFields(), 50);
-                initSelectListeners();
+                setTimeout(() => initAllFields(), 0);
             });
 
             function initAllFields() {
 
-                // ── 1. Text/Textarea is-filled ──
+                // ── 1. Text/Textarea/Number is-filled ──
                 document.querySelectorAll('.input-group-outline input, .input-group-outline textarea').forEach(function(input) {
                     var group = input.closest('.input-group');
                     if (!group) return;
@@ -224,58 +226,19 @@
                 });
 
                 // ── 4. Datepicker ──
-                document.querySelectorAll('.input-group-outline input[type="date"]').forEach(function(input) {
-                    if (input.dataset.dpInit === '1') return;
-                    input.dataset.dpInit = '1';
-                    input.addEventListener('change', function() {
-                        input.dispatchEvent(new Event('input', { bubbles: true }));
-                    });
-                    if (typeof buildDatepicker === 'function') {
-                        buildDatepicker(input);
+                Livewire.on('date-updated', function (event) {
+                    var input = document.querySelector('.input-group-outline input[type="date"]');
+                    if (!input) return;
+                    var newDate = event.date || '';
+                    if (newDate) {
+                        input.value = newDate;
+                        input.dataset.dpValue = newDate;
+                        if (input._dpTriggerSync) {
+                            input._dpTriggerSync(newDate);
+                        }
                     }
                 });
-
-                initSelectListeners();
             }
-
-            // ── 5. Select → Livewire sync ──
-            function initSelectListeners() {
-
-                var accountSelect = document.getElementById('accountSelect');
-                if (accountSelect && !accountSelect._wireInit) {
-                    accountSelect._wireInit = true;
-                    accountSelect.addEventListener('change', function() {
-                        @this.set('account_id', this.value);
-                    });
-                }
-
-                var headSelect = document.getElementById('headSelect');
-                if (headSelect && !headSelect._wireInit) {
-                    headSelect._wireInit = true;
-                    headSelect.addEventListener('change', function() {
-                        @this.set('head_id', this.value);
-                    });
-                }
-
-                var payViaSelect = document.getElementById('payViaSelect');
-                if (payViaSelect && !payViaSelect._wireInit) {
-                    payViaSelect._wireInit = true;
-                    payViaSelect.addEventListener('change', function() {
-                        @this.set('pay_via', this.value);
-                    });
-                }
-            }
-
-            // ── 6. Reset select UI on form reset ──
-            Livewire.on('resetSelects', () => {
-                ['accountSelect', 'headSelect', 'payViaSelect'].forEach(function(id) {
-                    var el = document.getElementById(id);
-                    if (el) {
-                        el.value = '';
-                        el.dispatchEvent(new Event('change'));
-                    }
-                });
-            });
 
         });
     </script>

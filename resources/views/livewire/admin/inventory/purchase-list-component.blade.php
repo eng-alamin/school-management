@@ -4,8 +4,8 @@
 
         <!-- floating header -->
         <div class="mat-card-header header-pink-gradient">
-            <h5>Purchases</h5>
-            <p>Manage purchases, track orders, and monitor inventory procurement easily.</p>
+            <h5 id="purchase-list-title">Purchases</h5>
+            <p id="purchase-list-subtitle">Manage purchases, track orders, and monitor inventory procurement easily.</p>
         </div>
 
         <div class="card-header border-0">
@@ -40,22 +40,22 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>SL</th>
+                            <th id="plist-th-sl">SL</th>
                             <th wire:click="sortBy('bill_no')" style="cursor:pointer">
                                 Bill No @if($sortField === 'bill_no') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
                             <th wire:click="sortBy('supplier_id')" style="cursor:pointer">
                                 Supplier @if($sortField === 'supplier_id') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th>Store</th>
+                            <th id="plist-th-store">Store</th>
                             <th wire:click="sortBy('date')" style="cursor:pointer">
                                 Date @if($sortField === 'date') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th>Status</th>
+                            <th id="plist-th-status">Status</th>
                             <th wire:click="sortBy('net_total')" style="cursor:pointer">
                                 Net Total @if($sortField === 'net_total') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th>Actions</th>
+                            <th id="plist-th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -85,7 +85,7 @@
                                 </td>
 
                                 <td style="font-weight:600">
-                                    {{ number_format($purchase->net_total, 2) }}
+                                    {{ number_format($purchase->net_total, 0) }}
                                 </td>
 
                                 <td>
@@ -131,8 +131,8 @@
                         <div style="width:56px;height:56px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
                             <i class="bi bi-exclamation-triangle text-danger" style="font-size:1.5rem;"></i>
                         </div>
-                        <h6 class="fw-700">Delete Purchase?</h6>
-                        <p class="text-muted small">This will also delete all associated items. This action cannot be undone.</p>
+                        <h6 id="plist-delete-title" class="fw-700">Delete Purchase?</h6>
+                        <p id="plist-delete-msg" class="text-muted small">This will also delete all associated items. This action cannot be undone.</p>
                     </div>
                     <div class="modal-footer justify-content-center border-0 pt-0">
                         <button class="btn btn-light btn-sm" wire:click="$set('confirmDelete',false)">Cancel</button>

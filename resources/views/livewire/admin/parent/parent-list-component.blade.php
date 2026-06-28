@@ -85,7 +85,7 @@
                                         class="act-btn view" title="View">
                                         <span class="material-icons-round">visibility</span>
                                     </a>
-                                    <a href="{{ route('admin.parent.edit', ['id' => $parent->id]) }}" target="_blank"
+                                    <a href="{{ route('admin.parent.edit', ['id' => $parent->id]) }}"
                                         class="act-btn edit" title="Edit">
                                         <span class="material-icons-round">drive_file_rename_outline</span>
                                     </a>

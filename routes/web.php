@@ -4,9 +4,13 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\RegistrationPaymentController;
 
-Route::get('register', \App\Livewire\RegisterComponent::class)->name('register');
-Route::get('login', \App\Livewire\LoginComponent::class)->name('login');
-Route::get('forgot-password', \App\Livewire\Auth\ForgotPasswordComponent::class)->name('forgot.password');
+Route::middleware('guest')->group(function () {
+    Route::get('register', \App\Livewire\RegisterComponent::class)->name('register');
+    Route::get('login', \App\Livewire\LoginComponent::class)->name('login');
+    Route::get('forgot-password', \App\Livewire\Auth\ForgotPasswordComponent::class)->name('forgot.password');
+    Route::get('/reset-password/{token}',  \App\Livewire\Auth\ResetPasswordComponent::class)->name('password.reset');
+});
+
 Route::post('logout', function () {
     Auth::logout();
     request()->session()->invalidate();
@@ -73,7 +77,8 @@ Route::middleware(['auth', 'role:admin', 'billing.check'])->group(function () {
     Route::get('/employee/designations', \App\Livewire\Admin\Employee\DesignationComponent::class)->name('admin.employee.designations');
     Route::get('/employee/list', \App\Livewire\Admin\Employee\EmployeeListComponent::class)->name('admin.employee.list');
     Route::get('/employee/add', \App\Livewire\Admin\Employee\EmployeeAddComponent::class)->name('admin.employee.add');
-    Route::get('/employee/edit/{id}', \App\Livewire\Admin\Employee\EmployeeEditComponent::class)->name('admin.employee.edit');
+    Route::get('/employee/{id}/edit', \App\Livewire\Admin\Employee\EmployeeEditComponent::class)->name('admin.employee.edit');
+    Route::get('/employee/{id}/view', \App\Livewire\Admin\Employee\EmployeeViewComponent::class)->name('admin.employee.view');
 
     Route::get('parent/list', \App\Livewire\Admin\Parent\ParentListComponent::class)->name('admin.parent.list');
     Route::get('parent/add', \App\Livewire\Admin\Parent\ParentAddComponent::class)->name('admin.parent.add');
@@ -230,25 +235,25 @@ Route::middleware(['auth', 'role:accountant', 'billing.check'])->group(function 
     Route::get('accountant/parent/{id}/child', \App\Livewire\Accountant\Parent\ParentChildComponent::class)->name('accountant.parent.child');
 
     // Employee
-    Route::get('accountant/employee/departments', \App\Livewire\Accountant\Employee\DepartmentComponent::class)->name('accountant.employee.departments');
-    Route::get('accountant/employee/designations', \App\Livewire\Accountant\Employee\DesignationComponent::class)->name('accountant.employee.designations');
-    Route::get('accountant/employee/list', \App\Livewire\Accountant\Employee\EmployeeListComponent::class)->name('accountant.employee.list');
-    Route::get('accountant/employee/add', \App\Livewire\Accountant\Employee\EmployeeAddComponent::class)->name('accountant.employee.add');
-    Route::get('accountant/employee/edit/{id}', \App\Livewire\Accountant\Employee\EmployeeEditComponent::class)->name('accountant.employee.edit');
+    // Route::get('accountant/employee/departments', \App\Livewire\Accountant\Employee\DepartmentComponent::class)->name('accountant.employee.departments');
+    // Route::get('accountant/employee/designations', \App\Livewire\Accountant\Employee\DesignationComponent::class)->name('accountant.employee.designations');
+    // Route::get('accountant/employee/list', \App\Livewire\Accountant\Employee\EmployeeListComponent::class)->name('accountant.employee.list');
+    // Route::get('accountant/employee/add', \App\Livewire\Accountant\Employee\EmployeeAddComponent::class)->name('accountant.employee.add');
+    // Route::get('accountant/employee/edit/{id}', \App\Livewire\Accountant\Employee\EmployeeEditComponent::class)->name('accountant.employee.edit');
 
     // Card
-    Route::get('accountant/card/id-card-templates', \App\Livewire\Accountant\Card\IdCardTemplateComponent::class)->name('accountant.card.id-card-templates');
-    Route::get('accountant/card/student-id-cards', \App\Livewire\Accountant\Card\StudentIdCardComponent::class)->name('accountant.card.student-id-cards');
-    Route::get('accountant/card/employee-id-cards', \App\Livewire\Accountant\Card\EmployeeIdCardComponent::class)->name('accountant.card.employee-id-cards');    
-    Route::get('accountant/card/admit-card-templates', \App\Livewire\Accountant\Card\AdmitCardTemplateComponent::class)->name('accountant.card.admit-card-templates');
-    Route::get('accountant/card/generate-admit-cards', \App\Livewire\Accountant\Card\GenerateAdmitCardComponent::class)->name('accountant.card.generate-admit-cards');
+    // Route::get('accountant/card/id-card-templates', \App\Livewire\Accountant\Card\IdCardTemplateComponent::class)->name('accountant.card.id-card-templates');
+    // Route::get('accountant/card/student-id-cards', \App\Livewire\Accountant\Card\StudentIdCardComponent::class)->name('accountant.card.student-id-cards');
+    // Route::get('accountant/card/employee-id-cards', \App\Livewire\Accountant\Card\EmployeeIdCardComponent::class)->name('accountant.card.employee-id-cards');    
+    // Route::get('accountant/card/admit-card-templates', \App\Livewire\Accountant\Card\AdmitCardTemplateComponent::class)->name('accountant.card.admit-card-templates');
+    // Route::get('accountant/card/generate-admit-cards', \App\Livewire\Accountant\Card\GenerateAdmitCardComponent::class)->name('accountant.card.generate-admit-cards');
 
     // Certificate
-    Route::get('accountant/certificate/add-template', \App\Livewire\Accountant\Certificate\AddTemplateComponent::class)->name('accountant.certificate.add-template');
-    Route::get('accountant/certificate/{id}/edit-template', \App\Livewire\Accountant\Certificate\EditTemplateComponent::class)->name('accountant.certificate.edit-template');
-    Route::get('accountant/certificate/list-template', \App\Livewire\Accountant\Certificate\ListTemplateComponent::class)->name('accountant.certificate.list-template');
-    Route::get('accountant/certificate/generate-student', \App\Livewire\Accountant\Certificate\GenerateStudentComponent::class)->name('accountant.certificate.generate-student');
-    Route::get('accountant/certificate/generate-employee', \App\Livewire\Accountant\Certificate\GenerateEmployeeComponent::class)->name('accountant.certificate.generate-employee');
+    // Route::get('accountant/certificate/add-template', \App\Livewire\Accountant\Certificate\AddTemplateComponent::class)->name('accountant.certificate.add-template');
+    // Route::get('accountant/certificate/{id}/edit-template', \App\Livewire\Accountant\Certificate\EditTemplateComponent::class)->name('accountant.certificate.edit-template');
+    // Route::get('accountant/certificate/list-template', \App\Livewire\Accountant\Certificate\ListTemplateComponent::class)->name('accountant.certificate.list-template');
+    // Route::get('accountant/certificate/generate-student', \App\Livewire\Accountant\Certificate\GenerateStudentComponent::class)->name('accountant.certificate.generate-student');
+    // Route::get('accountant/certificate/generate-employee', \App\Livewire\Accountant\Certificate\GenerateEmployeeComponent::class)->name('accountant.certificate.generate-employee');
     
     // Salary 
     Route::get('accountant/salary/add-template', \App\Livewire\Accountant\Salary\AddTemplateComponent::class)->name('accountant.salary.add-template');
@@ -341,19 +346,6 @@ Route::middleware(['auth', 'role:teacher', 'billing.check'])->group(function () 
     Route::get('teacher/homework/list', \App\Livewire\Teacher\Homework\HomeworkListComponent::class)->name('teacher.homework.list');
     Route::get('teacher/homework/edit/{id}', \App\Livewire\Teacher\Homework\HomeworkEditComponent::class)->name('teacher.homework.edit');
 
-    // Route::get('teacher/card/id-card-templates', \App\Livewire\Teacher\Card\IdCardTemplateComponent::class)->name('teacher.card.id-card-templates');
-    // Route::get('teacher/card/student-id-cards', \App\Livewire\Teacher\Card\StudentIdCardComponent::class)->name('teacher.card.student-id-cards');
-    // Route::get('teacher/card/employee-id-cards', \App\Livewire\Teacher\Card\EmployeeIdCardComponent::class)->name('teacher.card.employee-id-cards');    
-    // Route::get('teacher/card/admit-card-templates', \App\Livewire\Teacher\Card\AdmitCardTemplateComponent::class)->name('teacher.card.admit-card-templates');
-    // Route::get('teacher/card/generate-admit-cards', \App\Livewire\Teacher\Card\GenerateAdmitCardComponent::class)->name('teacher.card.generate-admit-cards');
-
-    // Route::get('certificate/add-template', \App\Livewire\Teacher\Certificate\AddTemplateComponent::class)->name('teacher.certificate.add-template');
-    // Route::get('certificate/{id}/edit-template', \App\Livewire\Teacher\Certificate\EditTemplateComponent::class)->name('teacher.certificate.edit-template');
-    // Route::get('certificate/list-template', \App\Livewire\Teacher\Certificate\ListTemplateComponent::class)->name('teacher.certificate.list-template');
-    // Route::get('certificate/generate-student', \App\Livewire\Teacher\Certificate\GenerateStudentComponent::class)->name('teacher.certificate.generate-student');
-    // Route::get('certificate/generate-employee', \App\Livewire\Teacher\Certificate\GenerateEmployeeComponent::class)->name('teacher.certificate.generate-employee');
-    
-
     // Leave
     Route::get('teacher/leave/applications', \App\Livewire\Teacher\Leave\ApplicationComponent::class)->name('teacher.leave.applications');
      
@@ -389,7 +381,7 @@ Route::middleware(['auth', 'role:teacher', 'billing.check'])->group(function () 
 });
     
 // Parent
-Route::middleware(['auth', 'role:parent', 'billing.check'])->group(function () {
+Route::middleware(['auth', 'role:parent'])->group(function () {
     Route::get('parent/dashboard', \App\Livewire\Parent\DashboardComponent::class)->name('parent.dashboard');
 
     // Profile
@@ -400,7 +392,7 @@ Route::middleware(['auth', 'role:parent', 'billing.check'])->group(function () {
 });
 
 // Student
-Route::middleware(['auth', 'role:student', 'billing.check'])->group(function () {
+Route::middleware(['auth', 'role:student'])->group(function () {
     Route::get('student/dashboard', \App\Livewire\Student\DashboardComponent::class)->name('student.dashboard');
     Route::get('student/teachers', \App\Livewire\Student\TeacherComponent::class)->name('student.teachers');
     Route::get('student/subjects', \App\Livewire\Student\SubjectComponent::class)->name('student.subjects');

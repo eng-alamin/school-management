@@ -2,7 +2,8 @@
 
     <div class="card">
 
-         <div class="mat-card-header header-pink-gradient">
+        {{-- Floating Header --}}
+        <div class="mat-card-header header-pink-gradient">
             <h5><span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">assignment</span>Fee Allocation</h5>
             <p>Allocate fee groups to students by class and section</p>
         </div>
@@ -16,44 +17,42 @@
 
                 {{-- Class --}}
                 <div class="col-md-4">
-                    <div wire:ignore class="input-group input-group-outline">
-                        <label class="form-label">Class <span class="req">*</span></label>
-                        <select wire:model.live="class_id" class="form-select">
+                    <div class="input-group input-group-outline">
+                        <label class="form-label">Class </label>
+                        <select wire:model.live="filterClass" class="form-select">
                             <option value="">Select Class</option>
-                            @foreach($classes as $class)
-                                <option value="{{ $class->id }}">{{ $class->name }}</option>
+                            @foreach ($classes as $item)
+                                <option value="{{ $item->id }}">{{ $item->name }}</option>
                             @endforeach
                         </select>
                     </div>
-                    @error('class_id') <span class="text-danger small">{{ $message }}</span> @enderror
+                    @error('filterClass') <span class="text-danger small">{{ $message }}</span> @enderror
                 </div>
 
                 {{-- Section --}}
                 <div class="col-md-4">
                     <div class="input-group input-group-outline">
-                        <label class="form-label">Section <span class="req">*</span></label>
-                        <select wire:model.live="section_id"
-                                class="form-select"
-                                @if(!$class_id) disabled @endif>
-                            <option value="">Select Section</option>
-                            @if ($this->class_id)
+                        <label class="form-label">Section</label>
+                        <select wire:model.live="filterSection" class="form-select"
+                            {{ empty($sections) ? 'disabled' : '' }}>
+                            <option value="">{{ !$filterClass ? 'Select Class First' : 'Select Section' }}</option>
+                            @if (!empty($sections))
                                 <option value="all">All Section</option>
+                                @foreach ($sections as $item)
+                                    <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                @endforeach
                             @endif
-                            @foreach($sections as $section)
-                                <option value="{{ $section['id'] }}">{{ $section['name'] }}</option>
-                            @endforeach
                         </select>
                     </div>
-                    @error('section_id') <span class="text-danger small">{{ $message }}</span> @enderror
                 </div>
 
                 {{-- Fee Group --}}
                 <div class="col-md-4">
-                    <div wire:ignore class="input-group input-group-outline">
-                        <label class="form-label">Fee Group <span class="req">*</span></label>
-                        <select wire:model="fee_group_id" class="form-select">
-                            <option value="">Select Group</option>
-                            @foreach($feeGroups as $group)
+                    <div class="input-group input-group-outline">
+                        <label class="form-label">Fee Group </label>
+                        <select wire:model.live="fee_group_id" class="form-select">
+                            <option value="">Select Fee Group</option>
+                            @foreach ($feeGroups as $group)
                                 <option value="{{ $group->id }}">{{ $group->name }}</option>
                             @endforeach
                         </select>
@@ -81,39 +80,53 @@
         </div>
 
         {{-- Student List --}}
-        @if($hasFiltered)
+        @if ($hasFiltered)
         <div class="form-section">
             <div class="section-heading">
                 <span class="material-icons-round">format_list_bulleted</span> Student List
+                <span class="badge-count">{{ count($students) }} Students</span>
             </div>
 
-            @if(count($students) > 0)
-            <div class="table-responsive mt-3">
+            @if (count($students) > 0)
+
+            {{-- Select All Toolbar --}}
+            <div class="alloc-toolbar">
+                <label class="alloc-select-all">
+                    <input type="checkbox"
+                           class="alloc-checkbox"
+                           wire:model.live="selectAll">
+                    <span>Select All</span>
+                </label>
+                <span class="alloc-counter">
+                    <span class="material-icons-round" style="font-size:15px;vertical-align:middle">people</span>
+                    {{ count($selectedStudents) }} / {{ count($students) }} selected
+                </span>
+            </div>
+
+            <div class="table-responsive mt-2">
                 <table class="table-loader">
                     <thead>
                         <tr>
-                            <th style="width:48px">
-                                <input type="checkbox" class="alloc-checkbox" wire:model.live="selectAll">
-                            </th>
-                            <th>Sl</th>
+                            <th style="width:44px"></th>
+                            <th>SL</th>
                             <th>Name</th>
                             <th>Section</th>
                             <th>Register No</th>
                             <th>Roll No</th>
                             <th>Gender</th>
-                            <th>Mobile No</th>
-                            <th>Email</th>
-                            <th>Guardian Name</th>
+                            <th>Mobile</th>
+                            <th>Guardian</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($students as $i => $student)
+                        @foreach ($students as $i => $student)
                         <tr wire:key="student-{{ $student['id'] }}"
                             class="{{ in_array($student['id'], $selectedStudents) ? 'row-selected' : '' }}">
                             <td>
-                                <input type="checkbox" class="alloc-checkbox"
-                                    wire:model.live="selectedStudents"
-                                    value="{{ $student['id'] }}">
+                                <input type="checkbox"
+                                       class="alloc-checkbox"
+                                       wire:model.live="selectedStudents"
+                                       value="{{ $student['id'] }}">
                             </td>
                             <td>{{ $i + 1 }}</td>
                             <td>{{ $student['name'] }}</td>
@@ -122,8 +135,7 @@
                             <td>{{ $student['roll_no'] ?? '—' }}</td>
                             <td>{{ $student['gender'] ?? '—' }}</td>
                             <td>{{ $student['mobile'] ?? '—' }}</td>
-                            <td>{{ $student['email'] ?? '—' }}</td>
-                            <td>{{ collect($student['guardians'])->pluck('name')->join(', ') ?: '—' }}</td>
+                            <td>{{ collect($student['guardians'] ?? [])->pluck('name')->join(', ') ?: '—' }}</td>
                         </tr>
                         @endforeach
                     </tbody>
@@ -132,53 +144,50 @@
 
             {{-- Footer --}}
             <div class="form-footer">
-                <div class="text-muted small">
-                    <span class="material-icons-round" style="font-size:15px;vertical-align:middle">people</span>
-                    {{ count($selectedStudents) }} of {{ count($students) }} selected
-                </div>
-                <div class="d-flex gap-2">
-                    <button class="btn-outline" type="button" wire:click="resetForm">
-                        <span class="material-icons-round" style="font-size:16px">refresh</span> Reset
-                    </button>
-                    <button class="btn-pink" type="button"
-                            wire:click="save"
-                            wire:loading.attr="disabled"
-                            wire:target="save">
-                        <span wire:loading.remove wire:target="save">
-                            <span class="material-icons-round">save</span> Save
-                        </span>
-                        <span wire:loading wire:target="save">
-                            <span class="material-icons-round" style="font-size:16px;animation:spin .7s linear infinite">sync</span> Saving...
-                        </span>
-                    </button>
-                </div>
+                <button class="btn-outline" type="button" wire:click="resetForm">
+                    <span class="material-icons-round" style="font-size:16px">refresh</span> Reset
+                </button>
+                <button class="btn-pink" type="button"
+                        wire:click="save"
+                        wire:loading.attr="disabled"
+                        wire:target="save"
+                        @if(count($selectedStudents) === 0) disabled @endif>
+                    <span wire:loading.remove wire:target="save">
+                        <span class="material-icons-round">save</span> Allocate & Save
+                    </span>
+                    <span wire:loading wire:target="save">
+                        <span class="material-icons-round" style="font-size:16px;animation:spin .7s linear infinite">sync</span> Saving...
+                    </span>
+                </button>
             </div>
 
             @else
-            <div class="text-center py-5 text-muted">
-                <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
-                No students found for selected class/section.
+            {{-- Empty State --}}
+            <div class="empty-state">
+                <span class="material-icons-round empty-icon">inbox</span>
+                <p>No students found for selected class/section.</p>
             </div>
             @endif
         </div>
         @endif
 
     </div>
-
 </div>
 
 @push('styles')
 <style>
+    /* ── Table ── */
     .table-loader {
         width: 100%;
         border-collapse: collapse;
         font-size: 13px;
     }
     .table-loader thead th {
-        padding: 10px;
+        padding: 10px 10px;
         text-align: left;
         font-weight: 600;
         font-size: 12px;
+        color: #aaa;
         white-space: nowrap;
     }
     .table-loader tbody td {
@@ -188,47 +197,85 @@
     }
     .table-loader tbody tr {
         transition: background .15s;
+        cursor: pointer;
     }
     .table-loader tbody tr:hover {
         background: rgba(255,255,255,.03);
     }
     .row-selected {
-        background: rgba(224, 82, 82, .08) !important;
+        background: rgba(224, 82, 82, .10) !important;
     }
+
+    /* ── Checkbox ── */
     .alloc-checkbox {
         width: 16px;
         height: 16px;
         cursor: pointer;
         accent-color: #e05252;
     }
-    .schedule-input {
-        border: 1px solid #3d3d3d;
-        padding: 6px 10px;
-        border-radius: 4px;
-        font-size: 12px;
-        outline: none;
-        width: 100%;
-        transition: border-color 0.2s;
-    }
-    .schedule-input:focus {
-        border-color: #e05252;
-    }
-    .schedule-date {
-        width: 180px;
-        cursor: pointer;
-    }
-    .schedule-date::-webkit-calendar-picker-indicator {
-        filter: invert(0.6);
-        cursor: pointer;
-    }
-    .form-footer {
+
+    /* ── Toolbar ── */
+    .alloc-toolbar {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding-top: 20px;
-        margin-top: 16px;
-        flex-wrap: wrap;
-        gap: 12px;
+        padding: 10px 12px;
+        background: rgba(255,255,255,.03);
+        border-radius: 6px;
+        border: 1px solid rgba(255,255,255,.06);
+        margin-bottom: 4px;
+    }
+    .alloc-select-all {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        margin: 0;
+    }
+    .alloc-counter {
+        font-size: 12px;
+        color: #aaa;
+    }
+
+    /* ── Badge count ── */
+    .section-heading {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #bbb;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        margin-bottom: 16px;
+    }
+    .badge-count {
+        margin-left: auto;
+        background: rgba(224, 82, 82, .15);
+        color: #e05252;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 2px 10px;
+        border-radius: 20px;
+        text-transform: none;
+    }
+
+    /* ── Empty State ── */
+    .empty-state {
+        text-align: center;
+        padding: 48px 20px;
+        color: #666;
+    }
+    .empty-icon {
+        font-size: 48px;
+        opacity: 0.2;
+        display: block;
+        margin-bottom: 10px;
+    }
+    .empty-state p {
+        font-size: 13px;
     }
 </style>
 @endpush
@@ -243,6 +290,7 @@
                         buildCustomSelect(select);
                     }
                 });
+
                 el.querySelectorAll('.input-group-outline input').forEach(function(input) {
                     var group = input.closest('.input-group');
                     if (!group) return;

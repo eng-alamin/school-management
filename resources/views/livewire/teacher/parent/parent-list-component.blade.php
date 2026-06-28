@@ -37,7 +37,7 @@
                     <span class="material-icons-round" style="font-size:16px">print</span> Print
                 </button>
 
-                <a href="{{ route('teacher.parent.add') }}" class="btn-outline bg-dark text-white">
+                <a href="{{ route('admin.parent.add') }}" class="btn-outline bg-dark text-white">
                     <span class="material-icons-round">add</span> New Parent
                 </a>
             </div>
@@ -62,7 +62,7 @@
                         <tr>
                             <td>
                                 <div class="d-flex align-items-center gap-2">
-                                    <img src="{{ $parent->photo ? asset('storage/' . $parent->photo) : asset('assets/img/default-user.jpg') }}"
+                                    <img src="{{ $parent->photo ? asset('storage/' . $parent->photo) : asset('assets/img/parent.jpg') }}"
                                         style="width:36px;height:36px;border-radius:8px;object-fit:cover;" alt="">
                                     <span class="fw-500">{{ $parent->name }}</span>
                                 </div>
@@ -81,11 +81,11 @@
                             </td>
                             <td class="no-print">
                                 <div class="d-flex gap-1">
-                                    <a href="{{ route('teacher.parent.overview', ['id' => $parent->id]) }}" target="_blank"
+                                    <a href="{{ route('admin.parent.overview', ['id' => $parent->id]) }}" target="_blank"
                                         class="act-btn view" title="View">
                                         <span class="material-icons-round">visibility</span>
                                     </a>
-                                    <a href="{{ route('teacher.parent.edit', ['id' => $parent->id]) }}" target="_blank"
+                                    <a href="{{ route('admin.parent.edit', ['id' => $parent->id]) }}"
                                         class="act-btn edit" title="Edit">
                                         <span class="material-icons-round">drive_file_rename_outline</span>
                                     </a>

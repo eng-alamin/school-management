@@ -5,6 +5,7 @@ namespace App\Livewire\Teacher\Parent;
 use Livewire\Component;
 use App\Models\User;
 use App\Models\Guardian;
+use Illuminate\Support\Facades\DB;
 
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
@@ -28,7 +29,6 @@ class ParentAddComponent extends Component
 
     public $username;
     public $password;
-    public $password_confirmation;
 
     public function rules()
     {
@@ -43,10 +43,10 @@ class ParentAddComponent extends Component
             'mobile' => 'required|string|max:20',
             'email' => 'nullable|email',
 
-            'photo_upload'       => 'nullable',
+            'photo_upload'       => 'nullable|image|max:2048',
 
             'username' => 'required|unique:users,username',
-            'password' => 'nullable|confirmed|min:4',
+            'password' => 'nullable',
         ];
     }
 
@@ -65,19 +65,12 @@ class ParentAddComponent extends Component
         $this->validateOnly($propertyName, $this->rules());
     }
 
-    public function safePreviewUrl($upload): ?string
-    {
-        if (!$upload) return null;
-        try {
-            return $upload->temporaryUrl();
-        } catch (\Throwable $e) {
-            return null;
-        }
-    }
-
     public function save()
     {
+        DB::beginTransaction();
+
         try {
+
             $this->validate($this->rules());
 
             $userPassword = !empty($this->password)
@@ -94,31 +87,37 @@ class ParentAddComponent extends Component
 
             $user = User::create($userData);
 
-            // Upload photo
-            $photoPath = $this->photo_upload 
-            ? \App\Helpers\TenantFileHelper::store($this->photo_upload, 'guardians') 
-            : null;
+            // ── Upload Photo
+            $photoPath = $this->photo_upload
+                ? $this->photo_upload->store('guardians', 'public')
+                : null;
 
             Guardian::create([
                 'user_id'     => $user->id,
-                'name' => $this->name,
-                'relation' => $this->relation,
+                'name'        => $this->name,
+                'relation'    => $this->relation,
                 'father_name' => $this->father_name,
                 'mother_name' => $this->mother_name,
-                'occupation' => $this->occupation,
-                'income' => $this->income,
-                'education' => $this->education,
-                'mobile' => $this->mobile,
-                'email' => $this->email,
-                'address' => $this->address,
-                'photo' => $photoPath,
+                'occupation'  => $this->occupation,
+                'income'      => $this->income,
+                'education'   => $this->education,
+                'mobile'      => $this->mobile,
+                'email'       => $this->email,
+                'address'     => $this->address,
+                'photo'       => $photoPath,
             ]);
 
-            $this->dispatch('toast', type: 'success', message: 'Parent created successfully!');
+            DB::commit();
+
             $this->resetForm();
-        } catch (\Exception $e) {
-            $this->dispatch('validation-failed');
-            $this->dispatch('toast', type: 'error', message: 'An error occurred while creating the parent.');
+
+            $this->dispatch('toast', type: 'success', message: 'Parent created successfully!');
+
+        } catch (\Throwable $e) {
+
+            DB::rollBack();
+
+            $this->dispatch('toast', type: 'error', message: 'Something went wrong!');
             throw $e;
         }
     }
@@ -127,8 +126,7 @@ class ParentAddComponent extends Component
     {
         return view('livewire.teacher.parent.parent-add-component')
             ->layout('layouts.teacher.app', [
-                'title' => "Create Parent | Monarchy School",
+                'title' => 'Create Parent | ' . institution()->name,
             ]);
     }
-
 }

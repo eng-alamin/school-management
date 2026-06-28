@@ -23,12 +23,11 @@
                 {{-- Role filter --}}
                 <div>
                     <select class="form-select form-select-sm" wire:model.live="filterRole" style="width:150px;">
-                        <option value="">Select Ground</option>
+                        <option value="">Select Role</option>
                         <option value="admin">Admin</option>
                         <option value="teacher">Teacher</option>
                         <option value="accountant">Accountant</option>
-                        <option value="librarian">Librarian</option>
-                        <option value="receptionist">Receptionist</option>
+                        <option value="staff">Staff</option>
                         <option value="student">Student</option>
                     </select>
                 </div>
@@ -44,14 +43,16 @@
                     </div>
                 @endif
 
+                
+                <a href="{{ route('admin.leave.categories') }}" target="_blank" class="btn-sm btn-outline" wire:click="openCreate">
+                    <span class="material-icons-round">category</span>
+                    <span>Add Category</span>
+                </a>
+
                 <button class="btn-sm btn-outline bg-dark text-white" wire:click="openCreate">
                     <span class="material-icons-round">add</span>
                     <span>Add Leave</span>
                 </button>
-                <a href="{{ route('admin.leave.categories') }}" target="_blank" class="btn-sm btn-outline bg-dark text-white" wire:click="openCreate">
-                    <span class="material-icons-round">add</span>
-                    <span>Add Category</span>
-                </a>
 
             </div>
         </div>

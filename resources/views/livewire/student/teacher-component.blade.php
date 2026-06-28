@@ -54,7 +54,7 @@
                             <td class="text-muted">{{ $teachers->firstItem() + $i }}</td>
                             <td>
                                 <div class="d-flex align-items-center gap-2">
-                                    <img src="{{ $teacher->photo ? asset($teacher->photo) : 'https://ui-avatars.com/api/?name=' . urlencode($teacher->name) . '&size=64&background=random' }}"
+                                    <img src="{{ $teacher->photo ? asset('storage/' . $teacher->photo) : 'https://ui-avatars.com/api/?name=' . urlencode($teacher->name) . '&size=64&background=random' }}"
                                          alt="{{ $teacher->name }}"
                                          style="width:32px;height:32px;border-radius:50%;object-fit:cover;"/>
                                     <span>{{ $teacher->name }}</span>

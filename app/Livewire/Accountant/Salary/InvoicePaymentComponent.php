@@ -151,6 +151,8 @@ class InvoicePaymentComponent extends Component
     public function render()
     {
         return view('livewire.accountant.salary.invoice-payment-component')
-            ->layout('layouts.accountant.app', ['title' => 'Salary Payslip']);
+            ->layout('layouts.accountant.app', [
+                'title' => 'Salary Payslip | ' . institution()->name,
+            ]);
     }
 }

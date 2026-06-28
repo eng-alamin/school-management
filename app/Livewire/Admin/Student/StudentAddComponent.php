@@ -10,6 +10,7 @@ use App\Models\AcademicSession;
 use App\Models\AcademicClass;
 use App\Models\AcademicSection;
 use App\Models\AcademicGroup;
+use Illuminate\Support\Facades\DB;
 
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
@@ -52,7 +53,7 @@ class StudentAddComponent extends Component
 
     public $guardian_photo_upload;
 
-    public $previous_school;
+    public $previous_institution;
     public $qualification;
     public $remarks;
 
@@ -64,13 +65,6 @@ class StudentAddComponent extends Component
     {
         $session = AcademicSession::where('is_current', true)->first();
         $this->session_id = $session?->id;
-
-        // Student ID Generate SCH0126001234 SCH01 26 001234
-        $schoolCode = 'SCH01';
-        $year = now()->format('y'); // 26
-        $lastStudent = Student::where('institution_id', auth()->user()->institution_id)->latest('id')->first();
-        $serial = $lastStudent ? ((int) substr($lastStudent->student_id, -6)) + 1 : 1;
-        $this->studentId = $schoolCode . $year . str_pad($serial, 4, '0', STR_PAD_LEFT);
 
         $this->admission_date = now()->format('Y-m-d');
         $this->gender = 'male';
@@ -123,89 +117,116 @@ class StudentAddComponent extends Component
 
     public function save()
     {
+        DB::beginTransaction();
+
         try {
 
             $this->validate($this->rules());
 
-            $userPassword = !empty($this->password)
-                ? $this->password
-                : '1234';
+            // ── Default password
+            $userPassword = $this->password ?: '1234';
 
-            // ── Student user update
-            $userData = [
+            // ── Create Student User
+            $user = User::create([
+                'institution_id' => auth()->user()->institution_id,
                 'role'     => 'student',
                 'name'     => $this->name,
                 'username' => $this->username,
                 'email'    => $this->email,
                 'password' => $userPassword,
-            ];
+                'is_verified' => TRUE,
+            ]);
 
-            $user = User::create($userData);
-
-            // Upload photo
+            // ── Upload Photos
             $studentPhotoPath = $this->student_photo_upload
                 ? $this->student_photo_upload->store('students', 'public')
                 : null;
 
             $guardianPhotoPath = $this->guardian_photo_upload
-                ? $this->guardian_photo_upload->store('students', 'public')
+                ? $this->guardian_photo_upload->store('guardians', 'public')
                 : null;
 
+            // ── Generate Student ID (SAFE - avoid duplicate)
+            $institutionId = auth()->user()->institution_id;
+            $institutionCode = 'SCH' . str_pad($institutionId, 2, '0', STR_PAD_LEFT);
+            $year = now()->format('y');
+
+            $lastStudent = Student::where('institution_id', $institutionId)
+                ->lockForUpdate()
+                ->orderByDesc('id')
+                ->first();
+
+            $serial = $lastStudent
+                ? ((int) substr($lastStudent->student_id, -6)) + 1
+                : 1;
+
+            $studentId = $institutionCode . $year . str_pad($serial, 6, '0', STR_PAD_LEFT);
+
+            // ── Create Student
             $student = Student::create([
-                'user_id'     => $user->id,
+                'user_id'         => $user->id,
 
-                'session_id' => $this->session_id,
-                'student_id' => $this->studentId,
-                'register_no' => $this->register_no,
-                'roll_no' => $this->roll_no,
-                'admission_date' => $this->admission_date,
-                'class_id' => $this->class_id,
-                'section_id' => $this->section_id,
-                'group_id' => $this->group_id,
+                'session_id'      => $this->session_id,
+                'student_id'      => $studentId,
+                'register_no'     => $this->register_no,
+                'roll_no'         => $this->roll_no,
+                'admission_date'  => $this->admission_date,
+                'class_id'        => $this->class_id,
+                'section_id'      => $this->section_id,
+                'group_id'        => $this->group_id,
 
-                'name' => $this->name,
-                'gender' => $this->gender,
-                'blood_group' => $this->blood_group,
-                'dob' => $this->dob,
-                'religion' => $this->religion,
-                'mobile' => $this->mobile,
-                'email' => $this->email,
+                'name'            => $this->name,
+                'gender'          => $this->gender,
+                'blood_group'     => $this->blood_group,
+                'dob'             => $this->dob,
+                'religion'        => $this->religion,
+                'mobile'          => $this->mobile,
+                'email'           => $this->email,
                 'present_address' => $this->present_address,
                 'permanent_address' => $this->permanent_address,
-                'photo' => $studentPhotoPath,
+                'photo'           => $studentPhotoPath,
+
+                'previous_institution'  => $this->previous_institution,
+                'qualification'    => $this->qualification,
+                'remarks'          => $this->remarks,
             ]);
 
-            // Guardian
+            // ── Guardian Logic
             if ($this->guardian_exists) {
+
                 $student->guardians()->syncWithoutDetaching([
-                    $this->guardian_id => ['institution_id' => auth()->user()->institution_id]
+                    $this->guardian_id => [
+                        'institution_id' => auth()->user()->institution_id
+                    ]
                 ]);
+
             } else {
-                $guardianPassword = !empty($this->guardian_password)
-                    ? $this->guardian_password
-                    : '1234';
+
+                $guardianPassword = $this->guardian_password ?: '1234';
 
                 $userGuardian = User::create([
+                    'institution_id' => auth()->user()->institution_id,
                     'role'     => 'parent',
                     'name'     => $this->guardian_name,
                     'username' => $this->guardian_username,
                     'email'    => $this->guardian_email,
                     'password' => $guardianPassword,
+                    'is_verified' => TRUE,
                 ]);
 
                 $guardian = Guardian::create([
                     'user_id'     => $userGuardian->id,
-                    'name' => $this->guardian_name,
-                    'relation' => $this->guardian_relation,
+                    'name'        => $this->guardian_name,
+                    'relation'    => $this->guardian_relation,
                     'father_name' => $this->guardian_father_name,
                     'mother_name' => $this->guardian_mother_name,
-                    'occupation' => $this->guardian_occupation,
-                    'income' => $this->guardian_income,
-                    'education' => $this->guardian_education,
-                    'mobile' => $this->guardian_mobile,
-                    'email' => $this->guardian_email,
-                    'address' => $this->guardian_address,
-                    'photo' => $guardianPhotoPath,
+                    'occupation'  => $this->guardian_occupation,
+                    'income'      => $this->guardian_income,
+                    'education'   => $this->guardian_education,
+                    'mobile'      => $this->guardian_mobile,
+                    'email'       => $this->guardian_email,
+                    'address'     => $this->guardian_address,
+                    'photo'       => $guardianPhotoPath,
                 ]);
 
                 $student->guardians()->attach($guardian->id, [
@@ -213,15 +234,20 @@ class StudentAddComponent extends Component
                 ]);
             }
 
+            DB::commit();
+
             $this->resetForm();
 
             $this->dispatch('date-updated', date: $this->admission_date);
             $this->dispatch('date-updated', date: $this->dob);
+
             $this->dispatch('toast', type: 'success', message: 'Student created successfully!');
 
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            $this->dispatch('validation-failed');
-            $this->dispatch('toast', type: 'error', message: 'An error occurred while creating the parent.');
+        } catch (\Throwable $e) {
+
+            DB::rollBack();
+
+            $this->dispatch('toast', type: 'error', message: 'Something went wrong!');
             throw $e;
         }
     }

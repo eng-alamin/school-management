@@ -62,7 +62,7 @@
                         <tr>
                             <td class="text-muted">{{ $sections->firstItem() + $i }}</td>
                             <td>{{ $section->name }}</td>
-                            <td>{{ $section->capacity }}</td>
+                            <td>{{ $section->capacity ?? '—' }}</td>
                             <td>
                                 <div class="d-flex gap-1">
                                     <button class="act-btn edit" title="Edit" wire:click="openEdit({{ $section->id }})">

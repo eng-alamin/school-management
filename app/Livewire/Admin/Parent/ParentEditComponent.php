@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Parent;
 use Livewire\Component;
 use App\Models\User;
 use App\Models\Guardian;
+use Illuminate\Support\Facades\DB;
 
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
@@ -39,19 +40,19 @@ class ParentEditComponent extends Component
     public function mount($id)
     {
         $this->guardianId = $id;
-        $this->guardian = Guardian::findOrFail($id);
-        $this->userId = $this->guardian->user_id;
+        $this->guardian   = Guardian::findOrFail($id);
+        $this->userId     = $this->guardian->user_id;
 
-        $this->name = $this->guardian->name;
-        $this->relation = $this->guardian->relation;
+        $this->name        = $this->guardian->name;
+        $this->relation    = $this->guardian->relation;
         $this->father_name = $this->guardian->father_name;
         $this->mother_name = $this->guardian->mother_name;
-        $this->occupation = $this->guardian->occupation;
-        $this->income = $this->guardian->income;
-        $this->education = $this->guardian->education;
-        $this->mobile = $this->guardian->mobile;
-        $this->email = $this->guardian->email;
-        $this->address = $this->guardian->address;
+        $this->occupation  = $this->guardian->occupation;
+        $this->income      = $this->guardian->income;
+        $this->education   = $this->guardian->education;
+        $this->mobile      = $this->guardian->mobile;
+        $this->email       = $this->guardian->email;
+        $this->address     = $this->guardian->address;
 
         $this->photo = $this->guardian->photo;
 
@@ -90,9 +91,13 @@ class ParentEditComponent extends Component
 
     public function update()
     {
+        DB::beginTransaction();
+
         try {
+
             $this->validate($this->rules());
 
+            // ── User update ──────────────────────────────
             $userData = [
                 'name'     => $this->name,
                 'username' => $this->username,
@@ -103,10 +108,11 @@ class ParentEditComponent extends Component
                 $userData['password'] = $this->password;
             }
 
-            $user = User::with('guardian')->findOrFail($this->userId);
+            $user = User::findOrFail($this->userId);
             $user->update($userData);
 
-            $guardian = [
+            // ── Guardian update ──────────────────────────
+            $guardianData = [
                 'name'        => $this->name,
                 'relation'    => $this->relation,
                 'father_name' => $this->father_name,
@@ -121,20 +127,26 @@ class ParentEditComponent extends Component
 
             if ($this->photo_upload) {
 
-                if ($this->guardian->photo) {
-                    Storage::disk('public')->delete($this->guardian->photo);
-                }
+                $oldPhoto = $this->guardian->photo;
 
-                $guardian['photo'] = $this->photo_upload
-                    ->store('guardians', 'public');
+                $guardianData['photo'] = $this->photo_upload->store('guardians', 'public');
+
+                if ($oldPhoto) {
+                    Storage::disk('public')->delete($oldPhoto);
+                }
             }
 
-            $this->guardian->update($guardian);
+            $this->guardian->update($guardianData);
+
+            DB::commit();
 
             $this->dispatch('toast', type: 'success', message: 'Parent updated successfully!');
-        } catch (\Exception $e) {
-            $this->dispatch('validation-failed');
-            $this->dispatch('toast', type: 'error', message: 'An error occurred while creating the parent.');
+
+        } catch (\Throwable $e) {
+
+            DB::rollBack();
+
+            $this->dispatch('toast', type: 'error', message: 'Something went wrong!');
             throw $e;
         }
     }

@@ -1,201 +1,169 @@
-<div class="mat-card" style="padding-top:28px">
+<div>
 
-    <!-- floating header -->
-    <div class="mat-card-header header-pink-gradient">
-        <h5 id="cardHeaderTitleAllHomeworks">All Homeworks</h5>
-        <p id="cardHeaderSubtitle">Filter and manage homework assigned to each class.</p>
+    <div class="card">
+
+        <div class="mat-card-header header-pink-gradient">
+            <h5><span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">assignment</span>All Homeworks</h5>
+            <p>Manage homework records, view details, and organize easily.</p>
+        </div>
+
+        <div class="card-header border-0">
+            <div class="card-toolbar">
+
+                {{-- Search --}}
+                <div class="card-toolbar-title">
+                    <div style="position:relative;display:inline-flex;align-items:center">
+                        <span class="material-icons-round" style="position:absolute;left:10px;font-size:17px;color:var(--muted);pointer-events:none">search</span>
+                        <input type="text" wire:model.live.debounce.300ms="search"
+                            placeholder="Search by title"
+                            style="border:1px solid rgba(0,0,0,.1);border-radius:8px;padding:7px 12px 7px 32px;font-size:.78rem;font-family:inherit;color:var(--dark);outline:none;background:#f8f9fa;width:220px"/>
+                    </div>
+                </div>
+
+                {{-- Class filter --}}
+                <div>
+                    <select wire:model.live="filterClass" class="form-select form-select-sm" style="min-width:140px">
+                        <option value="">All Classes</option>
+                        @foreach ($classes as $c)
+                            <option value="{{ $c->id }}">{{ $c->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Section filter --}}
+                <div>
+                    <select wire:model.live="filterSection" class="form-select form-select-sm" style="min-width:140px"
+                        {{ empty($availableSections) ? 'disabled' : '' }}>
+                        <option value="">{{ !$filterClass ? 'All Sections' : 'All Sections' }}</option>
+                        @if(!empty($availableSections))
+                            <option value="all">All Section</option>
+                            @foreach ($availableSections as $s)
+                                <option value="{{ $s['id'] }}">{{ $s['name'] }}</option>
+                            @endforeach
+                        @endif
+                    </select>
+                </div>
+
+                {{-- Per page --}}
+                @if($homeworks->total() > 10)
+                    <div>
+                        <select class="form-select form-select-sm" wire:model.live="perPage">
+                            <option value="10">10 / page</option>
+                            <option value="25">25 / page</option>
+                            <option value="50">50 / page</option>
+                        </select>
+                    </div>
+                @endif
+
+                <a href="{{ route('admin.homework.add') }}" class="btn-outline bg-dark text-white">
+                    <span class="material-icons-round">add</span> New Homework
+                </a>
+
+            </div>
+        </div>
+
+        <div class="card-body pt-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>SL</th>
+                            <th wire:click="sortBy('title')" style="cursor:pointer">
+                                Title @if($sortField === 'title') {!! $sortDir === 'asc' ? '↑' : '↓' !!} @endif
+                            </th>
+                            <th>Class</th>
+                            <th>Section</th>
+                            <th>Subject</th>
+                            <th wire:click="sortBy('homework_date')" style="cursor:pointer">
+                                Homework Date @if($sortField === 'homework_date') {!! $sortDir === 'asc' ? '↑' : '↓' !!} @endif
+                            </th>
+                            <th wire:click="sortBy('submission_date')" style="cursor:pointer">
+                                Submission Date @if($sortField === 'submission_date') {!! $sortDir === 'asc' ? '↑' : '↓' !!} @endif
+                            </th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($homeworks as $i => $homework)
+                        <tr>
+                            <td class="text-muted">{{ $homeworks->firstItem() + $i }}</td>
+                            <td>{{ $homework->title }}</td>
+                            <td>{{ $homework->class?->name ?? '—' }}</td>
+                            <td>{{ $homework->section?->name ?? 'All' }}</td>
+                            <td>{{ $homework->subject?->name ?? '—' }}</td>
+                            <td>{{ $homework->homework_date ? \Carbon\Carbon::parse($homework->homework_date)->format('d M Y') : '—' }}</td>
+                            <td>{{ $homework->submission_date ? \Carbon\Carbon::parse($homework->submission_date)->format('d M Y') : '—' }}</td>
+                            <td>
+                                @php
+                                    $badge = match($homework->status) {
+                                        'published' => 'success',
+                                        'draft'     => 'secondary',
+                                        'closed'    => 'danger',
+                                        default     => 'secondary',
+                                    };
+                                @endphp
+                                <span class="badge bg-{{ $badge }}">{{ ucfirst($homework->status) }}</span>
+                            </td>
+                            <td>
+                                <div class="d-flex gap-1">
+                                    @if ($homework['attachment'])
+                                        <a href="{{ Storage::url($homework['attachment']) }}" target="_blank" class="act-btn"><span class="material-icons-round">attachment</span></a>
+                                    @endif
+                                    <a href="{{ route('admin.homework.edit', ['id' => $homework->id]) }}"
+                                       class="act-btn edit" title="Edit">
+                                        <span class="material-icons-round">drive_file_rename_outline</span>
+                                    </a>
+                                    <button class="act-btn delete" title="Delete"
+                                            wire:click="confirmDeleteRecord({{ $homework->id }})">
+                                        <span class="material-icons-round">delete</span>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="9" class="text-center py-5 text-muted">
+                                <span class="material-icons-round d-block mb-2" style="font-size:2.5rem;opacity:.2">assignment</span>
+                                No homeworks found.
+                                <a href="{{ route('admin.homework.add') }}">Add one now</a>.
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card-footer border-0 bg-white d-flex align-items-center justify-content-between flex-wrap gap-2 py-2 px-3">
+            <small class="text-muted">Showing {{ $homeworks->firstItem() ?? 0 }}–{{ $homeworks->lastItem() ?? 0 }} of {{ $homeworks->total() }}</small>
+            {{ $homeworks->links('vendor.pagination.custom') }}
+        </div>
+
     </div>
 
-    <div class="row g-4 p-5">
-
-        <div class="col-md-4">
-            <div class="input-group input-group-outline">
-                <label class="form-label">Class <span class="req">*</span></label>
-                <select wire:model.live="class_id" class="form-select">
-                    <option value="">Select Class</option>
-                    @foreach ($classes as $c)
-                        <option value="{{ $c->id }}">{{ $c->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            @error('class_id') <span class="text-danger">{{ $message }}</span> @enderror
-        </div>
-
-        <div class="col-md-4">
-            <div class="input-group input-group-outline">
-                <label class="form-label">Section</label>
-                <select wire:model="section_id" class="form-select">
-                    <option value="">{{ empty($availableSections) ? 'Select class first' : 'Select Section' }}</option>
-                    @foreach ($availableSections as $s)
-                        <option value="{{ $s['id'] }}">{{ $s['name'] }}</option>
-                    @endforeach
-                </select>
-            </div>
-            @error('section_id') <span class="text-danger">{{ $message }}</span> @enderror
-        </div>
-
-        <div class="col-md-4">
-            <div class="input-group input-group-outline">
-                <label class="form-label">Subject <span class="req">*</span></label>
-                <select wire:model="subject_id" class="form-select">
-                    <option value="">Select Subject</option>
-                    @foreach ($subjects as $subject)
-                        <option value="{{ $subject->id }}">{{ $subject->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            @error('subject_id') <span class="text-danger">{{ $message }}</span> @enderror
-        </div>
-
-        <div class="col-md-12 text-center">
-            <button wire:click="filter" class="btn-pink w-100 d-flex justify-content-center align-items-center" type="button">
-                <span wire:loading.remove wire:target="filter">Filter</span>
-                <span wire:loading wire:target="filter">Loading...</span>
-            </button>
-        </div>
-
-        <div class="col-md-12 text-center">
-            <a href="{{ route('admin.homework.add') }}" class="btn-pink w-100 d-flex justify-content-center align-items-center">
-                <span class="material-icons-round" style="font-size:16px">add</span><span>New Homework</span>
-            </a>
-        </div>
-    </div>
-
-    @if($hasHomework)
-    <div class="table-responsive p-4">
-        <table class="mat-table w-100">
-            <thead>
-                <tr>
-                    <th>SL</th>
-                    <th>Subject</th>
-                    <th>Class</th>
-                    <th>Section</th>
-                    <th>Title</th>
-                    <th>Homework Date</th>
-                    <th>Submission Date</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($homeworks as $index => $h)
-                <tr wire:key="hw-{{ $h['id'] }}">
-                    <td>{{ $index + 1 }}</td>
-                    <td>{{ $h['subject']['name'] ?? '-' }}</td>
-                    <td>{{ $h['class']['name'] ?? '-' }}</td>
-                    <td>{{ $h['section']['name'] ?? '-' }}</td>
-                    <td>{{ $h['title'] ?? '-' }}</td>
-                    <td>{{ $h['homework_date'] ?? '-' }}</td>
-                    <td>{{ $h['submission_date'] ?? '-' }}</td>
-                    <td>{{ $h['status'] ?? '-' }}</td>
-                    <td>
-                        <div class="action-btns">
-                            @if ($h['attachment'])
-                                <a href="{{ Storage::url($h['attachment']) }}" target="_blank" class="act-btn"><span class="material-icons-round">attachment</span></a>
-                            @endif
-                            <a href="/homework/edit/{{ $h['id'] }}" class="act-btn edit" title="Edit">
-                                <span class="material-icons-round">drive_file_rename_outline</span>
-                            </a>
-                            <button type="button" class="act-btn delete" title="Delete"
-                                onclick="openDeleteModal({{ $h['id'] }}, '{{ addslashes($h['title'] ?? '') }}')">
-                                <span class="material-icons-round">delete</span>
-                            </button>
+    {{-- Delete Confirm Modal --}}
+    @if($confirmDelete)
+        <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.5);">
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                    <div class="modal-body text-center py-4">
+                        <div style="width:56px;height:56px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+                            <span class="material-icons-round text-danger" style="font-size:1.5rem;">warning</span>
                         </div>
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="9" class="text-center p-4" style="color:var(--ink-faint)">No homework found</td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+                        <h6 class="fw-700">Delete Homework?</h6>
+                        <p class="text-muted small">This action cannot be undone.</p>
+                    </div>
+                    <div class="modal-footer justify-content-center border-0 pt-0">
+                        <button class="btn btn-light btn-sm" wire:click="$set('confirmDelete', false)">Cancel</button>
+                        <button class="btn btn-danger btn-sm" wire:click="deleteRecord">
+                            <span wire:loading wire:target="deleteRecord" class="spinner-border spinner-border-sm me-1"></span>
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     @endif
 
-    <!-- ═══════ DELETE CONFIRM MODAL ═══════ -->
-    <div class="modal fade" id="deleteModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-sm">
-            <div class="modal-content text-center p-3">
-                <div style="width:52px;height:52px;border-radius:50%;background:var(--pink-light);display:flex;align-items:center;justify-content:center;margin:12px auto">
-                    <span class="material-icons-round" style="color:var(--pink);font-size:26px">delete_outline</span>
-                </div>
-                <h6 style="font-weight:700;margin:8px 0 4px">Delete this homework?</h6>
-                <p style="font-size:.78rem;color:var(--muted);margin-bottom:16px" id="deleteName">This action cannot be undone.</p>
-                <div style="display:flex;gap:8px;justify-content:center">
-                    <button class="btn-outline" data-bs-dismiss="modal">Cancel</button>
-                    <button class="btn-pink" onclick="confirmDelete()">Delete</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
 </div>
-
-@push('scripts')
-    <script>
-        document.addEventListener('livewire:initialized', () => {
-            Livewire.hook('morph.updated', ({ el }) => {
-                setTimeout(() => {
-
-                    // ✅ Select re-init
-                    el.querySelectorAll('.input-group-outline .form-select').forEach(function(select) {
-                        if (!select.nextElementSibling || !select.nextElementSibling.classList.contains('custom-select-wrapper')) {
-                            buildCustomSelect(select);
-                        }
-                    });
-
-                    // ✅ Text/Time input — is-filled re-apply
-                    el.querySelectorAll('.input-group-outline input').forEach(function(input) {
-                        var group = input.closest('.input-group');
-                        if (!group) return;
-
-                        // value থাকলে is-filled দাও
-                        if (input.value && input.value.trim() !== '') {
-                            group.classList.add('is-filled');
-                        } else {
-                            group.classList.remove('is-filled');
-                        }
-
-                        // Duplicate listener এড়াতে flag চেক
-                        if (input._materialInit) return;
-                        input._materialInit = true;
-
-                        input.addEventListener('focus', function() {
-                            group.classList.add('is-focused');
-                        });
-                        input.addEventListener('blur', function() {
-                            group.classList.remove('is-focused');
-                            group.classList.toggle('is-filled', !!input.value.trim());
-                        });
-                        input.addEventListener('input', function() {
-                            group.classList.toggle('is-filled', !!input.value.trim());
-                        });
-                    });
-
-                    // ✅ Datepicker re-init
-                    el.querySelectorAll('.input-group-outline input[type="date"]').forEach(function(input) {
-                        if (!input._dpInit) {
-                            _initDatepickers();
-                        }
-                    });
-
-                }, 0);
-            });
-        });
-    </script>
-<script>
-    let deleteTargetId = null;
-
-    function openDeleteModal(id, title) {
-        deleteTargetId = id;
-        document.getElementById('deleteName').textContent = `"${title}" will be permanently deleted.`;
-        new bootstrap.Modal(document.getElementById('deleteModal')).show();
-    }
-
-    function confirmDelete() {
-        @this.call('deleteConfirmed', deleteTargetId);
-        bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
-    }
-</script>
-@endpush

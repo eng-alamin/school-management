@@ -352,18 +352,18 @@
             </div>
         </div>
 
-        <!-- ══ PREVIOUS SCHOOL DETAILS ══ -->
+        <!-- ══ PREVIOUS INSTITUTION DETAILS ══ -->
         <div class="form-section">
             <div class="section-heading">
-            <span class="material-icons-round">history_edu</span> Previous School Details
+            <span class="material-icons-round">history_edu</span> Previous Institution Details
             </div>
             <div class="row g-4">
             <div class="col-md-6">
                 <div class="input-group input-group-outline">
-                    <label class="form-label">School Name</label>
-                    <textarea wire:model="previous_school" class="form-control" placeholder=" " style="min-height:64px" onfocus="focused(this)" onfocusout="defocused(this)"></textarea>
+                    <label class="form-label">Institution Name</label>
+                    <textarea wire:model="previous_institution" class="form-control" placeholder=" " style="min-height:64px" onfocus="focused(this)" onfocusout="defocused(this)"></textarea>
                 </div>
-                @error('previous_school') <span class="text-danger">{{ $message }}</span> @enderror
+                @error('previous_institution') <span class="text-danger">{{ $message }}</span> @enderror
             </div>
             <div class="col-md-6">
                 <div class="input-group input-group-outline">

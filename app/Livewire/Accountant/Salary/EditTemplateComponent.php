@@ -184,7 +184,7 @@ class EditTemplateComponent extends Component
     {
         return view('livewire.accountant.salary.edit-template-component')
             ->layout('layouts.accountant.app', [
-                'title' => 'Edit Salary Template | HR',
+                'title' => 'Edit Salary Template | ' . institution()->name,
             ]);
     }
 }

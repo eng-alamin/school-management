@@ -102,7 +102,7 @@ class CategoryComponent extends Component
         return view('livewire.accountant.inventory.category-component')
             ->with('categories', $categories)
             ->layout('layouts.accountant.app', [
-                'title' => "Inventory Category | School SaaS",
+                'title' => 'Inventory Category | ' . institution()->name,
             ]);
     }
 

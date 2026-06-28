@@ -7,7 +7,8 @@ use App\Models\CertificateTemplate;
 use App\Models\Student;
 use App\Models\AcademicClass;
 use App\Models\AcademicSection;
-use App\Models\SettingSchool;
+use App\Models\AcademicClassAssign;
+use App\Models\Institution;
 use Carbon\Carbon;
 
 class GenerateStudentComponent extends Component
@@ -37,14 +38,15 @@ class GenerateStudentComponent extends Component
     // ── Apply Filter ──
     public function applyFilter(): void
     {
-        $this->validate([
-            'filterClass'    => 'required',
-            'filterTemplate' => 'required|exists:certificate_templates,id',
-        ], [
-            'filterClass.required'    => 'Please select a class.',
-            'filterTemplate.required' => 'Please select a template.',
-            'filterTemplate.exists'   => 'Selected template is invalid.',
-        ]);
+        if (!$this->filterClass) {
+            $this->dispatch('toast', type: 'error', message: 'Please select a class.');
+            return;
+        }
+
+        if (!$this->filterTemplate) {
+            $this->dispatch('toast', type: 'error', message: 'Please select a template.');
+            return;
+        }
 
         $this->filtered    = true;
         $this->selectedIds = [];
@@ -68,6 +70,14 @@ class GenerateStudentComponent extends Component
         $this->filterSection = '';
         $this->selectedIds   = [];
         $this->selectAll     = false;
+    }
+
+    public function updatedFilterSection()
+    {
+        $this->selectedIds      = [];
+        $this->selectAll        = false;
+
+        if (!$this->filterClass) return;
     }
 
     public function updatedSelectAll(bool $value): void
@@ -101,9 +111,9 @@ class GenerateStudentComponent extends Component
         ]);
 
         $template  = CertificateTemplate::findOrFail($this->filterTemplate);
-        $institute = SettingSchool::first(); // ← institute info
+        $institute = Institution::find(auth()->user()->institution_id);
 
-        $students = Student::with(['class', 'section', 'category'])
+        $students = Student::with(['class', 'section', 'group'])
             ->whereIn('id', $this->selectedIds)
             ->get();
 
@@ -136,7 +146,7 @@ class GenerateStudentComponent extends Component
                     '{roll}',
                     '{class}',
                     '{section}',
-                    '{category}',
+                    '{group}',
                     '{mobile_no}',
                     '{blood_group}',
                     '{birthday}',
@@ -166,7 +176,7 @@ class GenerateStudentComponent extends Component
                     $student->roll_no       ?? '',
                     $student->class?->name  ?? '',
                     $student->section?->name ?? '',
-                    $student->category?->name ?? '',
+                    $student->group?->name ?? '',
                     $student->mobile_no        ?? '',
                     $student->blood_group ?? '',
                     $student->dob ? Carbon::parse($student->dob)->format('d M Y') : '',
@@ -220,27 +230,20 @@ class GenerateStudentComponent extends Component
             ->get();
     }
 
-    public function getAvailableClasses(): array
+    public function getAvailableClasses()
     {
-        return AcademicClass::whereIn('id', Student::distinct()->pluck('class_id'))
+        return AcademicClass::whereIn('id', AcademicClassAssign::distinct()->pluck('class_id'))
             ->orderBy('name')
-            ->get()
-            ->toArray();
+            ->get();
     }
 
-    public function getAvailableSections(): array
+    public function getAvailableSections()
     {
         if (!$this->filterClass) return [];
 
-        $sectionIds = Student::where('class_id', $this->filterClass)
-            ->whereNotNull('section_id')
-            ->distinct()
-            ->pluck('section_id');
-
-        return AcademicSection::whereIn('id', $sectionIds)
-            ->orderBy('name')
-            ->get()
-            ->toArray();
+        return AcademicSection::whereIn('id',
+            AcademicClassAssign::where('class_id', $this->filterClass)->pluck('section_id')
+        )->orderBy('name')->get();
     }
 
     public function render()

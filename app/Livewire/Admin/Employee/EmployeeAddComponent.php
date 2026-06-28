@@ -4,9 +4,10 @@ namespace App\Livewire\Admin\Employee;
 
 use Livewire\Component;
 use App\Models\Employee;
-use App\Models\Department;
-use App\Models\Designation;
+use App\Models\EmployeeDepartment;
+use App\Models\EmployeeDesignation;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
@@ -51,8 +52,8 @@ class EmployeeAddComponent extends Component
     {
         return [
             'role'           => 'required',
-            'designation_id' => 'required|exists:designations,id',
-            'department_id'  => 'required|exists:departments,id',
+            'designation_id' => 'required|exists:employee_designations,id',
+            'department_id'  => 'required|exists:employee_departments,id',
             'name'           => 'required',
             'mobile'         => 'nullable|string|max:20',
             'email'          => 'nullable|unique:users,email',
@@ -62,6 +63,16 @@ class EmployeeAddComponent extends Component
         ];
     }
 
+    protected function failedValidation($validator)
+    {
+        $this->dispatch('validation-failed');
+    }
+
+    public function updated($propertyName)
+    {
+        $this->validateOnly($propertyName, $this->rules());
+    }
+
     public function resetForm(): void
     {
         $this->reset();
@@ -69,11 +80,16 @@ class EmployeeAddComponent extends Component
 
     public function save(): void
     {
+        DB::beginTransaction();
+
         try {
+
             $this->validate($this->rules());
 
+            $institutionId = auth()->user()->institution_id;
+
             $user = User::create([
-                'school_id'=> auth()->user()->school_id,
+                'institution_id'=> $institutionId,
                 'role'     => $this->role,
                 'name'     => $this->name,
                 'username' => $this->username,
@@ -81,12 +97,29 @@ class EmployeeAddComponent extends Component
                 'password' => !empty($this->password) ? $this->password : '1234',
             ]);
 
-           $photoPath = $this->photo_upload
-            ? $this->photo_upload->store('employees', 'public')
-            : null;
+            $photoPath = $this->photo_upload
+                ? $this->photo_upload->store('employees', 'public')
+                : null;
+
+            // ── Generate Employee ID (SAFE - avoid duplicate)
+            $institutionCode = 'SCH' . str_pad($institutionId, 2, '0', STR_PAD_LEFT);
+            $year = now()->format('y');
+
+            $lastEmployee = Employee::where('institution_id', $institutionId)
+                ->lockForUpdate()
+                ->orderByDesc('id')
+                ->first();
+
+            $serial = $lastEmployee
+                ? ((int) substr($lastEmployee->employee_id, -4)) + 1
+                : 1;
+
+            $employeeId = $institutionCode . $year . str_pad($serial, 4, '0', STR_PAD_LEFT);
 
             Employee::create([
+                'institution_id'    => $institutionId,
                 'user_id'           => $user->id,
+                'employee_id'       => $employeeId,
                 'joining_date'      => $this->joining_date,
                 'designation_id'    => $this->designation_id,
                 'department_id'     => $this->department_id,
@@ -109,23 +142,28 @@ class EmployeeAddComponent extends Component
                 'account_no'        => $this->account_no,
             ]);
 
-            $this->dispatch('toast', type: 'success', message: 'Employee created successfully!');
+            DB::commit();
+
             $this->resetForm();
 
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            throw $e;
+            $this->dispatch('toast', type: 'success', message: 'Employee created successfully!');
+
         } catch (\Throwable $e) {
-            $this->dispatch('toast', type: 'error', message: 'An error occurred: ' . $e->getMessage());
+
+            DB::rollBack();
+
+            $this->dispatch('toast', type: 'error', message: 'Something went wrong!');
+            throw $e;
         }
     }
 
     public function render()
     {
         return view('livewire.admin.employee.employee-add-component', [
-            'departments'  => Department::all(),
-            'designations' => Designation::all(),
+            'departments'  => EmployeeDepartment::all(),
+            'designations' => EmployeeDesignation::all(),
         ])->layout('layouts.admin.app', [
-            'title' => 'Create Employee | ' . school()->name,
+            'title' => 'Create Employee | ' . institution()->name,
         ]);
     }
 }

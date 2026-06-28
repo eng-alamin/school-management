@@ -30,6 +30,9 @@
                         </select>
                     </div>
                 @endif
+                <a href="{{route('admin.exam.schedule.add')}}" class="btn-outline btn-sm bg-dark text-white" wire:click="openCreate">
+                    <span class="material-icons-round">add</span> <span id="newSectionBtn">Add Schedule</span>
+                </a>
 
             </div>
         </div>
@@ -52,11 +55,14 @@
                             <td class="text-muted">{{ $schedules->firstItem() + $i }}</td>
                             <td> {{ $schedule->exam->name }} </td>
                             <td> {{ $schedule->class->name }} </td>
-                            <td> {{ $schedule->section->name }} </td>
+                            <td> {{ $schedule->section?->name ?? '-' }} </td>
                             <td>
                                 <div class="d-flex gap-1">
                                     <button class="act-btn view" title="View" wire:click="openView({{ $schedule->id }})">
                                         <span class="material-icons-round">visibility</span>
+                                    </button>
+                                    <button class="act-btn delete" title="Delete" wire:click="confirmDeleteRecord({{ $schedule->id }})">
+                                        <span class="material-icons-round">delete</span>
                                     </button>
                                 </div>
                             </td>
@@ -91,37 +97,64 @@
                         <button class="btn-close" wire:click="$set('showViewModal',false)"></button>
                     </div>
                     <div class="modal-body">
-                        <table class="table table-sm">
-                            <thead>
+                        {{-- Eita wrap kora hoyeche jate print korar somoy shudhu eita print hoy --}}
+                        <div id="scheduleDetailsPrintable">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th colspan="5" class="text-center">
+                                            <h6 class="mb-0">Exam : {{ $viewRecord->exam->name }}</h6>
+                                            <p class="mb-0">{{ $viewRecord->class->name }} @if($viewRecord->section?->name)({{ $viewRecord->section?->name }})@endif</p>
+                                        </th>
+                                    </tr>
+                                </thead>
                                 <tr>
-                                    <th colspan="5" class="text-center">
-                                        <h6 class="mb-0">Exam : {{ $viewRecord->exam->name }}</h6>
-                                        <p class="mb-0">{{ $viewRecord->class->name }}({{ $viewRecord->section->name }})</p>
-                                    </th>
+                                    <th class="text-muted">Subject</th>
+                                    <th class="text-muted">Date</th>
+                                    <th class="text-muted">Starting Time</th>
+                                    <th class="text-muted">Ending Time</th>
+                                    <th class="text-muted">Hall Room</th>
                                 </tr>
-                            </thead>
-                            <tr>
-                                <th class="text-muted">Subject</th>
-                                <th class="text-muted">Date</th>
-                                <th class="text-muted">Starting Time</th>
-                                <th class="text-muted">Ending Time</th>
-                                <th class="text-muted">Hall Room</th>
-                            </tr>
-                            @foreach($viewRecord->data ?? [] as $detail)
-                                <tr>
-                                    <td>{{ $detail['subject'] ?? '' }}</td>
-                                    <td>{{ \Carbon\Carbon::parse($detail['exam_date'])->format('d M Y') }}</td>
-                                    <td>{{ \Carbon\Carbon::parse($detail['start_time'])->format('h:i A') }}</td>
-                                    <td>{{ \Carbon\Carbon::parse($detail['end_time'])->format('h:i A') }}</td>
-                                    <td>{{ $detail['hall_room'] ?? '' }}</td>
-                                </tr>
-                            @endforeach
-                        </table>
+                                @foreach($viewRecord->data ?? [] as $detail)
+                                    <tr>
+                                        <td>{{ $detail['subject'] ?? '' }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($detail['exam_date'])->format('d M Y') }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($detail['start_time'])->format('h:i A') }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($detail['end_time'])->format('h:i A') }}</td>
+                                        <td>{{ $detail['hall_room'] ?? '' }}</td>
+                                    </tr>
+                                @endforeach
+                            </table>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button class="btn btn-light" wire:click="$set('showViewModal',false)">Close</button>
-                        <button class="btn btn-primary">
-                            <i class="bi bi-pencil me-1"></i>Print
+                        <button class="btn btn-primary" type="button" onclick="printScheduleDetails()">
+                            <i class="bi bi-printer me-1"></i>Print
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- ===== DELETE CONFIRM ===== --}}
+    @if($confirmDelete)
+        <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.5);">
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                    <div class="modal-body text-center py-4">
+                        <div style="width:56px;height:56px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+                            <i class="bi bi-exclamation-triangle text-danger" style="font-size:1.5rem;"></i>
+                        </div>
+                        <h6 class="fw-700">Delete Schedule?</h6>
+                        <p class="text-muted small">This action cannot be undone.</p>
+                    </div>
+                    <div class="modal-footer justify-content-center border-0 pt-0">
+                        <button class="btn btn-light btn-sm" wire:click="$set('confirmDelete',false)">Cancel</button>
+                        <button class="btn btn-danger btn-sm" wire:click="deleteRecord">
+                            <span wire:loading wire:target="deleteRecord" class="spinner-border spinner-border-sm me-1"></span>
+                            Delete
                         </button>
                     </div>
                 </div>
@@ -267,4 +300,82 @@
             cursor: not-allowed;
         }
     </style>
+@endpush
+
+@push('scripts')
+    <script>
+        // Modal-er bhitorer #scheduleDetailsPrintable content niye notun ekta window-e
+        // shundor format kore print dialog open kore - sidebar/topbar/search kichu print hobe na
+        function printScheduleDetails() {
+            const printableEl = document.getElementById('scheduleDetailsPrintable');
+
+            if (!printableEl) {
+                return;
+            }
+
+            const printContent = printableEl.innerHTML;
+            const printWindow = window.open('', '_blank', 'width=900,height=650');
+
+            if (!printWindow) {
+                alert('Print window block hoye gেছে। Browser-er popup blocker check korun.');
+                return;
+            }
+
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Exam Schedule</title>
+                        <style>
+                            * { box-sizing: border-box; }
+                            body {
+                                font-family: Arial, Helvetica, sans-serif;
+                                padding: 28px;
+                                color: #222;
+                            }
+                            table {
+                                width: 100%;
+                                border-collapse: collapse;
+                                margin-top: 10px;
+                            }
+                            th, td {
+                                border: 1px solid #ddd;
+                                padding: 8px 10px;
+                                text-align: left;
+                                font-size: 13px;
+                            }
+                            thead th {
+                                background: #f5f5f5;
+                            }
+                            h6 {
+                                margin: 0 0 2px 0;
+                                font-size: 16px;
+                            }
+                            p {
+                                margin: 0;
+                                color: #555;
+                                font-size: 13px;
+                            }
+                            .text-muted {
+                                color: #777 !important;
+                                text-transform: uppercase;
+                                font-size: 11px;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        ${printContent}
+                    </body>
+                </html>
+            `);
+
+            printWindow.document.close();
+            printWindow.focus();
+
+            // Content load hoye jawar por print dialog open hobe
+            setTimeout(() => {
+                printWindow.print();
+                printWindow.close();
+            }, 250);
+        }
+    </script>
 @endpush

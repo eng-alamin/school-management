@@ -20,6 +20,8 @@ class ScheduleListComponent extends Component
 
     // Modal
     public bool $showViewModal = false;
+    public bool $confirmDelete = false;
+    public ?int $deleteId = null;
     public ?ExamSchedule $viewRecord = null;
 
     public function updatingSearch(): void { $this->resetPage(); }
@@ -52,8 +54,23 @@ class ScheduleListComponent extends Component
         return view('livewire.teacher.exam.schedule-list-component')
             ->with('schedules', $schedules)
             ->layout('layouts.teacher.app', [
-                'title' => "Exam Schedule | School SaaS",
+                'title' => 'Exam Schedule | ' . institution()->name,
             ]);
 
+    }
+
+    public function confirmDeleteRecord(int $id): void
+    {
+        $this->deleteId = $id;
+        $this->confirmDelete = true;
+    }
+
+    public function deleteRecord(): void
+    {
+        $record = ExamSchedule::findOrFail($this->deleteId);
+        $record->delete();
+        $this->confirmDelete = false;
+        $this->deleteId = null;
+        session()->flash('success', 'Data deleted successfully!');
     }
 }

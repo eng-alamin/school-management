@@ -18,9 +18,10 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             
             // Academic Details
+            $table->string('employee_id')->unique();
             $table->date('joining_date')->nullable();
-            $table->foreignId('designation_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('department_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('designation_id')->nullable()->constrained('employee_designations')->nullOnDelete();
+            $table->foreignId('department_id')->nullable()->constrained('employee_departments')->nullOnDelete();
             $table->string('qualification')->nullable();
             $table->text('experience_detail')->nullable();
             $table->string('total_experience')->nullable();

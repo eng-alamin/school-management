@@ -110,7 +110,7 @@ class TrashComponent extends Component
 
         return view('livewire.accountant.mailbox.trash-component', compact('messages'))
             ->layout('layouts.accountant.app', [
-                'title' => "MailBox | School SaaS",
+                'title' => 'MailBox | ' . institution()->name,
             ]);
     }
 }

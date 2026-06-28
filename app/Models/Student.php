@@ -48,9 +48,9 @@ class Student extends Model
         return $this->belongsTo(AcademicSection::class, 'section_id');
     }
 
-    public function category()
+    public function group()
     {
-        return $this->belongsTo(AcademicCategory::class, 'category_id');
+        return $this->belongsTo(AcademicGroup::class, 'group_id');
     }
 
     public function attendances()

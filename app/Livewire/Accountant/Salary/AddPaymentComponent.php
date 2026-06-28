@@ -215,11 +215,7 @@ class AddPaymentComponent extends Component
         $this->alreadyPaid = true;
         $this->dispatch('notify', type: 'success', message: 'Salary paid successfully.');
 
-        // FIX 1a: Was redirecting to add-payment (same page) — wrong destination.
-        //          After a successful payment, user should go back to the list.
-        // FIX 1b: $monthDate is 'Y-m-d' but the route param expects 'Y-m'.
-        //          Redirecting to the list avoids passing the wrong format entirely.
-        return redirect()->route('accountant.salary.payment', ['tenant' => tenant('id')]);
+        return redirect()->route('accountant.salary.payment');
     }
 
     // ── Render ────────────────────────────────────────────────────
@@ -230,7 +226,7 @@ class AddPaymentComponent extends Component
         return view('livewire.accountant.salary.add-payment-component', [
             'officeAccounts' => $officeAccounts,
         ])->layout('layouts.accountant.app', [
-            'title' => 'Salary | Add Payment',
+            'title' => 'Salary | ' . institution()->name,
         ]);
     }
 }

@@ -5,10 +5,12 @@ namespace App\Livewire\Accountant\Parent;
 use Livewire\Component;
 use App\Models\User;
 use App\Models\Guardian;
+use Illuminate\Support\Facades\DB;
 
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
 use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\Storage;
 
 class ParentEditComponent extends Component
 {
@@ -34,24 +36,23 @@ class ParentEditComponent extends Component
 
     public $username;
     public $password;
-    public $password_confirmation;
 
     public function mount($id)
     {
         $this->guardianId = $id;
-        $this->guardian = Guardian::findOrFail($id);
-        $this->userId = $this->guardian->user_id;
+        $this->guardian   = Guardian::findOrFail($id);
+        $this->userId     = $this->guardian->user_id;
 
-        $this->name = $this->guardian->name;
-        $this->relation = $this->guardian->relation;
+        $this->name        = $this->guardian->name;
+        $this->relation    = $this->guardian->relation;
         $this->father_name = $this->guardian->father_name;
         $this->mother_name = $this->guardian->mother_name;
-        $this->occupation = $this->guardian->occupation;
-        $this->income = $this->guardian->income;
-        $this->education = $this->guardian->education;
-        $this->mobile = $this->guardian->mobile;
-        $this->email = $this->guardian->email;
-        $this->address = $this->guardian->address;
+        $this->occupation  = $this->guardian->occupation;
+        $this->income      = $this->guardian->income;
+        $this->education   = $this->guardian->education;
+        $this->mobile      = $this->guardian->mobile;
+        $this->email       = $this->guardian->email;
+        $this->address     = $this->guardian->address;
 
         $this->photo = $this->guardian->photo;
 
@@ -71,10 +72,10 @@ class ParentEditComponent extends Component
             'mobile' => 'required|string|max:20',
             'email' => 'nullable|email',
 
-            'photo_upload'       => 'nullable',
+            'photo_upload' => 'nullable|image|max:2048',
 
             'username'    => ['required', Rule::unique('users', 'username')->ignore($this->userId)],
-            'password'    => 'nullable|confirmed|min:4',
+            'password'    => 'nullable',
         ];
     }
 
@@ -88,34 +89,15 @@ class ParentEditComponent extends Component
         $this->validateOnly($propertyName, $this->rules());
     }
 
-    public function safePreviewUrl($upload): ?string
-    {
-        if (!$upload) return null;
-        try {
-            return $upload->temporaryUrl();
-        } catch (\Throwable $e) {
-            return null;
-        }
-    }
-
-    private function deleteOldFile($path): void
-    {
-        if (!$path) {
-            return;
-        }
-
-        $fullPath = public_path($path);
-
-        if (file_exists($fullPath)) {
-            unlink($fullPath);
-        }
-    }
-
     public function update()
     {
+        DB::beginTransaction();
+
         try {
+
             $this->validate($this->rules());
 
+            // ── User update ──────────────────────────────
             $userData = [
                 'name'     => $this->name,
                 'username' => $this->username,
@@ -126,10 +108,11 @@ class ParentEditComponent extends Component
                 $userData['password'] = $this->password;
             }
 
-            $user = User::with('guardian')->findOrFail($this->userId);
+            $user = User::findOrFail($this->userId);
             $user->update($userData);
 
-            $guardian = [
+            // ── Guardian update ──────────────────────────
+            $guardianData = [
                 'name'        => $this->name,
                 'relation'    => $this->relation,
                 'father_name' => $this->father_name,
@@ -143,16 +126,27 @@ class ParentEditComponent extends Component
             ];
 
             if ($this->photo_upload) {
-                $this->deleteOldFile($this->student->photo);
-                $guardian['photo'] = \App\Helpers\TenantFileHelper::store($this->photo_upload, 'guardians');
+
+                $oldPhoto = $this->guardian->photo;
+
+                $guardianData['photo'] = $this->photo_upload->store('guardians', 'public');
+
+                if ($oldPhoto) {
+                    Storage::disk('public')->delete($oldPhoto);
+                }
             }
 
-            $this->guardian->update($guardian);
+            $this->guardian->update($guardianData);
+
+            DB::commit();
 
             $this->dispatch('toast', type: 'success', message: 'Parent updated successfully!');
-        } catch (\Exception $e) {
-            $this->dispatch('validation-failed');
-            $this->dispatch('toast', type: 'error', message: 'An error occurred while creating the parent.');
+
+        } catch (\Throwable $e) {
+
+            DB::rollBack();
+
+            $this->dispatch('toast', type: 'error', message: 'Something went wrong!');
             throw $e;
         }
     }
@@ -161,7 +155,7 @@ class ParentEditComponent extends Component
     {
         return view('livewire.accountant.parent.parent-edit-component')
             ->layout('layouts.accountant.app', [
-                'title' => "Edit Parent | Monarchy School",
+                'title' => 'Edit Parent | ' . institution()->name,
             ]);
     }
 }

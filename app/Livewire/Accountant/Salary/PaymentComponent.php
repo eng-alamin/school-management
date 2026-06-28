@@ -43,8 +43,7 @@ class PaymentComponent extends Component
         'accountant'        => 'Accountant',
         'teacher'      => 'Teacher',
         'accountant'   => 'Accountant',
-        'librarian'    => 'Librarian',
-        'receptionist' => 'Receptionist',
+        'staff'        => 'Staff',
     ];
 
     // ─────────────────────────────────────────────────────────────
@@ -244,7 +243,7 @@ class PaymentComponent extends Component
             'employees'      => $employees,
             'officeAccounts' => $officeAccounts,
         ])->layout('layouts.accountant.app', [
-            'title' => 'Payroll | Salary Payments',
+            'title' => 'Payroll | ' . institution()->name,
         ]);
     }
 }

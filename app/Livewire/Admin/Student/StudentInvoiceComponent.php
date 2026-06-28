@@ -23,7 +23,7 @@ class StudentInvoiceComponent extends Component
             'session',
             'class',
             'section',
-            'category',
+            'group',
             'guardians',
             'user',
         ])->findOrFail($id);

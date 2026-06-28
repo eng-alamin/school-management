@@ -1,4 +1,4 @@
-{{-- resources/views/livewire/accountant/notice/notice-component.blade.php --}}
+{{-- resources/views/livewire/admin/notice/notice-component.blade.php --}}
 <div>
 
     <div class="card">
@@ -6,7 +6,7 @@
         <!-- floating header -->
         <div class="mat-card-header header-pink-gradient">
             <h5 id="cardHeaderTitleAllsections">Notice Board</h5>
-            <p id="cardHeaderSubtitle">Manage and publish notices for students, teachers, and accountants.</p>
+            <p id="cardHeaderSubtitle">Manage and publish notices for students, teachers, and admins.</p>
         </div>
 
         <div class="card-header border-0">

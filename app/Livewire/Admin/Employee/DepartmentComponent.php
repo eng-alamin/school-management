@@ -4,7 +4,7 @@ namespace App\Livewire\Admin\Employee;
 
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Models\Department;
+use App\Models\EmployeeDepartment;
 
 class DepartmentComponent extends Component
 {
@@ -60,7 +60,7 @@ class DepartmentComponent extends Component
 
     public function openEdit(int $id): void
     {
-        $record = Department::findOrFail($id);
+        $record = EmployeeDepartment::findOrFail($id);
         $this->editId    = $id;
         $this->name      = $record->name;
         $this->showModal = true;
@@ -71,10 +71,10 @@ class DepartmentComponent extends Component
         $this->validate();
 
         if ($this->editId) {
-            Department::findOrFail($this->editId)->update(['name' => $this->name]);
+            EmployeeDepartment::findOrFail($this->editId)->update(['name' => $this->name]);
             $this->dispatch('toast', type: 'success', message: 'Department updated successfully!');
         } else {
-            Department::create(['name' => $this->name]);
+            EmployeeDepartment::create(['name' => $this->name]);
             $this->dispatch('toast', type: 'success', message: 'Department created successfully!');
         }
 
@@ -90,7 +90,7 @@ class DepartmentComponent extends Component
 
     public function deleteRecord(): void
     {
-        Department::findOrFail($this->deleteId)->delete();
+        EmployeeDepartment::findOrFail($this->deleteId)->delete();
         $this->confirmDelete = false;
         $this->deleteId      = null;
         $this->dispatch('toast', type: 'success', message: 'Department deleted successfully!');
@@ -104,7 +104,7 @@ class DepartmentComponent extends Component
 
     public function render()
     {
-        $departments = Department::query()
+        $departments = EmployeeDepartment::query()
             ->when($this->search, fn($q) => $q->where('name', 'like', "%{$this->search}%"))
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);

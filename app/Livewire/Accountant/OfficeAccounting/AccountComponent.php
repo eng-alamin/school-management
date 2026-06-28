@@ -128,7 +128,7 @@ class AccountComponent extends Component
         return view('livewire.accountant.office-accounting.account-component')
             ->with('accounts', $accounts)
             ->layout('layouts.accountant.app', [
-                'title' => "Office Accounting - Account | School SaaS",
+                'title' => 'Office Accounting - Account | ' . institution()->name,
             ]);
     }
 }

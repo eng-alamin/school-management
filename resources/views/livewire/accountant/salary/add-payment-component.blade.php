@@ -22,7 +22,7 @@
 
     {{-- ── Back Button ── --}}
     <div style="padding: 20px 0 0 0;">
-        <a href="{{ route('accountant.salary.payment') }}"
+        <a href="{{ route('admin.salary.payment') }}"
            class="btn-outline d-inline-flex align-items-center gap-1" style="text-decoration:none">
             <span class="material-icons-round" style="font-size:16px">arrow_back</span>
             Back to Payments

@@ -5,8 +5,8 @@
     <div class="card">
 
         <div class="mat-card-header header-pink-gradient">
-            <h5 id="cardHeaderTitleAllEmployees">All Employees</h5>
-            <p id="cardHeaderSubtitle">Manage employees, view details, and organize easily.</p>
+            <h5 id="emp-list-header-title">All Employees</h5>
+            <p id="emp-list-header-subtitle">Manage employees, view details, and organize easily.</p>
         </div>
 
         <div class="card-header border-0">
@@ -28,7 +28,7 @@
                     </div>
                 @endif
 
-                <a href="{{ route('accountant.employee.add') }}"
+                <a href="{{ route('admin.employee.add') }}"
                    class="btn-outline bg-dark text-white">
                     <span class="material-icons-round">add</span> New Employee
                 </a>
@@ -40,19 +40,20 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>SL</th>
+                            <th id="emp-th-sl">SL</th>
                             <th wire:click="sortBy('name')" style="cursor:pointer">
-                                Name @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
+                                <span id="emp-th-name">Name</span> @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th>Designation</th>
-                            <th>Department</th>
+                            <th id="emp-th-role">Role</th>
+                            <th id="emp-th-designation">Designation</th>
+                            <th id="emp-th-department">Department</th>
                             <th wire:click="sortBy('email')" style="cursor:pointer">
-                                Email @if($sortField === 'email') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
+                                <span id="emp-th-email">Email</span> @if($sortField === 'email') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
                             <th wire:click="sortBy('phone')" style="cursor:pointer">
-                                Phone @if($sortField === 'phone') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
+                                <span id="emp-th-phone">Phone</span> @if($sortField === 'phone') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th>Actions</th>
+                            <th id="emp-th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -67,13 +68,18 @@
                                     <span>{{ $employee->name }}</span>
                                 </div>
                             </td>
+                            <td> <span class="badge bg-secondary">{{ $employee->user?->role ?? '—' }} </span></td>
                             <td>{{ $employee->designation?->name ?? '—' }}</td>
                             <td>{{ $employee->department?->name ?? '—' }}</td>
                             <td>{{ $employee->email ?? '—' }}</td>
                             <td>{{ $employee->phone ?? '—' }}</td>
                             <td>
                                 <div class="d-flex gap-1">
-                                    <a href="{{ route('accountant.employee.edit', ['id' => $employee->id]) }}"
+                                    <a href="{{ route('admin.employee.view', ['id' => $employee->id]) }}" target="_blank"
+                                        class="act-btn view" title="View">
+                                        <span class="material-icons-round">visibility</span>
+                                    </a>
+                                    <a href="{{ route('admin.employee.edit', ['id' => $employee->id]) }}"
                                        class="act-btn edit" title="Edit">
                                         <span class="material-icons-round">drive_file_rename_outline</span>
                                     </a>
@@ -89,7 +95,7 @@
                             <td colspan="7" class="text-center py-5 text-muted">
                                 <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
                                 No employees found.
-                                <a href="{{ route('accountant.employee.add') }}">Add one now</a>.
+                                <a href="{{ route('admin.employee.add') }}">Add one now</a>.
                             </td>
                         </tr>
                         @endforelse
@@ -114,8 +120,8 @@
                         <div style="width:56px;height:56px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
                             <i class="bi bi-exclamation-triangle text-danger" style="font-size:1.5rem;"></i>
                         </div>
-                        <h6 class="fw-700">Delete Employee?</h6>
-                        <p class="text-muted small">This action cannot be undone.</p>
+                        <h6 class="fw-700" id="emp-delete-title">Delete Employee?</h6>
+                        <p class="text-muted small" id="emp-delete-msg">This action cannot be undone.</p>
                     </div>
                     <div class="modal-footer justify-content-center border-0 pt-0">
                         <button class="btn btn-light btn-sm" wire:click="$set('confirmDelete', false)">Cancel</button>

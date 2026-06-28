@@ -53,7 +53,7 @@
                             <td class="text-muted">{{ $accounts->firstItem() + $i }}</td>
                             <td>{{ $account->name }}</td>
                             <td>{{ $account->number ?? '—' }}</td>
-                            <td>{{ number_format($account->opening_balance, 2) }}</td>
+                            <td>{{ number_format($account->opening_balance, 0) }}</td>
                             <td>{{ $account->description ?? '—' }}</td>
                             <td>
                                 <div class="d-flex gap-1">

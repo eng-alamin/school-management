@@ -8,7 +8,7 @@
 
         <div class="container-xl mt-4">
 
-            @include('livewire.accountant.profile.navbar', ['user' => $user])
+            @include('livewire.admin.profile.navbar', ['user' => $user])
 
             <!-- START CONTENT -->
 
@@ -30,7 +30,7 @@
                                         <span class="material-icons-round">check_circle</span>
                                         <span class="lbl">File selected</span>
                                     @elseif($avatar)
-                                        <img src="{{ asset($avatar) }}" alt="Photo"
+                                        <img src="{{ asset('storage/' . $avatar) }}" alt="Photo"
                                             style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
                                     @else
                                         <span class="material-icons-round">image</span>

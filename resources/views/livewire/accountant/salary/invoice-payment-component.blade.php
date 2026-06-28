@@ -172,7 +172,7 @@
 
     {{-- ── Print Button (outside printable area) ── --}}
     <div class="no-print d-flex justify-content-end mt-3 gap-2">
-        <a href="{{ route('accountant.salary.payment') }}"
+        <a href="{{ route('admin.salary.payment') }}"
         class="btn-outline d-inline-flex align-items-center gap-1" style="text-decoration:none">
             <span class="material-icons-round" style="font-size:16px">arrow_back</span>
             Back

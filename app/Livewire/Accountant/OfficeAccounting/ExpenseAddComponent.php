@@ -95,7 +95,7 @@ class ExpenseAddComponent extends Component
             ->with('accounts', $accounts)
             ->with('heads', $heads)
             ->layout('layouts.accountant.app', [
-                'title' => 'Add Expense | Monarchy School',
+                'title' => 'Add Expense | ' . institution()->name,
             ]);
     }
 }

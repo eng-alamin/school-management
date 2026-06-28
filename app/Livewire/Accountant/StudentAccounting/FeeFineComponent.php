@@ -161,7 +161,7 @@ class FeeFineComponent extends Component
         return view('livewire.accountant.student-accounting.fee-fine-component')
             ->with(['feeFines' => $feeFines, 'feeGroups' => $feeGroups])
             ->layout('layouts.accountant.app', [
-                'title' => "Student Accounting - Fee Fine | School SaaS",
+                'title' => 'Fee Fine | ' . institution()->name,
             ]);
     }
 }

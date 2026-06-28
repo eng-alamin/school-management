@@ -8,16 +8,17 @@ use App\Traits\BelongsToInstitution;
 class Employee extends Model
 {
     use BelongsToInstitution;
+    
     protected $guarded = [];
 
     public function department()
     {
-        return $this->belongsTo(Department::class);
+        return $this->belongsTo(EmployeeDepartment::class, 'department_id');
     }
 
     public function designation()
     {
-        return $this->belongsTo(Designation::class);
+        return $this->belongsTo(EmployeeDesignation::class, 'designation_id');
     }
 
     public function user()

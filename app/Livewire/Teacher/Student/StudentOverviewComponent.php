@@ -15,7 +15,7 @@ class StudentOverviewComponent extends Component
             'session',
             'class',
             'section',
-            'category',
+            'group',
             'guardians',
             'user',
         ])->findOrFail($id);
@@ -26,7 +26,7 @@ class StudentOverviewComponent extends Component
         return view('livewire.teacher.student.student-overview-component')
             ->with('student', $this->student)
             ->layout('layouts.teacher.app', [
-                'title' => "Student Overview | School SaaS",
+                'title' => 'Student Overview | ' . institution()->name,
             ]);
     }
 }

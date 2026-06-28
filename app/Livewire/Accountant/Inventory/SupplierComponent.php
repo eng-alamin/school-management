@@ -34,7 +34,7 @@ class SupplierComponent extends Component
     {
         return [
             'name'    => 'required|string|max:255',
-            'mobile'  => 'required|string|max:20',
+            'mobile'  => 'nullable|string|max:20',
             'email'   => 'nullable|email|max:255',
             'address' => 'nullable|string|max:255',
         ];
@@ -116,7 +116,7 @@ class SupplierComponent extends Component
         return view('livewire.accountant.inventory.supplier-component')
             ->with('suppliers', $suppliers)
             ->layout('layouts.accountant.app', [
-                'title' => "Inventory Supplier | School SaaS",
+                'title' => 'Inventory Supplier | ' . institution()->name,
             ]);
     }
 

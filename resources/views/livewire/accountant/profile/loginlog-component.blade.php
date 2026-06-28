@@ -8,7 +8,7 @@
 
         <div class="container-xl mt-4">
 
-            @include('livewire.accountant.profile.navbar', ['user' => $user])
+            @include('livewire.admin.profile.navbar', ['user' => $user])
 
             <!-- START CONTENT -->
 

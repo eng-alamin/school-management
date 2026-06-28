@@ -78,7 +78,7 @@
                                 <td>
                                     <div style="display:flex;align-items:center;gap:10px">
                                         @if($template->logo_image)
-                                            <img src="{{ asset($template->logo_image) }}"
+                                            <img src="{{ asset('storage/' . $template->logo_image) }}"
                                                  style="width:32px;height:32px;object-fit:cover;border-radius:6px;border:1px solid #eee">
                                         @else
                                             <span class="material-icons-round"

@@ -16,29 +16,25 @@
             {{-- Role --}}
             <div class="col-md-6">
                 <div class="input-group input-group-outline">
-                    <label class="form-label">Role <span class="req">*</span></label>
+                    <label class="form-label">Role</label>
                     <select wire:model.live="filterRole" class="form-select">
                         <option value="">Select Role</option>
-                        <option value="admin">Admin</option>
                         <option value="teacher">Teacher</option>
                         <option value="accountant">Accountant</option>
-                        <option value="librarian">Librarian</option>
-                        <option value="receptionist">Receptionist</option>
+                        <option value="staff">Staff</option>
                     </select>
                 </div>
                 @error('filterRole') <span class="text-danger small">{{ $message }}</span> @enderror
             </div>
 
-            {{-- Date  --}}
+            {{-- Date --}}
             <div class="col-md-6">
-                <div wire:ignore class="input-groupp input-group-outlinee">
-                    <input wire:model.live="date" type="date" class="form-control">
+                <div class="input-group input-group-outline" wire:ignore>
+                    <label class="form-label">Date</label>
+                    <input wire:model="filterDate" type="date" class="form-control" data-dp-value="{{ $filterDate }}"
+                        onfocus="focused(this)" onfocusout="defocused(this)">
                 </div>
-                {{-- <div wire:ignore class="input-group input-group-outline">
-                    <label class="form-label">Date <span class="req">*</span></label>
-                    <input wire:model.live="date" type="date" class="form-control">
-                </div> --}}
-                @error('date') <span class="text-danger small">{{ $message }}</span> @enderror
+                @error('filterDate') <span class="text-danger small">{{ $message }}</span> @enderror
             </div>
 
             {{-- Filter Button --}}
@@ -274,14 +270,12 @@
     document.addEventListener('livewire:initialized', () => {
         Livewire.hook('morph.updated', ({ el }) => {
             setTimeout(() => {
-                // Re-init custom selects
                 el.querySelectorAll('.input-group-outline .form-select').forEach(function(select) {
                     if (!select.nextElementSibling || !select.nextElementSibling.classList.contains('custom-select-wrapper')) {
                         buildCustomSelect(select);
                     }
                 });
 
-                // Re-init text/time inputs
                 el.querySelectorAll('.input-group-outline input').forEach(function(input) {
                     var group = input.closest('.input-group');
                     if (!group) return;
@@ -301,7 +295,11 @@
                         group.classList.toggle('is-filled', !!input.value.trim());
                     });
                 });
-            }, 50);
+
+                el.querySelectorAll('.input-group-outline input[type="date"]').forEach(function(input) {
+                    if (!input._dpInit) { _initDatepickers(); }
+                });
+            }, 0);
         });
     });
 </script>

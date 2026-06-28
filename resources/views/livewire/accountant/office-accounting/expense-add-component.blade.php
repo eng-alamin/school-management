@@ -91,13 +91,9 @@
 
             <!-- Date -->
             <div class="col-md-6">
-                <div>
-                    <div class="input-group input-group-outline" wire:ignore>
-                        <label class="form-label">Date <span class="req">*</span></label>
-                        <input type="date"
-                                wire:model="date"
-                            class="form-control">
-                    </div>
+                <div class="input-group input-group-outline" wire:ignore>
+                    <label class="form-label">Date <span class="req">*</span></label>
+                    <input type="date" wire:model="date" data-dp-value="{{ $date }}" class="form-control">
                     @error('date') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
             </div>
@@ -169,20 +165,18 @@
 
 
 @push('scripts')
-    <script src="/assets/js/datepicker.js"></script>
-
     <script>
         document.addEventListener('livewire:initialized', () => {
 
             setTimeout(() => initAllFields(), 100);
 
             Livewire.hook('morph.updated', ({ el }) => {
-                setTimeout(() => initAllFields(), 50);
+                setTimeout(() => initAllFields(), 0);
             });
 
             function initAllFields() {
 
-                // ── 1. Text/Textarea is-filled ──
+                // ── 1. Text/Textarea/Number is-filled ──
                 document.querySelectorAll('.input-group-outline input, .input-group-outline textarea').forEach(function(input) {
                     var group = input.closest('.input-group');
                     if (!group) return;
@@ -232,14 +226,16 @@
                 });
 
                 // ── 4. Datepicker ──
-                document.querySelectorAll('.input-group-outline input[type="date"]').forEach(function(input) {
-                    if (input.dataset.dpInit === '1') return;
-                    input.dataset.dpInit = '1';
-                    input.addEventListener('change', function() {
-                        input.dispatchEvent(new Event('input', { bubbles: true }));
-                    });
-                    if (typeof buildDatepicker === 'function') {
-                        buildDatepicker(input);
+                Livewire.on('date-updated', function (event) {
+                    var input = document.querySelector('.input-group-outline input[type="date"]');
+                    if (!input) return;
+                    var newDate = event.date || '';
+                    if (newDate) {
+                        input.value = newDate;
+                        input.dataset.dpValue = newDate;
+                        if (input._dpTriggerSync) {
+                            input._dpTriggerSync(newDate);
+                        }
                     }
                 });
             }

@@ -96,7 +96,7 @@ class ComposeComponent extends Component
     {
         return view('livewire.accountant.mailbox.compose-component')
             ->layout('layouts.accountant.app', [
-                'title' => "MailBox | School SaaS",
+                'title' => 'MailBox | ' . institution()->name,
             ]);
     }
 }

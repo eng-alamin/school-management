@@ -2,13 +2,13 @@
 
     <!-- Floating Header -->
     <div class="mat-card-header header-pink-gradient">
-        <h5>
+        <h5 id="purchase-add-title">
             <span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">
                 shopping_cart
             </span>
             Add Purchase
         </h5>
-        <p>Create new purchase record</p>
+        <p id="purchase-add-subtitle">Create new purchase record</p>
     </div>
 
     <!-- ══ PURCHASE DETAILS ══ -->
@@ -62,7 +62,8 @@
                 <div class="input-group input-group-outline" wire:ignore>
                     <label class="form-label">Date <span class="req">*</span></label>
                     <input type="date"
-                           wire:model.live="date"
+                           wire:model="date"
+                           data-dp-value="{{ $date }}"
                            class="form-control">
                 </div>
                 @error('date') <span class="text-danger">{{ $message }}</span> @enderror
@@ -127,12 +128,12 @@
             <table style="width:100%;border-collapse:collapse;font-size:.82rem">
                 <thead>
                     <tr style="border-bottom:2px solid var(--border,#e9ecef)">
-                        <th style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">#</th>
-                        <th style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Product <span class="req">*</span></th>
-                        <th style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Unit Price <span class="req">*</span></th>
-                        <th style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Qty <span class="req">*</span></th>
-                        <th style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Discount</th>
-                        <th style="padding:8px 10px;text-align:right;color:var(--muted);font-weight:600;white-space:nowrap">Total</th>
+                        <th id="padd-th-no" style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">#</th>
+                        <th id="padd-th-product" style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Product <span class="req">*</span></th>
+                        <th id="padd-th-unit-price" style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Unit Price <span class="req">*</span></th>
+                        <th id="padd-th-qty" style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Qty <span class="req">*</span></th>
+                        <th id="padd-th-discount" style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Discount</th>
+                        <th id="padd-th-total" style="padding:8px 10px;text-align:right;color:var(--muted);font-weight:600;white-space:nowrap">Total</th>
                         <th style="padding:8px 10px;text-align:center;color:var(--muted);font-weight:600"></th>
                     </tr>
                 </thead>

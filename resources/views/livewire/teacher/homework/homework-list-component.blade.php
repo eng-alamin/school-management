@@ -1,397 +1,169 @@
-<div class="mat-card" style="padding-top:28px">
+<div>
 
-      <!-- floating header -->
-      <div class="mat-card-header header-pink-gradient">
-        <h5 id="cardHeaderTitleAlldesignations">All Homeworks</h5>
-        <p id="cardHeaderSubtitle">A lightweight, extendable, dependency-free javascript HTML table plugin.</p>
-      </div>
+    <div class="card">
 
-      <div class="row g-4 p-5">
-
-        <div class="col-md-4">
-          <div wire:ignore class="input-group input-group-outline">
-            <label class="form-label">Class</label>
-            <select wire:model="class_id" class="form-select">
-              <option value="">Select</option>
-              @foreach($classes as $class)
-                <option value="{{ $class->id }}">{{ $class->name }}</option>
-              @endforeach
-            </select>
-          </div>
-          @error('class_id') <span class="text-danger">{{ $message }}</span> @enderror
-        </div>
-        
-        <div class="col-md-4">
-          <div wire:ignore class="input-group input-group-outline">
-            <label class="form-label">Section</label>
-            <select wire:model="section_id" class="form-select">
-              <option value="">Select</option>
-              @foreach($sections as $section)
-                <option value="{{ $section->id }}">{{ $section->name }}</option>
-              @endforeach
-            </select>
-          </div>
-          @error('section_id') <span class="text-danger">{{ $message }}</span> @enderror
+        <div class="mat-card-header header-pink-gradient">
+            <h5><span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">assignment</span>All Homeworks</h5>
+            <p>Manage homework records, view details, and organize easily.</p>
         </div>
 
-        <div class="col-md-4">
-          <div wire:ignore class="input-group input-group-outline">
-            <label class="form-label">Subject</label>
-            <select wire:model="subject_id" class="form-select">
-              <option value="">Select</option>
-              @foreach($subjects as $subject)
-                <option value="{{ $subject->id }}">{{ $subject->name }}</option>
-              @endforeach
-            </select>
-          </div>
-          @error('subject_id') <span class="text-danger">{{ $message }}</span> @enderror
-        </div>
+        <div class="card-header border-0">
+            <div class="card-toolbar">
 
-        <div class="col-md-12 text-center">
-            <button wire:click="filter" class="btn-pink w-100 d-flex justify-content-center align-items-center" type="button">
-                Filter
-            </button>
-        </div>
-
-        <div class="col-md-12 text-center">
-            <a href="{{ route('teacher.homework.add') }}" class="btn-pink w-100 d-flex justify-content-center align-items-center">
-                <span class="material-icons-round" style="font-size:16px">add</span><span>New Homework</span>
-            </a>
-        </div>
-      </div>
-
-        <!-- Table Card -->
-        @if($hasHomework)
-            <div class="table-card">
-                <!-- toolbar -->
-                <div class="card-toolbar">
+                {{-- Search --}}
                 <div class="card-toolbar-title">
-                    <!-- search in table -->
                     <div style="position:relative;display:inline-flex;align-items:center">
-                    <span class="material-icons-round" style="position:absolute;left:10px;font-size:17px;color:var(--muted);pointer-events:none">search</span>
-                    <input type="text" id="tableSearch" placeholder="Search pages…" style="border:1px solid rgba(0,0,0,.1);border-radius:8px;padding:7px 12px 7px 32px;font-size:.78rem;font-family:inherit;color:var(--dark);outline:none;background:#f8f9fa;width:220px"/>
+                        <span class="material-icons-round" style="position:absolute;left:10px;font-size:17px;color:var(--muted);pointer-events:none">search</span>
+                        <input type="text" wire:model.live.debounce.300ms="search"
+                            placeholder="Search by title"
+                            style="border:1px solid rgba(0,0,0,.1);border-radius:8px;padding:7px 12px 7px 32px;font-size:.78rem;font-family:inherit;color:var(--dark);outline:none;background:#f8f9fa;width:220px"/>
                     </div>
                 </div>
 
-                <!-- buttons right -->
+                {{-- Class filter --}}
+                <div>
+                    <select wire:model.live="filterClass" class="form-select form-select-sm" style="min-width:140px">
+                        <option value="">All Classes</option>
+                        @foreach ($classes as $c)
+                            <option value="{{ $c->id }}">{{ $c->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
 
-                    <a href="{{ route('teacher.homework.add') }}" target="_blank" id="newHomeworkBtn" class="btn-outline btn-outline bg-dark text-white">
-                    <span class="material-icons-round">add</span> <span id="newHomeworkBtn">New Homework</span>
+                {{-- Section filter --}}
+                <div>
+                    <select wire:model.live="filterSection" class="form-select form-select-sm" style="min-width:140px"
+                        {{ empty($availableSections) ? 'disabled' : '' }}>
+                        <option value="">{{ !$filterClass ? 'All Sections' : 'All Sections' }}</option>
+                        @if(!empty($availableSections))
+                            <option value="all">All Section</option>
+                            @foreach ($availableSections as $s)
+                                <option value="{{ $s['id'] }}">{{ $s['name'] }}</option>
+                            @endforeach
+                        @endif
+                    </select>
+                </div>
+
+                {{-- Per page --}}
+                @if($homeworks->total() > 10)
+                    <div>
+                        <select class="form-select form-select-sm" wire:model.live="perPage">
+                            <option value="10">10 / page</option>
+                            <option value="25">25 / page</option>
+                            <option value="50">50 / page</option>
+                        </select>
+                    </div>
+                @endif
+
+                <a href="{{ route('admin.homework.add') }}" class="btn-outline bg-dark text-white">
+                    <span class="material-icons-round">add</span> New Homework
                 </a>
 
-                </div>
+            </div>
+        </div>
 
-                <!-- table -->
-                <div class="table-responsive">
-                <table class="mat-table" id="productsTable">
+        <div class="card-body pt-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
                     <thead>
-                    <tr>
-                        <th onclick="sortTable(0)" id="sl"><span id="th-sl-lbl">SL</span> <span class="sort-icon"></span></th>
-                        <th onclick="sortTable(2)" id="th-subject"><span id="th-subject-lbl">Subject</span> <span class="sort-icon"></span></th>
-                        <th onclick="sortTable(3)" id="th-class"><span id="th-class-lbl">Class</span> <span class="sort-icon"></span></th>
-                        <th onclick="sortTable(4)" id="th-section"><span id="th-section-lbl">Section</span> <span class="sort-icon"></span></th>
-                        <th onclick="sortTable(1)" id="th-title"><span id="th-title-lbl">Title</span> <span class="sort-icon"></span></th>
-                        <th onclick="sortTable(5)" id="th-homework-date"><span id="th-homework-date-lbl">Homework Date</span> <span class="sort-icon"></span></th>
-                        <th onclick="sortTable(6)" id="th-submission-date"><span id="th-submission-date-lbl">Submission Date</span> <span class="sort-icon"></span></th>
-                        <th onclick="sortTable(7)" id="th-status"><span id="th-status-lbl">Status</span> <span class="sort-icon"></span></th>
-                        <th id="th-actions"><span id="th-actions-lbl">Action</span></th>
-                    </tr>
+                        <tr>
+                            <th>SL</th>
+                            <th wire:click="sortBy('title')" style="cursor:pointer">
+                                Title @if($sortField === 'title') {!! $sortDir === 'asc' ? '↑' : '↓' !!} @endif
+                            </th>
+                            <th>Class</th>
+                            <th>Section</th>
+                            <th>Subject</th>
+                            <th wire:click="sortBy('homework_date')" style="cursor:pointer">
+                                Homework Date @if($sortField === 'homework_date') {!! $sortDir === 'asc' ? '↑' : '↓' !!} @endif
+                            </th>
+                            <th wire:click="sortBy('submission_date')" style="cursor:pointer">
+                                Submission Date @if($sortField === 'submission_date') {!! $sortDir === 'asc' ? '↑' : '↓' !!} @endif
+                            </th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
                     </thead>
-                    <tbody id="tableBody"></tbody>
+                    <tbody>
+                        @forelse($homeworks as $i => $homework)
+                        <tr>
+                            <td class="text-muted">{{ $homeworks->firstItem() + $i }}</td>
+                            <td>{{ $homework->title }}</td>
+                            <td>{{ $homework->class?->name ?? '—' }}</td>
+                            <td>{{ $homework->section?->name ?? 'All' }}</td>
+                            <td>{{ $homework->subject?->name ?? '—' }}</td>
+                            <td>{{ $homework->homework_date ? \Carbon\Carbon::parse($homework->homework_date)->format('d M Y') : '—' }}</td>
+                            <td>{{ $homework->submission_date ? \Carbon\Carbon::parse($homework->submission_date)->format('d M Y') : '—' }}</td>
+                            <td>
+                                @php
+                                    $badge = match($homework->status) {
+                                        'published' => 'success',
+                                        'draft'     => 'secondary',
+                                        'closed'    => 'danger',
+                                        default     => 'secondary',
+                                    };
+                                @endphp
+                                <span class="badge bg-{{ $badge }}">{{ ucfirst($homework->status) }}</span>
+                            </td>
+                            <td>
+                                <div class="d-flex gap-1">
+                                    @if ($homework['attachment'])
+                                        <a href="{{ Storage::url($homework['attachment']) }}" target="_blank" class="act-btn"><span class="material-icons-round">attachment</span></a>
+                                    @endif
+                                    <a href="{{ route('admin.homework.edit', ['id' => $homework->id]) }}"
+                                       class="act-btn edit" title="Edit">
+                                        <span class="material-icons-round">drive_file_rename_outline</span>
+                                    </a>
+                                    <button class="act-btn delete" title="Delete"
+                                            wire:click="confirmDeleteRecord({{ $homework->id }})">
+                                        <span class="material-icons-round">delete</span>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="9" class="text-center py-5 text-muted">
+                                <span class="material-icons-round d-block mb-2" style="font-size:2.5rem;opacity:.2">assignment</span>
+                                No homeworks found.
+                                <a href="{{ route('admin.homework.add') }}">Add one now</a>.
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
                 </table>
-                </div>
-
-                <!-- pagination -->
-                <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px 18px;flex-wrap:wrap;gap:10px">
-                <span style="font-size:.75rem;color:var(--muted)" id="pageInfo"></span>
-                <div style="display:flex;gap:4px" id="paginationBtns"></div>
-                </div>
             </div>
-        @endif
+        </div>
 
-    <!-- ═══════ Open Create Modal ═══════ -->
-    <div wire:ignore.self class="modal fade" id="openCreateModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header border-0">
-                    <h5 class="modal-title">Add New Parent</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-4" style="display:flex;flex-direction:column;gap:14px">
-                    <div>
-                        <label style="font-size:.75rem;font-weight:600;color:var(--dark);display:block;margin-bottom:4px">Name *</label>
-                        <input wire:model="name" type="text" placeholder="e.g. Science" style="width:100%;border:1px solid rgba(0,0,0,.12);border-radius:8px;padding:8px 12px;font-size:.82rem;font-family:inherit;outline:none"/>
-                        @error('name') <span class="text-danger">{{ $message }}</span> @enderror
+        <div class="card-footer border-0 bg-white d-flex align-items-center justify-content-between flex-wrap gap-2 py-2 px-3">
+            <small class="text-muted">Showing {{ $homeworks->firstItem() ?? 0 }}–{{ $homeworks->lastItem() ?? 0 }} of {{ $homeworks->total() }}</small>
+            {{ $homeworks->links('vendor.pagination.custom') }}
+        </div>
+
+    </div>
+
+    {{-- Delete Confirm Modal --}}
+    @if($confirmDelete)
+        <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.5);">
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                    <div class="modal-body text-center py-4">
+                        <div style="width:56px;height:56px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+                            <span class="material-icons-round text-danger" style="font-size:1.5rem;">warning</span>
+                        </div>
+                        <h6 class="fw-700">Delete Homework?</h6>
+                        <p class="text-muted small">This action cannot be undone.</p>
+                    </div>
+                    <div class="modal-footer justify-content-center border-0 pt-0">
+                        <button class="btn btn-light btn-sm" wire:click="$set('confirmDelete', false)">Cancel</button>
+                        <button class="btn btn-danger btn-sm" wire:click="deleteRecord">
+                            <span wire:loading wire:target="deleteRecord" class="spinner-border spinner-border-sm me-1"></span>
+                            Delete
+                        </button>
                     </div>
                 </div>
-                <div class="modal-footer border-0 gap-2">
-                    <button class="btn-outline" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" wire:click="save" class="btn-pink"><span class="material-icons-round" style="font-size:16px">add</span> Save</button>
-                </div>
             </div>
         </div>
-    </div>
-
-    <!-- ═══════ Open Edit Modal ═══════ -->
-    <div wire:ignore.self class="modal fade" id="openEditModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-
-                <div class="modal-header border-0">
-                    <h5 class="modal-title">Edit Parent</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-
-                <div class="modal-body p-4" style="display:flex;flex-direction:column;gap:14px">
-                    
-                    <input type="hidden" wire:model="homework_id"/>
-
-                    <div>
-                        <label style="font-size:.75rem;font-weight:600;color:var(--dark);display:block;margin-bottom:4px">Name *</label>
-                        <input wire:model="name" type="text" placeholder="e.g. A" style="width:100%;border:1px solid rgba(0,0,0,.12);border-radius:8px;padding:8px 12px;font-size:.82rem;font-family:inherit;outline:none"/>
-                        @error('name') <span class="text-danger">{{ $message }}</span> @enderror
-                    </div>
-
-                </div>
-
-                <div class="modal-footer border-0">
-                    <button class="btn-outline" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" wire:click="update({{ $homework_id }})" class="btn-pink">Update</button>
-                </div>
-
-            </div>
-        </div>
-    </div>
-
-    <!-- ═══════ DELETE CONFIRM MODAL ═══════ -->
-    <div class="modal fade" id="deleteModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-sm">
-            <div class="modal-content text-center p-3">
-            <div style="width:52px;height:52px;border-radius:50%;background:var(--pink-light);display:flex;align-items:center;justify-content:center;margin:12px auto">
-                <span class="material-icons-round" style="color:var(--pink);font-size:26px">delete_outline</span>
-            </div>
-            <h6 style="font-weight:700;margin:8px 0 4px">Delete this parent?</h6>
-            <p style="font-size:.78rem;color:var(--muted);margin-bottom:16px" id="deleteName">This action cannot be undone.</p>
-            <div style="display:flex;gap:8px;justify-content:center">
-                <button class="btn-outline" data-bs-dismiss="modal">Cancel</button>
-                <button class="btn-pink" onclick="confirmDelete()">Delete</button>
-            </div>
-            </div>
-        </div>
-    </div>
+    @endif
 
 </div>
-
-@push('scripts')
-    <script>
-        document.addEventListener('livewire:initialized', () => {
-            // Filter এর পর data update
-            Livewire.on('homeworkFiltered', (data) => {
-                const newData = data[0] ?? [];
-                homeworks.length = 0;
-                newData.forEach(d => homeworks.push(d));
-                filteredData = [...homeworks];
-                currentPage = 1;
-
-                // Table render হওয়ার জন্য wait
-                setTimeout(() => {
-                    renderTable();
-
-                    // Search re-attach
-                    const el = document.getElementById('tableSearch');
-                    if (el && !el._searchInit) {
-                        el._searchInit = true;
-                        el.addEventListener('input', function() {
-                            const q = this.value.toLowerCase();
-                            filteredData = homeworks.filter(p =>
-                                String(p.subject?.name ?? '').toLowerCase().includes(q) ||
-                                String(p.class?.name ?? '').toLowerCase().includes(q) ||
-                                String(p.section?.name ?? '').toLowerCase().includes(q) ||
-                                String(p.title ?? '').toLowerCase().includes(q) ||
-                                String(p.homework_date ?? '').toLowerCase().includes(q) ||
-                                String(p.submission_date ?? '').toLowerCase().includes(q) ||
-                                String(p.status ?? '').toLowerCase().includes(q)
-                            );
-                            currentPage = 1;
-                            renderTable();
-                        });
-                    }
-                }, 150);
-            });
-        });
-    </script>
-    
-    {{-- Datatble এর জন্য custom JS (search, pagination, sort) --}}
-    <script>
-        const homeworks = @json($homeworks);
-        const perPage = 10;
-        let currentPage = 1;
-        let sortCol = -1, sortAsc = true;
-        let filteredData = [...homeworks];
-        let deleteTargetId = null;
-
-        function getVal(p, col) {
-            switch(col) {
-                case 0: return p.id;
-                case 1: return p.subject?.name ?? '';
-                case 2: return p.class?.name ?? '';
-                case 3: return p.section?.name ?? '';
-                case 4: return p.title ?? '';
-                case 5: return p.homework_date ?? '';
-                case 6: return p.submission_date ?? '';
-                case 7: return p.status ?? '';
-                default: return '';
-            }
-        }
-
-        function renderTable() {
-            const start = (currentPage - 1) * perPage;
-            const rows  = filteredData.slice(start, start + perPage);
-            const tbody = document.getElementById('tableBody');
-
-            tbody.innerHTML = rows.map((p, index) => `
-                <tr id="row-${p.id}">
-                    <td data-label="SL"><span>${start + index + 1}</span></td>
-                    <td data-label="Subject"><span>${p.subject?.name ?? ''}</span></td>
-                    <td data-label="Class"><span>${p.class?.name ?? ''}</span></td>
-                    <td data-label="Section"><span>${p.section?.name ?? ''}</span></td>
-                    <td data-label="Title"><span>${p.title ?? ''}</span></td>
-                    <td data-label="Homework Date"><span>${p.homework_date ?? ''}</span></td>
-                    <td data-label="Submission Date"><span>${p.submission_date ?? ''}</span></td>
-                    <td data-label="Status"><span>${p.status ?? ''}</span></td>
-                    <td data-label="Actions">
-                        <div class="action-btns">
-                            <a href="/teacher/homework/edit/${p.id}" target="_blank" class="act-btn edit" title="Edit">
-                                <span class="material-icons-round">drive_file_rename_outline</span>
-                            </a>
-                            <button class="act-btn delete" title="Delete" onclick="openDeleteModal(${p.id})">
-                                <span class="material-icons-round">delete</span>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
-
-            renderPagination();
-        }
-
-        function renderPagination() {
-            const total = Math.ceil(filteredData.length / perPage);
-            const info  = document.getElementById('pageInfo');
-            const wrap  = document.getElementById('paginationBtns');
-            const s = (currentPage-1)*perPage+1, e = Math.min(currentPage*perPage, filteredData.length);
-            info.textContent = filteredData.length ? `Showing ${s}–${e} of ${filteredData.length}` : 'No results';
-
-            const btnStyle = (active) => `
-                display:inline-flex;align-items:center;justify-content:center;
-                width:32px;height:32px;border-radius:8px;border:1px solid rgba(0,0,0,.1);
-                font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit;
-                background:${active?'linear-gradient(195deg,#ec407a,#d81b60)':'#fff'};
-                color:${active?'#fff':'var(--dark)'};
-                box-shadow:${active?'0 4px 12px var(--pink-shadow)':'none'};
-            `;
-
-            let html = `<button style="${btnStyle(false)}" onclick="changePage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹</button>`;
-            for (let i=1;i<=total;i++) {
-                html += `<button style="${btnStyle(i===currentPage)}" onclick="changePage(${i})">${i}</button>`;
-            }
-            html += `<button style="${btnStyle(false)}" onclick="changePage(${currentPage+1})" ${currentPage===total||total===0?'disabled':''}>›</button>`;
-            wrap.innerHTML = html;
-        }
-
-        function changePage(p) {
-            const total = Math.ceil(filteredData.length / perPage);
-            if (p < 1 || p > total) return;
-            currentPage = p;
-            renderTable();
-        }
-
-        /* Search */
-        document.getElementById('tableSearch').addEventListener('input', function() {
-            const q = this.value.toLowerCase();
-            filteredData = homeworks.filter(p =>
-                String(p.id ?? '').toLowerCase().includes(q) ||
-                String(p.subject?.name ?? '').toLowerCase().includes(q) ||
-                String(p.class?.name ?? '').toLowerCase().includes(q) ||
-                String(p.section?.name ?? '').toLowerCase().includes(q) ||
-                String(p.title ?? '').toLowerCase().includes(q) ||
-                String(p.homework_date ?? '').toLowerCase().includes(q) ||
-                String(p.submission_date ?? '').toLowerCase().includes(q) ||
-                String(p.status ?? '').toLowerCase().includes(q)
-            );
-            currentPage = 1;
-            renderTable();
-        });
-
-        /* Sort */
-        function sortTable(col) { 
-            const ths = document.querySelectorAll('.mat-table th');
-            ths.forEach(th => th.classList.remove('sorted-asc','sorted-desc'));
-
-            if (sortCol === col) sortAsc = !sortAsc;
-            else { sortCol = col; sortAsc = true; }
-
-            ths[col].classList.add(sortAsc ? 'sorted-asc' : 'sorted-desc');
-
-            filteredData.sort((a, b) => {
-                const av = getVal(a, col);
-                const bv = getVal(b, col);
-                if (typeof av === 'number' && typeof bv === 'number') {
-                    return sortAsc ? av - bv : bv - av;
-                }
-                return sortAsc
-                    ? String(av).localeCompare(String(bv))
-                    : String(bv).localeCompare(String(av));
-            });
-
-            renderTable();
-        }
-
-        // Open Edit Modal
-        function openEditModal(id) {
-            @this.call('edit', id);
-            new bootstrap.Modal(document.getElementById('openEditModal')).show();
-        }
-
-        // Open Delete Modal
-        function openDeleteModal(id) {
-            deleteTargetId = id;
-            const p = homeworks.find(x => x.id === id);
-            if (!p) return;
-            const displayName = p.name ?? p.name ?? 'This record';
-            document.getElementById('deleteName').textContent = `"${displayName}" will be permanently deleted.`;
-            new bootstrap.Modal(document.getElementById('deleteModal')).show();
-        }
-
-        // Confirm delete
-        function confirmDelete() {
-            Livewire.dispatch('deleteConfirmed', { id: deleteTargetId });
-
-            const idx = homeworks.findIndex(x => x.id === deleteTargetId);
-            if (idx > -1) {
-                homeworks.splice(idx, 1);
-                filteredData = [...homeworks];
-                renderTable();
-            }
-            bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
-        }
-
-        // Save/Update এর পর refresh
-        document.addEventListener('livewire:initialized', () => {
-            Livewire.on('refresh-list', (data) => {
-                const newData = data[0];
-                homeworks.length = 0;
-                newData.forEach(d => homeworks.push(d));
-                filteredData = [...homeworks];
-                renderTable();
-
-                document.querySelectorAll('.modal.show').forEach(m => {
-                    bootstrap.Modal.getInstance(m)?.hide();
-                });
-            });
-        });
-
-        /* init */
-        renderTable();
-    </script>
-@endpush

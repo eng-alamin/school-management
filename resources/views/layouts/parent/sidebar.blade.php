@@ -7,7 +7,7 @@
     </div>
     <div class="brand-text">
       <div class="brand-name">Parent Dashboard</div>
-      <div class="brand-sub">{{ school()->name }}</div>
+      <div class="brand-sub">{{ institution()->name }}</div>
     </div>
   </div>
 

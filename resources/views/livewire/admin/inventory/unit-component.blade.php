@@ -4,8 +4,8 @@
 
       <!-- floating header -->
       <div class="mat-card-header header-pink-gradient">
-        <h5 id="cardHeaderTitleAllsections">Inventory Unit</h5>
-        <p id="cardHeaderSubtitle">Manage inventory units, create, update, and organize units easily.</p>
+        <h5 id="inventory-unit-title">Inventory Unit</h5>
+        <p id="inventory-unit-subtitle">Manage inventory units, create, update, and organize units easily.</p>
       </div>
 
         <div class="card-header border-0">
@@ -15,7 +15,7 @@
                 <div class="card-toolbar-title">
                     <div style="position:relative;display:inline-flex;align-items:center">
                         <span class="material-icons-round" style="position:absolute;left:10px;font-size:17px;color:var(--muted);pointer-events:none">search</span>
-                        <input type="text" wire:model.live.debounce.300ms="search" id="tableSearch" placeholder="Search" style="border:1px solid rgba(0,0,0,.1);border-radius:8px;padding:7px 12px 7px 32px;font-size:.78rem;font-family:inherit;color:var(--dark);outline:none;background:#f8f9fa;width:220px"/>
+                        <input type="text" wire:model.live.debounce.300ms="search" id="inventory-unit-search" placeholder="Search" style="border:1px solid rgba(0,0,0,.1);border-radius:8px;padding:7px 12px 7px 32px;font-size:.78rem;font-family:inherit;color:var(--dark);outline:none;background:#f8f9fa;width:220px"/>
                     </div>
                 </div>
 
@@ -30,7 +30,7 @@
                     </div>
                 @endif
                 <button class="btn-outline bg-dark text-white" wire:click="openCreate">
-                    <span class="material-icons-round">add</span> <span id="newSectionBtn">Add Unit</span>
+                    <span class="material-icons-round">add</span> <span id="inventory-unit-add-btn">Add Unit</span>
                 </button>
 
             </div>
@@ -41,9 +41,9 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>SL</th>
-                            <th wire:click="sortBy('name')" style="cursor:pointer">Name @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif </th>
-                            <th>Actions</th>
+                            <th id="unit-th-sl">SL</th>
+                            <th id="unit-th-name" wire:click="sortBy('name')" style="cursor:pointer">Name @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif </th>
+                            <th id="unit-th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -125,8 +125,8 @@
                         <div style="width:56px;height:56px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
                             <i class="bi bi-exclamation-triangle text-danger" style="font-size:1.5rem;"></i>
                         </div>
-                        <h6 class="fw-700">Delete Unit?</h6>
-                        <p class="text-muted small">This action cannot be undone.</p>
+                        <h6 id="unit-delete-title" class="fw-700">Delete Unit?</h6>
+                        <p id="unit-delete-msg" class="text-muted small">This action cannot be undone.</p>
                     </div>
                     <div class="modal-footer justify-content-center border-0 pt-0">
                         <button class="btn btn-light btn-sm" wire:click="$set('confirmDelete',false)">Cancel</button>

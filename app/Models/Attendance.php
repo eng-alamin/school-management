@@ -8,6 +8,7 @@ use App\Traits\BelongsToInstitution;
 class Attendance extends Model
 {
     use BelongsToInstitution;
+    
     protected $guarded = [];
     
     public function attendable()

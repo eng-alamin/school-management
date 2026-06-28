@@ -22,7 +22,7 @@ class ParentChildComponent extends Component
         return view('livewire.teacher.parent.parent-child-component')
             ->with('parent', $this->parent)
             ->layout('layouts.teacher.app', [
-                'title' => "Parent Child | School SaaS",
+                'title' => 'Parent Child | ' . institution()->name,
             ]);
     }
 }

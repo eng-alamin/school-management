@@ -177,6 +177,12 @@
             transform:translateY(-2px);
         }
 
+        .login-btn:disabled {
+            opacity: 1;
+            background: var(--primary-dark);
+            cursor: not-allowed;
+        }
+
         .extra-links{
             margin-top:25px;
         }
@@ -248,7 +254,7 @@
                     </div>
 
                     <h2 class="left-title">
-                        Welcome Back To School ERP
+                        Welcome Back To Education ERP
                     </h2>
 
                     <p class="left-text">
@@ -290,7 +296,7 @@
                             </div>
 
                             <div>
-                                Cloud Based School Management
+                                Cloud Based Education Management
                             </div>
 
                         </div>
@@ -314,7 +320,7 @@
                     </h2>
 
                     <p class="login-subtitle">
-                        Login to continue to your school panel.
+                        Login to continue to your institution panel.
                     </p>
 
                     <form wire:submit.prevent="login">
@@ -325,7 +331,7 @@
                             <input
                                 type="text"
                                 class="form-control @error('identifier') is-invalid @enderror"
-                                wire:model.live="identifier"
+                                wire:model="identifier"
                                 placeholder="admin@example.com / admin / 01700000000"
                                 autocomplete="username"
                             >
@@ -340,7 +346,7 @@
                             <input
                                 type="password"
                                 class="form-control @error('password') is-invalid @enderror"
-                                wire:model.live="password"
+                                wire:model="password"
                                 placeholder="********"
                             >
                             @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
@@ -369,7 +375,7 @@
 
                             </div>
 
-                            <a href="#">
+                            <a href="{{route('forgot.password')}}">
                                 Forgot Password?
                             </a>
 
@@ -377,30 +383,25 @@
 
                         {{-- BUTTON --}}
 
-                        <button
-                            type="submit"
-                            class="btn login-btn text-white w-100"
-                            wire:loading.attr="disabled"
-                        >
-
-                            <span wire:loading.remove>
-                                Login Now
-                            </span>
-
-                            <span wire:loading>
-
-                                <span class="spinner-border spinner-border-sm me-2"></span>
-
-                                Authenticating...
-
-                            </span>
-
-                        </button>
+                       <button
+                        type="submit"
+                        class="btn login-btn text-white w-100"
+                        wire:loading.attr="disabled"
+                        wire:target="login"
+                    >
+                        <span wire:loading.remove wire:target="login">
+                            Login Now
+                        </span>
+                        <span wire:loading wire:target="login">
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                            Authenticating...
+                        </span>
+                    </button>
 
                     </form>
 
                     <div class="divider">
-                        <span>School ERP SaaS</span>
+                        <span>Institution ERP SaaS</span>
                     </div>
 
                     <div class="text-center extra-links">
@@ -408,7 +409,7 @@
                         Don't have an account?
 
                         <a href="{{ route('register') }}">
-                            Create School
+                            Create Institution
                         </a>
 
                     </div>

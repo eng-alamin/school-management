@@ -105,14 +105,10 @@ class GenerateAdmitCardComponent extends Component
             'expiry_date' => 'required|date',
         ]);
 
-        $students = Student::with(['class', 'section', 'category'])
+        $students = Student::with(['class', 'section', 'group'])
             ->whereIn('id', $this->selectedIds)
             ->get();
 
-        // ── Fetch exam schedule data ──────────────────────────────────────────
-        // exam_schedules table: id | exam_id | class_id | section_id | data (JSON)
-        // We query by exam_id only (and optionally class_id) because one
-        // schedule row covers the whole exam for that class.
         $examScheduleRow = ExamSchedule::where('exam_id', $this->filterExam)
             ->when($this->filterClass, fn($q) => $q->where('class_id', $this->filterClass))
             ->when(
@@ -121,19 +117,13 @@ class GenerateAdmitCardComponent extends Component
             )
             ->first();
 
-        // $examScheduleRow->data is already cast to array by the ExamSchedule model.
-        // If not found, fall back to empty array.
         $scheduleData = $examScheduleRow?->data ?? [];
-
-        // ─────────────────────────────────────────────────────────────────────
-        // BUG FIX: upsert() does NOT run Eloquent casts.
-        // 'exam_schedules' is cast to 'array' in AdmitCard model, but upsert()
-        // bypasses that — we must json_encode() manually before inserting.
-        // ─────────────────────────────────────────────────────────────────────
+        $institutionId = auth()->user()->institution_id;
         $data = [];
 
         foreach ($students as $student) {
             $data[] = [
+                'institution_id'   => $institutionId,
                 'student_id'     => $student->id,
 
                 'issue_date'     => $this->print_date,
@@ -154,9 +144,8 @@ class GenerateAdmitCardComponent extends Component
 
                 'class'          => $student->class?->name,
                 'section'        => $student->section?->name,
-                'category'       => $student->category?->name,
+                'group'       => $student->group?->name,
 
-                // ✅ FIX: json_encode() so upsert() sends a string, not an array
                 'exam_schedules' => json_encode($scheduleData),
 
                 'updated_at'     => now(),
@@ -166,8 +155,9 @@ class GenerateAdmitCardComponent extends Component
 
         AdmitCard::upsert(
             $data,
-            ['student_id'],          // unique key for ON DUPLICATE KEY UPDATE
+            ['student_id'],   
             [
+                'institution_id',
                 'issue_date',
                 'expiry_date',
                 'template_id',
@@ -185,13 +175,11 @@ class GenerateAdmitCardComponent extends Component
                 'class',
                 'section',
                 'exam_schedules',    // ← included in update list
-                'category',
+                'group',
                 'updated_at',
             ]
         );
 
-        // After upsert, reload cards with template relation.
-        // ->toArray() means $card in blade is a plain PHP array — use $card['key'].
         $this->printCards = AdmitCard::with('template')
             ->whereIn('student_id', $this->selectedIds)
             ->get()

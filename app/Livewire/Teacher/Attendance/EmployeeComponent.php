@@ -9,19 +9,20 @@ use App\Models\Employee;
 class EmployeeComponent extends Component
 {
     public $filterRole = '';
-    public $date;
+    public $filterDate;
 
     public $data = [];
     public $hasAttendance = false;
 
     public function mount()
     {
-        $this->date = now()->format('Y-m-d');
+        $this->filterDate = now()->format('Y-m-d');
     }
 
     public function filter()
     {
-        if (!$this->filterRole || !$this->date) {
+        if (!$this->filterRole) {
+            $this->dispatch('toast', type: 'error', message: 'Please select a rple.');
             return;
         }
 
@@ -32,33 +33,20 @@ class EmployeeComponent extends Component
         ]);
 
         if ($this->filterRole) {
-
             $employeesQuery->whereHas('user', function ($query) {
-
                 $query->where('role', $this->filterRole);
-
             });
-
         }
 
-        $employees = $employeesQuery
-            ->orderBy('name')
-            ->get();
+        $employees = $employeesQuery->orderBy('name')->get();
 
         if ($employees->isEmpty()) {
+            $this->dispatch('toast', type: 'error', message: 'No employees found.');
+            $this->hasAttendance = false;
+            return;
+        }
 
-        $this->dispatch(
-            'toast',
-            type: 'error',
-            message: 'No employees found.'
-        );
-
-        $this->hasAttendance = false;
-
-        return;
-    }
-
-    $existing = Attendance::where('date', $this->date)
+    $existing = Attendance::where('date', $this->filterDate)
         ->where('type', 'employee')
         ->get()
         ->keyBy('attendable_id');
@@ -86,7 +74,7 @@ class EmployeeComponent extends Component
     public function save()
     {
         $this->validate([
-            'date' => 'required|date',
+            'filterDate' => 'required|date',
         ]);
 
         try {
@@ -96,7 +84,7 @@ class EmployeeComponent extends Component
                     [
                         'attendable_id'   => $item['employee_id'],
                         'attendable_type' => Employee::class,
-                        'date'            => $this->date,
+                        'date'            => $this->filterDate,
                         'type'            => 'employee',
                     ],
                     [
@@ -116,7 +104,7 @@ class EmployeeComponent extends Component
     public function resetForm()
     {
         $this->filterRole = '';
-        $this->date = now()->format('Y-m-d');
+        $this->filterDate = now()->format('Y-m-d');
         $this->data = [];
         $this->hasAttendance = false;
         $this->resetValidation();
@@ -126,7 +114,7 @@ class EmployeeComponent extends Component
     {
         return view('livewire.teacher.attendance.employee-component')
             ->layout('layouts.teacher.app', [
-                'title' => "Employee Attendance | School SaaS",
+                'title' => 'Employee Attendance | ' . institution()->name,
             ]);
     }
 }

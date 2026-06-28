@@ -19,12 +19,12 @@
         <div class="row g-4 p-5">
 
             <div class="col-md-3">
-                <div wire:ignore class="input-group input-group-outline">
+                <div class="input-group input-group-outline">
                     <label class="form-label">Class</label>
-                    <select wire:model.lazy="filterClass" class="form-select">
+                    <select wire:model.live="filterClass" class="form-select">
                         <option value="">Select Class</option>
-                        @foreach($classes as $class)
-                            <option value="{{ $class['id'] }}">{{ $class['name'] }}</option>
+                        @foreach ($classes as $item)
+                            <option value="{{ $item['id'] }}">{{ $item['name'] }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -32,14 +32,17 @@
             </div>
 
             <div class="col-md-3">
-                <div wire:ignore class="input-group input-group-outline">
+                <div class="input-group input-group-outline">
                     <label class="form-label">Section</label>
-                    <select wire:model.lazy="filterSection" class="form-select">
-                        <option value="">Select Section</option>
-                        <option value="all">All Sections</option>
-                        @foreach($sections as $section)
-                            <option value="{{ $section['id'] }}">{{ $section['name'] }}</option>
-                        @endforeach
+                    <select wire:model.live="filterSection" class="form-select"
+                        {{ empty($sections) ? 'disabled' : '' }}>
+                        <option value="">{{ !$filterClass ? 'Select Class First' : 'Select Section' }}</option>
+                        @if(!empty($sections))
+                            <option value="all">All Section</option>
+                            @foreach ($sections as $item)
+                                <option value="{{ $item['id'] }}">{{ $item['name'] }}</option>
+                            @endforeach
+                        @endif
                     </select>
                 </div>
                 @error('filterSection') <span class="text-danger">{{ $message }}</span> @enderror
@@ -135,7 +138,7 @@
                                 <th>Student Name</th>
                                 <th>Class</th>
                                 <th>Section</th>
-                                <th>Category</th>
+                                <th>Group</th>
                                 <th>Register No</th>
                                 <th>Roll No</th>
                                 <th>Mobile No</th>
@@ -165,7 +168,7 @@
                                 </td>
                                 <td>{{ $student->class?->name }}</td>
                                 <td>{{ $student->section?->name }}</td>
-                                <td>{{ $student->category?->name }}</td>
+                                <td>{{ $student->group?->name }}</td>
                                 <td>{{ $student->register_no }}</td>
                                 <td>{{ $student->roll_no }}</td>
                                 <td>{{ $student->mobile }}</td>
@@ -879,4 +882,44 @@
         .gen-section-body .row > div { margin-bottom: 12px; }
     }
 </style>
+@endpush
+
+@push('scripts')
+<script>
+    document.addEventListener('livewire:initialized', () => {
+        Livewire.hook('morph.updated', ({ el }) => {
+            setTimeout(() => {
+                el.querySelectorAll('.input-group-outline .form-select').forEach(function(select) {
+                    if (!select.nextElementSibling || !select.nextElementSibling.classList.contains('custom-select-wrapper')) {
+                        buildCustomSelect(select);
+                    }
+                });
+
+                el.querySelectorAll('.input-group-outline input').forEach(function(input) {
+                    var group = input.closest('.input-group');
+                    if (!group) return;
+                    if (input.value && input.value.trim() !== '') {
+                        group.classList.add('is-filled');
+                    } else {
+                        group.classList.remove('is-filled');
+                    }
+                    if (input._materialInit) return;
+                    input._materialInit = true;
+                    input.addEventListener('focus', function() { group.classList.add('is-focused'); });
+                    input.addEventListener('blur', function() {
+                        group.classList.remove('is-focused');
+                        group.classList.toggle('is-filled', !!input.value.trim());
+                    });
+                    input.addEventListener('input', function() {
+                        group.classList.toggle('is-filled', !!input.value.trim());
+                    });
+                });
+
+                el.querySelectorAll('.input-group-outline input[type="date"]').forEach(function(input) {
+                    if (!input._dpInit) { _initDatepickers(); }
+                });
+            }, 0);
+        });
+    });
+</script>
 @endpush

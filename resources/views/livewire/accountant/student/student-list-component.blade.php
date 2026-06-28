@@ -8,38 +8,60 @@
         </div>
 
         {{-- ===== FILTER ===== --}}
-        <div class="px-4 pt-4 pb-2">
-            <div class="row g-3">
+        <div class="form-section" style="padding-top:40px; padding-bottom:20px">
+            <div class="section-heading">
+                <span class="material-icons-round">tune</span> Select Ground
+            </div>
+            <div class="row g-4">
+
+                {{-- Class --}}
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
                         <label class="form-label">Class</label>
-                        <select wire:model.live="filter_class_id" class="form-select">
-                            <option value="">Select</option>
-                            @foreach($classes as $c)
-                                <option value="{{ $c->id }}">{{ $c->name }}</option>
+                        <select wire:model.live="filterClass" class="form-select">
+                            <option value="">Select Class</option>
+                            @foreach ($classes as $item)
+                                <option value="{{ $item->id }}">{{ $item->name }}</option>
                             @endforeach
                         </select>
                     </div>
-                    @error('filter_class_id') <span class="text-danger small">{{ $message }}</span> @enderror
+                    @error('filterClass') <span class="text-danger small">{{ $message }}</span> @enderror
                 </div>
+
+                {{-- Section --}}
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
                         <label class="form-label">Section</label>
-                        <select wire:model.live="filter_section_id" class="form-select" @disabled(empty($availableSections))>
-                            <option value="">{{ empty($availableSections) ? 'Select class first' : 'Select' }}</option>
-                            @foreach($availableSections as $s)
-                                <option value="{{ $s['id'] }}">{{ $s['name'] }}</option>
-                            @endforeach
+                        <select wire:model.live="filterSection" class="form-select"
+                            {{ empty($sections) ? 'disabled' : '' }}>
+                            <option value="">{{ !$filterClass ? 'Select Class First' : 'Select Section' }}</option>
+                            @if(!empty($sections))
+                                <option value="all">All Section</option>
+                                @foreach ($sections as $item)
+                                    <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                @endforeach
+                            @endif
                         </select>
                     </div>
-                    @error('filter_section_id') <span class="text-danger small">{{ $message }}</span> @enderror
+                    @error('filterSection') <span class="text-danger small">{{ $message }}</span> @enderror
                 </div>
+
+                {{-- Filter Button --}}
                 <div class="col-md-12 text-center">
-                    <button wire:click="filter" class="btn-pink w-100 d-flex justify-content-center align-items-center" type="button">
-                        <span wire:loading wire:target="filter" class="spinner-border spinner-border-sm me-2"></span>
-                        Filter
+                    <button wire:click="filter"
+                            wire:loading.attr="disabled"
+                            wire:target="filter"
+                            class="btn-pink w-100 d-flex justify-content-center align-items-center"
+                            type="button">
+                        <span wire:loading.remove wire:target="filter">
+                            <span class="material-icons-round" style="font-size:16px;vertical-align:middle;margin-right:4px">filter_alt</span> Filter
+                        </span>
+                        <span wire:loading wire:target="filter">
+                            <span class="material-icons-round" style="font-size:16px;animation:spin .7s linear infinite">sync</span> Filtering...
+                        </span>
                     </button>
                 </div>
+
             </div>
         </div>
 
@@ -79,7 +101,12 @@
                         <span class="material-icons-round" style="font-size:16px">print</span> Print
                     </button>
 
-                    <a href="{{ route('accountant.student.add') }}" class="btn-outline bg-dark text-white">
+                    {{-- Reset --}}
+                    <button class="btn-outline" type="button" wire:click="resetForm">
+                        <span class="material-icons-round" style="font-size:16px">refresh</span> Reset
+                    </button>
+
+                    <a href="{{ route('admin.student.add') }}" class="btn-outline bg-dark text-white">
                         <span class="material-icons-round">add</span> Add Student
                     </a>
                 </div>
@@ -106,7 +133,7 @@
                             <tr>
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
-                                        <img src="{{ $student->photo ? asset('storage/' . $student->photo) : asset('assets/img/default-user.jpg') }}"
+                                        <img src="{{ $student->photo ? asset('storage/' . $student->photo) : asset('assets/img/boy.jpg') }}"
                                             style="width:36px;height:36px;border-radius:8px;object-fit:cover;" alt="">
                                         <span class="fw-500">{{ $student->name }}</span>
                                     </div>
@@ -119,11 +146,11 @@
                                 <td>{{ $student->guardians->first()?->name ?? '—' }}</td>
                                 <td class="no-print">
                                     <div class="d-flex gap-1">
-                                        <a href="{{ route('accountant.student.overview', ['id' => $student->id]) }}" target="_blank"
+                                        <a href="{{ route('admin.student.overview', ['id' => $student->id]) }}" target="_blank"
                                             class="act-btn view" title="View">
                                             <span class="material-icons-round">visibility</span>
                                         </a>
-                                        <a href="{{ route('accountant.student.edit', ['id' => $student->id]) }}"
+                                        <a href="{{ route('admin.student.edit', ['id' => $student->id]) }}"
                                             class="act-btn edit" title="Edit">
                                             <span class="material-icons-round">drive_file_rename_outline</span>
                                         </a>
@@ -254,7 +281,6 @@
         const table = document.getElementById('studentTable');
         if (!table) return;
 
-        // Clone table and remove no-print columns entirely
         const clone = table.cloneNode(true);
         clone.querySelectorAll('.no-print').forEach(el => el.remove());
 
@@ -307,12 +333,6 @@
                     input.addEventListener('input', function() {
                         group.classList.toggle('is-filled', !!input.value.trim());
                     });
-                });
-
-                el.querySelectorAll('.input-group-outline input[type="date"]').forEach(function(input) {
-                    if (!input._dpInit) {
-                        if (typeof _initDatepickers === 'function') _initDatepickers();
-                    }
                 });
             }, 0);
         });

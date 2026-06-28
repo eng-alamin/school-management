@@ -89,7 +89,7 @@
                     @foreach($employees as $i => $employee)
                     <tr wire:key="employee-{{ $employee['id'] }}">
                         <td>{{ $i + 1 }}</td>
-                        <td>{{ $employee['staff_id'] ?? '—' }}</td>
+                        <td>{{ $employee['employee_id'] ?? '—' }}</td>
                         <td>{{ $employee['name'] }}</td>
                         <td>{{ $employee['designation']['name'] ?? '—' }}</td>
                         <td>{{ $employee['department']['name'] ?? '—' }}</td>

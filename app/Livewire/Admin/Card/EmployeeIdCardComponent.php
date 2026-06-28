@@ -98,14 +98,12 @@ class EmployeeIdCardComponent extends Component
             ->whereIn('id', $this->selectedIds)
             ->get();
 
-        // Grab school_id once — upsert() skips Eloquent model events
-        // so the BelongsToSchool trait won't fire automatically.
-        $schoolId = auth()->user()->school_id;
+        $institutionId = auth()->user()->institution_id;
         $data     = [];
 
         foreach ($employees as $employee) {
             $data[] = [
-                'school_id'   => $schoolId,
+                'institution_id'   => $institutionId,
                 'employee_id' => $employee->id,
 
                 'issue_date'  => $this->print_date,
@@ -132,9 +130,9 @@ class EmployeeIdCardComponent extends Component
 
         EmployeeIdCard::upsert(
             $data,
-            ['employee_id'],  // unique key to match on
+            ['employee_id'],
             [
-                // school_id intentionally omitted — never overwrite on duplicate
+                'institution_id',
                 'issue_date',
                 'expiry_date',
                 'template_id',
@@ -188,7 +186,7 @@ class EmployeeIdCardComponent extends Component
     public function render()
     {
         $templates = IdCardTemplate::where('is_active', true)
-            ->where('type', 'employee')  // fixed: was '!= employee', should be employee templates
+            ->where('type', '!=', 'student')
             ->get();
 
         $employees        = $this->filtered ? $this->getEmployees() : collect();

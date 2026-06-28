@@ -35,7 +35,7 @@
       <li class="nav1-item">
         <a href="{{route('admin.dashboard') }}" class="nav1-link {{ str_contains(request()->url(), 'dashboard') == true ? 'active' : '' }}">
           <span class="material-icons-round nav-icon">space_dashboard</span>
-          <span class="nav-label" id="nav-dashboards">Dashboard</span>
+          <span class="nav-label" id="nav-dashboard">Dashboard</span>
         </a>
       </li>
 
@@ -48,10 +48,10 @@
         <div class="nav2-collapse {{ str_contains(request()->url(), 'inventory/') == true ? 'show' : '' }}">
           <ul>
             <li class="nav2-item"><a href="{{ route('admin.inventory.products') }}" class="nav2-link {{ Route::is('admin.inventory.products') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-products">Products</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.inventory.stores') }}" class="nav2-link {{ Route::is('admin.inventory.stores') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-products">Stores</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.inventory.suppliers') }}" class="nav2-link {{ Route::is('admin.inventory.suppliers') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-products">Suppliers</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.inventory.purchase.list') }}" class="nav2-link {{ str_contains(request()->url(), 'purchase') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-products">Purchases</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.inventory.sale.list') }}" class="nav2-link {{ str_contains(request()->url(), 'sale') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-products">Sales</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.inventory.stores') }}" class="nav2-link {{ Route::is('admin.inventory.stores') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-stores">Stores</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.inventory.suppliers') }}" class="nav2-link {{ Route::is('admin.inventory.suppliers') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-suppliers">Suppliers</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.inventory.purchase.list') }}" class="nav2-link {{ str_contains(request()->url(), 'purchase') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-purchases">Purchases</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.inventory.sale.list') }}" class="nav2-link {{ str_contains(request()->url(), 'sale') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-sales">Sales</span></a></li>
           </ul>
         </div>
       </li>
@@ -64,8 +64,8 @@
         </div>
         <div class="nav2-collapse {{ Route::is('admin.student.add') == true ? 'show' : '' }}">
           <ul>
-            <li class="nav2-item"><a href="{{route('admin.student.add') }}" class="nav2-link {{ Route::is('admin.student.add') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-createadmission">Create Admission</span></a></li>
-            <li class="nav2-item"><a href="#" class="nav2-link"><span class="nav2-icon">O</span><span class="nav2-label" id="nav-onlineadmission">Online Admission</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.student.add') }}" class="nav2-link {{ Route::is('admin.student.add') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-create-admission">Create Admission</span></a></li>
+            <li class="nav2-item"><a href="#" class="nav2-link"><span class="nav2-icon">O</span><span class="nav2-label" id="nav-online-admission">Online Admission</span></a></li>
           </ul>
         </div>
       </li>
@@ -107,11 +107,11 @@
         </div>
         <div class="nav2-collapse {{ str_contains(request()->url(), 'academic') == true ? 'show' : '' }}">
           <ul>
-            <li class="nav2-item"><a href="{{route('admin.academic.sessions') }}" class="nav2-link {{ str_contains(request()->url(), 'academic/sessions') == true ? 'active' : '' }}"><span class="nav2-icon">S</span><span class="nav2-label" id="nav-session-settings">Sessions</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.academic.classes') }}" class="nav2-link {{ str_contains(request()->url(), 'academic/classes') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-class-section">Class & Section</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.academic.sessions') }}" class="nav2-link {{ str_contains(request()->url(), 'academic/sessions') == true ? 'active' : '' }}"><span class="nav2-icon">S</span><span class="nav2-label" id="nav-sessions">Sessions</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.academic.classes') }}" class="nav2-link {{ str_contains(request()->url(), 'academic/classes') || str_contains(request()->url(), 'academic/sections') || str_contains(request()->url(), 'academic/groups') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-class-section">Class & Section</span></a></li>
             <li class="nav2-item"><a href="{{route('admin.academic.subjects') }}" class="nav2-link {{ str_contains(request()->url(), 'academic/subjects') == true ? 'active' : '' }}"><span class="nav2-icon">S</span><span class="nav2-label" id="nav-subject">Subject</span></a></li>
             <li class="nav2-item"><a href="{{route('admin.academic.class-assign') }}" class="nav2-link {{ str_contains(request()->url(), 'academic/class-assign') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-class-assign">Class Assign</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.academic.teacher-assign') }}" class="nav2-link {{ str_contains(request()->url(), 'academic/teacher-assign') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-class-assign">Teacher Assign</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.academic.teacher-assign') }}" class="nav2-link {{ str_contains(request()->url(), 'academic/teacher-assign') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-teacher-assign">Teacher Assign</span></a></li>
             <li class="nav2-item"><a href="{{route('admin.academic.class-schedule.list') }}" class="nav2-link {{ str_contains(request()->url(), 'academic/class-schedule') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-class-schedule">Class Schedule</span></a></li>
             <li class="nav2-item"><a href="{{route('admin.academic.teacher-schedule') }}" class="nav2-link {{ str_contains(request()->url(), 'academic/teacher-schedule') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-teacher-schedule">Teacher Schedule</span></a></li>
             <li class="nav2-item"><a href="{{route('admin.academic.student-promotion') }}" class="nav2-link {{ str_contains(request()->url(), 'academic/student-promotion') == true ? 'active' : '' }}"><span class="nav2-icon">S</span><span class="nav2-label" id="nav-student-promotion">Student Promotion</span></a></li>
@@ -122,7 +122,7 @@
       <li class="nav1-item">
         <a class="nav1-link {{ str_contains(request()->url(), 'homework') == true ? 'active' : '' }}" href="{{ route('admin.homework.list')  }}">
           <span class="material-icons-round nav-icon">assignment</span>
-          <span class="nav-label" id="nav-home-work">Home Work</span>
+          <span class="nav-label" id="nav-homework">Home Work</span>
         </a>
       </li>
 
@@ -134,7 +134,7 @@
         </div>
         <div class="nav2-collapse {{ str_contains(request()->url(), 'exam') == true ? 'show' : '' }}">
           <ul>
-            <li class="nav2-item"><a href="{{route('admin.exam.setups') }}" class="nav2-link {{ str_contains(request()->url(), 'exam/setups') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-exams">Exams</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.exam.setups') }}" class="nav2-link {{ str_contains(request()->url(), 'exam/setups') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-exam-setup">Exam Setup</span></a></li>
             <li class="nav2-item"><a href="{{route('admin.exam.schedule.list') }}" class="nav2-link {{ str_contains(request()->url(), 'exam/schedule') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-exam-schedule">Exam Schedule</span></a></li>
             <li class="nav2-item"><div class="nav2-link"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-marks">Marks</span></div></li>
           </ul>
@@ -149,9 +149,9 @@
         </div>
         <div class="nav2-collapse {{ str_contains(request()->url(), 'attendance') == true ? 'show' : '' }}">
           <ul>
-            <li class="nav2-item"><a href="{{route('admin.attendance.students') }}" class="nav2-link {{ str_contains(request()->url(), 'attendance/students') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-student">Student</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.attendance.employees') }}" class="nav2-link {{ str_contains(request()->url(), 'attendance/employees') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-student">Enployee</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.attendance.exams') }}" class="nav2-link {{ str_contains(request()->url(), 'attendance/exams') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-student">Exam</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.attendance.students') }}" class="nav2-link {{ str_contains(request()->url(), 'attendance/students') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-attendance-student">Student</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.attendance.employees') }}" class="nav2-link {{ str_contains(request()->url(), 'attendance/employees') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-attendance-employee">Employee</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.attendance.exams') }}" class="nav2-link {{ str_contains(request()->url(), 'attendance/exams') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-attendance-exam">Exam</span></a></li>
           </ul>
         </div>
       </li>
@@ -199,9 +199,9 @@
         <div class="nav2-collapse {{ str_contains(request()->url(), 'office-accounting') == true ? 'show' : '' }}">
           <ul>
             <li class="nav2-item"><a href="{{route('admin.office-accounting.accounts') }}" class="nav2-link {{ str_contains(request()->url(), 'office-accounting/accounts') == true ? 'active' : '' }}"><span class="nav2-icon">A</span><span class="nav2-label" id="nav-account">Account</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.office-accounting.deposit.list') }}" class="nav2-link {{ str_contains(request()->url(), 'office-accounting/voucher-deposit-list') == true ? 'active' : '' }}"><span class="nav2-icon">D</span><span class="nav2-label" id="nav-new-deposit">Deposit</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.office-accounting.expense.list') }}" class="nav2-link {{ str_contains(request()->url(), 'office-accounting/voucher-expense-list') == true ? 'active' : '' }}"><span class="nav2-icon">E</span><span class="nav2-label" id="nav-new-expense">Expense</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.office-accounting.transactions') }}" class="nav2-link {{ str_contains(request()->url(), 'office-accounting/transactions') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-all-transactions">Transactions</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.office-accounting.deposit.list') }}" class="nav2-link {{ str_contains(request()->url(), 'office-accounting/voucher-deposit-list') == true ? 'active' : '' }}"><span class="nav2-icon">D</span><span class="nav2-label" id="nav-deposit">Deposit</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.office-accounting.expense.list') }}" class="nav2-link {{ str_contains(request()->url(), 'office-accounting/voucher-expense-list') == true ? 'active' : '' }}"><span class="nav2-icon">E</span><span class="nav2-label" id="nav-expense">Expense</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.office-accounting.transactions') }}" class="nav2-link {{ str_contains(request()->url(), 'office-accounting/transactions') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-transactions">Transactions</span></a></li>
             <li class="nav2-item"><a href="{{route('admin.office-accounting.heads') }}" class="nav2-link {{ str_contains(request()->url(), 'office-accounting/voucher-head') == true ? 'active' : '' }}"><span class="nav2-icon">H</span><span class="nav2-label" id="nav-voucher-head">Voucher Head</span></a></li>
           </ul>
         </div>
@@ -210,14 +210,14 @@
       <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), 'salary') ? 'active open' : '' }}" onclick="toggleNav1(this)">
           <span class="material-icons-round nav-icon">manage_accounts</span>
-          <span class="nav-label" id="nav-salary-managment">Salary Managment</span>
+          <span class="nav-label" id="nav-salary-management">Salary Management</span>
           <span class="material-icons-round nav-arrow">expand_more</span>
         </div>
         <div class="nav2-collapse {{ str_contains(request()->url(), 'salary') == true ? 'show' : '' }}">
           <ul>
-            <li class="nav2-item"><a href="{{route('admin.salary.list-template') }}" class="nav2-link {{ str_contains(request()->url(), 'admin.salary.list-template') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-idcard-template">Salary Template</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.salary.assign') }}" class="nav2-link {{ str_contains(request()->url(), 'admin.salary.assign') == true ? 'active' : '' }}"><span class="nav2-icon">A</span><span class="nav2-label" id="nav-idcard-template">Salary Assign</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.salary.payment') }}" class="nav2-link {{ str_contains(request()->url(), 'admin.salary.payment') == true ? 'active' : '' }}"><span class="nav2-icon">P</span><span class="nav2-label" id="nav-idcard-template">Salary Payment</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.salary.list-template') }}" class="nav2-link {{ str_contains(request()->url(), 'salary/list-template') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-salary-template">Salary Template</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.salary.assign') }}" class="nav2-link {{ str_contains(request()->url(), 'salary/assign') == true ? 'active' : '' }}"><span class="nav2-icon">A</span><span class="nav2-label" id="nav-salary-assign">Salary Assign</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.salary.payment') }}" class="nav2-link {{ str_contains(request()->url(), 'salary/payment') == true ? 'active' : '' }}"><span class="nav2-icon">P</span><span class="nav2-label" id="nav-salary-payment">Salary Payment</span></a></li>
           </ul>
         </div>
       </li>
@@ -230,10 +230,10 @@
         </div>
         <div class="nav2-collapse {{ str_contains(request()->url(), 'card/') == true ? 'show' : '' }}">
           <ul>
-            <li class="nav2-item"><a href="{{route('admin.card.id-card-templates') }}" class="nav2-link {{ str_contains(request()->url(), 'card/id-card-templates') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-idcard-template">Id Card Templete</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.card.id-card-templates') }}" class="nav2-link {{ str_contains(request()->url(), 'card/id-card-templates') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-id-card-template">Id Card Template</span></a></li>
             <li class="nav2-item"><a href="{{route('admin.card.student-id-cards') }}" class="nav2-link {{ str_contains(request()->url(), 'card/student-id-cards') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-student-id-card">Student Id Card</span></a></li>
             <li class="nav2-item"><a href="{{route('admin.card.employee-id-cards') }}" class="nav2-link {{ str_contains(request()->url(), 'card/employee-id-cards') == true ? 'active' : '' }}"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-employee-id-card">Employee Id Card</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.card.admit-card-templates') }}" class="nav2-link {{ str_contains(request()->url(), 'card/admit-card-templates') == true ? 'active' : '' }}"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-admit-card-template">Admit Card Templete</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.card.admit-card-templates') }}" class="nav2-link {{ str_contains(request()->url(), 'card/admit-card-templates') == true ? 'active' : '' }}"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-admit-card-template">Admit Card Template</span></a></li>
             <li class="nav2-item"><a href="{{route('admin.card.generate-admit-cards') }}" class="nav2-link {{ str_contains(request()->url(), 'card/generate-admit-cards') == true ? 'active' : '' }}"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-admit-card-generate">Admit Card Generate</span></a></li>
           </ul>
         </div>
@@ -247,15 +247,15 @@
         </div>
         <div class="nav2-collapse {{ str_contains(request()->url(), 'certificate/') == true ? 'show' : '' }}">
           <ul>
-            <li class="nav2-item"><a href="{{route('admin.certificate.list-template') }}" class="nav2-link {{ str_contains(request()->url(), 'certificate/list-template') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-idcard-template">Certificate Templete</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.certificate.generate-student') }}" class="nav2-link {{ str_contains(request()->url(), 'certificate/generate-student') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-student-id-card">Generate Student</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.certificate.generate-employee') }}" class="nav2-link {{ str_contains(request()->url(), 'certificate/generate-employee') == true ? 'active' : '' }}"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-employee-id-card">Generate Employee</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.certificate.list-template') }}" class="nav2-link {{ str_contains(request()->url(), 'certificate/list-template') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-certificate-template">Certificate Template</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.certificate.generate-student') }}" class="nav2-link {{ str_contains(request()->url(), 'certificate/generate-student') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-generate-student">Generate Student</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.certificate.generate-employee') }}" class="nav2-link {{ str_contains(request()->url(), 'certificate/generate-employee') == true ? 'active' : '' }}"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-generate-employee">Generate Employee</span></a></li>
           </ul>
         </div>
       </li>
 
       <li class="nav1-item">
-        <a href="{{route('admin.leave.applications') }}" class="nav1-link {{ str_contains(request()->url(), 'leave/applications') == true ? 'active' : '' }}">
+        <a href="{{route('admin.leave.applications') }}" class="nav1-link {{ str_contains(request()->url(), 'leave/applications') || str_contains(request()->url(), 'leave/categories') == true ? 'active' : '' }}">
           <span class="material-icons-round nav-icon">exit_to_app</span>
           <span class="nav-label" id="nav-leaves">Leaves</span>
         </a>
@@ -285,7 +285,7 @@
       <li class="nav1-item">
         <a href="{{route('billing.show') }}" class="nav1-link {{ str_contains(request()->url(), 'billing') == true ? 'active' : '' }}">
           <span class="material-icons-round nav-icon">event</span>
-          <span class="nav-label" id="nav-events">Billing</span>
+          <span class="nav-label" id="nav-billing">Billing</span>
         </a>
       </li>
             
@@ -331,11 +331,11 @@
         <div class="nav2-collapse {{ request()->is('setting/*', 'notifications', 'activity-logs', 'login-logs') ? 'show' : '' }}">
           <ul>
             <li class="nav2-item"><a href="{{route('admin.setting.institution') }}" class="nav2-link {{ str_contains(request()->url(), 'setting/institution') == true ? 'active' : '' }}"><span class="nav2-icon">S</span><span class="nav2-label" id="nav-institution-settings">Institution Settings</span></a></li>
-            <li class="nav2-item"><div class="nav2-link"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-cronjob">Cron Job</span></div></li>
-            <li class="nav2-item"><a href="{{route('admin.notifications.index') }}" class="nav2-link {{ str_contains(request()->url(), 'notifications') == true ? 'active' : '' }}"><span class="nav2-icon">AL</span><span class="nav2-label" id="nav-activity-log">Notifications</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.activitylog') }}" class="nav2-link {{ str_contains(request()->url(), 'activity-log') == true ? 'active' : '' }}"><span class="nav2-icon">AL</span><span class="nav2-label" id="nav-activity-log">Activity Logs</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.loginlog') }}" class="nav2-link {{ str_contains(request()->url(), 'login-log') == true ? 'active' : '' }}"><span class="nav2-icon">LL</span><span class="nav2-label" id="nav-login-log">Login Logs</span></a></li>
-            <li class="nav2-item"><a href="{{route('clear') }}" class="nav2-link"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-login-log">Clear Cache</span></a></li>
+            <li class="nav2-item"><div class="nav2-link"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-cron-job">Cron Job</span></div></li>
+            <li class="nav2-item"><a href="{{route('admin.notifications.index') }}" class="nav2-link {{ str_contains(request()->url(), 'notifications') == true ? 'active' : '' }}"><span class="nav2-icon">AL</span><span class="nav2-label" id="nav-notifications">Notifications</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.activitylog') }}" class="nav2-link {{ str_contains(request()->url(), 'activity-log') == true ? 'active' : '' }}"><span class="nav2-icon">AL</span><span class="nav2-label" id="nav-activity-logs">Activity Logs</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.loginlog') }}" class="nav2-link {{ str_contains(request()->url(), 'login-log') == true ? 'active' : '' }}"><span class="nav2-icon">LL</span><span class="nav2-label" id="nav-login-logs">Login Logs</span></a></li>
+            <li class="nav2-item"><a href="{{route('clear') }}" class="nav2-link"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-clear-cache">Clear Cache</span></a></li>
           </ul>
         </div>
       </li>

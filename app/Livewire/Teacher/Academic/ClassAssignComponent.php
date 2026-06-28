@@ -28,7 +28,7 @@ class ClassAssignComponent extends Component
     // Form
     public ?int $editId = null;
     public string $class_id = '';
-    public string $section_id = '';
+    public $section_id;
     public array $subject_array = [];
 
     // Dependent dropdown
@@ -38,7 +38,7 @@ class ClassAssignComponent extends Component
     {
         return [
             'class_id'        => 'required|exists:academic_classes,id',
-            'section_id'      => 'required|exists:academic_sections,id',
+            'section_id'      => 'nullable|exists:academic_sections,id',
             'subject_array'   => 'nullable|array',
             'subject_array.*' => 'nullable|string',
         ];
@@ -51,7 +51,7 @@ class ClassAssignComponent extends Component
 
     public function updatedClassId(string $value): void
     {
-        $this->section_id        = '';
+        $this->section_id;
         $this->availableSections = [];
 
         if ($value) {
@@ -89,8 +89,8 @@ class ClassAssignComponent extends Component
         $record = AcademicClassAssign::findOrFail($id);
 
         $this->editId        = $id;
-        $this->class_id      = (string) $record->class_id;
-        $this->section_id    = (string) $record->section_id;
+        $this->class_id      = $record->class_id;
+        $this->section_id    = $record->section_id;
         $this->subject_array = $record->subjects ?? [];
 
         // Load sections via belongsToMany
@@ -162,7 +162,7 @@ class ClassAssignComponent extends Component
             ->with('classes', $classes)
             ->with('subjects', $subjects)
             ->layout('layouts.teacher.app', [
-                'title' => "Class Assignments | School SaaS",
+                'title' => 'Class Assignments | ' . institution()->name,
             ]);
     }
 }

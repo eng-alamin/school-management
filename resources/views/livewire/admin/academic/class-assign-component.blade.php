@@ -3,8 +3,8 @@
     <div class="card">
 
         <div class="mat-card-header header-pink-gradient">
-            <h5 id="cardHeaderTitleAllassigns">All Class Assign</h5>
-            <p id="cardHeaderSubtitle">Manage class assignments, create, update, and organize easily.</p>
+            <h5 id="class-header-title">All Classes</h5>
+            <p id="class-header-subtitle">Manage classes, create, update, and organize easily.</p>
         </div>
 
         <div class="card-header border-0">
@@ -16,7 +16,7 @@
                     </div>
                 </div>
 
-                @if($assigns->total() > 10)
+                @if($classes->total() > 10)
                     <div class="col-md-2">
                         <select class="form-select form-select-sm" wire:model.live="perPage">
                             <option value="10">10 / page</option>
@@ -26,8 +26,18 @@
                     </div>
                 @endif
 
+                <a href="{{ route('admin.academic.classes') }}" class="btn-outline bg-dark text-white">
+                    <span class="material-icons-round" style="font-size:16px">flight_class</span><span id="class-nav-class">Class</span>
+                </a>
+                <a href="{{ route('admin.academic.sections') }}" class="btn-outline">
+                    <span class="material-icons-round" style="font-size:16px">border_inner</span><span id="class-nav-section">Section</span>
+                </a>
+                <a href="{{ route('admin.academic.groups') }}" class="btn-outline">
+                    <span class="material-icons-round" style="font-size:16px">group</span><span id="class-nav-groups">Groups</span>
+                </a>
+
                 <button class="btn-outline bg-dark text-white" wire:click="openCreate">
-                    <span class="material-icons-round">add</span> <span>New Assign</span>
+                    <span class="material-icons-round">add</span> <span id="class-new-btn">New Class</span>
                 </button>
             </div>
         </div>
@@ -37,36 +47,38 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>SL</th>
-                            <th>Class</th>
-                            <th>Section</th>
-                            <th>Subjects</th>
-                            <th>Actions</th>
+                            <th id="class-th-sl">SL</th>
+                            <th wire:click="sortBy('name')" style="cursor:pointer">
+                                <span id="class-th-name">Name</span> @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
+                            </th>
+                            <th wire:click="sortBy('numeric')" style="cursor:pointer">
+                                <span id="class-th-numeric">Numeric</span> @if($sortField === 'numeric') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
+                            </th>
+                            <th id="class-th-section">Section</th>
+                            <th id="class-th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($assigns as $i => $assign)
+                        @forelse($classes as $i => $class)
                         <tr>
-                            <td class="text-muted">{{ $assigns->firstItem() + $i }}</td>
-                            <td>{{ $assign->class?->name ?? '—' }}</td>
-                            <td>{{ $assign->section?->name ?? '—' }}</td>
+                            <td class="text-muted">{{ $classes->firstItem() + $i }}</td>
+                            <td>{{ $class->name }}</td>
+                            <td>{{ $class->numeric ?? '—' }}</td>
                             <td>
-                                @if(!empty($assign->subjects))
-                                    <div class="d-flex flex-wrap gap-1">
-                                        @foreach($assign->subjects as $subject)
-                                            <span class="badge bg-secondary">{{ $subject }}</span>
-                                        @endforeach
-                                    </div>
-                                @else
-                                    <span class="text-muted">—</span>
-                                @endif
+                                @forelse($class->sections as $section)
+                                    <span class="badge bg-primary">
+                                        {{ $section->name }}
+                                    </span>
+                                @empty
+                                    —
+                                @endforelse
                             </td>
                             <td>
                                 <div class="d-flex gap-1">
-                                    <button class="act-btn edit" title="Edit" wire:click="openEdit({{ $assign->id }})">
+                                    <button class="act-btn edit" title="Edit" wire:click="openEdit({{ $class->id }})">
                                         <span class="material-icons-round">drive_file_rename_outline</span>
                                     </button>
-                                    <button class="act-btn delete" title="Delete" wire:click="confirmDeleteRecord({{ $assign->id }})">
+                                    <button class="act-btn delete" title="Delete" wire:click="confirmDeleteRecord({{ $class->id }})">
                                         <span class="material-icons-round">delete</span>
                                     </button>
                                 </div>
@@ -76,7 +88,7 @@
                         <tr>
                             <td colspan="5" class="text-center py-5 text-muted">
                                 <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
-                                No assignments found. <a href="#" wire:click.prevent="openCreate">Create one now</a>.
+                                <span id="class-empty-msg">No classes found.</span> <a href="#" wire:click.prevent="openCreate" id="class-empty-link">Create one now</a>.
                             </td>
                         </tr>
                         @endforelse
@@ -86,8 +98,8 @@
         </div>
 
         <div class="card-footer border-0 bg-white d-flex align-items-center justify-content-between flex-wrap gap-2 py-2 px-3">
-            <small class="text-muted">Showing {{ $assigns->firstItem() ?? 0 }}–{{ $assigns->lastItem() ?? 0 }} of {{ $assigns->total() }}</small>
-            {{ $assigns->links('vendor.pagination.custom') }}
+            <small class="text-muted">Showing {{ $classes->firstItem() ?? 0 }}–{{ $classes->lastItem() ?? 0 }} of {{ $classes->total() }}</small>
+            {{ $classes->links('vendor.pagination.custom') }}
         </div>
 
     </div>
@@ -98,60 +110,40 @@
             <div class="modal-dialog modal-md modal-dialog-scrollable">
                 <div class="modal-content">
                     <div class="modal-header border-0">
-                        <h5 class="modal-title">{{ $editId ? 'Edit' : 'Create' }} Assignment</h5>
+                        <h5 class="modal-title"><span id="class-modal-action" data-mode="{{ $editId ? 'edit' : 'create' }}">{{ $editId ? 'Edit' : 'Create' }}</span> <span id="class-modal-suffix">Class</span></h5>
                         <button type="button" class="btn-close" wire:click="$set('showModal', false)"></button>
                     </div>
                     <div class="modal-body">
                         <div class="row g-3">
-
-                            {{-- Class --}}
                             <div class="col-md-12">
-                                <label class="form-label">Class <span class="text-danger">*</span></label>
-                                <select class="form-select @error('class_id') is-invalid @enderror" wire:model.live="class_id">
-                                    <option value="">Select Class</option>
-                                    @foreach($classes as $c)
-                                        <option value="{{ $c->id }}">{{ $c->name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('class_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                <label class="form-label"><span id="class-lbl-name">Name</span> <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model.defer="name" placeholder="e.g. Class One">
+                                @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
-
-                            {{-- Section — dependent on class --}}
                             <div class="col-md-12">
-                                <label class="form-label">Section</label>
-                                <select class="form-select @error('section_id') is-invalid @enderror" wire:model.defer="section_id" @disabled(empty($availableSections))>
-                                    <option value="">{{ empty($availableSections) ? 'Select class first' : 'Select Section' }}</option>
-                                    @foreach($availableSections as $s)
-                                        <option value="{{ $s['id'] }}">{{ $s['name'] }}</option>
-                                    @endforeach
-                                </select>
-                                @error('section_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                <label class="form-label" id="class-lbl-numeric">Numeric</label>
+                                <input type="number" class="form-control @error('numeric') is-invalid @enderror" wire:model.defer="numeric" placeholder="e.g. 1">
+                                @error('numeric') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
-
-                            {{-- Subjects --}}
                             <div class="col-md-12">
-                                <label class="form-label">Subjects</label>
                                 <div wire:ignore>
-                                    <select
-                                        wire:model.defer="subject_array"
-                                        multiple
-                                        title="Select Subject..."
-                                        class="form-select w-100 selectpicker">
-                                        @foreach($subjects as $subjectId => $subjectName)
-                                            <option value="{{ $subjectName }}">{{ $subjectName }}</option>
+                                    <label class="form-label" id="class-lbl-section">Section</label>
+                                    <select class="form-select w-100 selectpicker @error('sectionIds') is-invalid @enderror" wire:model.defer="sectionIds" multiple title="Select Section...">
+                                        @foreach($sections as $section)
+                                            <option value="{{ $section->id }}">{{ $section->name }}</option>
                                         @endforeach
                                     </select>
+                                    @error('sectionIds') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
-                                @error('subject_array') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                             </div>
-
+                            
                         </div>
                     </div>
                     <div class="modal-footer border-0">
-                        <button type="button" class="btn btn-light" wire:click="$set('showModal', false)">Cancel</button>
+                        <button type="button" class="btn btn-light" id="class-modal-btn-cancel" wire:click="$set('showModal', false)">Cancel</button>
                         <button type="button" class="btn bg-dark text-white" wire:click="save" wire:loading.attr="disabled">
                             <span wire:loading wire:target="save" class="spinner-border spinner-border-sm me-1"></span>
-                            {{ $editId ? 'Update' : 'Create' }}
+                            <span id="class-modal-save-action" data-mode="{{ $editId ? 'edit' : 'create' }}">{{ $editId ? 'Update' : 'Create' }}</span>
                         </button>
                     </div>
                 </div>
@@ -168,14 +160,14 @@
                         <div style="width:56px;height:56px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
                             <i class="bi bi-exclamation-triangle text-danger" style="font-size:1.5rem;"></i>
                         </div>
-                        <h6 class="fw-700">Delete Assignment?</h6>
-                        <p class="text-muted small">This action cannot be undone.</p>
+                        <h6 class="fw-700" id="class-delete-title">Delete Class?</h6>
+                        <p class="text-muted small" id="class-delete-msg">This action cannot be undone.</p>
                     </div>
                     <div class="modal-footer justify-content-center border-0 pt-0">
-                        <button class="btn btn-light btn-sm" wire:click="$set('confirmDelete', false)">Cancel</button>
+                        <button class="btn btn-light btn-sm" id="class-delete-btn-cancel" wire:click="$set('confirmDelete', false)">Cancel</button>
                         <button class="btn btn-danger btn-sm" wire:click="deleteRecord">
                             <span wire:loading wire:target="deleteRecord" class="spinner-border spinner-border-sm me-1"></span>
-                            Delete
+                            <span id="class-delete-btn-confirm">Delete</span>
                         </button>
                     </div>
                 </div>
@@ -205,13 +197,12 @@
         border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light);
     }
 
-    .form-check-input:checked { background-color: #212529; border-color: #212529; }
     .btn-sm { font-size: .78rem; padding: .3rem .65rem; border-radius: 6px; }
 </style>
 @endpush
 
 @push('styles')
-    {{-- selectpicker --}}
+        {{-- selectpicker --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css">
 @endpush
 @push('scripts')
@@ -222,12 +213,13 @@
         // $('.selectpicker').selectpicker();
         document.addEventListener('livewire:init', function () {
 
-            function initPicker() {
-                $('.selectpicker').selectpicker();
-            }
-
             function refreshPicker() {
                 $('.selectpicker').selectpicker('refresh');
+            }
+
+            function initPicker() {
+                $('.selectpicker').selectpicker();
+                // refreshPicker();
             }
 
             // initial load
@@ -244,7 +236,7 @@
 
             // sync value
             $(document).on('changed.bs.select', '.selectpicker', function () {
-                @this.set('subject_array', $(this).val());
+                @this.set('sectionIds', $(this).val());
             });
 
             // 🔥 THIS IS THE MOST IMPORTANT FIX

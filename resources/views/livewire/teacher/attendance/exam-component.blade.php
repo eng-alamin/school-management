@@ -16,7 +16,7 @@
             {{-- Exam --}}
             <div class="col-md-3">
                 <div class="input-group input-group-outline">
-                    <label class="form-label">Exam <span class="req">*</span></label>
+                    <label class="form-label">Exam</label>
                     <select wire:model.live="filterExam" class="form-select">
                         <option value="">Select Exam</option>
                         @foreach ($exams as $item)
@@ -30,7 +30,7 @@
             {{-- Class --}}
             <div class="col-md-3">
                 <div class="input-group input-group-outline">
-                    <label class="form-label">Class <span class="req">*</span></label>
+                    <label class="form-label">Class</label>
                     <select wire:model.live="filterClass" class="form-select">
                         <option value="">Select Class</option>
                         @foreach ($classes as $item)
@@ -44,9 +44,10 @@
             {{-- Section --}}
             <div class="col-md-3">
                 <div wire:ignore.self class="input-group input-group-outline">
-                    <label class="form-label">Section <span class="req">*</span></label>
+                    <label class="form-label">Section</label>
                     <select wire:model.live="filterSection" class="form-select">
                         <option value="">Select Section</option>
+                        <option value="all">All Section</option>
                         @foreach ($sections as $item)
                             <option value="{{ $item->id }}">{{ $item->name }}</option>
                         @endforeach
@@ -58,7 +59,7 @@
             {{-- Subject --}}
             <div class="col-md-3">
                 <div wire:ignore.self class="input-group input-group-outline">
-                    <label class="form-label">Subject <span class="req">*</span></label>
+                    <label class="form-label">Subject</label>
                     <select wire:model="filterSubject" class="form-select">
                         <option value="">Select Subject</option>
                         @foreach ($subjects as $item)
@@ -102,6 +103,7 @@
                     <tr>
                         <th>SL</th>
                         <th>Name</th>
+                        <th>Section</th>
                         <th>Roll</th>
                         <th>Register No</th>
                         <th>Status</th>
@@ -114,6 +116,7 @@
                     <tr wire:key="exam-att-{{ $index }}">
                         <td>{{ $index + 1 }}</td>
                         <td>{{ $item['name'] }}</td>
+                        <td>{{ $item['section_name'] }}</td>
                         <td>{{ $item['roll_no'] }}</td>
                         <td>{{ $item['register_no'] }}</td>
                         <td>
@@ -322,7 +325,7 @@
                         group.classList.toggle('is-filled', !!input.value.trim());
                     });
                 });
-            }, 50);
+            }, 0);
         });
     });
 </script>

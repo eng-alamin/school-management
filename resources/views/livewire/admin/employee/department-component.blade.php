@@ -3,8 +3,8 @@
     <div class="card">
 
         <div class="mat-card-header header-pink-gradient">
-            <h5 id="cardHeaderTitleAlldepartments">All Departments</h5>
-            <p id="cardHeaderSubtitle">Manage departments, create, update, and organize easily.</p>
+            <h5 id="dept-header-title">All Departments</h5>
+            <p id="dept-header-subtitle">Manage departments, create, update, and organize easily.</p>
         </div>
 
         <div class="card-header border-0">
@@ -37,11 +37,11 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>SL</th>
+                            <th id="dept-th-sl">SL</th>
                             <th wire:click="sortBy('name')" style="cursor:pointer">
-                                Name @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
+                                <span id="dept-th-name">Name</span> @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th>Actions</th>
+                            <th id="dept-th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -86,13 +86,13 @@
             <div class="modal-dialog modal-md modal-dialog-scrollable">
                 <div class="modal-content">
                     <div class="modal-header border-0">
-                        <h5 class="modal-title">{{ $editId ? 'Edit' : 'Create' }} Department</h5>
+                        <h5 class="modal-title"><span id="dept-modal-action" data-mode="{{ $editId ? 'edit' : 'create' }}">{{ $editId ? 'Edit' : 'Create' }}</span> <span id="dept-modal-suffix">Department</span></h5>
                         <button type="button" class="btn-close" wire:click="$set('showModal', false)"></button>
                     </div>
                     <div class="modal-body">
                         <div class="row g-3">
                             <div class="col-md-12">
-                                <label class="form-label">Name <span class="text-danger">*</span></label>
+                                <label class="form-label"><span id="dept-lbl-name">Name</span> <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model.defer="name" placeholder="e.g. Science">
                                 @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
@@ -119,8 +119,8 @@
                         <div style="width:56px;height:56px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
                             <i class="bi bi-exclamation-triangle text-danger" style="font-size:1.5rem;"></i>
                         </div>
-                        <h6 class="fw-700">Delete Department?</h6>
-                        <p class="text-muted small">This action cannot be undone.</p>
+                        <h6 class="fw-700" id="dept-delete-title">Delete Department?</h6>
+                        <p class="text-muted small" id="dept-delete-msg">This action cannot be undone.</p>
                     </div>
                     <div class="modal-footer justify-content-center border-0 pt-0">
                         <button class="btn btn-light btn-sm" wire:click="$set('confirmDelete', false)">Cancel</button>

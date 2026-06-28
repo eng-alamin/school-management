@@ -132,7 +132,7 @@
                 <tbody>
                     @foreach($employees as $employee)
                     <tr wire:key="emp-{{ $employee->id }}">
-                        <td>{{ $employee->staff_id ?? '—' }}</td>
+                        <td>{{ $employee->employee_id ?? '—' }}</td>
                         <td>{{ $employee->name }}</td>
                         <td>{{ $employee->designation?->name ?? '—' }}</td>
                         <td>{{ $employee->department?->name ?? '—' }}</td>

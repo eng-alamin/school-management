@@ -76,7 +76,7 @@ class ExpenseListComponent extends Component
         return view('livewire.accountant.office-accounting.expense-list-component')
             ->with('expenses', $expenses)
             ->layout('layouts.accountant.app', [
-                'title' => 'Expenses | Monarchy School',
+                'title' => 'Expenses | ' . institution()->name,
             ]);
     }
 }

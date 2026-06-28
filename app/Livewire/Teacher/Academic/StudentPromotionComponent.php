@@ -225,7 +225,7 @@ class StudentPromotionComponent extends Component
             ->with('classes', $classes)
             ->with('sessions', $sessions)
             ->layout('layouts.teacher.app', [
-                'title' => "Student Promotion | School SaaS",
+                'title' => 'Student Promotion | ' . institution()->name,
             ]);
     }
 }

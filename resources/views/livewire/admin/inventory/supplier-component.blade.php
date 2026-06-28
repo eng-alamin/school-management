@@ -4,8 +4,8 @@
 
       <!-- floating header -->
       <div class="mat-card-header header-pink-gradient">
-        <h5 id="cardHeaderTitleAllsections">Inventory Supplier</h5>
-        <p id="cardHeaderSubtitle">Manage inventory suppliers, create, update, and organize suppliers easily.</p>
+        <h5 id="inventory-supplier-title">Inventory Supplier</h5>
+        <p id="inventory-supplier-subtitle">Manage inventory suppliers, create, update, and organize suppliers easily.</p>
       </div>
 
         <div class="card-header border-0">
@@ -15,7 +15,7 @@
                 <div class="card-toolbar-title">
                     <div style="position:relative;display:inline-flex;align-items:center">
                         <span class="material-icons-round" style="position:absolute;left:10px;font-size:17px;color:var(--muted);pointer-events:none">search</span>
-                        <input type="text" wire:model.live.debounce.300ms="search" id="tableSearch" placeholder="Search" style="border:1px solid rgba(0,0,0,.1);border-radius:8px;padding:7px 12px 7px 32px;font-size:.78rem;font-family:inherit;color:var(--dark);outline:none;background:#f8f9fa;width:220px"/>
+                        <input type="text" wire:model.live.debounce.300ms="search" id="inventory-supplier-search" placeholder="Search" style="border:1px solid rgba(0,0,0,.1);border-radius:8px;padding:7px 12px 7px 32px;font-size:.78rem;font-family:inherit;color:var(--dark);outline:none;background:#f8f9fa;width:220px"/>
                     </div>
                 </div>
 
@@ -30,7 +30,7 @@
                     </div>
                 @endif
                 <button class="btn-outline bg-dark text-white" wire:click="openCreate">
-                    <span class="material-icons-round">add</span> <span id="newSectionBtn">Add Supplier</span>
+                    <span class="material-icons-round">add</span> <span id="inventory-supplier-add-btn">Add Supplier</span>
                 </button>
 
             </div>
@@ -41,12 +41,12 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>SL</th>
-                            <th wire:click="sortBy('name')" style="cursor:pointer">Name @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif</th>
-                            <th>Mobile</th>
-                            <th>Email</th>
-                            <th>Address</th>
-                            <th>Actions</th>
+                            <th id="sup-th-sl">SL</th>
+                            <th id="sup-th-name" wire:click="sortBy('name')" style="cursor:pointer">Name @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif</th>
+                            <th id="sup-th-mobile">Mobile</th>
+                            <th id="sup-th-email">Email</th>
+                            <th id="sup-th-address">Address</th>
+                            <th id="sup-th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -151,8 +151,8 @@
                         <div style="width:56px;height:56px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
                             <i class="bi bi-exclamation-triangle text-danger" style="font-size:1.5rem;"></i>
                         </div>
-                        <h6 class="fw-700">Delete Supplier?</h6>
-                        <p class="text-muted small">This action cannot be undone.</p>
+                        <h6 id="sup-delete-title" class="fw-700">Delete Supplier?</h6>
+                        <p id="sup-delete-msg" class="text-muted small">This action cannot be undone.</p>
                     </div>
                     <div class="modal-footer justify-content-center border-0 pt-0">
                         <button class="btn btn-light btn-sm" wire:click="$set('confirmDelete',false)">Cancel</button>

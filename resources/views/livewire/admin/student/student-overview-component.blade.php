@@ -24,7 +24,7 @@
                     <div class="f no-br"><div class="f-lbl">Roll No</div><div class="f-val">{{ $student->roll_no ?? '—' }}</div></div>
                     <div class="f no-bb"><div class="f-lbl">Admission Date</div><div class="f-val">{{ \Carbon\Carbon::parse($student->admission_date)->format('d M Y') }}</div></div>
                     <div class="f no-bb"><div class="f-lbl">Class</div><div class="f-val">{{ $student->class->name ?? '—' }}</div></div>
-                    <div class="f no-bb no-br"><div class="f-lbl">Section · Category</div><div class="f-val">{{ $student->section->name ?? '—' }} &nbsp;·&nbsp; {{ $student->category->name ?? '—' }}</div></div>
+                    <div class="f no-bb no-br"><div class="f-lbl">Section · Group</div><div class="f-val">{{ $student->section->name ?? '—' }} &nbsp;·&nbsp; {{ $student->group->name ?? '—' }}</div></div>
                 </div>
             </div>
 

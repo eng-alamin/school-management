@@ -20,7 +20,7 @@ class SettingComponent extends Component
     public $name;
     public $email;
     public $phone;
-    public $avatar;
+    public $avatar;     // raw relative path, e.g. "avatars/xxx.jpg"
     public $newAvatar;
 
     // Password
@@ -34,7 +34,7 @@ class SettingComponent extends Component
 
         $this->name   = $this->user->name;
         $this->email  = $this->user->email;
-        $this->phone = $this->user->phone;
+        $this->phone  = $this->user->phone;
         $this->avatar = $this->user->avatar;
     }
 
@@ -44,19 +44,16 @@ class SettingComponent extends Component
             'name'      => 'required|string|max:255',
             'email'     => 'required|email|unique:users,email,' . $this->user->id,
             'phone'     => 'nullable|string|max:20',
-            'newAvatar' => 'nullable',
+            'newAvatar' => 'nullable|image|max:2048',
         ]);
 
         $avatarPath = $this->avatar;
 
         if ($this->newAvatar) {
-            if ($this->avatar && str_starts_with($this->avatar, '/storage/')) {
-                Storage::disk('public')->delete(
-                    str_replace('/storage/', '', $this->avatar)
-                );
+            if ($avatarPath) {
+                Storage::disk('public')->delete($avatarPath);
             }
-            $stored     = $this->newAvatar->store('avatars', 'public');
-            $avatarPath = Storage::url($stored);
+            $avatarPath = $this->newAvatar->store('avatars', 'public');
         }
 
         $data = [
@@ -107,7 +104,7 @@ class SettingComponent extends Component
         return view('livewire.accountant.profile.setting-component')
             ->with('user', $this->user)
             ->layout('layouts.accountant.app', [
-                'title' => "Profile Setting | School SaaS",
+                'title' => 'Profile Setting | ' . institution()->name,
             ]);
     }
 }

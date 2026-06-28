@@ -26,7 +26,6 @@
                     <label class="form-label">Role <span class="req">*</span></label>
                     <select wire:model.live="filterRole" class="form-select">
                         <option value="">Select Role</option>
-                        {{-- BUG FIX: dynamically loop $roles (key => label) instead of hardcoded --}}
                         @foreach($roles as $value => $label)
                             <option value="{{ $value }}">{{ $label }}</option>
                         @endforeach

@@ -124,7 +124,7 @@ class FeeTypeComponent extends Component
         return view('livewire.accountant.student-accounting.fee-type-component')
             ->with('feeTypes', $feeTypes)
             ->layout('layouts.accountant.app', [
-                'title' => "Student Accounting - Fee Type | School SaaS",
+                'title' => 'Fee Type | ' . institution()->name,
             ]);
     }
 }

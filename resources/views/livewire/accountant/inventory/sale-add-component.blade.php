@@ -2,13 +2,13 @@
 
     <!-- Floating Header -->
     <div class="mat-card-header header-pink-gradient">
-        <h5>
+        <h5 id="sale-add-title">
             <span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">
                 point_of_sale
             </span>
             Add Sale
         </h5>
-        <p>Create new sale bill record</p>
+        <p id="sale-add-subtitle">Create new sale bill record</p>
     </div>
 
     <!-- ══ SALE DETAILS ══ -->
@@ -22,7 +22,8 @@
                     <select wire:model.live="role" class="form-select">
                         <option value="" disabled>Select</option>
                         <option value="student">Student</option>
-                        <option value="employee">Employee</option>
+                        <option value="teacher">Teacher</option>
+                        <option value="staff">Staff</option>
                         <option value="other">Other</option>
                     </select>
                 </div>
@@ -53,7 +54,7 @@
                         <option value="" disabled>Select</option>
                         @foreach($saleables as $saleable)
                             @if($role === 'student')
-                                <option value="{{ $saleable->id }}">{{ $saleable->full_name }}</option>
+                                <option value="{{ $saleable->id }}">{{ $saleable->name }}</option>
                             @else
                                 <option value="{{ $saleable->id }}">{{ $saleable->name }}</option>
                             @endif
@@ -102,12 +103,12 @@
             <table style="width:100%;border-collapse:collapse;font-size:.82rem">
                 <thead>
                     <tr style="border-bottom:2px solid var(--border,#e9ecef)">
-                        <th style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Category <span class="req">*</span></th>
-                        <th style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Product <span class="req">*</span></th>
-                        <th style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Unit Price</th>
-                        <th style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Quantity <span class="req">*</span></th>
-                        <th style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Discount</th>
-                        <th style="padding:8px 10px;text-align:right;color:var(--muted);font-weight:600;white-space:nowrap">Total Price</th>
+                        <th id="sadd-th-category" style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Category <span class="req">*</span></th>
+                        <th id="sadd-th-product" style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Product <span class="req">*</span></th>
+                        <th id="sadd-th-unit-price" style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Unit Price</th>
+                        <th id="sadd-th-qty" style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Quantity <span class="req">*</span></th>
+                        <th id="sadd-th-discount" style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Discount</th>
+                        <th id="sadd-th-total" style="padding:8px 10px;text-align:right;color:var(--muted);font-weight:600;white-space:nowrap">Total Price</th>
                         <th style="padding:8px 10px;text-align:center;color:var(--muted);font-weight:600"></th>
                     </tr>
                 </thead>

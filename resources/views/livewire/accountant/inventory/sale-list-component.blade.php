@@ -4,8 +4,8 @@
 
         <!-- floating header -->
         <div class="mat-card-header header-pink-gradient">
-            <h5>Sales</h5>
-            <p>Manage sales, track bills, and monitor inventory sales easily.</p>
+            <h5 id="sale-list-title">Sales</h5>
+            <p id="sale-list-subtitle">Manage sales, track bills, and monitor inventory sales easily.</p>
         </div>
 
         <div class="card-header border-0">
@@ -29,7 +29,7 @@
                     </div>
                 @endif
 
-                <a href="{{ route('accountant.inventory.sale.add') }}" class="btn-sm btn-outline bg-dark text-white">
+                <a href="{{ route('admin.inventory.sale.add') }}" class="btn-sm btn-outline bg-dark text-white">
                     <span class="material-icons-round">add</span> Add Sale
                 </a>
             </div>
@@ -40,22 +40,22 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>SL</th>
+                            <th id="slist-th-sl">SL</th>
                             <th wire:click="sortBy('bill_no')" style="cursor:pointer">
                                 Bill No @if($sortField === 'bill_no') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
                             <th wire:click="sortBy('role')" style="cursor:pointer">
                                 Role @if($sortField === 'role') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th>Sale To</th>
+                            <th id="slist-th-sale-to">Sale To</th>
                             <th wire:click="sortBy('date')" style="cursor:pointer">
                                 Date @if($sortField === 'date') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th>Payment</th>
+                            <th id="slist-th-payment">Payment</th>
                             <th wire:click="sortBy('net_payable')" style="cursor:pointer">
                                 Net Payable @if($sortField === 'net_payable') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th>Actions</th>
+                            <th id="slist-th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -78,7 +78,7 @@
 
                                 <td>
                                     @if($sale->role === 'student')
-                                        {{ $sale->saleable->full_name ?? '—' }}
+                                        {{ $sale->saleable->name ?? '—' }}
                                     @else
                                         {{ $sale->saleable->name ?? '—' }}
                                     @endif
@@ -98,12 +98,12 @@
                                 </td>
 
                                 <td style="font-weight:600">
-                                    {{ number_format($sale->net_payable, 2) }}
+                                    {{ number_format($sale->net_payable, 0) }}
                                 </td>
 
                                 <td>
                                     <div class="d-flex gap-1">
-                                        <a href="{{ route('accountant.inventory.sale.edit', ['id' => $sale->id]) }}"
+                                        <a href="{{ route('admin.inventory.sale.edit', ['id' => $sale->id]) }}"
                                            class="act-btn edit" title="Edit">
                                             <span class="material-icons-round">drive_file_rename_outline</span>
                                         </a>
@@ -119,7 +119,7 @@
                                 <td colspan="8" class="text-center py-5 text-muted">
                                     <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
                                     No sales found.
-                                    <a href="{{ route('accountant.inventory.sale.add') }}">Create one now</a>.
+                                    <a href="{{ route('admin.inventory.sale.add') }}">Create one now</a>.
                                 </td>
                             </tr>
                         @endforelse
@@ -144,8 +144,8 @@
                         <div style="width:56px;height:56px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
                             <i class="bi bi-exclamation-triangle text-danger" style="font-size:1.5rem;"></i>
                         </div>
-                        <h6 class="fw-700">Delete Sale?</h6>
-                        <p class="text-muted small">This will also delete all associated items. This action cannot be undone.</p>
+                        <h6 id="slist-delete-title" class="fw-700">Delete Sale?</h6>
+                        <p id="slist-delete-msg" class="text-muted small">This will also delete all associated items. This action cannot be undone.</p>
                     </div>
                     <div class="modal-footer justify-content-center border-0 pt-0">
                         <button class="btn btn-light btn-sm" wire:click="$set('confirmDelete',false)">Cancel</button>

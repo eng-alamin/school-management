@@ -13,12 +13,12 @@ use Illuminate\Support\Facades\DB;
 class PurchaseAddComponent extends Component
 {
     // ── Purchase header fields ──
-    public int|string $supplier_id   = '';
-    public int|string $store_id      = '';
-    public string     $bill_no       = '';
+    public int|string $supplier_id     = '';
+    public int|string $store_id        = '';
+    public string     $bill_no         = '';
     public string     $purchase_status = 'pending';
-    public string     $date          = '';
-    public string     $remarks       = '';
+    public string     $date            = '';
+    public string     $remarks         = '';
 
     // ── Line items ──
     public array $items = [];
@@ -57,8 +57,19 @@ class PurchaseAddComponent extends Component
 
     public function mount(): void
     {
-        $this->date = now()->format('Y-m-d');
+        $this->date    = now()->format('Y-m-d');
+        $this->bill_no = $this->generateBillNo();
         $this->addItem();
+    }
+
+    // ── পরবর্তী bill number generate ──
+    private function generateBillNo(): string
+    {
+        $last = InventoryPurchase::latest('id')->value('bill_no');
+        $next = $last
+            ? ((int) preg_replace('/\D/', '', $last)) + 1
+            : 1;
+        return 'BILL-' . str_pad($next, 4, '0', STR_PAD_LEFT);
     }
 
     // ── Add a blank item row ──
@@ -81,11 +92,21 @@ class PurchaseAddComponent extends Component
         $this->recalculate();
     }
 
-    // ── Recalculate a row's total and the net total whenever any item field changes ──
+    // ── Product select হলে purchase_price auto-fill হবে,
+    //    অন্য field change হলে শুধু recalculate হবে ──
     public function updatedItems($value, $key): void
     {
-        // $key is like "0.unit_price" or "1.quantity"
-        $index = (int) explode('.', $key)[0];
+        $parts = explode('.', $key);
+        $index = (int) $parts[0];
+        $field = $parts[1] ?? '';
+
+        if ($field === 'product_id' && !empty($value)) {
+            $product = InventoryProduct::find($value);
+            if ($product) {
+                $this->items[$index]['unit_price'] = $product->purchase_price;
+            }
+        }
+
         $this->recalculateRow($index);
         $this->recalculate();
     }
@@ -148,6 +169,7 @@ class PurchaseAddComponent extends Component
         ]);
         $this->purchase_status = 'pending';
         $this->date            = now()->format('Y-m-d');
+        $this->bill_no         = $this->generateBillNo();
         $this->resetValidation();
         $this->addItem();
     }
@@ -159,7 +181,7 @@ class PurchaseAddComponent extends Component
             'stores'    => InventoryStore::orderBy('name')->get(),
             'products'  => InventoryProduct::orderBy('name')->get(),
         ])->layout('layouts.accountant.app', [
-            'title' => 'Add Purchase | School SaaS',
+            'title' => 'Add Purchase | ' . institution()->name,
         ]);
     }
 }

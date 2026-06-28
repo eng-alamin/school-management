@@ -73,7 +73,7 @@
                                 <td>{{ $expense->reference ?? '—' }}</td>
                                 <td>
                                     <span class="badge rounded-pill badge-active">
-                                        {{ number_format($expense->amount, 2) }}
+                                        {{ number_format($expense->amount, 0) }}
                                     </span>
                                 </td>
                                 <td>{{ \Carbon\Carbon::parse($expense->date)->format('d M Y') }}</td>

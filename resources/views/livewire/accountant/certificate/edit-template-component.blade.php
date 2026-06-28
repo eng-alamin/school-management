@@ -179,120 +179,55 @@
         <div class="section-title mb-2">Images</div>
         <div class="row g-4">
 
-            <!-- ══ IMAGES ══ -->
-            <div class="form-section">
-                <div class="section-title mb-2">Images</div>
-                <div class="row g-4">
-
-                    {{-- ── LOGO IMAGE ── --}}
-                    <div class="col-md-4">
-                        <label class="upload-label">School Logo</label>
-                        @if($existing_logo_image)
-                            <div class="existing-image-preview">
-                                <img src="{{ asset($existing_logo_image) }}" class="preview-img" alt="Logo">
-                                <div class="d-flex gap-2 mt-2">
-                                    <button type="button" wire:click="removeImage('logo_image')" class="btn-remove-image">
-                                        <span class="material-icons-round" style="font-size:14px">delete</span> Remove
-                                    </button>
-                                </div>
-                            </div>
-                        @else
-                            <div class="photo-upload-box" onclick="document.getElementById('logoUpload').click()">
-                                <span class="material-icons-round">corporate_fare</span>
-                                <span class="lbl">Click to upload logo</span>
-                                <small>JPG, PNG up to 2MB</small>
-                            </div>
-                            <input type="file" id="logoUpload" wire:model="logo_image" accept="image/*" style="display:none">
-                            @if($logo_image)
-                                @if($this->safePreviewUrl($logo_image))
-                                    <div class="new-upload-preview mt-2">
-                                        <img src="{{ $this->safePreviewUrl($logo_image) }}" class="preview-img" alt="Logo preview">
-                                        <span class="preview-badge">New — not saved yet</span>
-                                    </div>
-                                @else
-                                    <div class="new-upload-preview mt-2">
-                                        <span class="material-icons-round">check_circle</span>
-                                        <span class="preview-badge">File selected</span>
-                                    </div>
-                                @endif
-                            @endif
-                        @endif
-                        @error('logo_image') <span class="text-danger d-block mt-1">{{ $message }}</span> @enderror
-                    </div>
-
-                    {{-- ── SIGNATURE IMAGE ── --}}
-                    <div class="col-md-4">
-                        <label class="upload-label">Signature</label>
-                        @if($existing_signature_image)
-                            <div class="existing-image-preview">
-                                <img src="{{ asset($existing_signature_image) }}" class="preview-img" alt="Signature">
-                                <div class="d-flex gap-2 mt-2">
-                                    <button type="button" wire:click="removeImage('signature_image')" class="btn-remove-image">
-                                        <span class="material-icons-round" style="font-size:14px">delete</span> Remove
-                                    </button>
-                                </div>
-                            </div>
-                        @else
-                            <div class="photo-upload-box" onclick="document.getElementById('signatureUpload').click()">
-                                <span class="material-icons-round">draw</span>
-                                <span class="lbl">Click to upload signature</span>
-                                <small>JPG, PNG up to 2MB</small>
-                            </div>
-                            <input type="file" id="signatureUpload" wire:model="signature_image" accept="image/*" style="display:none">
-                            @if($signature_image)
-                                @if($this->safePreviewUrl($signature_image))
-                                    <div class="new-upload-preview mt-2">
-                                        <img src="{{ $this->safePreviewUrl($signature_image) }}" class="preview-img" alt="Signature preview">
-                                        <span class="preview-badge">New — not saved yet</span>
-                                    </div>
-                                @else
-                                    <div class="new-upload-preview mt-2">
-                                        <span class="material-icons-round">check_circle</span>
-                                        <span class="preview-badge">File selected</span>
-                                    </div>
-                                @endif
-                            @endif
-                        @endif
-                        @error('signature_image') <span class="text-danger d-block mt-1">{{ $message }}</span> @enderror
-                    </div>
-
-                    {{-- ── BACKGROUND IMAGE ── --}}
-                    <div class="col-md-4">
-                        <label class="upload-label">Background</label>
-                        @if($existing_background_image)
-                            <div class="existing-image-preview">
-                                <img src="{{ asset($existing_background_image) }}" class="preview-img" alt="Background">
-                                <div class="d-flex gap-2 mt-2">
-                                    <button type="button" wire:click="removeImage('background_image')" class="btn-remove-image">
-                                        <span class="material-icons-round" style="font-size:14px">delete</span> Remove
-                                    </button>
-                                </div>
-                            </div>
-                        @else
-                            <div class="photo-upload-box" onclick="document.getElementById('backgroundUpload').click()">
-                                <span class="material-icons-round">wallpaper</span>
-                                <span class="lbl">Click to upload background</span>
-                                <small>JPG, PNG up to 2MB</small>
-                            </div>
-                            <input type="file" id="backgroundUpload" wire:model="background_image" accept="image/*" style="display:none">
-                            @if($background_image)
-                                @if($this->safePreviewUrl($background_image))
-                                    <div class="new-upload-preview mt-2">
-                                        <img src="{{ $this->safePreviewUrl($background_image) }}" class="preview-img" alt="Background preview">
-                                        <span class="preview-badge">New — not saved yet</span>
-                                    </div>
-                                @else
-                                    <div class="new-upload-preview mt-2">
-                                        <span class="material-icons-round">check_circle</span>
-                                        <span class="preview-badge">File selected</span>
-                                    </div>
-                                @endif
-                            @endif
-                        @endif
-                        @error('background_image') <span class="text-danger d-block mt-1">{{ $message }}</span> @enderror
-                    </div>
-
+            {{-- Logo --}}
+            <div class="col-md-4">
+                <label class="upload-label">School Logo</label>
+                <div class="photo-upload-box" onclick="document.getElementById('logoUpload').click()">
+                    @if($logo_image)
+                        <span class="material-icons-round">check_circle</span>
+                        <span class="lbl">File selected</span>
+                    @else
+                        <span class="material-icons-round">corporate_fare</span>
+                        <span class="lbl">Click to upload logo</span>
+                    @endif
+                    <small>JPG, PNG up to 2MB</small>
                 </div>
+                <input type="file" id="logoUpload" wire:model="logo_image" accept="image/jpeg,image/png" style="display:none">
+                @error('logo_image') <span class="text-danger d-block mt-1">{{ $message }}</span> @enderror
+            </div>
+
+            {{-- Signature --}}
+            <div class="col-md-4">
+                <label class="upload-label">Signature</label>
+                <div class="photo-upload-box" onclick="document.getElementById('signatureUpload').click()">
+                    @if($signature_image)
+                        <span class="material-icons-round">check_circle</span>
+                        <span class="lbl">File selected</span>
+                    @else
+                        <span class="material-icons-round">draw</span>
+                        <span class="lbl">Click to upload signature</span>
+                    @endif
+                    <small>JPG, PNG up to 2MB</small>
+                </div>
+                <input type="file" id="signatureUpload" wire:model="signature_image" accept="image/jpeg,image/png" style="display:none">
+                @error('signature_image') <span class="text-danger d-block mt-1">{{ $message }}</span> @enderror
+            </div>
+
+            {{-- Background --}}
+            <div class="col-md-4">
+                <label class="upload-label">Background</label>
+                <div class="photo-upload-box" onclick="document.getElementById('backgroundUpload').click()">
+                    @if($background_image)
+                        <span class="material-icons-round">check_circle</span>
+                        <span class="lbl">File selected</span>
+                    @else
+                        <span class="material-icons-round">wallpaper</span>
+                        <span class="lbl">Click to upload background</span>
+                    @endif
+                    <small>JPG, PNG up to 2MB</small>
+                </div>
+                <input type="file" id="backgroundUpload" wire:model="background_image" accept="image/jpeg,image/png" style="display:none">
+                @error('background_image') <span class="text-danger d-block mt-1">{{ $message }}</span> @enderror
             </div>
 
         </div>
@@ -326,106 +261,12 @@
 
 @push('styles')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-lite.min.css">
-<style>
-    /* ── Upload label ── */
-    .upload-label {
-        font-size: .73rem;
-        font-weight: 600;
-        color: var(--muted, #6b7280);
-        display: block;
-        margin-bottom: 8px;
-    }
-
-    /* ── Upload box ── */
-    .photo-upload-box {
-        border: 2px dashed #e5e7eb;
-        border-radius: 10px;
-        padding: 24px 16px;
-        text-align: center;
-        cursor: pointer;
-        transition: border-color .2s, background .2s;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 6px;
-    }
-    .photo-upload-box:hover {
-        border-color: var(--primary, #e74c3c);
-        background: #fff5f5;
-    }
-    .photo-upload-box .material-icons-round {
-        font-size: 2rem;
-        color: #d1d5db;
-    }
-    .photo-upload-box .lbl {
-        font-size: .8rem;
-        font-weight: 600;
-        color: #6b7280;
-    }
-    .photo-upload-box small {
-        color: #bbb;
-        font-size: .7rem;
-    }
-
-    /* ── Existing image preview ── */
-    .existing-image-preview {
-        background: #f9fafb;
-        border: 1px solid #e5e7eb;
-        border-radius: 10px;
-        padding: 12px;
-    }
-    .preview-img {
-        max-height: 80px;
-        max-width: 100%;
-        border-radius: 6px;
-        border: 1px solid #eee;
-        display: block;
-        object-fit: contain;
-    }
-
-    /* ── New upload preview ── */
-    .new-upload-preview {
-        background: #f0fdf4;
-        border: 1px solid #bbf7d0;
-        border-radius: 10px;
-        padding: 10px;
-        text-align: center;
-    }
-    .preview-badge {
-        display: inline-block;
-        margin-top: 6px;
-        font-size: .68rem;
-        background: #dcfce7;
-        color: #16a34a;
-        border-radius: 4px;
-        padding: 2px 8px;
-        font-weight: 600;
-    }
-
-    /* ── Remove button ── */
-    .btn-remove-image {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        font-size: .72rem;
-        font-weight: 600;
-        color: #e74c3c;
-        background: #fff0f0;
-        border: 1px solid #f5c6c6;
-        border-radius: 6px;
-        padding: 3px 10px;
-        cursor: pointer;
-        transition: background .2s;
-    }
-    .btn-remove-image:hover { background: #ffe0e0; }
-
-    /* ── Spin animation ── */
-    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-</style>
 @endpush
 
 
 @push('scripts')
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-lite.min.css">
+
 <script>
 (function loadSummernote() {
 
@@ -436,8 +277,8 @@
         $(el).data('summernote-init', true);
 
         $(el).summernote({
-            height: 320,
-            placeholder: 'Write certificate content here... Use {name}, {institute_name}, {roll_no} etc.',
+            height: 300,
+            placeholder: 'Write certificate content here...',
             toolbar: [
                 ['style',    ['style']],
                 ['font',     ['bold', 'underline', 'italic', 'strikethrough', 'clear']],
@@ -451,8 +292,8 @@
             ],
             callbacks: {
                 onChange: function (contents) {
-                    var id  = document.querySelector('[wire\\:id]').getAttribute('wire:id');
-                    Livewire.find(id).set('certificate_content', contents);
+                    // Bug 4 fix: Livewire v3 এ @this ব্যবহার করো
+                    @this.set('certificate_content', contents);
                 },
                 onInit: function () {
                     var existing = @js($certificate_content ?? '');
@@ -466,8 +307,8 @@
 
     function loadScript(src, cb) {
         if (document.querySelector('script[src="' + src + '"]')) { cb(); return; }
-        var s    = document.createElement('script');
-        s.src    = src;
+        var s = document.createElement('script');
+        s.src = src;
         s.onload = cb;
         document.head.appendChild(s);
     }
@@ -475,10 +316,37 @@
     function initWhenReady() {
         document.addEventListener('livewire:initialized', function () {
             setTimeout(attachSummernote, 150);
+
             Livewire.hook('morph.updated', function () {
                 setTimeout(attachSummernote, 100);
             });
+
+            Livewire.on('resetSummernote', function () {
+                var el = $('#certificateContent');
+                if (el.length && $(el).data('summernote-init')) {
+                    el.summernote('code', '');
+                }
+            });
+
+            // Bug 3 fix: resetSelects event এ select value গুলো manually sync করো
+            Livewire.on('resetSelects', function () {
+                document.querySelectorAll('.input-group-outline select').forEach(function (select) {
+                    // Livewire এর current value দিয়ে DOM sync করো
+                    var group = select.closest('.input-group');
+                    if (group) {
+                        group.classList.toggle('is-filled', !!select.value);
+                    }
+                    // custom select rebuild
+                    var old = select.parentNode.querySelector('.custom-select-wrapper');
+                    if (old) old.remove();
+                    select.style.display = '';
+                    if (typeof buildCustomSelect === 'function') {
+                        buildCustomSelect(select);
+                    }
+                });
+            });
         });
+
         setTimeout(attachSummernote, 300);
     }
 
@@ -495,81 +363,56 @@
 
 })();
 </script>
-    <script>
-        document.addEventListener('livewire:initialized', () => {
 
-            setTimeout(() => initAllFields(), 100);
+<script>
+    document.addEventListener('livewire:initialized', () => {
 
-            Livewire.hook('morph.updated', ({ el }) => {
-                setTimeout(() => initAllFields(), 1);
+        setTimeout(() => initAllFields(), 100);
+
+        Livewire.hook('morph.updated', ({ el }) => {
+            setTimeout(() => initAllFields(), 0);
+        });
+
+        function initAllFields() {
+
+            document.querySelectorAll('.input-group-outline input, .input-group-outline textarea').forEach(function (input) {
+                var group = input.closest('.input-group');
+                if (!group) return;
+                group.classList.toggle('is-filled', !!(input.value && input.value.trim()));
+                if (input._materialInit) return;
+                input._materialInit = true;
+                input.addEventListener('focus', function () { group.classList.add('is-focused'); });
+                input.addEventListener('blur', function () {
+                    group.classList.remove('is-focused');
+                    group.classList.toggle('is-filled', !!input.value.trim());
+                });
+                input.addEventListener('input', function () {
+                    group.classList.toggle('is-filled', !!input.value.trim());
+                });
             });
 
-            function initAllFields() {
-
-                // ── 1. Text/Textarea/Number is-filled ──
-                document.querySelectorAll('.input-group-outline input, .input-group-outline textarea').forEach(function(input) {
-                    var group = input.closest('.input-group');
-                    if (!group) return;
-                    if (input.value && input.value.trim() !== '') {
-                        group.classList.add('is-filled');
-                    } else {
-                        group.classList.remove('is-filled');
-                    }
-                    if (input._materialInit) return;
-                    input._materialInit = true;
-                    input.addEventListener('focus', function() { group.classList.add('is-focused'); });
-                    input.addEventListener('blur', function() {
-                        group.classList.remove('is-focused');
-                        group.classList.toggle('is-filled', !!input.value.trim());
-                    });
-                    input.addEventListener('input', function() {
-                        group.classList.toggle('is-filled', !!input.value.trim());
-                    });
+            document.querySelectorAll('.input-group-outline select').forEach(function (select) {
+                var group = select.closest('.input-group');
+                if (!group) return;
+                group.classList.toggle('is-filled', !!(select.value && select.value !== ''));
+                if (select._materialInit) return;
+                select._materialInit = true;
+                select.addEventListener('change', function () {
+                    group.classList.toggle('is-filled', !!select.value);
                 });
+                select.addEventListener('focus', function () { group.classList.add('is-focused'); });
+                select.addEventListener('blur', function () { group.classList.remove('is-focused'); });
+            });
 
-                // ── 2. Select is-filled ──
-                document.querySelectorAll('.input-group-outline select').forEach(function(select) {
-                    var group = select.closest('.input-group');
-                    if (!group) return;
-                    if (select.value && select.value !== '') {
-                        group.classList.add('is-filled');
-                    } else {
-                        group.classList.remove('is-filled');
-                    }
-                    if (select._materialInit) return;
-                    select._materialInit = true;
-                    select.addEventListener('change', function() {
-                        group.classList.toggle('is-filled', !!select.value);
-                    });
-                    select.addEventListener('focus', function() { group.classList.add('is-focused'); });
-                    select.addEventListener('blur', function() { group.classList.remove('is-focused'); });
-                });
-
-                // ── 3. Custom Select rebuild ──
-                document.querySelectorAll('.input-group-outline .form-select').forEach(function(select) {
-                    var old = select.parentNode.querySelector('.custom-select-wrapper');
-                    if (old) old.remove();
-                    select.style.display = '';
-                    if (typeof buildCustomSelect === 'function') {
-                        buildCustomSelect(select);
-                    }
-                });
-
-                // ── 4. Datepicker ──
-                Livewire.on('date-updated', function (event) {
-                    var input = document.querySelector('.input-group-outline input[type="date"]');
-                    if (!input) return;
-                    var newDate = event.date || '';
-                    if (newDate) {
-                        input.value = newDate;
-                        input.dataset.dpValue = newDate;
-                        if (input._dpTriggerSync) {
-                            input._dpTriggerSync(newDate);
-                        }
-                    }
-                });
-            }
-
-        });
-    </script>
+            document.querySelectorAll('.input-group-outline .form-select').forEach(function (select) {
+                var old = select.parentNode.querySelector('.custom-select-wrapper');
+                if (old) old.remove();
+                select.style.display = '';
+                if (typeof buildCustomSelect === 'function') {
+                    buildCustomSelect(select);
+                }
+            });
+        }
+    });
+</script>
 @endpush

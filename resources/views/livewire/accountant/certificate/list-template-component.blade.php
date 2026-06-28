@@ -40,7 +40,7 @@
                 @endif
 
                 {{-- Add button --}}
-                <a href="{{ route('accountant.certificate.add-template') }}"
+                <a href="{{ route('admin.certificate.add-template') }}"
                    class="btn-sm btn-outline bg-dark text-white">
                     <span class="material-icons-round">add</span> Add Template
                 </a>
@@ -78,7 +78,7 @@
                                 <td>
                                     <div style="display:flex;align-items:center;gap:10px">
                                         @if($template->logo_image)
-                                            <img src="{{ asset($template->logo_image) }}"
+                                            <img src="{{ asset('storage/' . $template->logo_image) }}"
                                                  style="width:32px;height:32px;object-fit:cover;border-radius:6px;border:1px solid #eee">
                                         @else
                                             <span class="material-icons-round"
@@ -111,7 +111,7 @@
 
                                 <td>
                                     <div class="d-flex gap-1">
-                                        <a href="{{ route('accountant.certificate.edit-template', ['id' => $template->id]) }}"
+                                        <a href="{{ route('admin.certificate.edit-template', ['id' => $template->id]) }}"
                                            class="act-btn edit" title="Edit">
                                             <span class="material-icons-round">drive_file_rename_outline</span>
                                         </a>
@@ -128,7 +128,7 @@
                                     <span class="material-icons-round d-block mb-2"
                                           style="font-size:2.5rem;opacity:.2">workspace_premium</span>
                                     No certificate templates found.
-                                    <a href="{{ route('accountant.certificate.add-template') }}">
+                                    <a href="{{ route('admin.certificate.add-template') }}">
                                         Create one now
                                     </a>.
                                 </td>

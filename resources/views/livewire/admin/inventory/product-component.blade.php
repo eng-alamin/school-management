@@ -4,8 +4,8 @@
 
       <!-- floating header -->
       <div class="mat-card-header header-pink-gradient">
-        <h5 id="cardHeaderTitleAllsections">Inventory Product</h5>
-        <p id="cardHeaderSubtitle">Manage inventory products, create, update, and organize products easily.</p>
+        <h5 id="inventory-product-title">Inventory Product</h5>
+        <p id="inventory-product-subtitle">Manage inventory products, create, update, and organize products easily.</p>
       </div>
 
         <div class="card-header border-0">
@@ -15,7 +15,7 @@
                 <div class="card-toolbar-title">
                     <div style="position:relative;display:inline-flex;align-items:center">
                         <span class="material-icons-round" style="position:absolute;left:10px;font-size:17px;color:var(--muted);pointer-events:none">search</span>
-                        <input type="text" wire:model.live.debounce.300ms="search" id="tableSearch" placeholder="Search" style="border:1px solid rgba(0,0,0,.1);border-radius:8px;padding:7px 12px 7px 32px;font-size:.78rem;font-family:inherit;color:var(--dark);outline:none;background:#f8f9fa;width:220px"/>
+                        <input type="text" wire:model.live.debounce.300ms="search" id="inventory-product-search" placeholder="Search" style="border:1px solid rgba(0,0,0,.1);border-radius:8px;padding:7px 12px 7px 32px;font-size:.78rem;font-family:inherit;color:var(--dark);outline:none;background:#f8f9fa;width:220px"/>
                     </div>
                 </div>
 
@@ -30,13 +30,13 @@
                     </div>
                 @endif
                 <a href="{{ route('admin.inventory.categories') }}" target="_blank" class="btn-sm btn-outline">
-                    <span class="material-icons-round">category</span> <span id="newCategoryBtn">Category</span>
+                    <span class="material-icons-round fs-6">category</span> <span id="inventory-product-category-btn">Category</span>
                 </a>
                 <a href="{{ route('admin.inventory.units') }}" target="_blank" class="btn-sm btn-outline">
-                    <span class="material-icons-round">ac_unit</span> <span id="newUnitBtn">Unit</span>
+                    <span class="material-icons-round fs-6">ac_unit</span> <span id="inventory-product-unit-btn">Unit</span>
                 </a>
                 <button class="btn-outline bg-dark text-white" wire:click="openCreate">
-                    <span class="material-icons-round">add</span> <span id="newProductBtn">Add Product</span>
+                    <span class="material-icons-round">add</span> <span id="inventory-product-add-btn">Add Product</span>
                 </button>
 
             </div>
@@ -47,15 +47,15 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>SL</th>
-                            <th wire:click="sortBy('name')" style="cursor:pointer">Name @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif</th>
-                            <th wire:click="sortBy('code')" style="cursor:pointer">Code @if($sortField === 'code') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif</th>
-                            <th>Category</th>
-                            <th>Purchase Unit</th>
-                            <th>Sales Unit</th>
-                            <th>Purchase Price</th>
-                            <th>Sales Price</th>
-                            <th>Actions</th>
+                            <th id="prod-th-sl">SL</th>
+                            <th id="prod-th-name" wire:click="sortBy('name')" style="cursor:pointer">Name @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif</th>
+                            <th id="prod-th-code" wire:click="sortBy('code')" style="cursor:pointer">Code @if($sortField === 'code') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif</th>
+                            <th id="prod-th-category">Category</th>
+                            <th id="prod-th-purchase-unit">Purchase Unit</th>
+                            <th id="prod-th-sales-unit">Sales Unit</th>
+                            <th id="prod-th-purchase-price">Purchase Price</th>
+                            <th id="prod-th-sales-price">Sales Price</th>
+                            <th id="prod-th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -67,8 +67,8 @@
                             <td>{{ $product->category->name ?? '—' }}</td>
                             <td>{{ $product->purchaseUnit->name ?? '—' }}</td>
                             <td>{{ $product->salesUnit->name ?? '—' }}</td>
-                            <td>{{ number_format($product->purchase_price, 2) }}</td>
-                            <td>{{ number_format($product->sales_price, 2) }}</td>
+                            <td>{{ number_format($product->purchase_price, 0) }}</td>
+                            <td>{{ number_format($product->sales_price, 0) }}</td>
                             <td>
                                 <div class="d-flex gap-1">
                                     <button class="act-btn edit" title="Edit" wire:click="openEdit({{ $product->id }})">
@@ -208,8 +208,8 @@
                         <div style="width:56px;height:56px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
                             <i class="bi bi-exclamation-triangle text-danger" style="font-size:1.5rem;"></i>
                         </div>
-                        <h6 class="fw-700">Delete Product?</h6>
-                        <p class="text-muted small">This action cannot be undone.</p>
+                        <h6 id="prod-delete-title" class="fw-700">Delete Product?</h6>
+                        <p id="prod-delete-msg" class="text-muted small">This action cannot be undone.</p>
                     </div>
                     <div class="modal-footer justify-content-center border-0 pt-0">
                         <button class="btn btn-light btn-sm" wire:click="$set('confirmDelete',false)">Cancel</button>

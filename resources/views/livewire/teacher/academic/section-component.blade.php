@@ -26,14 +26,14 @@
                     </div>
                 @endif
 
-                <a href="{{ route('teacher.academic.classes') }}" class="btn-outline">
+                <a href="{{ route('admin.academic.classes') }}" class="btn-outline">
                     <span class="material-icons-round" style="font-size:16px">flight_class</span><span>Class</span>
                 </a>
-                <a href="{{ route('teacher.academic.sections') }}" class="btn-outline bg-dark text-white">
+                <a href="{{ route('admin.academic.sections') }}" class="btn-outline bg-dark text-white">
                     <span class="material-icons-round" style="font-size:16px">border_inner</span><span>Section</span>
                 </a>
-                <a href="{{ route('teacher.academic.categories') }}" class="btn-outline">
-                    <span class="material-icons-round" style="font-size:16px">category</span><span>Category</span>
+                <a href="{{ route('admin.academic.groups') }}" class="btn-outline">
+                    <span class="material-icons-round" style="font-size:16px">group</span><span>Groups</span>
                 </a>
 
                 <button class="btn-outline bg-dark text-white" wire:click="openCreate">
@@ -62,7 +62,7 @@
                         <tr>
                             <td class="text-muted">{{ $sections->firstItem() + $i }}</td>
                             <td>{{ $section->name }}</td>
-                            <td>{{ $section->capacity }}</td>
+                            <td>{{ $section->capacity ?? '—' }}</td>
                             <td>
                                 <div class="d-flex gap-1">
                                     <button class="act-btn edit" title="Edit" wire:click="openEdit({{ $section->id }})">
@@ -111,7 +111,7 @@
                                 @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                             <div class="col-md-12">
-                                <label class="form-label">Capacity <span class="text-danger">*</span></label>
+                                <label class="form-label">Capacity</label>
                                 <input type="number" class="form-control @error('capacity') is-invalid @enderror" wire:model.defer="capacity" placeholder="e.g. 40">
                                 @error('capacity') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>

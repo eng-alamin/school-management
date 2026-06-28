@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Parent;
 use Livewire\Component;
 use App\Models\User;
 use App\Models\Guardian;
+use Illuminate\Support\Facades\DB;
 
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
@@ -66,7 +67,10 @@ class ParentAddComponent extends Component
 
     public function save()
     {
+        DB::beginTransaction();
+
         try {
+
             $this->validate($this->rules());
 
             $userPassword = !empty($this->password)
@@ -83,31 +87,37 @@ class ParentAddComponent extends Component
 
             $user = User::create($userData);
 
-            // Upload photo
+            // ── Upload Photo
             $photoPath = $this->photo_upload
-            ? $this->photo_upload->store('guardians', 'public')
-            : null;
+                ? $this->photo_upload->store('guardians', 'public')
+                : null;
 
             Guardian::create([
                 'user_id'     => $user->id,
-                'name' => $this->name,
-                'relation' => $this->relation,
+                'name'        => $this->name,
+                'relation'    => $this->relation,
                 'father_name' => $this->father_name,
                 'mother_name' => $this->mother_name,
-                'occupation' => $this->occupation,
-                'income' => $this->income,
-                'education' => $this->education,
-                'mobile' => $this->mobile,
-                'email' => $this->email,
-                'address' => $this->address,
-                'photo' => $photoPath,
+                'occupation'  => $this->occupation,
+                'income'      => $this->income,
+                'education'   => $this->education,
+                'mobile'      => $this->mobile,
+                'email'       => $this->email,
+                'address'     => $this->address,
+                'photo'       => $photoPath,
             ]);
 
-            $this->dispatch('toast', type: 'success', message: 'Parent created successfully!');
+            DB::commit();
+
             $this->resetForm();
-        } catch (\Exception $e) {
-            $this->dispatch('validation-failed');
-            $this->dispatch('toast', type: 'error', message: 'An error occurred while creating the parent.');
+
+            $this->dispatch('toast', type: 'success', message: 'Parent created successfully!');
+
+        } catch (\Throwable $e) {
+
+            DB::rollBack();
+
+            $this->dispatch('toast', type: 'error', message: 'Something went wrong!');
             throw $e;
         }
     }
@@ -119,5 +129,4 @@ class ParentAddComponent extends Component
                 'title' => 'Create Parent | ' . institution()->name,
             ]);
     }
-
 }

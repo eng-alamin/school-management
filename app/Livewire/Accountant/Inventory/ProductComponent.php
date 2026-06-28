@@ -7,6 +7,7 @@ use App\Models\InventoryProduct;
 use App\Models\InventoryCategory;
 use App\Models\InventoryUnit;
 use Livewire\WithPagination;
+use Illuminate\Support\Str;
 
 class ProductComponent extends Component
 {
@@ -41,7 +42,7 @@ class ProductComponent extends Component
     {
         return [
             'name'             => 'required|string|max:255',
-            'code'             => 'required|string|max:255|unique:inventory_products,code' . ($this->editId ? ",{$this->editId}" : ''),
+            'code'             => 'nullable|string|max:255|unique:inventory_products,code' . ($this->editId ? ",{$this->editId}" : ''),
             'category_id'      => 'required|exists:inventory_categories,id',
             'purchase_unit_id' => 'required|exists:inventory_units,id',
             'sales_unit_id'    => 'required|exists:inventory_units,id',
@@ -109,10 +110,22 @@ class ProductComponent extends Component
         ];
 
         if ($this->editId) {
+            $product = InventoryProduct::findOrFail($this->editId);
+            if (empty($data['code'])) {
+                $data['code'] = Str::slug($this->name) . '-' . $product->id;
+            }
+
             InventoryProduct::findOrFail($this->editId)->update($data);
             $this->dispatch('toast', type: 'success', message: 'Data updated successfully!');
         } else {
-            InventoryProduct::create($data);
+            $product = InventoryProduct::create($data);
+
+            if (empty($this->code)) {
+                $product->update([
+                    'code' => Str::slug($this->name) . '-' . $product->id,
+                ]);
+            }
+            
             $this->dispatch('toast', type: 'success', message: 'Data created successfully!');
         }
 
@@ -149,7 +162,7 @@ class ProductComponent extends Component
             ->with('categories', $categories)
             ->with('units', $units)
             ->layout('layouts.accountant.app', [
-                'title' => "Inventory Product | School SaaS",
+                'title' => 'Inventory Product | ' . institution()->name,
             ]);
     }
 

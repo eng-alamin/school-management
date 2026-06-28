@@ -1,4 +1,4 @@
-{{-- resources/views/livewire/accountant/card/id-card-template-component.blade.php --}}
+{{-- resources/views/livewire/admin/card/id-card-template-component.blade.php --}}
 <div>
 
     <div class="card">

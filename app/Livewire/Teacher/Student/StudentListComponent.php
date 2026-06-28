@@ -5,8 +5,9 @@ namespace App\Livewire\Teacher\Student;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Student;
-use App\Models\User;
 use App\Models\AcademicClass;
+use App\Models\AcademicSection;
+use App\Models\AcademicClassAssign;
 
 class StudentListComponent extends Component
 {
@@ -15,45 +16,57 @@ class StudentListComponent extends Component
     protected string $paginationTheme = 'bootstrap';
 
     // Filter
-    public string $search           = '';
-    public string $filter_class_id  = '';
-    public string $filter_section_id = '';
-    public int $perPage             = 10;
-    public bool $hasFilter          = false;
-
-    // Dependent dropdown
-    public array $availableSections = [];
+    public $filterClass   = '';
+    public $filterSection = '';
+    public string $search = '';
+    public int $perPage   = 10;
+    public bool $hasFilter = false;
 
     // Delete
     public bool $confirmDelete = false;
     public ?int $deleteId      = null;
 
-    public function updatingSearch(): void           { $this->resetPage(); }
-    public function updatingFilterClassId(): void    { $this->resetPage(); }
+    public function updatingSearch(): void { $this->resetPage(); }
 
-    public function updatedFilterClassId(string $value): void
+    public function getAvailableClasses()
     {
-        $this->filter_section_id = '';
-        $this->availableSections = [];
-        $this->hasFilter         = false;
-        $this->resetPage();
+        return AcademicClass::whereIn('id', AcademicClassAssign::distinct()->pluck('class_id'))
+            ->orderBy('name')
+            ->get();
+    }
 
-        if ($value) {
-            $class = AcademicClass::with('sections')->find($value);
-            if ($class) {
-                $this->availableSections = $class->sections
-                    ->map(fn($s) => ['id' => $s->id, 'name' => $s->name])
-                    ->toArray();
-            }
-        }
+    public function getAvailableSections()
+    {
+        if (!$this->filterClass) return [];
+
+        return AcademicSection::whereIn('id',
+            AcademicClassAssign::where('class_id', $this->filterClass)->pluck('section_id')
+        )->orderBy('name')->get();
+    }
+
+    public function updatedFilterClass(): void
+    {
+        $this->filterSection = '';
+        $this->hasFilter     = false;
+        $this->resetPage();
+    }
+
+    public function updatedFilterSection(): void
+    {
+        $this->hasFilter = false;
+        $this->resetPage();
     }
 
     public function filter(): void
     {
-        // BUG FIX 1: correct field names filter_class_id / filter_section_id
+        if (!$this->filterClass) {
+            $this->dispatch('toast', type: 'error', message: 'Please select a class.');
+            return;
+        }
+
         $this->validate([
-            'filter_class_id'   => 'required|exists:academic_classes,id',
-            'filter_section_id' => 'required|exists:academic_sections,id',
+            'filterClass'   => 'required|exists:academic_classes,id',
+            'filterSection' => 'nullable',
         ]);
 
         $this->hasFilter = true;
@@ -70,8 +83,7 @@ class StudentListComponent extends Component
     {
         try {
             $student = Student::findOrFail($this->deleteId);
-            $student->user()->delete(); // cascading হলে এটাই যথেষ্ট
-            // অথবা: User::findOrFail($student->user_id)->delete();
+            $student->user()->delete();
             $this->confirmDelete = false;
             $this->deleteId      = null;
             $this->dispatch('toast', type: 'success', message: 'Student deleted successfully!');
@@ -80,12 +92,26 @@ class StudentListComponent extends Component
         }
     }
 
+    public function resetForm(): void
+    {
+        $this->filterClass   = '';
+        $this->filterSection = '';
+        $this->search        = '';
+        $this->hasFilter     = false;
+        $this->confirmDelete = false;
+        $this->deleteId      = null;
+        $this->resetPage();
+        $this->resetValidation();
+    }
+
     public function render()
     {
         $students = Student::with(['guardians', 'class', 'section'])
             ->when($this->hasFilter, function ($q) {
-                $q->where('class_id', $this->filter_class_id)
-                  ->where('section_id', $this->filter_section_id);
+                $q->where('class_id', $this->filterClass);
+                if ($this->filterSection && $this->filterSection !== 'all') {
+                    $q->where('section_id', $this->filterSection);
+                }
             })
             ->when($this->search, fn($q) => $q->where(fn($q) => $q
                 ->where('name', 'like', "%{$this->search}%")
@@ -94,13 +120,12 @@ class StudentListComponent extends Component
             ->latest()
             ->paginate($this->perPage);
 
-        $classes = AcademicClass::orderBy('id')->get();
-
         return view('livewire.teacher.student.student-list-component')
             ->with('students', $students)
-            ->with('classes', $classes)
+            ->with('classes', $this->getAvailableClasses())
+            ->with('sections', $this->getAvailableSections())
             ->layout('layouts.teacher.app', [
-                'title' => "Student List | School SaaS",
+                'title' => 'Student List | ' . institution()->name,
             ]);
     }
 }

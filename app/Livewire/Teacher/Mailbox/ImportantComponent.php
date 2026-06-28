@@ -78,7 +78,7 @@ class ImportantComponent extends Component
 
         return view('livewire.teacher.mailbox.important-component', compact('messages'))
             ->layout('layouts.teacher.app', [
-                'title' => "MailBox | School SaaS",
+                'title' => 'MailBox | ' . institution()->name,
             ]);
     }
 }

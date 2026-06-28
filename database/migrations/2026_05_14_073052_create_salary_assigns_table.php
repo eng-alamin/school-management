@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
             // ── Foreign keys ──────────────────────────────────────
             $table->string('role');
-            $table->foreignId('designation_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('designation_id')->nullable()->constrained('employee_designations')->nullOnDelete();
             $table->foreignId('employee_id')->constrained()->cascadeOnDelete();
             $table->foreignId('salary_template_id')->constrained()->cascadeOnDelete();
  

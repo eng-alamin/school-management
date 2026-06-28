@@ -29,7 +29,7 @@
                     </div>
                 @endif
 
-                <a href="{{ route('accountant.office-accounting.expense.add') }}" class="btn-sm btn-outline bg-dark text-white">
+                <a href="{{ route('admin.office-accounting.expense.add') }}" class="btn-sm btn-outline bg-dark text-white">
                     <span class="material-icons-round">add</span> Add Expense
                 </a>
             </div>
@@ -73,7 +73,7 @@
                                 <td>{{ $expense->reference ?? '—' }}</td>
                                 <td>
                                     <span class="badge rounded-pill badge-active">
-                                        {{ number_format($expense->amount, 2) }}
+                                        {{ number_format($expense->amount, 0) }}
                                     </span>
                                 </td>
                                 <td>{{ \Carbon\Carbon::parse($expense->date)->format('d M Y') }}</td>
@@ -91,7 +91,7 @@
                                 </td>
                                 <td>
                                     <div class="d-flex gap-1">
-                                        <a href="{{ route('accountant.office-accounting.expense.edit', ['id' => $expense->id]) }}"
+                                        <a href="{{ route('admin.office-accounting.expense.edit', ['id' => $expense->id]) }}"
                                            class="act-btn edit" title="Edit">
                                             <span class="material-icons-round">drive_file_rename_outline</span>
                                         </a>

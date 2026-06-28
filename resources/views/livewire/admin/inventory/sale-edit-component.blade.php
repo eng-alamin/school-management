@@ -2,13 +2,13 @@
 
     <!-- Floating Header -->
     <div class="mat-card-header header-pink-gradient">
-        <h5>
+        <h5 id="sale-edit-title">
             <span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">
                 point_of_sale
             </span>
             Edit Sale
         </h5>
-        <p>Update existing sale bill record</p>
+        <p id="sale-edit-subtitle">Update existing sale bill record</p>
     </div>
 
     <!-- ══ SALE DETAILS ══ -->
@@ -103,12 +103,12 @@
             <table style="width:100%;border-collapse:collapse;font-size:.82rem">
                 <thead>
                     <tr style="border-bottom:2px solid var(--border,#e9ecef)">
-                        <th style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Category <span class="req">*</span></th>
-                        <th style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Product <span class="req">*</span></th>
-                        <th style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Unit Price</th>
-                        <th style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Quantity <span class="req">*</span></th>
-                        <th style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Discount</th>
-                        <th style="padding:8px 10px;text-align:right;color:var(--muted);font-weight:600;white-space:nowrap">Total Price</th>
+                        <th id="sedit-th-category" style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Category <span class="req">*</span></th>
+                        <th id="sedit-th-product" style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Product <span class="req">*</span></th>
+                        <th id="sedit-th-unit-price" style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Unit Price</th>
+                        <th id="sedit-th-qty" style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Quantity <span class="req">*</span></th>
+                        <th id="sedit-th-discount" style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Discount</th>
+                        <th id="sedit-th-total" style="padding:8px 10px;text-align:right;color:var(--muted);font-weight:600;white-space:nowrap">Total Price</th>
                         <th style="padding:8px 10px;text-align:center;color:var(--muted);font-weight:600"></th>
                     </tr>
                 </thead>

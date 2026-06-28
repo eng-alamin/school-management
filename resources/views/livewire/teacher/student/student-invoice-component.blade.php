@@ -1,169 +1,172 @@
-<div class="mat-card" style="padding-top:28px">
+<div>
 
-    {{-- Floating Header --}}
-    <div class="mat-card-header header-pink-gradient">
-        <h5 id="cardHeaderTitleStudentOverview">Invoice History</h5>
-    </div>
+    <div class="card">
 
-    <div class="container-xl mt-4">
+        <div class="mat-card-header header-pink-gradient no-print">
+            <h5 id="cardHeaderTitleInvoiceHistory">Invoice History</h5>
+        </div>
 
-        @include('livewire.teacher.student.student-navbar')
+        <div class="container-xl mt-4">
 
-        {{-- Collect Button --}}
-        <div class="mb-3">
-            @if(count($selectedIds) > 0)
-                <button class="btn-pink d-inline-flex align-items-center gap-1"
-                        wire:click="collectSelected" type="button">
-                    <span class="material-icons-round" style="font-size:16px">payments</span>
-                    Selected Fees Collect ({{ count($selectedIds) }})
-                </button>
-            @else
-                <button class="btn-outline d-inline-flex align-items-center gap-1"
-                        type="button" disabled>
-                    <span class="material-icons-round" style="font-size:16px">payments</span>
-                    Selected Fees Collect
-                </button>
+            @include('livewire.admin.student.student-navbar')
+
+            {{-- Collect Button --}}
+            <div class="mb-3 no-print">
+                @if(count($selectedIds) > 0)
+                    <button class="btn-pink d-inline-flex align-items-center gap-1"
+                            wire:click="collectSelected" type="button">
+                        <span class="material-icons-round" style="font-size:16px">payments</span>
+                        Selected Fees Collect ({{ count($selectedIds) }})
+                    </button>
+                @else
+                    <button class="btn-outline d-inline-flex align-items-center gap-1"
+                            type="button" disabled>
+                        <span class="material-icons-round" style="font-size:16px">payments</span>
+                        Selected Fees Collect
+                    </button>
+                @endif
+            </div>
+
+            {{-- Invoice Table --}}
+            <div class="table-responsive">
+                <table class="table-loader">
+                    <thead>
+                        <tr>
+                            <th class="no-print" style="width:42px">
+                                <input type="checkbox" class="alloc-checkbox"
+                                    wire:model.live="selectAll">
+                            </th>
+                            <th>SL#</th>
+                            <th>Fees Type</th>
+                            <th>Due Date</th>
+                            <th>Status</th>
+                            <th>Amount</th>
+                            <th>Discount</th>
+                            <th>Fine</th>
+                            <th>Paid</th>
+                            <th>Balance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php
+                            $sl            = 1;
+                            $grandTotal    = 0;
+                            $grandDiscount = 0;
+                            $grandFine     = 0;
+                            $grandPaid     = 0;
+                        @endphp
+
+                        @forelse($feeAllocations as $allocation)
+
+                        {{-- Group Header --}}
+                        <tr class="group-header-row">
+                            <td colspan="10">
+                                <span class="material-icons-round"
+                                    style="font-size:14px;vertical-align:middle;color:#e05252">
+                                    arrow_drop_down
+                                </span>
+                                {{ $allocation->feeGroup->name }}
+                            </td>
+                        </tr>
+
+                        @forelse($allocation->feeGroup->items as $item)
+                        @php
+                            $invItem  = $invoiceItemsMap[$item->id] ?? null;
+                            $amount   = (float) ($item->amount ?? 0);
+                            $discount = (float) ($invItem?->discount_amount ?? 0);
+                            $fine     = (float) ($invItem?->fine_amount ?? 0);
+                            $paid     = (float) ($invItem?->total_paid ?? 0);
+                            $balance  = max(0, $amount - $discount + $fine - $paid);
+                            $status   = $invItem?->payment_status ?? 'unpaid';
+                            $dueDate  = $invItem?->invoice?->due_date;
+
+                            $grandTotal    += $amount;
+                            $grandDiscount += $discount;
+                            $grandFine     += $fine;
+                            $grandPaid     += $paid;
+                        @endphp
+                        <tr wire:key="item-{{ $item->id }}"
+                            class="{{ in_array($item->id, $selectedIds) ? 'row-selected' : '' }}">
+
+                            <td class="no-print">
+                                <input type="checkbox" class="alloc-checkbox"
+                                    wire:model.live="selectedIds"
+                                    value="{{ $item->id }}">
+                            </td>
+                            <td class="text-muted">{{ $sl++ }}</td>
+                            <td>{{ $item->feeType?->name ?? '—' }}</td>
+                            <td>
+                                {{ $dueDate ? \Carbon\Carbon::parse($dueDate)->format('d.M.Y') : '—' }}
+                            </td>
+                            <td>
+                                @if($status === 'paid')
+                                    <span class="inv-badge paid">Total Paid</span>
+                                @elseif($status === 'partial')
+                                    <span class="inv-badge partial">Partial</span>
+                                @else
+                                    <span class="inv-badge unpaid">Unpaid</span>
+                                @endif
+                            </td>
+                            <td>{{ number_format($amount, 2) }}</td>
+                            <td>{{ number_format($discount, 2) }}</td>
+                            <td>{{ number_format($fine, 2) }}</td>
+                            <td>{{ number_format($paid, 2) }}</td>
+                            <td>{{ number_format($balance, 2) }}</td>
+                        </tr>
+
+                        @empty
+                        <tr>
+                            <td colspan="10" class="text-center py-3 text-muted">
+                                No fee items found.
+                            </td>
+                        </tr>
+                        @endforelse
+
+                        @empty
+                        <tr>
+                            <td colspan="10" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
+                                No fee allocations found for this student.
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            {{-- Grand Total --}}
+            @if($feeAllocations->isNotEmpty())
+            <div class="invoice-summary">
+                <div class="inv-summary-row">
+                    <span>Grand Total :</span>
+                    <span>{{ number_format($grandTotal, 2) }}</span>
+                </div>
+                <div class="inv-summary-row">
+                    <span>Discount :</span>
+                    <span>{{ number_format($grandDiscount, 2) }}</span>
+                </div>
+                <div class="inv-summary-row">
+                    <span>Fine :</span>
+                    <span>{{ number_format($grandFine, 2) }}</span>
+                </div>
+                <div class="inv-summary-row">
+                    <span>Paid :</span>
+                    <span>{{ number_format($grandPaid, 2) }}</span>
+                </div>
+                <div class="inv-summary-row fw-bold">
+                    <span>Balance :</span>
+                    <span>{{ number_format($grandTotal - $grandDiscount + $grandFine - $grandPaid, 2) }}</span>
+                </div>
+            </div>
             @endif
-        </div>
 
-        {{-- Invoice Table --}}
-        <div class="table-responsive">
-            <table class="table-loader">
-                <thead>
-                    <tr>
-                        <th style="width:42px">
-                            <input type="checkbox" class="alloc-checkbox"
-                                   wire:model.live="selectAll">
-                        </th>
-                        <th>SL#</th>
-                        <th>Fees Type</th>
-                        <th>Due Date</th>
-                        <th>Status</th>
-                        <th>Amount</th>
-                        <th>Discount</th>
-                        <th>Fine</th>
-                        <th>Paid</th>
-                        <th>Balance</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @php
-                        $sl            = 1;
-                        $grandTotal    = 0;
-                        $grandDiscount = 0;
-                        $grandFine     = 0;
-                        $grandPaid     = 0;
-                    @endphp
-
-                    @forelse($feeAllocations as $allocation)
-
-                    {{-- Group Header --}}
-                    <tr class="group-header-row">
-                        <td colspan="10">
-                            <span class="material-icons-round"
-                                  style="font-size:14px;vertical-align:middle;color:#e05252">
-                                arrow_drop_down
-                            </span>
-                            {{ $allocation->feeGroup->name }}
-                        </td>
-                    </tr>
-
-                    @forelse($allocation->feeGroup->items as $item)
-                    @php
-                        $invItem  = $invoiceItemsMap[$item->id] ?? null;
-                        $amount   = (float) ($item->amount ?? 0);
-                        $discount = (float) ($invItem?->discount_amount ?? 0);
-                        $fine     = (float) ($invItem?->fine_amount ?? 0);
-                        $paid     = (float) ($invItem?->total_paid ?? 0);
-                        $balance  = max(0, $amount - $discount + $fine - $paid);
-                        $status   = $invItem?->payment_status ?? 'unpaid';
-                        $dueDate  = $invItem?->invoice?->due_date;
-
-                        $grandTotal    += $amount;
-                        $grandDiscount += $discount;
-                        $grandFine     += $fine;
-                        $grandPaid     += $paid;
-                    @endphp
-                    <tr wire:key="item-{{ $item->id }}"
-                        class="{{ in_array($item->id, $selectedIds) ? 'row-selected' : '' }}">
-
-                        <td>
-                            <input type="checkbox" class="alloc-checkbox"
-                                   wire:model.live="selectedIds"
-                                   value="{{ $item->id }}">
-                        </td>
-                        <td class="text-muted">{{ $sl++ }}</td>
-                        <td>{{ $item->feeType?->name ?? '—' }}</td>
-                        <td>
-                            {{ $dueDate ? \Carbon\Carbon::parse($dueDate)->format('d.M.Y') : '—' }}
-                        </td>
-                        <td>
-                            @if($status === 'paid')
-                                <span class="inv-badge paid">Total Paid</span>
-                            @elseif($status === 'partial')
-                                <span class="inv-badge partial">Partial</span>
-                            @else
-                                <span class="inv-badge unpaid">Unpaid</span>
-                            @endif
-                        </td>
-                        <td>{{ number_format($amount, 2) }}</td>
-                        <td>{{ number_format($discount, 2) }}</td>
-                        <td>{{ number_format($fine, 2) }}</td>
-                        <td>{{ number_format($paid, 2) }}</td>
-                        <td>{{ number_format($balance, 2) }}</td>
-                    </tr>
-
-                    @empty
-                    <tr>
-                        <td colspan="10" class="text-center py-3 text-muted">
-                            No fee items found.
-                        </td>
-                    </tr>
-                    @endforelse
-
-                    @empty
-                    <tr>
-                        <td colspan="10" class="text-center py-5 text-muted">
-                            <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
-                            No fee allocations found for this student.
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-
-        {{-- Grand Total --}}
-        @if($feeAllocations->isNotEmpty())
-        <div class="invoice-summary">
-            <div class="inv-summary-row">
-                <span>Grand Total :</span>
-                <span>{{ number_format($grandTotal, 2) }}</span>
+            {{-- Footer --}}
+            <div class="footer-actions mt-3 no-print">
+                <button type="button" class="btn btn-dark" onclick="window.print()">
+                    <span class="material-icons-round">print</span> Print
+                </button>
             </div>
-            <div class="inv-summary-row">
-                <span>Discount :</span>
-                <span>{{ number_format($grandDiscount, 2) }}</span>
-            </div>
-            <div class="inv-summary-row">
-                <span>Fine :</span>
-                <span>{{ number_format($grandFine, 2) }}</span>
-            </div>
-            <div class="inv-summary-row">
-                <span>Paid :</span>
-                <span>{{ number_format($grandPaid, 2) }}</span>
-            </div>
-            <div class="inv-summary-row fw-bold">
-                <span>Balance :</span>
-                <span>{{ number_format($grandTotal - $grandDiscount + $grandFine - $grandPaid, 2) }}</span>
-            </div>
-        </div>
-        @endif
 
-        {{-- Footer --}}
-        <div class="footer-actions mt-3">
-            <a href="#" class="btn btn-sm btn-dark">
-                <span class="material-icons-round">print</span> Print
-            </a>
         </div>
 
     </div>
@@ -245,6 +248,37 @@
         gap: 10px;
         justify-content: flex-end;
         padding: 16px 0 8px;
+    }
+</style>
+
+<style>
+    @media print {
+        /* sidebar, navbar, header সব hide */
+        .no-print, .sidenav, .navbar,
+        .student-navbar,
+        nav, header, aside, footer { display: none !important; }
+
+        /* card এর padding/shadow সরাও */
+        .card {background: none !important; border: none !important; box-shadow: none !important; padding: 0 !important; }
+
+        /* container full width */
+        .container-xl { max-width: 100% !important; padding: 0 !important; }
+
+        /* section card border রাখো কিন্তু shadow সরাও */
+        .section-card { box-shadow: none !important; break-inside: avoid; }
+
+        /* page break যাতে section মাঝখানে না ভাঙে */
+        .section-card { page-break-inside: avoid; }
+
+        body { background: white !important; }
+
+        .profile-card > .d-flex {
+            display: flex !important;
+        }
+
+        .profile-card .flex-grow-1 {
+            width: 50% !important;
+        }
     }
 </style>
 @endpush

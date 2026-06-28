@@ -8,88 +8,127 @@ use App\Models\StudentIdCard;
 use App\Models\Student;
 use App\Models\AcademicClass;
 use App\Models\AcademicSection;
+use App\Models\AcademicClassAssign;
 
 class StudentIdCardComponent extends Component
 {
-    // Filter / Search
-    public string $filterClass = '';
-    public string $filterSection = '';
-    public ?int $filterTemplate = null;
-    public bool $filtered = false;
+    // ── Filter ──
+    public string $filterClass    = '';
+    public string $filterSection  = '';
+    public ?int   $filterTemplate = null;
+    public bool   $hasFiltered    = false;
 
-    // Date fields
-    public string $print_date = '';
+    // ── Date fields ──
+    public string $print_date  = '';
     public string $expiry_date = '';
 
-    // Selection
+    // ── Selection ──
     public array $selectedIds = [];
-    public bool $selectAll = false;
+    public bool  $selectAll   = false;
 
-    // Print
-    public bool $showPrintPreview = false;
-    public array $printCards = [];
+    // ── Print Preview ──
+    public bool  $showPrintPreview = false;
+    public array $printCards       = [];
 
     public function mount(): void
     {
         $this->print_date  = now()->format('Y-m-d');
-        $this->expiry_date = now()->format('Y-m-d');
+        $this->expiry_date = now()->addYear()->format('Y-m-d');
     }
 
-    public function applyFilter(): void
+    // ── Available Classes ──
+    public function getAvailableClasses()
     {
-        $this->validate([
-            'filterClass'    => 'required|string',
-            'filterTemplate' => 'required|exists:id_card_templates,id',
-        ], [
-            'filterClass.required'    => 'Class is required.',
-            'filterTemplate.required' => 'Template is required.',
-        ]);
-
-        $this->filtered    = true;
-        $this->selectedIds = [];
-        $this->selectAll   = false;
+        return AcademicClass::whereIn('id', AcademicClassAssign::distinct()->pluck('class_id'))
+            ->orderBy('name')
+            ->get();
     }
 
-    public function resetFilter(): void
+    // ── Available Sections ──
+    public function getAvailableSections()
     {
-        $this->filtered       = false;
-        $this->filterClass    = '';
-        $this->filterSection  = '';
-        $this->filterTemplate = null;
-        $this->selectedIds    = [];
-        $this->selectAll      = false;
-        $this->resetValidation();
+        if (!$this->filterClass) return collect();
+
+        return AcademicSection::whereIn('id',
+            AcademicClassAssign::where('class_id', $this->filterClass)->pluck('section_id')
+        )->orderBy('name')->get();
     }
 
+    // ── Class changed ──
     public function updatedFilterClass(): void
     {
         $this->filterSection = '';
         $this->selectedIds   = [];
         $this->selectAll     = false;
+        $this->hasFiltered   = false;
     }
 
+    // ── Section changed ──
+    public function updatedFilterSection(): void
+    {
+        $this->selectedIds = [];
+        $this->selectAll   = false;
+        $this->hasFiltered = false;
+    }
+
+    // ── Select All toggle ──
     public function updatedSelectAll(bool $value): void
     {
-        if ($value) {
-            $this->selectedIds = $this->getStudents()
-                ->pluck('id')
-                ->map(fn($id) => (string) $id)
-                ->toArray();
-        } else {
-            $this->selectedIds = [];
-        }
+        $this->selectedIds = $value
+            ? $this->getStudents()->pluck('id')->map(fn($id) => (string) $id)->toArray()
+            : [];
     }
 
+    // ── Individual checkbox ──
     public function updatedSelectedIds(): void
     {
         $total           = $this->getStudents()->count();
-        $this->selectAll = count($this->selectedIds) === $total && $total > 0;
+        $this->selectAll = $total > 0 && count($this->selectedIds) === $total;
     }
 
+    // ── Filter ──
+    public function applyFilter(): void
+    {
+        if (!$this->filterClass) {
+            $this->dispatch('toast', type: 'error', message: 'Please select a class.');
+            return;
+        }
+
+        if (!$this->filterTemplate) {
+            $this->dispatch('toast', type: 'error', message: 'Please select a template.');
+            return;
+        }
+
+        $students = $this->getStudents();
+
+        if ($students->isEmpty()) {
+            $this->dispatch('toast', type: 'error', message: 'No students found for selected class/section.');
+            $this->hasFiltered = false;
+            return;
+        }
+
+        $this->hasFiltered = true;
+        $this->selectedIds = [];
+        $this->selectAll   = false;
+    }
+
+    // ── Reset ──
+    public function resetFilter(): void
+    {
+        $this->filterClass    = '';
+        $this->filterSection  = '';
+        $this->filterTemplate = null;
+        $this->hasFiltered    = false;
+        $this->selectedIds    = [];
+        $this->selectAll      = false;
+        $this->resetValidation();
+    }
+
+    // ── Generate ID Cards ──
     public function generateCards(): void
     {
         if (empty($this->selectedIds)) {
-            session()->flash('error', 'Please select at least one student.');
+            $this->dispatch('toast', type: 'error', message: 'Please select at least one student.');
             return;
         }
 
@@ -98,24 +137,20 @@ class StudentIdCardComponent extends Component
             'expiry_date' => 'required|date',
         ]);
 
-        $students = Student::with(['class', 'section', 'category'])
+        $students = Student::with(['class', 'section', 'group'])
             ->whereIn('id', $this->selectedIds)
             ->get();
 
-        // Grab school_id once — upsert() skips Eloquent model events
-        // so the BelongsToSchool trait won't fire automatically.
-        $schoolId = auth()->user()->school_id;
+        $institutionId = auth()->user()->institution_id;
         $data     = [];
 
         foreach ($students as $student) {
             $data[] = [
-                'school_id'   => $schoolId,
+                'institution_id'   => $institutionId,
                 'student_id'  => $student->id,
-
                 'issue_date'  => $this->print_date,
                 'expiry_date' => $this->expiry_date,
                 'template_id' => $this->filterTemplate,
-
                 'name'        => $student->name,
                 'gender'      => $student->gender,
                 'blood_group' => $student->full_blood_group,
@@ -127,11 +162,9 @@ class StudentIdCardComponent extends Component
                 'session'     => $student->academic_year,
                 'register_no' => $student->register_no,
                 'roll_no'     => $student->roll_no,
-
                 'class'       => $student->class?->name,
                 'section'     => $student->section?->name,
-                'category'    => $student->category?->name,
-
+                'group'    => $student->group?->name,
                 'created_at'  => now(),
                 'updated_at'  => now(),
             ];
@@ -139,26 +172,12 @@ class StudentIdCardComponent extends Component
 
         StudentIdCard::upsert(
             $data,
-            ['student_id'],   // unique key to match on
+            ['student_id'],
             [
-                // school_id intentionally omitted — never overwrite on duplicate
-                'issue_date',
-                'expiry_date',
-                'template_id',
-                'name',
-                'gender',
-                'blood_group',
-                'dob',
-                'religion',
-                'mobile',
-                'address',
-                'photo',
-                'session',
-                'register_no',
-                'roll_no',
-                'class',
-                'section',
-                'category',
+                'institution_id','issue_date', 'expiry_date', 'template_id',
+                'name', 'gender', 'blood_group', 'dob', 'religion',
+                'mobile', 'address', 'photo', 'session',
+                'register_no', 'roll_no', 'class', 'section', 'group',
                 'updated_at',
             ]
         );
@@ -171,62 +190,37 @@ class StudentIdCardComponent extends Component
         $this->showPrintPreview = true;
     }
 
+    // ── Get Students (internal) ──
     private function getStudents()
     {
-        if (!$this->filtered) return collect();
+        if (!$this->filterClass) return collect();
 
-        return Student::query()
-            ->when($this->filterClass, fn($q) => $q->where('class_id', $this->filterClass))
+        return Student::with(['class', 'section', 'group'])
+            ->where('class_id', $this->filterClass)
             ->when(
                 $this->filterSection && $this->filterSection !== 'all',
                 fn($q) => $q->where('section_id', $this->filterSection)
             )
+            ->orderBy('section_id')
             ->orderBy('roll_no')
             ->get();
     }
 
-    public function getAvailableClasses(): array
-    {
-        return AcademicClass::whereIn('id', Student::distinct()->pluck('class_id'))
-            ->orderBy('name')
-            ->get()
-            ->toArray();
-    }
-
-    public function getAvailableSections(): array
-    {
-        if (!$this->filterClass) return [];
-
-        $sectionIds = Student::where('class_id', $this->filterClass)
-            ->whereNotNull('section_id')
-            ->distinct()
-            ->pluck('section_id');
-
-        return AcademicSection::whereIn('id', $sectionIds)
-            ->orderBy('name')
-            ->get()
-            ->toArray();
-    }
-
     public function render()
     {
-        $templates = IdCardTemplate::where('is_active', true)
-            ->where('type', '!=', 'employee')
-            ->get();
-
-        $students         = $this->filtered ? $this->getStudents() : collect();
-        $sections         = $this->getAvailableSections();
-        $classes          = $this->getAvailableClasses();
+        $students         = $this->hasFiltered ? $this->getStudents() : collect();
         $selectedTemplate = $this->filterTemplate
             ? IdCardTemplate::find($this->filterTemplate)
             : null;
 
         return view('livewire.admin.card.student-id-card-component')
-            ->with('templates', $templates)
-            ->with('students', $students)
-            ->with('sections', $sections)
-            ->with('classes', $classes)
-            ->with('selectedTemplate', $selectedTemplate)
+            ->with([
+                'classes'          => $this->getAvailableClasses(),
+                'sections'         => $this->getAvailableSections(),
+                'templates'        => IdCardTemplate::where('is_active', true)->where('type', '!=', 'employee')->get(),
+                'students'         => $students,
+                'selectedTemplate' => $selectedTemplate,
+            ])
             ->layout('layouts.admin.app', [
                 'title' => 'Student ID Cards | ' . institution()->name,
             ]);

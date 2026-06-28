@@ -1,3 +1,3 @@
 <div>
-    {{-- The biggest battle is the war against ignorance. - Mustafa Kemal Atatürk --}}
+    {{-- Knowing is not enough; we must apply. Being willing is not enough; we must do. - Leonardo da Vinci --}}
 </div>

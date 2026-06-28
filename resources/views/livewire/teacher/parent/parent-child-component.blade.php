@@ -7,7 +7,7 @@
 
     <div class="container-xl mt-4">
 
-        @include('livewire.teacher.parent.parent-navbar', ['parent' => $parent])
+        @include('livewire.admin.parent.parent-navbar', ['parent' => $parent])
 
         <!-- START CONTENT -->
 
@@ -50,7 +50,7 @@
                                 <td style="font-size:.875rem;vertical-align:middle">{{ $student->register_no ?? '—' }}</td>
                                 <td style="font-size:.875rem;vertical-align:middle">{{ ucfirst($student->gender ?? '—') }}</td>
                                 <td style="vertical-align:middle">
-                                    <a href="{{ route('teacher.student.overview', ['id' => $student->id]) }}"
+                                    <a href="{{ route('admin.student.overview', ['id' => $student->id]) }}"
                                         target="_blank" class="act-btn view" title="View Student">
                                         <span class="material-icons-round">visibility</span>
                                     </a>

@@ -73,7 +73,7 @@
                                 <td>{{ $deposit->reference ?? '—' }}</td>
                                 <td>
                                     <span class="badge rounded-pill badge-active">
-                                        {{ number_format($deposit->amount, 2) }}
+                                        {{ number_format($deposit->amount, 0) }}
                                     </span>
                                 </td>
                                 <td>{{ \Carbon\Carbon::parse($deposit->date)->format('d M Y') }}</td>

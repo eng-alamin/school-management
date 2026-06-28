@@ -4,7 +4,7 @@ namespace App\Livewire\Admin\Employee;
 
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Models\Designation;
+use App\Models\EmployeeDesignation;
 
 class DesignationComponent extends Component
 {
@@ -60,7 +60,7 @@ class DesignationComponent extends Component
 
     public function openEdit(int $id): void
     {
-        $record = Designation::findOrFail($id);
+        $record = EmployeeDesignation::findOrFail($id);
         $this->editId    = $id;
         $this->name      = $record->name;
         $this->showModal = true;
@@ -71,10 +71,10 @@ class DesignationComponent extends Component
         $this->validate();
 
         if ($this->editId) {
-            Designation::findOrFail($this->editId)->update(['name' => $this->name]);
+            EmployeeDesignation::findOrFail($this->editId)->update(['name' => $this->name]);
             $this->dispatch('toast', type: 'success', message: 'Designation updated successfully!');
         } else {
-            Designation::create(['name' => $this->name]);
+            EmployeeDesignation::create(['name' => $this->name]);
             $this->dispatch('toast', type: 'success', message: 'Designation created successfully!');
         }
 
@@ -90,7 +90,7 @@ class DesignationComponent extends Component
 
     public function deleteRecord(): void
     {
-        Designation::findOrFail($this->deleteId)->delete();
+        EmployeeDesignation::findOrFail($this->deleteId)->delete();
         $this->confirmDelete = false;
         $this->deleteId      = null;
         $this->dispatch('toast', type: 'success', message: 'Designation deleted successfully!');
@@ -104,7 +104,7 @@ class DesignationComponent extends Component
 
     public function render()
     {
-        $designations = Designation::query()
+        $designations = EmployeeDesignation::query()
             ->when($this->search, fn($q) => $q->where('name', 'like', "%{$this->search}%"))
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);

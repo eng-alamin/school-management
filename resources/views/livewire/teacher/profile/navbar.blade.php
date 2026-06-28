@@ -3,7 +3,7 @@
     <div class="d-flex flex-wrap gap-4 align-items-start">
         <div class="avatar-wrap me-2">
             @if($user->avatar)
-                <img src="{{ asset($user->avatar) }}" alt="{{ $user->name }}"/>
+                <img src="{{ asset('storage/' . $user->avatar) }}" alt="{{ $user->name }}"/>
             @else
                 <img src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&size=160&background=random" alt="{{ $user->name }}"/>
             @endif
@@ -60,8 +60,8 @@
 
     <!-- Profile Tabs -->
     <ul class="nav profile-tabs border-bottom mt-4 flex-nowrap overflow-auto">
-        <li class="nav-item"><a class="nav-link {{ request()->routeIs('teacher.profile.overview') ? 'active' : '' }}" href="{{ route('teacher.profile.overview') }}">Overview</a></li>
-        <li class="nav-item"><a class="nav-link {{ request()->routeIs('teacher.profile.setting') ? 'active' : '' }}" href="{{ route('teacher.profile.setting') }}">Settings</a></li>
-        <li class="nav-item"><a class="nav-link {{ request()->routeIs('teacher.profile.loginlog') ? 'active' : '' }}" href="{{ route('teacher.profile.loginlog') }}">Login Logs </a></li>
+        <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.profile.overview') ? 'active' : '' }}" href="{{ route('admin.profile.overview') }}">Overview</a></li>
+        <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.profile.setting') ? 'active' : '' }}" href="{{ route('admin.profile.setting') }}">Settings</a></li>
+        <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.profile.loginlog') ? 'active' : '' }}" href="{{ route('admin.profile.loginlog') }}">Login Logs </a></li>
     </ul>
 </div>

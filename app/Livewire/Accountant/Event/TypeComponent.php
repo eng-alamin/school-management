@@ -117,7 +117,7 @@ class TypeComponent extends Component
         return view('livewire.accountant.event.type-component')
             ->with('types', $types)
             ->layout('layouts.accountant.app', [
-                'title' => "Event Type | School SaaS",
+                'title' => 'Event Type | ' . institution()->name,
             ]);
     }
 

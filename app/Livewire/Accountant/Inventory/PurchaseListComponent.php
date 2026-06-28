@@ -68,7 +68,7 @@ class PurchaseListComponent extends Component
         return view('livewire.accountant.inventory.purchase-list-component')
             ->with('purchases', $purchases)
             ->layout('layouts.accountant.app', [
-                'title' => 'Purchases | School SaaS',
+                'title' => 'Purchases | ' . institution()->name,
             ]);
     }
 }

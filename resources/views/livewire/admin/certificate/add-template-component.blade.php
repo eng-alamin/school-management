@@ -31,10 +31,11 @@
             </div>
 
             <!-- Applicable User -->
+            {{-- Bug 3 fix: wire:ignore removed from parent div --}}
             <div class="col-md-6">
-                <div class="input-group input-group-outline" wire:ignore>
+                <div class="input-group input-group-outline">
                     <label class="form-label">Applicable For <span class="req">*</span></label>
-                    <select wire:model="applicable_user" class="form-select">
+                    <select wire:model.live="applicable_user" class="form-select">
                         <option value="">Select</option>
                         <option value="student">Student</option>
                         <option value="employee">Employee</option>
@@ -45,9 +46,9 @@
 
             <!-- Page Layout -->
             <div class="col-md-6">
-                <div class="input-group input-group-outline" wire:ignore>
+                <div class="input-group input-group-outline">
                     <label class="form-label">Page Layout <span class="req">*</span></label>
-                    <select wire:model="page_layout" class="form-select">
+                    <select wire:model.live="page_layout" class="form-select">
                         <option value="a4_portrait">A4 Portrait</option>
                         <option value="a4_landscape">A4 Landscape</option>
                         <option value="a5_portrait">A5 Portrait</option>
@@ -67,9 +68,9 @@
 
             <!-- QR Code Text -->
             <div class="col-md-6">
-                <div class="input-group input-group-outline" wire:ignore>
+                <div class="input-group input-group-outline">
                     <label class="form-label">QR Code Content <span class="req">*</span></label>
-                    <select wire:model="qr_code_text" class="form-select">
+                    <select wire:model.live="qr_code_text" class="form-select">
                         <option value="register_no">Register No</option>
                         <option value="roll_no">Roll No</option>
                         <option value="name">Name</option>
@@ -82,9 +83,9 @@
 
             <!-- Photo Style -->
             <div class="col-md-6">
-                <div class="input-group input-group-outline" wire:ignore>
+                <div class="input-group input-group-outline">
                     <label class="form-label">Photo Style <span class="req">*</span></label>
-                    <select wire:model="photo_style" class="form-select">
+                    <select wire:model.live="photo_style" class="form-select">
                         <option value="square">Square</option>
                         <option value="circle">Circle</option>
                     </select>
@@ -116,66 +117,34 @@
         <div class="section-title mb-2">Page Margins (px)</div>
         <div class="row g-4">
 
-            <!-- Margin Top -->
             <div class="col-md-6 col-lg-3">
                 <div class="input-group input-group-outline">
                     <label class="form-label">Top</label>
-                    <input type="number"
-                           wire:model="margin_top"
-                           class="form-control"
-                           min="0"
-                           max="300"
-                           placeholder=" "
-                           onfocus="focused(this)"
-                           onfocusout="defocused(this)">
+                    <input type="number" wire:model="margin_top" class="form-control" min="0" max="300" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
                 </div>
                 @error('margin_top') <span class="text-danger">{{ $message }}</span> @enderror
             </div>
 
-            <!-- Margin Right -->
             <div class="col-md-6 col-lg-3">
                 <div class="input-group input-group-outline">
                     <label class="form-label">Right</label>
-                    <input type="number"
-                           wire:model="margin_right"
-                           class="form-control"
-                           min="0"
-                           max="300"
-                           placeholder=" "
-                           onfocus="focused(this)"
-                           onfocusout="defocused(this)">
+                    <input type="number" wire:model="margin_right" class="form-control" min="0" max="300" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
                 </div>
                 @error('margin_right') <span class="text-danger">{{ $message }}</span> @enderror
             </div>
 
-            <!-- Margin Bottom -->
             <div class="col-md-6 col-lg-3">
                 <div class="input-group input-group-outline">
                     <label class="form-label">Bottom</label>
-                    <input type="number"
-                           wire:model="margin_bottom"
-                           class="form-control"
-                           min="0"
-                           max="300"
-                           placeholder=" "
-                           onfocus="focused(this)"
-                           onfocusout="defocused(this)">
+                    <input type="number" wire:model="margin_bottom" class="form-control" min="0" max="300" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
                 </div>
                 @error('margin_bottom') <span class="text-danger">{{ $message }}</span> @enderror
             </div>
 
-            <!-- Margin Left -->
             <div class="col-md-6 col-lg-3">
                 <div class="input-group input-group-outline">
                     <label class="form-label">Left</label>
-                    <input type="number"
-                           wire:model="margin_left"
-                           class="form-control"
-                           min="0"
-                           max="300"
-                           placeholder=" "
-                           onfocus="focused(this)"
-                           onfocusout="defocused(this)">
+                    <input type="number" wire:model="margin_left" class="form-control" min="0" max="300" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
                 </div>
                 @error('margin_left') <span class="text-danger">{{ $message }}</span> @enderror
             </div>
@@ -187,7 +156,6 @@
     <div class="form-section">
         <div class="section-title mb-2">Certificate Content</div>
         <div class="row g-4">
-
             <div class="col-12">
                 <label style="font-size:.73rem;font-weight:600;color:var(--muted);display:block;margin-bottom:8px">
                     Content Body <span class="req">*</span>
@@ -200,7 +168,6 @@
                 </div>
                 @error('certificate_content') <span class="text-danger mt-1">{{ $message }}</span> @enderror
             </div>
-
         </div>
     </div>
 
@@ -209,74 +176,53 @@
         <div class="section-title mb-2">Images</div>
         <div class="row g-4">
 
-           <!-- Logo Image -->
+            <!-- Logo Image -->
             <div class="col-md-4">
-                <label style="font-size:.73rem;font-weight:600;color:var(--muted);display:block;margin-bottom:8px">
-                    School Logo
-                </label>
+                <label style="font-size:.73rem;font-weight:600;color:var(--muted);display:block;margin-bottom:8px">School Logo</label>
                 <div class="photo-upload-box">
                     @if($logo_image)
-                        @if($this->safePreviewUrl($logo_image))
-                            <img src="{{ $this->safePreviewUrl($logo_image) }}" alt="Preview"
-                                style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
-                        @else
-                            <span class="material-icons-round">check_circle</span>
-                            <span class="lbl">File selected</span>
-                        @endif
+                        <span class="material-icons-round">check_circle</span>
+                        <span class="lbl">File selected</span>
                     @else
                         <span class="material-icons-round">corporate_fare</span>
                         <span class="lbl">Click to upload logo</span>
                     @endif
                     <small style="color:#bbb;font-size:.7rem">JPG, PNG up to 2MB</small>
-                    <input type="file" wire:model="logo_image" accept="image/*">
+                    <input type="file" wire:model="logo_image" accept="image/jpeg,image/png">
                 </div>
                 @error('logo_image') <span class="text-danger">{{ $message }}</span> @enderror
             </div>
 
             <!-- Signature Image -->
             <div class="col-md-4">
-                <label style="font-size:.73rem;font-weight:600;color:var(--muted);display:block;margin-bottom:8px">
-                    Signature
-                </label>
+                <label style="font-size:.73rem;font-weight:600;color:var(--muted);display:block;margin-bottom:8px">Signature</label>
                 <div class="photo-upload-box">
                     @if($signature_image)
-                        @if($this->safePreviewUrl($signature_image))
-                            <img src="{{ $this->safePreviewUrl($signature_image) }}" alt="Preview"
-                                style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
-                        @else
-                            <span class="material-icons-round">check_circle</span>
-                            <span class="lbl">File selected</span>
-                        @endif
+                        <span class="material-icons-round">check_circle</span>
+                        <span class="lbl">File selected</span>
                     @else
                         <span class="material-icons-round">draw</span>
                         <span class="lbl">Click to upload signature</span>
                     @endif
                     <small style="color:#bbb;font-size:.7rem">JPG, PNG up to 2MB</small>
-                    <input type="file" wire:model="signature_image" accept="image/*">
+                    <input type="file" wire:model="signature_image" accept="image/jpeg,image/png">
                 </div>
                 @error('signature_image') <span class="text-danger">{{ $message }}</span> @enderror
             </div>
 
             <!-- Background Image -->
             <div class="col-md-4">
-                <label style="font-size:.73rem;font-weight:600;color:var(--muted);display:block;margin-bottom:8px">
-                    Background
-                </label>
+                <label style="font-size:.73rem;font-weight:600;color:var(--muted);display:block;margin-bottom:8px">Background</label>
                 <div class="photo-upload-box">
                     @if($background_image)
-                        @if($this->safePreviewUrl($background_image))
-                            <img src="{{ $this->safePreviewUrl($background_image) }}" alt="Preview"
-                                style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
-                        @else
-                            <span class="material-icons-round">check_circle</span>
-                            <span class="lbl">File selected</span>
-                        @endif
+                        <span class="material-icons-round">check_circle</span>
+                        <span class="lbl">File selected</span>
                     @else
                         <span class="material-icons-round">wallpaper</span>
                         <span class="lbl">Click to upload background</span>
                     @endif
                     <small style="color:#bbb;font-size:.7rem">JPG, PNG up to 2MB</small>
-                    <input type="file" wire:model="background_image" accept="image/*">
+                    <input type="file" wire:model="background_image" accept="image/jpeg,image/png">
                 </div>
                 @error('background_image') <span class="text-danger">{{ $message }}</span> @enderror
             </div>
@@ -286,38 +232,23 @@
 
     <!-- FORM FOOTER -->
     <div class="form-footer">
-
-        <button class="btn-outline"
-                type="button"
-                wire:click="resetForm">
-            <span class="material-icons-round" style="font-size:16px">refresh</span>
-            Reset
+        <button class="btn-outline" type="button" wire:click="resetForm">
+            <span class="material-icons-round" style="font-size:16px">refresh</span> Reset
         </button>
-
-        <button class="btn-pink"
-                type="button"
+        <button class="btn-pink" type="button"
                 wire:click="save"
                 wire:loading.attr="disabled"
                 wire:target="save">
-
             <span wire:loading.remove wire:target="save">
-                <span class="material-icons-round">save</span>
-                Save Template
+                <span class="material-icons-round">save</span> Save Template
             </span>
-
             <span wire:loading wire:target="save">
-                <span class="material-icons-round"
-                      style="font-size:16px;animation:spin .7s linear infinite">
-                    sync
-                </span>
-                Saving...
+                <span class="material-icons-round" style="font-size:16px;animation:spin .7s linear infinite">sync</span> Saving...
             </span>
-
         </button>
     </div>
 
 </div>
-
 
 @push('scripts')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-lite.min.css">
@@ -347,10 +278,8 @@
             ],
             callbacks: {
                 onChange: function (contents) {
-                    var component = Livewire.find(
-                        document.querySelector('[wire\\:id]').getAttribute('wire:id')
-                    );
-                    component.set('certificate_content', contents);
+                    // Bug 4 fix: Livewire v3 এ @this ব্যবহার করো
+                    @this.set('certificate_content', contents);
                 },
                 onInit: function () {
                     var existing = @js($certificate_content ?? '');
@@ -384,19 +313,34 @@
                     el.summernote('code', '');
                 }
             });
+
+            // Bug 3 fix: resetSelects event এ select value গুলো manually sync করো
+            Livewire.on('resetSelects', function () {
+                document.querySelectorAll('.input-group-outline select').forEach(function (select) {
+                    // Livewire এর current value দিয়ে DOM sync করো
+                    var group = select.closest('.input-group');
+                    if (group) {
+                        group.classList.toggle('is-filled', !!select.value);
+                    }
+                    // custom select rebuild
+                    var old = select.parentNode.querySelector('.custom-select-wrapper');
+                    if (old) old.remove();
+                    select.style.display = '';
+                    if (typeof buildCustomSelect === 'function') {
+                        buildCustomSelect(select);
+                    }
+                });
+            });
         });
 
-        // also try immediately in case livewire:initialized already fired
         setTimeout(attachSummernote, 300);
     }
 
-    var jqSrc   = 'https://code.jquery.com/jquery-3.7.1.min.js';
-    var snSrc   = 'https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-lite.min.js';
+    var jqSrc = 'https://code.jquery.com/jquery-3.7.1.min.js';
+    var snSrc = 'https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-lite.min.js';
 
     if (typeof jQuery === 'undefined') {
-        loadScript(jqSrc, function () {
-            loadScript(snSrc, initWhenReady);
-        });
+        loadScript(jqSrc, function () { loadScript(snSrc, initWhenReady); });
     } else if (typeof $.fn.summernote === 'undefined') {
         loadScript(snSrc, initWhenReady);
     } else {
@@ -417,15 +361,10 @@
 
         function initAllFields() {
 
-            // ── 1. Text / Textarea is-filled ──
             document.querySelectorAll('.input-group-outline input, .input-group-outline textarea').forEach(function (input) {
                 var group = input.closest('.input-group');
                 if (!group) return;
-                if (input.value && input.value.trim() !== '') {
-                    group.classList.add('is-filled');
-                } else {
-                    group.classList.remove('is-filled');
-                }
+                group.classList.toggle('is-filled', !!(input.value && input.value.trim()));
                 if (input._materialInit) return;
                 input._materialInit = true;
                 input.addEventListener('focus', function () { group.classList.add('is-focused'); });
@@ -438,15 +377,10 @@
                 });
             });
 
-            // ── 2. Select is-filled ──
             document.querySelectorAll('.input-group-outline select').forEach(function (select) {
                 var group = select.closest('.input-group');
                 if (!group) return;
-                if (select.value && select.value !== '') {
-                    group.classList.add('is-filled');
-                } else {
-                    group.classList.remove('is-filled');
-                }
+                group.classList.toggle('is-filled', !!(select.value && select.value !== ''));
                 if (select._materialInit) return;
                 select._materialInit = true;
                 select.addEventListener('change', function () {
@@ -456,7 +390,6 @@
                 select.addEventListener('blur', function () { group.classList.remove('is-focused'); });
             });
 
-            // ── 3. Custom Select rebuild ──
             document.querySelectorAll('.input-group-outline .form-select').forEach(function (select) {
                 var old = select.parentNode.querySelector('.custom-select-wrapper');
                 if (old) old.remove();
@@ -465,7 +398,6 @@
                     buildCustomSelect(select);
                 }
             });
-
         }
     });
 </script>

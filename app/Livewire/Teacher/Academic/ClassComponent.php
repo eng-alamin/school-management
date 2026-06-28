@@ -28,14 +28,14 @@ class ClassComponent extends Component
     // Form
     public ?int $editId = null;
     public string $name = '';
-    public string $numeric = '';
+    public $numeric;
     public array $sectionIds = [];
 
     protected function rules(): array
     {
         return [
             'name'       => 'required|string|max:255',
-            'numeric'    => 'required|integer|min:1',
+            'numeric'    => 'nullable|integer',
             'sectionIds'      => 'nullable|array',
             'sectionIds.*'    => 'exists:academic_sections,id',
         ];
@@ -71,7 +71,7 @@ class ClassComponent extends Component
         $record = AcademicClass::findOrFail($id);
         $this->editId      = $id;
         $this->name        = $record->name;
-        $this->numeric     = (string) $record->numeric;
+        $this->numeric     = $record->numeric;
         $this->sectionIds = $record->sections->pluck('id')->toArray();
         $this->showModal   = true;
         $this->dispatch('showModalChanged', selected: $this->sectionIds);
@@ -153,7 +153,7 @@ class ClassComponent extends Component
             ->with('classes', $classes)
             ->with('sections', $sections)
             ->layout('layouts.teacher.app', [
-                'title' => "Classes | School SaaS",
+                'title' => 'Classes | ' . institution()->name,
             ]);
     }
 }

@@ -25,7 +25,7 @@
             </div>
             <div class="col-md-3">
                 <div class="input-group input-group-outline">
-                    <label class="form-label">Register No <span class="req">*</span></label>
+                    <label class="form-label">Register No</label>
                     <input type="text" wire:model="register_no" class="form-control" value="ISC-0001" onfocus="focused(this)" onfocusout="defocused(this)">
                      @error('register_no') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
@@ -53,32 +53,32 @@
                             <option value="{{ $class->id }}">{{ $class->name }}</option>
                         @endforeach
                     </select>
-                     @error('class_id') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
+                @error('class_id') <span class="text-danger">{{ $message }}</span> @enderror
             </div>
             <div class="col-md-4">
                 <div class="input-group input-group-outline" wire:ignore>
-                    <label class="form-label">Section <span class="req">*</span></label>
+                    <label class="form-label">Section</label>
                     <select wire:model="section_id" class="form-select" id="sectionSelect">
                         <option value="">Select Section</option>
                         @foreach($sections as $section)
                             <option value="{{ $section->id }}">{{ $section->name }}</option>
                         @endforeach
                     </select>
-                    @error('section_id') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
+                @error('section_id') <span class="text-danger">{{ $message }}</span> @enderror
             </div>
             <div class="col-md-4">
                 <div class="input-group input-group-outline" wire:ignore>
-                    <label class="form-label">Category <span class="req">*</span></label>
-                    <select wire:model="category_id" class="form-select">
-                        <option value="">Select Category</option>
-                        @foreach($categories as $category)
-                            <option value="{{ $category->id }}">{{ $category->name }}</option>
+                    <label class="form-label">Group</label>
+                    <select wire:model="group_id" class="form-select">
+                        <option value="">Select Group</option>
+                        @foreach($groups as $group)
+                            <option value="{{ $group->id }}">{{ $group->name }}</option>
                         @endforeach
                     </select>
-                    @error('category_id') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
+                @error('group_id') <span class="text-danger">{{ $message }}</span> @enderror
             </div>
             </div>
         </div>
@@ -197,25 +197,18 @@
             <span class="material-icons-round">lock</span> Login Details
             </div>
             <div class="row g-4">
-            <div class="col-md-4">
+            <div class="col-md-6">
                 <div class="input-group input-group-outline">
                     <label class="form-label">Username <span class="req">*</span></label>
                     <input type="text" wire:model="username" class="form-control" value="admin@ramom.com" onfocus="focused(this)" onfocusout="defocused(this)">
                     @error('username') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-6">
                 <div class="input-group input-group-outline">
                     <label class="form-label">Password</label>
                     <input type="password" wire:model="password" class="form-control" value="1234" onfocus="focused(this)" onfocusout="defocused(this)">
                     @error('password') <span class="text-danger">{{ $message }}</span> @enderror
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="input-group input-group-outline">
-                    <label class="form-label">Retype Password</label>
-                    <input type="password" wire:model="password_confirmation" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
-                    @error('password_confirmation') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
             </div>
             </div>
@@ -342,42 +335,35 @@
                     @error('guardian_photo_upload') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
 
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <div class="input-group input-group-outline">
                         <label class="form-label">Username <span class="req">*</span></label>
                         <input type="text" wire:model="guardian_username" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
                         @error('guardian_username') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <div class="input-group input-group-outline">
                         <label class="form-label">Password</label>
                         <input type="password" wire:model="guardian_password" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
                         @error('guardian_password') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="input-group input-group-outline">
-                    <label class="form-label">Retype Password</label>
-                    <input type="password" wire:model="guardian_password_confirmation" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
-                    @error('guardian_password_confirmation') <span class="text-danger">{{ $message }}</span> @enderror
-                    </div>
-                </div>
             </div>
         </div>
 
-        <!-- ══ PREVIOUS SCHOOL DETAILS ══ -->
+        <!-- ══ PREVIOUS INSTITUTION DETAILS ══ -->
         <div class="form-section">
             <div class="section-heading">
-            <span class="material-icons-round">history_edu</span> Previous School Details
+            <span class="material-icons-round">history_edu</span> Previous Institution Details
             </div>
             <div class="row g-4">
             <div class="col-md-6">
                 <div class="input-group input-group-outline">
-                    <label class="form-label">School Name</label>
-                    <textarea wire:model="previous_school" class="form-control" placeholder=" " style="min-height:64px" onfocus="focused(this)" onfocusout="defocused(this)"></textarea>
+                    <label class="form-label">Institution Name</label>
+                    <textarea wire:model="previous_institution" class="form-control" placeholder=" " style="min-height:64px" onfocus="focused(this)" onfocusout="defocused(this)"></textarea>
                 </div>
-                @error('previous_school') <span class="text-danger">{{ $message }}</span> @enderror
+                @error('previous_institution') <span class="text-danger">{{ $message }}</span> @enderror
             </div>
             <div class="col-md-6">
                 <div class="input-group input-group-outline">

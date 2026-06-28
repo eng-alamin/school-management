@@ -106,17 +106,17 @@
                                 <td style="font-size:12px">{{ $tx->pay_via ?? '—' }}</td>
                                 <td style="font-size:12px">
                                     <span class="badge rounded-pill badge-used">
-                                        {{ number_format($tx->amount, 2) }}
+                                        {{ number_format($tx->amount, 0) }}
                                     </span>
                                 </td>
                                 <td style="font-size:12px" class="text-danger">
-                                    {{ number_format($tx->dr, 2) }}
+                                    {{ number_format($tx->dr, 0) }}
                                 </td>
                                 <td style="font-size:12px" class="text-success">
-                                    {{ number_format($tx->cr, 2) }}
+                                    {{ number_format($tx->cr, 0) }}
                                 </td>
                                 <td style="font-size:12px">
-                                    <strong>{{ number_format($balance, 2) }}</strong>
+                                    <strong>{{ number_format($balance, 0) }}</strong>
                                 </td>
                                 <td style="font-size:12px">{{ \Carbon\Carbon::parse($tx->date)->format('d.M.Y') }}</td>
                             </tr>

@@ -7,7 +7,7 @@
     </div>
     <div class="brand-text">
       <div class="brand-name">Accountant Dashboard</div>
-      <div class="brand-sub">{{ school()->name }}</div>
+      <div class="brand-sub">{{ institution()->name }}</div>
     </div>
   </div>
 
@@ -70,7 +70,7 @@
         </a>
       </li>
 
-      <li class="nav1-item">
+      {{-- <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), 'accountant/employee/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
           <span class="material-icons-round nav-icon">badge</span>
           <span class="nav-label" id="nav-employees">Employees</span>
@@ -83,9 +83,9 @@
             <li class="nav2-item"><a href="{{route('accountant.employee.designations') }}" class="nav2-link {{ str_contains(request()->url(), 'accountant/employee/designations') == true ? 'active' : '' }}"><span class="nav2-icon">D</span><span class="nav2-label" id="nav-designation">Designation</span></a></li>
           </ul>
         </div>
-      </li>
+      </li> --}}
 
-      <li class="nav1-item">
+      {{-- <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), 'accountant/card/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
           <span class="material-icons-round nav-icon">credit_card</span>
           <span class="nav-label" id="nav-card-management">Card Management</span>
@@ -100,9 +100,9 @@
             <li class="nav2-item"><a href="{{route('accountant.card.generate-admit-cards') }}" class="nav2-link {{ str_contains(request()->url(), 'accountant/card/generate-admit-cards') == true ? 'active' : '' }}"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-admit-card-generate">Admit Card Generate</span></a></li>
           </ul>
         </div>
-      </li>
+      </li> --}}
 
-      <li class="nav1-item">
+      {{-- <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), 'accountant/certificate/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
           <span class="material-icons-round nav-icon">workspace_premium</span>
           <span class="nav-label" id="nav-certificate">Certificate</span>
@@ -115,7 +115,7 @@
             <li class="nav2-item"><a href="{{route('accountant.certificate.generate-employee') }}" class="nav2-link {{ str_contains(request()->url(), 'accountant/certificate/generate-employee') == true ? 'active' : '' }}"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-employee-id-card">Generate Employee</span></a></li>
           </ul>
         </div>
-      </li>
+      </li> --}}
 
       <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), 'accountant/salary') || str_contains(request()->url(), 'accountant/leave') ? 'active open' : '' }}" onclick="toggleNav1(this)">
@@ -125,10 +125,10 @@
         </div>
         <div class="nav2-collapse {{ str_contains(request()->url(), 'accountant/salary') || str_contains(request()->url(), 'accountant/leave') == true ? 'show' : '' }}">
           <ul>
-            <li class="nav2-item"><a href="{{route('accountant.salary.list-template') }}" class="nav2-link {{ str_contains(request()->url(), 'accountant/salary/list-template') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-idcard-template">Salary Template</span></a></li>
-            <li class="nav2-item"><a href="{{route('accountant.salary.assign') }}" class="nav2-link {{ str_contains(request()->url(), 'accountant/salary/assign') == true ? 'active' : '' }}"><span class="nav2-icon">A</span><span class="nav2-label" id="nav-idcard-template">Salary Assign</span></a></li>
-            <li class="nav2-item"><a href="{{route('accountant.salary.payment') }}" class="nav2-link {{ str_contains(request()->url(), 'accountant/salary/payment') == true ? 'active' : '' }}"><span class="nav2-icon">P</span><span class="nav2-label" id="nav-idcard-template">Salary Payment</span></a></li>
-            <li class="nav2-item"><a href="{{route('accountant.leave.applications') }}" class="nav2-link {{ str_contains(request()->url(), 'accountant/leave') == true ? 'active' : '' }}"><span class="nav2-icon">P</span><span class="nav2-label" id="nav-idcard-template">Leaves</span></a></li>
+            <li class="nav2-item"><a href="{{route('accountant.salary.list-template') }}" class="nav2-link {{ str_contains(request()->url(), 'accountant/salary/list-template') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-salary-template">Salary Template</span></a></li>
+            <li class="nav2-item"><a href="{{route('accountant.salary.assign') }}" class="nav2-link {{ str_contains(request()->url(), 'accountant/salary/assign') == true ? 'active' : '' }}"><span class="nav2-icon">A</span><span class="nav2-label" id="nav-salary-assign">Salary Assign</span></a></li>
+            <li class="nav2-item"><a href="{{route('accountant.salary.payment') }}" class="nav2-link {{ str_contains(request()->url(), 'accountant/salary/payment') == true ? 'active' : '' }}"><span class="nav2-icon">P</span><span class="nav2-label" id="nav-salary-payment">Salary Payment</span></a></li>
+            <li class="nav2-item"><a href="{{route('accountant.leave.applications') }}" class="nav2-link {{ str_contains(request()->url(), 'accountant/leave') == true ? 'active' : '' }}"><span class="nav2-icon">P</span><span class="nav2-label" id="nav-leaves">Leaves</span></a></li>
           </ul>
         </div>
       </li>
@@ -177,25 +177,25 @@
       <li class="nav1-item">
         <a href="{{route('accountant.mailbox.inbox') }}" class="nav1-link {{ str_contains(request()->url(), 'accountant/mailbox/') == true ? 'active' : '' }}">
           <span class="material-icons-round nav-icon">chat</span>
-          <span class="nav-label" id="nav-message">Message</span>
+          <span class="nav-label" id="nav-mailbox">Mailbox</span>
         </a>
       </li>
 
       <li class="nav1-item">
         <a href="{{route('accountant.notice') }}" class="nav1-link {{ str_contains(request()->url(), 'accountant/notice-board') == true ? 'active' : '' }}">
           <span class="material-icons-round nav-icon">chat</span>
-          <span class="nav-label" id="nav-message">Notice Board</span>
+          <span class="nav-label" id="nav-notices">Notice</span>
         </a>
       </li>
       
       <li class="nav1-item">
         <a href="{{route('accountant.notifications.index') }}" class="nav1-link {{ str_contains(request()->url(), 'accountant/notifications') == true ? 'active' : '' }}">
           <span class="material-icons-round nav-icon">chat</span>
-          <span class="nav-label" id="nav-message">Notifications</span>
+          <span class="nav-label" id="nav-notifications">Notifications</span>
         </a>
       </li>
             
-      <li class="nav1-item">
+      {{-- <li class="nav1-item">
         <div class="nav1-link" onclick="toggleNav1(this)">
           <span class="material-icons-round nav-icon">bar_chart</span>
           <span class="nav-label" id="nav-reports">Reports</span>
@@ -212,7 +212,7 @@
             <li class="nav2-item"><div class="nav2-link"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-inventory">Inventory</span></div></li>
           </ul>
         </div>
-      </li>
+      </li> --}}
       
     </ul>
 

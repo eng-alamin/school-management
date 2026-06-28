@@ -5,8 +5,6 @@ namespace App\Livewire\Admin\Certificate;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use App\Models\CertificateTemplate;
-use Illuminate\Validation\ValidationException;
-use Illuminate\Validation\Rule;
 
 class AddTemplateComponent extends Component
 {
@@ -30,9 +28,9 @@ class AddTemplateComponent extends Component
     public string $certificate_content = '';
 
     // ── File Uploads ──
-    public $signature_image   = null;
-    public $logo_image        = null;
-    public $background_image  = null;
+    public $signature_image  = null;
+    public $logo_image       = null;
+    public $background_image = null;
 
     // ── Validation Rules ──
     protected function rules(): array
@@ -49,41 +47,30 @@ class AddTemplateComponent extends Component
             'margin_bottom'       => 'required|integer|min:0|max:300',
             'margin_left'         => 'required|integer|min:0|max:300',
             'certificate_content' => 'required|string',
-            'signature_image'     => 'nullable',
-            'logo_image'          => 'nullable',
-            'background_image'    => 'nullable',
+
+            // Bug 5 fix: proper file validation
+            'signature_image'     => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'logo_image'          => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'background_image'    => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ];
     }
 
     protected array $messages = [
-        'certificate_name.required'    => 'Certificate name is required.',
-        'applicable_user.required'     => 'Please select who this certificate applies to.',
-        'page_layout.required'         => 'Please select a page layout.',
-        'certificate_content.required' => 'Certificate content cannot be empty.',
+        'certificate_name.required'       => 'Certificate name is required.',
+        'applicable_user.required'        => 'Please select who this certificate applies to.',
+        'page_layout.required'            => 'Please select a page layout.',
+        'certificate_content.required'    => 'Certificate content cannot be empty.',
+        'signature_image.image'           => 'Signature must be an image.',
+        'signature_image.mimes'           => 'Signature must be JPG or PNG.',
+        'signature_image.max'             => 'Signature must not exceed 2MB.',
+        'logo_image.image'                => 'Logo must be an image.',
+        'logo_image.mimes'                => 'Logo must be JPG or PNG.',
+        'logo_image.max'                  => 'Logo must not exceed 2MB.',
+        'background_image.image'          => 'Background must be an image.',
+        'background_image.mimes'          => 'Background must be JPG or PNG.',
+        'background_image.max'            => 'Background must not exceed 2MB.',
     ];
 
-    public function safePreviewUrl($upload): ?string
-    {
-        if (!$upload) return null;
-        try {
-            return $upload->temporaryUrl();
-        } catch (\Throwable $e) {
-            return null;
-        }
-    }
-
-    private function deleteOldFile($path): void
-    {
-        if (!$path) {
-            return;
-        }
-
-        $fullPath = public_path($path);
-
-        if (file_exists($fullPath)) {
-            unlink($fullPath);
-        }
-    }
 
     // ── Save ──
     public function save(): void
@@ -104,10 +91,9 @@ class AddTemplateComponent extends Component
             'certificate_content' => $this->certificate_content,
         ];
 
-        // Handle file uploads
         foreach (['signature_image', 'logo_image', 'background_image'] as $field) {
             if ($this->$field) {
-                $data[$field] = \App\Helpers\TenantFileHelper::store($this->$field, 'certificates');
+                $data[$field] = $this->$field->store('certificates', 'public');
             }
         }
 
@@ -120,25 +106,38 @@ class AddTemplateComponent extends Component
     // ── Reset ──
     public function resetForm(): void
     {
+        // Bug 2 & 3 fix: reset everything including select fields
         $this->reset([
             'certificate_name',
             'applicable_user',
+            'page_layout',
+            'qr_code_text',
+            'photo_style',
+            'photo_size',
+            'margin_top',
+            'margin_right',
+            'margin_bottom',
+            'margin_left',
             'certificate_content',
             'signature_image',
             'logo_image',
             'background_image',
         ]);
 
+        // Re-apply defaults after reset
+        $this->page_layout   = 'a4_portrait';
+        $this->qr_code_text  = 'register_no';
+        $this->photo_style   = 'square';
+        $this->photo_size    = 100;
+        $this->margin_top    = 80;
+        $this->margin_right  = 80;
+        $this->margin_bottom = 80;
+        $this->margin_left   = 80;
+
         $this->dispatch('resetSummernote');
 
-        $this->page_layout      = 'a4_portrait';
-        $this->qr_code_text     = 'register_no';
-        $this->photo_style      = 'square';
-        $this->photo_size       = 100;
-        $this->margin_top       = 80;
-        $this->margin_right     = 80;
-        $this->margin_bottom    = 80;
-        $this->margin_left      = 80;
+        // Bug 3 fix: dispatch event so JS can sync select values in UI
+        $this->dispatch('resetSelects');
     }
 
     public function render()

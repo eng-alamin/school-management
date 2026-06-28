@@ -53,7 +53,7 @@ class ParentListComponent extends Component
         return view('livewire.teacher.parent.parent-list-component')
             ->with('parents', $parents)
             ->layout('layouts.teacher.app', [
-                'title' => "Parent List | School SaaS",
+                'title' => 'Parent List | ' . institution()->name,
             ]);
     }
 }

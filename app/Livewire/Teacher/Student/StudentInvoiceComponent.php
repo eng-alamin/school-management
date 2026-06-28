@@ -23,7 +23,7 @@ class StudentInvoiceComponent extends Component
             'session',
             'class',
             'section',
-            'category',
+            'group',
             'guardians',
             'user',
         ])->findOrFail($id);
@@ -93,7 +93,7 @@ class StudentInvoiceComponent extends Component
     {
         return view('livewire.teacher.student.student-invoice-component')
             ->layout('layouts.teacher.app', [
-                'title' => "Student Invoice | School SaaS",
+                'title' => 'Student Invoice | ' . institution()->name,
             ]);
     }
 }

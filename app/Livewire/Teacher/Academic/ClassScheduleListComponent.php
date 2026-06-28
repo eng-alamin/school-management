@@ -4,84 +4,87 @@ namespace App\Livewire\Teacher\Academic;
 
 use Livewire\Component;
 use App\Models\AcademicClassSchedule;
+use App\Models\AcademicClassAssign;
 use App\Models\AcademicClass;
 use App\Models\AcademicSection;
 
 class ClassScheduleListComponent extends Component
 {
-    public $class_id;
-    public $section_id;
+    public $filterClass   = '';
+    public $filterSection = '';
 
-    public $schedule = null;
-    public $hasSchedule = false;
-    public $schedule_id;
+    public $hasSchedule  = false;
+    public $scheduleGrid = [];
+    public $days         = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-    public $scheduleGrid = []; // ✅ grid data
-    public $days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
-
-    public array $availableSections = [];
-
-    public function updatedClassId($value): void
+    public function getAvailableClasses()
     {
-        $this->section_id        = '';
-        $this->availableSections = [];
-        $this->hasSchedule       = false;
-        $this->data              = [];
+        return AcademicClass::whereIn('id', AcademicClassAssign::distinct()->pluck('class_id'))
+            ->orderBy('name')
+            ->get();
+    }
 
-        if ($value) {
-            $class = AcademicClass::with('sections')->find($value);
-            if ($class) {
-                $this->availableSections = $class->sections
-                    ->map(fn($s) => ['id' => $s->id, 'name' => $s->name])
-                    ->toArray();
-            }
-        }
+    public function getAvailableSections()
+    {
+        if (!$this->filterClass) return collect();
+
+        return AcademicSection::whereIn('id',
+            AcademicClassAssign::where('class_id', $this->filterClass)->pluck('section_id')
+        )->orderBy('name')->get();
+    }
+
+    public function updatedFilterClass()
+    {
+        $this->filterSection = '';
+        $this->hasSchedule   = false;
+        $this->scheduleGrid  = [];
+    }
+
+    public function updatedFilterSection()
+    {
+        $this->hasSchedule  = false;
+        $this->scheduleGrid = [];
     }
 
     public function filter()
     {
-        $this->validate([
-            'class_id'   => 'required|exists:academic_classes,id',
-            'section_id' => 'required|exists:academic_sections,id',
-        ]);
+        if (!$this->filterClass) {
+            $this->dispatch('toast', type: 'error', message: 'Please select a class.');
+            return;
+        }
 
-        // সব day এর schedule আনো
-        $schedules = AcademicClassSchedule::where('class_id', $this->class_id)
-            ->where('section_id', $this->section_id)
+        $sectionId = ($this->filterSection && $this->filterSection !== 'all')
+            ? $this->filterSection
+            : null;
+
+        $schedules = AcademicClassSchedule::where('class_id', $this->filterClass)
+            ->where('section_id', $sectionId)
             ->get()
-            ->keyBy('day'); // ['Sunday' => schedule, 'Monday' => schedule, ...]
+            ->keyBy('day');
 
-        // Max period count বের করো
         $maxPeriods = $schedules->max(fn($s) => count($s->data ?? [])) ?? 0;
 
-        // Grid বানাও: period index × day
         $grid = [];
         for ($i = 0; $i < $maxPeriods; $i++) {
             $row = [];
             foreach ($this->days as $day) {
-                $row[$day] = $schedules[$day]->data[$i] ?? null;
+                $row[$day] = isset($schedules[$day]) ? ($schedules[$day]->data[$i] ?? null) : null;
             }
             $grid[] = $row;
         }
 
         $this->scheduleGrid = $grid;
-        $this->hasSchedule = true;
+        $this->hasSchedule  = true;
     }
 
     public function render()
     {
-        $classes  = AcademicClass::orderBy('id')->get();
-        $sections = AcademicSection::orderBy('name')->get();
-
         return view('livewire.teacher.academic.class-schedule-list-component')
-            ->with('classes', $classes)
-            ->with('sections', $sections)
+            ->with('classes', $this->getAvailableClasses())
+            ->with('sections', $this->getAvailableSections())
             ->with('days', $this->days)
             ->layout('layouts.teacher.app', [
-                'title' => "Class Schedule | School SaaS",
+                'title' => 'Class Schedule | ' . institution()->name,
             ]);
     }
-
-
 }

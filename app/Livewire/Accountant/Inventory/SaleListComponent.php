@@ -68,7 +68,7 @@ class SaleListComponent extends Component
         return view('livewire.accountant.inventory.sale-list-component')
             ->with('sales', $sales)
             ->layout('layouts.accountant.app', [
-                'title' => 'Sales | School SaaS',
+                'title' => 'Sales | ' . institution()->name,
             ]);
     }
 }

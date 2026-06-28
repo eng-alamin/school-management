@@ -19,7 +19,7 @@ class OverviewComponent extends Component
         return view('livewire.teacher.profile.overview-component')
             ->with('user', $this->user)
             ->layout('layouts.teacher.app', [
-                    'title' => "Profile Overview | School SaaS",
+                    'title' => 'Profile Overview | ' . institution()->name,
                 ]);
     }
 }

@@ -83,12 +83,12 @@ class Index extends Component
             });
         }
 
-        return view('livewire.accountant.notifications.index', [
+        return view('livewire.notifications.index', [
             'notifications' => $query->paginate(20),
             'unreadCount'   => auth()->user()->unreadNotificationsCount(),
             'typeLabels'    => Notification::typeLabels(),
         ])->layout('layouts.accountant.app', [
-                'title' => "Notifications | School SaaS",
+                'title' => 'Notifications | ' . institution()->name,
             ]);
     }
 }

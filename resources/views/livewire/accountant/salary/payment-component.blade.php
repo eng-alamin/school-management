@@ -132,7 +132,7 @@
                 <tbody>
                     @foreach($employees as $employee)
                     <tr wire:key="emp-{{ $employee->id }}">
-                        <td>{{ $employee->staff_id ?? '—' }}</td>
+                        <td>{{ $employee->employee_id ?? '—' }}</td>
                         <td>{{ $employee->name }}</td>
                         <td>{{ $employee->designation?->name ?? '—' }}</td>
                         <td>{{ $employee->department?->name ?? '—' }}</td>
@@ -166,12 +166,12 @@
                         {{-- Actions --}}
                         <td>
                             @if(($employee->salary_status ?? '') === 'paid')
-                                <a class="action-btn btn-payslip" href="{{route('accountant.salary.invoice-payment', ['id' => $employee->id, 'month' => $this->month]) }}" target="_blank">
+                                <a class="action-btn btn-payslip" href="{{route('admin.salary.invoice-payment', ['id' => $employee->id, 'month' => $this->month]) }}" target="_blank">
                                     <span class="material-icons-round" style="font-size:14px;vertical-align:middle">visibility</span>
                                     Payslip
                         </a>
                             @else
-                                <a class="action-btn btn-paynow" href="{{route('accountant.salary.add-payment', ['id' => $employee->id, 'month' => $this->month]) }}" target="_blank">
+                                <a class="action-btn btn-paynow" href="{{route('admin.salary.add-payment', ['id' => $employee->id, 'month' => $this->month]) }}" target="_blank">
                                     <span class="material-icons-round" style="font-size:14px;vertical-align:middle">credit_card</span>
                                     Pay Now
                             </a>

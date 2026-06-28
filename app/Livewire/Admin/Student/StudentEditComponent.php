@@ -10,6 +10,7 @@ use App\Models\AcademicSession;
 use App\Models\AcademicClass;
 use App\Models\AcademicSection;
 use App\Models\AcademicGroup;
+use Illuminate\Support\Facades\DB;
 
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
@@ -61,7 +62,7 @@ class StudentEditComponent extends Component
     public $guardian_username;
     public $guardian_password;
 
-    public $previous_school;
+    public $previous_institution;
     public $qualification;
     public $remarks;
 
@@ -70,7 +71,7 @@ class StudentEditComponent extends Component
     public function mount($id)
     {
         $this->studentId = $id;
-        $this->student   = Student::with('user','guardians')->findOrFail($id);
+        $this->student   = Student::with('user', 'guardians')->findOrFail($id);
 
         $this->userId = $this->student->user_id;
 
@@ -81,7 +82,7 @@ class StudentEditComponent extends Component
         $this->admission_date = $this->student->admission_date;
         $this->class_id       = $this->student->class_id;
         $this->section_id     = $this->student->section_id;
-        $this->group_id    = $this->student->group_id;
+        $this->group_id       = $this->student->group_id;
 
         // Personal
         $this->name              = $this->student->name;
@@ -107,8 +108,8 @@ class StudentEditComponent extends Component
             $this->guardian_photo  = $this->guardian->photo;
         }
 
-        // Previous school
-        $this->previous_school = $this->student->previous_school;
+        // Previous Institution
+        $this->previous_institution = $this->student->previous_institution;
         $this->qualification   = $this->student->qualification;
         $this->remarks         = $this->student->remarks;
 
@@ -134,7 +135,7 @@ class StudentEditComponent extends Component
             'guardian_name'     => !$this->guardian_exists ? 'required' : 'nullable',
             'guardian_relation' => !$this->guardian_exists ? 'required' : 'nullable',
             'guardian_mobile'   => !$this->guardian_exists ? 'required' : 'nullable',
-            
+
             'guardian_username' => !$this->guardian_exists ? ['required', Rule::unique('users', 'username')->ignore($this->userId)] : 'nullable',
 
             'guardian_photo_upload'       => 'nullable',
@@ -153,7 +154,10 @@ class StudentEditComponent extends Component
 
     public function update()
     {
+        DB::beginTransaction();
+
         try {
+
             $this->validate($this->rules());
 
             // ── Student user update ──────────────────────────────
@@ -167,7 +171,7 @@ class StudentEditComponent extends Component
                 $userData['password'] = $this->password;
             }
 
-            $user = User::with('student')->findOrFail($this->userId);
+            $user = User::findOrFail($this->userId);
             $user->update($userData);
 
             // ── Student record update ────────────────────────────
@@ -180,7 +184,7 @@ class StudentEditComponent extends Component
                 'admission_date'   => $this->admission_date,
                 'class_id'         => $this->class_id,
                 'section_id'       => $this->section_id,
-                'group_id'      => $this->group_id,
+                'group_id'         => $this->group_id,
 
                 'name'             => $this->name,
                 'gender'           => $this->gender,
@@ -192,7 +196,7 @@ class StudentEditComponent extends Component
                 'present_address'  => $this->present_address,
                 'permanent_address'=> $this->permanent_address,
 
-                'previous_school'  => $this->previous_school,
+                'previous_institution'  => $this->previous_institution,
                 'qualification'    => $this->qualification,
                 'remarks'          => $this->remarks,
             ];
@@ -205,10 +209,15 @@ class StudentEditComponent extends Component
 
             // ── Guardian ─────────────────────────────────────────
             if ($this->guardian_exists) {
+
                 $this->student->guardians()->sync([
-                    $this->guardian_id => ['school_id' => auth()->user()->school_id]
+                    $this->guardian_id => [
+                        'institution_id' => auth()->user()->institution_id
+                    ]
                 ]);
+
             } else {
+
                 $guardianPassword = !empty($this->guardian_password)
                     ? $this->guardian_password
                     : '1234';
@@ -242,17 +251,24 @@ class StudentEditComponent extends Component
                 $guardian = Guardian::create($guardianData);
 
                 $this->student->guardians()->sync([
-                    $guardian->id => ['school_id' => auth()->user()->school_id]
+                    $guardian->id => [
+                        'institution_id' => auth()->user()->institution_id
+                    ]
                 ]);
             }
 
+            DB::commit();
+
             $this->dispatch('date-updated', date: $this->admission_date);
             $this->dispatch('date-updated', date: $this->dob);
+
             $this->dispatch('toast', type: 'success', message: 'Student updated successfully!');
 
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            $this->dispatch('validation-failed');
-            $this->dispatch('toast', type: 'error', message: 'An error occurred while creating the parent.');
+        } catch (\Throwable $e) {
+
+            DB::rollBack();
+
+            $this->dispatch('toast', type: 'error', message: 'Something went wrong!');
             throw $e;
         }
     }
@@ -262,7 +278,7 @@ class StudentEditComponent extends Component
         $sessions   = AcademicSession::orderBy('name')->get();
         $classes    = AcademicClass::orderBy('id')->get();
         $sections   = AcademicSection::orderBy('name')->get();
-        $groups = AcademicGroup::orderBy('name')->get();
+        $groups     = AcademicGroup::orderBy('name')->get();
         $guardians  = Guardian::orderBy('name')->get();
 
         return view('livewire.admin.student.student-edit-component')

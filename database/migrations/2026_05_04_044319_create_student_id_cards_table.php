@@ -37,7 +37,7 @@ return new class extends Migration
             $table->string('roll_no')->nullable();
             $table->string('class')->nullable();
             $table->string('section')->nullable();
-            $table->string('category')->nullable();
+            $table->string('group')->nullable();
 
             $table->string('signature')->nullable();
             $table->date('issue_date')->nullable();

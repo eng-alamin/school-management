@@ -156,6 +156,9 @@ class EditComponent extends Component
                 ->causedBy(auth()->user())
                 ->performedOn($event)
                 ->withProperties(['icon' => 'event', 'type' => 'event'])
+                ->tap(function ($activity) use ($event) {
+                    $activity->school_id = $event->school_id;
+                })
                 ->log('Event updated: ' . $event->title);
 
             $this->dispatch('toast', type: 'success', message: 'Event updated successfully!');
@@ -175,7 +178,7 @@ class EditComponent extends Component
             ->with('classes', $classes)
             ->with('sections', $sections)
             ->layout('layouts.accountant.app', [
-                'title' => 'Edit Event | Monarchy School',
+                'title' => 'Edit Event | ' . institution()->name,
             ]);
     }
 

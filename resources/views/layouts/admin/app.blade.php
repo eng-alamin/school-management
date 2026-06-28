@@ -58,6 +58,7 @@
 <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
 <!-- Theme JS -->
 <script src="{{asset('assets/js/theme.js')}}"></script>
+<script type="module" src="{{asset('assets/js/lang/lang.js')}}"></script>
 
 <script>
     // Close Modal

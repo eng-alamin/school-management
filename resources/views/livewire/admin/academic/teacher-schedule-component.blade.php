@@ -11,7 +11,7 @@
         {{-- Teacher Select --}}
         <div class="col-md-8 offset-md-2">
             <div class="input-group input-group-outline">
-                <label class="form-label">Teacher <span class="req">*</span></label>
+                <label class="form-label">Teacher</label>
                 <select wire:model.live="teacher_id" class="form-select">
                     <option value="">Select Teacher</option>
                     @foreach ($teachers as $t)

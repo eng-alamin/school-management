@@ -5,7 +5,7 @@ namespace App\Livewire\Accountant\Salary;
 use Livewire\Component;
 use App\Models\SalaryAssign;
 use App\Models\SalaryTemplate;
-use App\Models\Designation;
+use App\Models\EmployeeDesignation;
 use App\Models\Employee;
 
 class AssignComponent extends Component
@@ -35,7 +35,7 @@ class AssignComponent extends Component
         $this->selectAll      = false;
 
         $this->designations = $this->role
-            ? Designation::orderBy('name')->get()->toArray()
+            ? EmployeeDesignation::orderBy('name')->get()->toArray()
             : [];
     }
 
@@ -98,7 +98,7 @@ class AssignComponent extends Component
                 ['employee_id' => $employee['id']],
                 [
                     'role'               => $this->role,
-                    'designation_id'     => $this->designation_id,
+                    'designation_id'     => $employee['designation_id'], 
                     'salary_template_id' => $templateId,
                     'salary_grade'       => $template->salary_grade,
                     'basic_salary'       => $basicSalary,
@@ -132,8 +132,7 @@ class AssignComponent extends Component
             'accountant'        => 'Accountant',
             'teacher'      => 'Teacher',
             'accountant'   => 'Accountant',
-            'librarian'    => 'Librarian',
-            'receptionist' => 'Receptionist',
+            'staff'        => 'Staff',
         ];
     }
 
@@ -144,6 +143,8 @@ class AssignComponent extends Component
 
         return view('livewire.accountant.salary.assign-component')
             ->with(['salaryTemplates' => $salaryTemplates, 'roles' => $roles])
-            ->layout('layouts.accountant.app', ['title' => 'Salary Assign | HR']);
+            ->layout('layouts.accountant.app', [
+                'title' => 'Salary Assign | ' . institution()->name,
+            ]);
     }
 }

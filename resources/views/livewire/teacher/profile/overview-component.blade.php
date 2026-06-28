@@ -8,7 +8,7 @@
 
         <div class="container-xl mt-4">
 
-            @include('livewire.teacher.profile.navbar', ['user' => $user])
+            @include('livewire.admin.profile.navbar', ['user' => $user])
 
             <!-- START CONTENT -->
 
@@ -17,7 +17,7 @@
 
                 <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
                     <span class="fw-bold fs-5">Profile Details</span>
-                    <a href="{{ route('teacher.profile.setting', ['id' => $user->id]) }}" class="btn-outline bg-dark text-white">
+                    <a href="{{ route('admin.profile.setting', ['id' => $user->id]) }}" class="btn-outline bg-dark text-white">
                         Edit Profile
                     </a>
                 </div>

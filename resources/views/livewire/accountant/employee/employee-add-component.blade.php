@@ -5,8 +5,8 @@
     <div class="card">
 
         <div class="mat-card-header header-pink-gradient">
-            <h5>Employee Registration</h5>
-            <p>Create new employee record</p>
+            <h5 id="emp-add-header-title">Employee Registration</h5>
+            <p id="emp-add-header-subtitle">Create new employee record</p>
         </div>
 
         <!-- ══ JOB DETAILS ══ -->
@@ -18,9 +18,10 @@
             <div class="row g-4">
                 <div class="col-md-6">
                     <div class="input-group input-group-outline" wire:ignore>
-                        <label class="form-label">Role <span class="req">*</span></label>
+                        <label class="form-label"><span id="emp-add-lbl-role">Role</span> <span class="req">*</span></label>
                         <select wire:model="role" class="form-select">
                             <option value="">Select Role</option>
+                            <option value="admin">Admin</option>
                             <option value="teacher">Teacher</option>
                             <option value="accountant">Accountant</option>
                             <option value="staff">Staff</option>
@@ -31,7 +32,7 @@
 
                 <div class="col-md-6">
                     <div class="input-group input-group-outline" wire:ignore>
-                        <label class="form-label">Joining Date <span class="req">*</span></label>
+                        <label class="form-label"><span id="emp-add-lbl-joining-date">Joining Date</span> <span class="req">*</span></label>
                         <input type="date" wire:model="joining_date" class="form-control">
                     </div>
                     @error('joining_date') <span class="text-danger">{{ $message }}</span> @enderror
@@ -39,7 +40,7 @@
 
                 <div class="col-md-6">
                     <div class="input-group input-group-outline" wire:ignore>
-                        <label class="form-label">Designation <span class="req">*</span></label>
+                        <label class="form-label"><span id="emp-add-lbl-designation">Designation</span> <span class="req">*</span></label>
                         <select wire:model="designation_id" class="form-select">
                             <option value="">Select Designation</option>
                             @foreach ($designations as $designation)
@@ -52,7 +53,7 @@
 
                 <div class="col-md-6">
                     <div class="input-group input-group-outline" wire:ignore>
-                        <label class="form-label">Department <span class="req">*</span></label>
+                        <label class="form-label"><span id="emp-add-lbl-department">Department</span> <span class="req">*</span></label>
                         <select wire:model="department_id" class="form-select">
                             <option value="">Select Department</option>
                             @foreach ($departments as $department)
@@ -65,7 +66,7 @@
 
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
-                        <label class="form-label">Qualification</label>
+                        <label class="form-label" id="emp-add-lbl-qualification">Qualification</label>
                         <input type="text" wire:model="qualification" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
                     </div>
                     @error('qualification') <span class="text-danger">{{ $message }}</span> @enderror
@@ -73,7 +74,7 @@
 
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
-                        <label class="form-label">Total Experience</label>
+                        <label class="form-label" id="emp-add-lbl-total-experience">Total Experience</label>
                         <input type="text" wire:model="total_experience" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
                     </div>
                     @error('total_experience') <span class="text-danger">{{ $message }}</span> @enderror
@@ -81,7 +82,7 @@
 
                 <div class="col-12">
                     <div class="input-group input-group-outline">
-                        <label class="form-label">Experience Details</label>
+                        <label class="form-label" id="emp-add-lbl-experience-detail">Experience Details</label>
                         <textarea wire:model="experience_detail" class="form-control" placeholder=" " style="min-height:90px" onfocus="focused(this)" onfocusout="defocused(this)"></textarea>
                     </div>
                     @error('experience_detail') <span class="text-danger">{{ $message }}</span> @enderror
@@ -98,7 +99,7 @@
             <div class="row g-4">
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
-                        <label class="form-label">Name <span class="req">*</span></label>
+                        <label class="form-label"><span id="emp-add-lbl-name">Name</span> <span class="req">*</span></label>
                         <input type="text" wire:model="name" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
                     </div>
                     @error('name') <span class="text-danger">{{ $message }}</span> @enderror
@@ -106,7 +107,7 @@
 
                 <div class="col-md-6">
                     <div class="input-group input-group-outline" wire:ignore>
-                        <label class="form-label">Date Of Birth</label>
+                        <label class="form-label" id="emp-add-lbl-dob">Date Of Birth</label>
                         <input type="date" wire:model="dob" class="form-control">
                     </div>
                     @error('dob') <span class="text-danger">{{ $message }}</span> @enderror
@@ -114,7 +115,7 @@
 
                 <div class="col-md-4">
                     <div class="input-group input-group-outline" wire:ignore>
-                        <label class="form-label">Religion</label>
+                        <label class="form-label" id="emp-add-lbl-religion">Religion</label>
                         <select wire:model="religion" class="form-select">
                             <option value="">Select</option>
                             <option value="muslim">Muslim</option>
@@ -128,7 +129,7 @@
 
                 <div class="col-md-4">
                     <div class="input-group input-group-outline">
-                        <label class="form-label">Mobile</label>
+                        <label class="form-label" id="emp-add-lbl-mobile">Mobile</label>
                         <input type="text" wire:model="mobile" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
                     </div>
                     @error('mobile') <span class="text-danger">{{ $message }}</span> @enderror
@@ -136,7 +137,7 @@
 
                 <div class="col-md-4">
                     <div class="input-group input-group-outline">
-                        <label class="form-label">Email</label>
+                        <label class="form-label" id="emp-add-lbl-email">Email</label>
                         <input type="email" wire:model="email" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
                     </div>
                     @error('email') <span class="text-danger">{{ $message }}</span> @enderror
@@ -144,7 +145,7 @@
 
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
-                        <label class="form-label">Present Address</label>
+                        <label class="form-label" id="emp-add-lbl-present-address">Present Address</label>
                         <textarea wire:model="present_address" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)"></textarea>
                     </div>
                     @error('present_address') <span class="text-danger">{{ $message }}</span> @enderror
@@ -152,14 +153,14 @@
 
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
-                        <label class="form-label">Permanent Address</label>
+                        <label class="form-label" id="emp-add-lbl-permanent-address">Permanent Address</label>
                         <textarea wire:model="permanent_address" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)"></textarea>
                     </div>
                     @error('permanent_address') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
 
                 <div class="col-md-12">
-                    <label style="font-size:.73rem;font-weight:600;color:var(--muted);display:block;margin-bottom:8px">
+                    <label id="emp-add-lbl-photo" style="font-size:.73rem;font-weight:600;color:var(--muted);display:block;margin-bottom:8px">
                         Photo
                     </label>
                     <div class="photo-upload-box">
@@ -187,7 +188,7 @@
             <div class="row g-4">
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
-                        <label class="form-label">Username <span class="req">*</span></label>
+                        <label class="form-label"><span id="emp-add-lbl-username">Username</span> <span class="req">*</span></label>
                         <input type="text" wire:model="username" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
                     </div>
                     @error('username') <span class="text-danger">{{ $message }}</span> @enderror
@@ -195,7 +196,7 @@
 
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
-                        <label class="form-label">Password</label>
+                        <label class="form-label" id="emp-add-lbl-password">Password</label>
                         <input type="password" wire:model="password" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
                     </div>
                     @error('password') <span class="text-danger">{{ $message }}</span> @enderror
@@ -212,7 +213,7 @@
             <div class="row g-4">
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
-                        <label class="form-label">Bank Name</label>
+                        <label class="form-label" id="emp-add-lbl-bank-name">Bank Name</label>
                         <input type="text" wire:model="bank_name" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
                     </div>
                     @error('bank_name') <span class="text-danger">{{ $message }}</span> @enderror
@@ -220,7 +221,7 @@
 
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
-                        <label class="form-label">Holder Name</label>
+                        <label class="form-label" id="emp-add-lbl-holder-name">Holder Name</label>
                         <input type="text" wire:model="holder_name" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
                     </div>
                     @error('holder_name') <span class="text-danger">{{ $message }}</span> @enderror
@@ -228,7 +229,7 @@
 
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
-                        <label class="form-label">Bank Branch</label>
+                        <label class="form-label" id="emp-add-lbl-bank-branch">Bank Branch</label>
                         <input type="text" wire:model="bank_branch" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
                     </div>
                     @error('bank_branch') <span class="text-danger">{{ $message }}</span> @enderror
@@ -236,7 +237,7 @@
 
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
-                        <label class="form-label">IFSC Code</label>
+                        <label class="form-label" id="emp-add-lbl-ifsc-code">IFSC Code</label>
                         <input type="text" wire:model="ifsc_code" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
                     </div>
                     @error('ifsc_code') <span class="text-danger">{{ $message }}</span> @enderror
@@ -244,7 +245,7 @@
 
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
-                        <label class="form-label">Account No</label>
+                        <label class="form-label" id="emp-add-lbl-account-no">Account No</label>
                         <input type="text" wire:model="account_no" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
                     </div>
                     @error('account_no') <span class="text-danger">{{ $message }}</span> @enderror
@@ -252,7 +253,7 @@
 
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
-                        <label class="form-label">Bank Address</label>
+                        <label class="form-label" id="emp-add-lbl-bank-address">Bank Address</label>
                         <textarea wire:model="bank_address" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)"></textarea>
                     </div>
                     @error('bank_address') <span class="text-danger">{{ $message }}</span> @enderror
@@ -268,7 +269,7 @@
             </button>
 
             <button class="btn-pink" type="button" wire:click="save" wire:loading.attr="disabled" wire:target="save">
-                <span wire:loading.remove wire:target="save">
+                <span wire:loading.remove wire:target="save" style="display: inline-flex;align-items: center;gap: 6px">
                     <span class="material-icons-round">save</span>
                     Save
                 </span>

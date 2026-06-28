@@ -62,7 +62,8 @@
                 <div class="input-group input-group-outline" wire:ignore>
                     <label class="form-label">Date <span class="req">*</span></label>
                     <input type="date"
-                           wire:model.live="date"
+                           wire:model="date"
+                           data-dp-value="{{ $date }}"
                            class="form-control">
                 </div>
                 @error('date') <span class="text-danger">{{ $message }}</span> @enderror
@@ -88,12 +89,12 @@
             <div class="col-md-6">
                 <div class="input-group input-group-outline">
                     <label class="form-label">Remarks</label>
-                    <textarea wire:model="remarks"
-                              class="form-control"
-                              style="min-height:80px"
-                              placeholder=" "
-                              onfocus="focused(this)"
-                              onfocusout="defocused(this)"></textarea>
+                    <input type="text"
+                           wire:model="remarks"
+                           class="form-control"
+                           placeholder=" "
+                           onfocus="focused(this)"
+                           onfocusout="defocused(this)">
                 </div>
                 @error('remarks') <span class="text-danger">{{ $message }}</span> @enderror
             </div>
@@ -127,12 +128,12 @@
             <table style="width:100%;border-collapse:collapse;font-size:.82rem">
                 <thead>
                     <tr style="border-bottom:2px solid var(--border,#e9ecef)">
-                        <th style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">#</th>
-                        <th style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Product <span class="req">*</span></th>
-                        <th style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Unit Price <span class="req">*</span></th>
-                        <th style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Qty <span class="req">*</span></th>
-                        <th style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Discount</th>
-                        <th style="padding:8px 10px;text-align:right;color:var(--muted);font-weight:600;white-space:nowrap">Total</th>
+                        <th id="pedit-th-no" style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">#</th>
+                        <th id="pedit-th-product" style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Product <span class="req">*</span></th>
+                        <th id="pedit-th-unit-price" style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Unit Price <span class="req">*</span></th>
+                        <th id="pedit-th-qty" style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Qty <span class="req">*</span></th>
+                        <th id="pedit-th-discount" style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Discount</th>
+                        <th id="pedit-th-total" style="padding:8px 10px;text-align:right;color:var(--muted);font-weight:600;white-space:nowrap">Total</th>
                         <th style="padding:8px 10px;text-align:center;color:var(--muted);font-weight:600"></th>
                     </tr>
                 </thead>

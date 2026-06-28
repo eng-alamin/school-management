@@ -102,7 +102,7 @@ class UnitComponent extends Component
         return view('livewire.accountant.inventory.unit-component')
             ->with('units', $units)
             ->layout('layouts.accountant.app', [
-                'title' => "Inventory Unit | School SaaS",
+                'title' => 'Inventory Unit | ' . institution()->name,
             ]);
     }
 

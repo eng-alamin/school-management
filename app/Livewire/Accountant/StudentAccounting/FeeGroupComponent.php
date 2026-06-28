@@ -185,7 +185,7 @@ class FeeGroupComponent extends Component
         return view('livewire.accountant.student-accounting.fee-group-component')
             ->with(['feeGroups' => $feeGroups, 'feeTypes' => $feeTypes])
             ->layout('layouts.accountant.app', [
-                'title' => "Student Accounting - Fee Group | School SaaS",
+                'title' => 'Fee Group | ' . institution()->name,
             ]);
     }
 }

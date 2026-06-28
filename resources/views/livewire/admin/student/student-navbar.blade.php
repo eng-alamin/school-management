@@ -32,7 +32,7 @@
 
             <div class="hero-badges">
                 <span class="badge bg-dark">{{ $student->class->name ?? '—' }} · Section {{ $student->section->name ?? '—' }}</span>
-                <span class="badge bg-dark">{{ $student->category->name ?? '—' }}</span>
+                <span class="badge bg-dark">{{ $student->group->name ?? '—' }}</span>
                 <span class="badge bg-dark">{{ ucfirst($student->gender) }} · {{ $student->blood_group ?? '—' }}</span>
                 <span class="badge bg-dark">{{ ucfirst($student->religion) ?? '—' }}</span>
                 <span class="badge bg-dark">Roll: {{ $student->roll_no ?? '—' }}</span>

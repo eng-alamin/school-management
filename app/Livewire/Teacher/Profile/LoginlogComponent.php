@@ -90,7 +90,7 @@ class LoginlogComponent extends Component
         return view('livewire.teacher.profile.loginlog-component')
             ->with(['user' => $this->user, 'sessions' => $this->sessions])
             ->layout('layouts.teacher.app', [
-                'title' => "Login Logs | School SaaS",
+                'title' => 'Login Logs | ' . institution()->name,
             ]);
     }
 }

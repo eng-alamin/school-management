@@ -114,6 +114,9 @@ class AddComponent extends Component
                 ->causedBy(auth()->user())
                 ->performedOn($event)
                 ->withProperties(['icon' => 'event', 'type' => 'event'])
+                ->tap(function ($activity) use ($event) {
+                    $activity->school_id = $event->school_id;
+                })
                 ->log('New event created: ' . $event->title);
 
             $this->dispatch('toast', type: 'success', message: 'Event created successfully!');
@@ -134,7 +137,7 @@ class AddComponent extends Component
             ->with('classes', $classes)
             ->with('sections', $sections)
             ->layout('layouts.teacher.app', [
-                'title' => 'Create Event | Monarchy School',
+                'title' => 'Create Event | ' . institution()->name,
             ]);
     }
 

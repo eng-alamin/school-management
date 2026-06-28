@@ -61,68 +61,68 @@ class DashboardComponent extends Component
 
     public function mount(): void
     {
-        $schoolId = auth()->user()->school_id;
+        $institutionId = auth()->user()->institution_id;
         $today    = Carbon::today();
         $month    = Carbon::now()->format('Y-m');
 
         // ── Current Session ────────────────────────────────────────────────
         $this->currentSessionId = DB::table('academic_sessions')
-            ->where('school_id', $schoolId)
+            ->where('institution_id', $institutionId)
             ->where('is_current', true)
             ->value('id');
 
         // ── Students & Employees ───────────────────────────────────────────
         $this->totalStudents = DB::table('students')
-            ->where('school_id', $schoolId)
+            ->where('institution_id', $institutionId)
             ->count();
 
         $this->totalEmployees = DB::table('employees')
-            ->where('school_id', $schoolId)
+            ->where('institution_id', $institutionId)
             ->count();
 
         $this->totalClasses = DB::table('academic_classes')
-            ->where('school_id', $schoolId)
+            ->where('institution_id', $institutionId)
             ->count();
 
         // ── New Admissions this month ──────────────────────────────────────
         $this->newAdmissionsThisMonth = DB::table('students')
-            ->where('school_id', $schoolId)
+            ->where('institution_id', $institutionId)
             ->whereRaw("DATE_FORMAT(created_at, '%Y-%m') = ?", [$month])
             ->count();
 
         // ── Pending Homework ───────────────────────────────────────────────
         // $this->pendingHomework = DB::table('homeworks')
-        //     ->where('school_id', $schoolId)
+        //     ->where('institution_id', $institutionId)
         //     ->where('status', 'published')      
         //     ->whereDate('submission_date', '>=', $today)
         //     ->count();
-            // ->where('school_id', $schoolId)
+            // ->where('institution_id', $institutionId)
             // ->where('status', 'pending')
             // ->whereDate('due_date', '>=', $today)
             // ->count();
 
         // ── Upcoming Exams ─────────────────────────────────────────────────
         // $this->upcomingExams = DB::table('exams')
-        //     ->where('school_id', $schoolId)
+        //     ->where('institution_id', $institutionId)
         //     ->whereDate('start_date', '>=', $today)
         //     ->count();
 
         // ── Attendance % (today) ───────────────────────────────────────────
         $totalMarked = DB::table('attendances')
-            ->where('school_id', $schoolId)
+            ->where('institution_id', $institutionId)
             ->where('type', 'student')
             ->whereDate('date', $today)
             ->count();
 
         $this->studentsPresentToday = DB::table('attendances')
-            ->where('school_id', $schoolId)
+            ->where('institution_id', $institutionId)
             ->where('type', 'student')
             ->whereDate('date', $today)
             ->where('status', 'present')
             ->count();
 
         $this->studentsAbsentToday = DB::table('attendances')
-            ->where('school_id', $schoolId)
+            ->where('institution_id', $institutionId)
             ->where('type', 'student')
             ->whereDate('date', $today)
             ->where('status', 'absent')
@@ -133,7 +133,7 @@ class DashboardComponent extends Component
             : 0;
 
         $this->employeesPresentToday = DB::table('attendances')
-            ->where('school_id', $schoolId)
+            ->where('institution_id', $institutionId)
             ->where('type', 'employee')
             ->whereDate('date', $today)
             ->where('status', 'present')
@@ -141,7 +141,7 @@ class DashboardComponent extends Component
 
         // ── Notices & Messages ─────────────────────────────────────────────
         $this->activeNotices = DB::table('notices')
-            ->where('school_id', $schoolId)
+            ->where('institution_id', $institutionId)
             ->where('status', 'active')
             ->where('published_at', '<=', $today)
             ->where(function ($q) use ($today) {
@@ -158,7 +158,7 @@ class DashboardComponent extends Component
 
         // ── Fee Collection ─────────────────────────────────────────────────
         $feeStats = DB::table('fee_invoices')
-            ->where('school_id', $schoolId)
+            ->where('institution_id', $institutionId)
             ->selectRaw('
                 COALESCE(SUM(paid_amount), 0) AS total_paid,
                 COALESCE(SUM(due_amount), 0)  AS total_due
@@ -169,28 +169,28 @@ class DashboardComponent extends Component
         $this->totalFeeDue       = (float) ($feeStats->total_due  ?? 0);
 
         $this->totalFeeToday = (float) DB::table('fee_payments')
-            ->where('school_id', $schoolId)
+            ->where('institution_id', $institutionId)
             ->whereDate('payment_date', $today)
             ->sum('paid_amount');
 
         // ── Office Accounts ────────────────────────────────────────────────
         $openingBalance       = (float) DB::table('office_accounts')
-            ->where('school_id', $schoolId)
+            ->where('institution_id', $institutionId)
             ->sum('opening_balance');
 
         $this->totalDeposits  = (float) DB::table('office_deposits')
-            ->where('school_id', $schoolId)
+            ->where('institution_id', $institutionId)
             ->sum('amount');
 
         $this->totalExpenses  = (float) DB::table('office_expenses')
-            ->where('school_id', $schoolId)
+            ->where('institution_id', $institutionId)
             ->sum('amount');
 
         $this->accountBalance = $openingBalance + $this->totalDeposits - $this->totalExpenses;
 
         // ── Salary (current month) ─────────────────────────────────────────
         $salaryStats = DB::table('salary_payments')
-            ->where('school_id', $schoolId)
+            ->where('institution_id', $institutionId)
             ->whereNull('deleted_at')
             ->whereRaw("DATE_FORMAT(month, '%Y-%m') = ?", [$month])
             ->selectRaw("
@@ -204,14 +204,14 @@ class DashboardComponent extends Component
 
         // ── Inventory Sales Today ──────────────────────────────────────────
         $this->inventorySalesToday = (float) DB::table('inventory_sales')
-            ->where('school_id', $schoolId)
+            ->where('institution_id', $institutionId)
             ->whereDate('date', $today)
             ->sum('net_payable');
 
         // ── Recent Invoices ────────────────────────────────────────────────
         $this->recentInvoices = DB::table('fee_invoices as fi')
             ->join('students as s', 's.id', '=', 'fi.student_id')
-            ->where('fi.school_id', $schoolId)
+            ->where('fi.institution_id', $institutionId)
             ->select(
                 'fi.id', 'fi.invoice_no', 's.name as student_name',
                 'fi.total_amount', 'fi.paid_amount', 'fi.due_amount',
@@ -224,7 +224,7 @@ class DashboardComponent extends Component
         // ── Recent Fee Payments ────────────────────────────────────────────
         $this->recentPayments = DB::table('fee_payments as fp')
             ->join('students as s', 's.id', '=', 'fp.student_id')
-            ->where('fp.school_id', $schoolId)
+            ->where('fp.institution_id', $institutionId)
             ->select(
                 'fp.id', 's.name as student_name', 'fp.paid_amount',
                 'fp.payment_method', 'fp.payment_date', 'fp.payment_status'
@@ -235,7 +235,7 @@ class DashboardComponent extends Component
 
         // ── Recent Notices ─────────────────────────────────────────────────
         $this->recentNotices = DB::table('notices')
-            ->where('school_id', $schoolId)
+            ->where('institution_id', $institutionId)
             ->where('status', 'active')
             ->select('id', 'title', 'audience', 'priority', 'published_at')
             ->orderByDesc('published_at')
@@ -253,7 +253,7 @@ class DashboardComponent extends Component
             ->get();
 
         // ── Recent Activities ──────────────────────────────────────────────
-        // Assumes an `activity_logs` table with: school_id, description, icon, created_at
+        // Assumes an `activity_logs` table with: institution_id, description, icon, created_at
         $this->recentActivities = DB::table('activity_log')
             ->orderByDesc('created_at')
             ->limit(5)
@@ -269,7 +269,7 @@ class DashboardComponent extends Component
         $todayMD = $today->format('m-d');
 
         $studentBirthdays = DB::table('students')
-            ->where('school_id', $schoolId)
+            ->where('institution_id', $institutionId)
             ->whereRaw("DATE_FORMAT(dob, '%m-%d') = ?", [$todayMD])
             ->select(
                 'name',
@@ -278,8 +278,8 @@ class DashboardComponent extends Component
             ->get();
 
         $employeeBirthdays = DB::table('employees as e')
-            ->leftJoin('designations as d', 'd.id', '=', 'e.designation_id')
-            ->where('e.school_id', $schoolId)
+            ->leftJoin('employee_designations as d', 'd.id', '=', 'e.designation_id')
+            ->where('e.institution_id', $institutionId)
             ->whereRaw("DATE_FORMAT(e.dob, '%m-%d') = ?", [$todayMD])
             ->select(
                 'e.name',
@@ -291,7 +291,7 @@ class DashboardComponent extends Component
 
         // ── Monthly Fee Collection (last 6 months) for chart ───────────────
         $this->monthlyFeeChart = DB::table('fee_payments')
-            ->where('school_id', $schoolId)
+            ->where('institution_id', $institutionId)
             ->where('payment_date', '>=', Carbon::now()->subMonths(5)->startOfMonth())
             ->selectRaw("DATE_FORMAT(payment_date, '%Y-%m') as month, COALESCE(SUM(paid_amount), 0) as total")
             ->groupBy('month')
@@ -308,7 +308,7 @@ class DashboardComponent extends Component
     {
         return view('livewire.accountant.dashboard-component')
             ->layout('layouts.accountant.app', [
-                'title' => 'Dashboard | Monarchy School',
+                'title' => 'Dashboard | ' . institution()->name,
             ]);
     }
 }
