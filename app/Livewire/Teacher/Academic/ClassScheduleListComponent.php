@@ -4,87 +4,89 @@ namespace App\Livewire\Teacher\Academic;
 
 use Livewire\Component;
 use App\Models\AcademicClassSchedule;
-use App\Models\AcademicClassAssign;
-use App\Models\AcademicClass;
-use App\Models\AcademicSection;
+use App\Models\AcademicTeacherAssign;
 
 class ClassScheduleListComponent extends Component
 {
-    public $filterClass   = '';
-    public $filterSection = '';
+    public array $scheduleGrid = [];
+    public array $days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-    public $hasSchedule  = false;
-    public $scheduleGrid = [];
-    public $days         = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
-    public function getAvailableClasses()
+    public function mount(): void
     {
-        return AcademicClass::whereIn('id', AcademicClassAssign::distinct()->pluck('class_id'))
-            ->orderBy('name')
+        $this->loadSchedule();
+    }
+
+    public function loadSchedule(): void
+    {
+        $employeeId = auth()->user()->employee->id;
+
+        // এই teacher এর সব assigned class+section নাও
+        $assigns = AcademicTeacherAssign::with(['class', 'section'])
+            ->where('teacher_id', $employeeId)
             ->get();
-    }
 
-    public function getAvailableSections()
-    {
-        if (!$this->filterClass) return collect();
-
-        return AcademicSection::whereIn('id',
-            AcademicClassAssign::where('class_id', $this->filterClass)->pluck('section_id')
-        )->orderBy('name')->get();
-    }
-
-    public function updatedFilterClass()
-    {
-        $this->filterSection = '';
-        $this->hasSchedule   = false;
-        $this->scheduleGrid  = [];
-    }
-
-    public function updatedFilterSection()
-    {
-        $this->hasSchedule  = false;
-        $this->scheduleGrid = [];
-    }
-
-    public function filter()
-    {
-        if (!$this->filterClass) {
-            $this->dispatch('toast', type: 'error', message: 'Please select a class.');
+        if ($assigns->isEmpty()) {
             return;
         }
 
-        $sectionId = ($this->filterSection && $this->filterSection !== 'all')
-            ? $this->filterSection
-            : null;
+        $allRows = collect();
 
-        $schedules = AcademicClassSchedule::where('class_id', $this->filterClass)
-            ->where('section_id', $sectionId)
-            ->get()
-            ->keyBy('day');
+        foreach ($assigns as $assign) {
+            $schedules = AcademicClassSchedule::where('class_id', $assign->class_id)
+                ->where('section_id', $assign->section_id)
+                ->get();
 
-        $maxPeriods = $schedules->max(fn($s) => count($s->data ?? [])) ?? 0;
+            foreach ($schedules as $schedule) {
+                foreach ($schedule->data ?? [] as $period) {
+                    $allRows->push([
+                        'day'        => $schedule->day,
+                        'class'      => $assign->class?->name ?? '—',
+                        'section'    => $assign->section?->name ?? '—',
+                        'subject'    => $period['subject']    ?? '—',
+                        'start_time' => $period['start_time'] ?? null,
+                        'end_time'   => $period['end_time']   ?? null,
+                        'class_room' => $period['class_room'] ?? null,
+                    ]);
+                }
+            }
+        }
 
+        if ($allRows->isEmpty()) {
+            return;
+        }
+
+        // Unique time slots sort by start_time
+        $timeSlots = $allRows
+            ->map(fn($r) => ['start_time' => $r['start_time'], 'end_time' => $r['end_time']])
+            ->unique('start_time')
+            ->sortBy('start_time')
+            ->values();
+
+        // Grid তৈরি করো period × day
         $grid = [];
-        for ($i = 0; $i < $maxPeriods; $i++) {
-            $row = [];
+        foreach ($timeSlots as $slot) {
+            $row = [
+                'start_time' => $slot['start_time'],
+                'end_time'   => $slot['end_time'],
+            ];
             foreach ($this->days as $day) {
-                $row[$day] = isset($schedules[$day]) ? ($schedules[$day]->data[$i] ?? null) : null;
+                $match = $allRows->first(
+                    fn($r) => $r['day'] === $day && $r['start_time'] === $slot['start_time']
+                );
+                $row[$day] = $match ?: null;
             }
             $grid[] = $row;
         }
 
         $this->scheduleGrid = $grid;
-        $this->hasSchedule  = true;
     }
 
     public function render()
     {
         return view('livewire.teacher.academic.class-schedule-list-component')
-            ->with('classes', $this->getAvailableClasses())
-            ->with('sections', $this->getAvailableSections())
             ->with('days', $this->days)
             ->layout('layouts.teacher.app', [
-                'title' => 'Class Schedule | ' . institution()->name,
+                'title' => 'My Schedule | ' . institution()->name,
             ]);
     }
 }

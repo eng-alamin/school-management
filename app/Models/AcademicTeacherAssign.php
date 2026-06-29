@@ -8,7 +8,12 @@ use App\Traits\BelongsToInstitution;
 class AcademicTeacherAssign extends Model
 {
     use BelongsToInstitution;
+
     protected $guarded = [];
+
+    protected $casts = [
+        'subjects' => 'array',
+    ];
 
     public function class()
     {

@@ -30,9 +30,6 @@
                         </select>
                     </div>
                 @endif
-                <a href="{{route('teacher.exam.schedule.add')}}" class="btn-outline btn-sm bg-dark text-white" wire:click="openCreate">
-                    <span class="material-icons-round">add</span> <span id="newSectionBtn">Add Schedule</span>
-                </a>
 
             </div>
         </div>
@@ -60,9 +57,6 @@
                                 <div class="d-flex gap-1">
                                     <button class="act-btn view" title="View" wire:click="openView({{ $schedule->id }})">
                                         <span class="material-icons-round">visibility</span>
-                                    </button>
-                                    <button class="act-btn delete" title="Delete" wire:click="confirmDeleteRecord({{ $schedule->id }})">
-                                        <span class="material-icons-round">delete</span>
                                     </button>
                                 </div>
                             </td>
@@ -131,30 +125,6 @@
                         <button class="btn btn-light" wire:click="$set('showViewModal',false)">Close</button>
                         <button class="btn btn-primary" type="button" onclick="printScheduleDetails()">
                             <i class="bi bi-printer me-1"></i>Print
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    @endif
-
-    {{-- ===== DELETE CONFIRM ===== --}}
-    @if($confirmDelete)
-        <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.5);">
-            <div class="modal-dialog modal-sm">
-                <div class="modal-content">
-                    <div class="modal-body text-center py-4">
-                        <div style="width:56px;height:56px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
-                            <i class="bi bi-exclamation-triangle text-danger" style="font-size:1.5rem;"></i>
-                        </div>
-                        <h6 class="fw-700">Delete Schedule?</h6>
-                        <p class="text-muted small">This action cannot be undone.</p>
-                    </div>
-                    <div class="modal-footer justify-content-center border-0 pt-0">
-                        <button class="btn btn-light btn-sm" wire:click="$set('confirmDelete',false)">Cancel</button>
-                        <button class="btn btn-danger btn-sm" wire:click="deleteRecord">
-                            <span wire:loading wire:target="deleteRecord" class="spinner-border spinner-border-sm me-1"></span>
-                            Delete
                         </button>
                     </div>
                 </div>

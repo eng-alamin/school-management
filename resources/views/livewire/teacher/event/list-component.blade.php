@@ -28,9 +28,6 @@
                     </div>
                 @endif
 
-                <a href="{{ route('teacher.event.types') }}" class="btn-sm btn-outline bg-dark text-white">
-                    <span class="material-icons-round">add</span> Add Types
-                </a>
                 <a href="{{ route('teacher.event.add') }}" class="btn-sm btn-outline bg-dark text-white">
                     <span class="material-icons-round">add</span> Add Event
                 </a>

@@ -137,7 +137,7 @@ class NoticeComponent extends Component
                 ->performedOn($record)
                 ->withProperties(['icon' => 'campaign', 'type' => 'notice'])
                 ->tap(function ($activity) use ($record) {
-                    $activity->school_id = $record->school_id;
+                    $activity->institution_id = $record->institution_id;
                 })
                 ->log('Notice updated: ' . $record->title);
 
@@ -145,7 +145,7 @@ class NoticeComponent extends Component
         } else {
             $record = Notice::create($data);
 
-            NotificationService::sendToAll(auth()->user()->school_id, 'announcement', 'Notice', $this->title, [], 'high');
+            NotificationService::sendToAll(auth()->user()->institution_id, 'announcement', 'Notice', $this->title, [], 'high');
 
             // ── Activity Log ───────────────────────────────────────
             activity()
@@ -153,7 +153,7 @@ class NoticeComponent extends Component
                 ->performedOn($record)
                 ->withProperties(['icon' => 'campaign', 'type' => 'notice'])
                 ->tap(function ($activity) use ($record) {
-                    $activity->school_id = $record->school_id;
+                    $activity->institution_id = $record->institution_id;
                 })
                 ->log('New notice created: ' . $record->title);
 
@@ -185,7 +185,7 @@ class NoticeComponent extends Component
             ->performedOn($record)
             ->withProperties(['icon' => 'campaign', 'type' => 'notice'])
             ->tap(function ($activity) use ($record) {
-                    $activity->school_id = $record->school_id;
+                    $activity->institution_id = $record->institution_id;
                 })
             ->log('Notice deleted: ' . $record->title);
 
@@ -210,7 +210,7 @@ class NoticeComponent extends Component
             ->performedOn($record)
             ->withProperties(['icon' => 'campaign', 'type' => 'notice'])
             ->tap(function ($activity) use ($record) {
-                    $activity->school_id = $record->school_id;
+                    $activity->institution_id = $record->institution_id;
                 })
             ->log('Notice status changed to ' . $newStatus . ': ' . $record->title);
 
@@ -233,7 +233,7 @@ class NoticeComponent extends Component
                 ->performedOn($record)
                 ->withProperties(['icon' => 'campaign', 'type' => 'notice'])
                 ->tap(function ($activity) use ($record) {
-                    $activity->school_id = $record->school_id;
+                    $activity->institution_id = $record->institution_id;
                 })
                 ->log('Attachment removed from notice: ' . $record->title);
 

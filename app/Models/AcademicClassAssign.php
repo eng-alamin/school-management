@@ -27,12 +27,7 @@ class AcademicClassAssign extends Model
 
     public function sections()
     {
-        return $this->hasMany(AcademicSection::class, 'section_id');
-    }
-
-    public function classSections() 
-    {
-        return $this->hasMany(AcademicClassSection::class, 'class_id');
+        return $this->hasMany(AcademicSection::class, 'class_id');
     }
 
     public function teacherAssign()

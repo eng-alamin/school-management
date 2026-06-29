@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('class_id')->constrained('academic_classes')->cascadeOnDelete();
             $table->foreignId('section_id')->nullable()->constrained('academic_sections')->nullOnDelete();
             $table->foreignId('teacher_id')->constrained('employees')->cascadeOnDelete();
+            $table->json('subjects')->nullable();
             $table->timestamps();
 
             $table->unique(

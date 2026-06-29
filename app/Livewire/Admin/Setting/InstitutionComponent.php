@@ -29,12 +29,6 @@ class InstitutionComponent extends Component
     public bool $teacher_restricted = false;
     public ?string $academic_year   = null;
 
-    // Currency
-    public string $currency         = 'BDT';
-    public string $currency_symbol  = '৳';
-    public string $currency_format  = '1,00,000.00';
-    public string $symbol_position  = 'prefix';
-
     // Registration
     public bool $enable_registration_prefix = false;
     public ?string $institution_code_prefix = null;
@@ -45,6 +39,9 @@ class InstitutionComponent extends Component
     public bool $offline_payment_enabled          = true;
     public int $due_days                          = 30;
     public bool $due_fees_calculation_with_fine   = false;
+
+    // Online Exam ✅ (declare kora hoyni age, missing chilo)
+    public bool $show_only_own_question = false;
 
     // Auto Login
     public bool $auto_generate_student_login  = false;
@@ -79,11 +76,6 @@ class InstitutionComponent extends Component
             'teacher_restricted'=> 'boolean',
             'academic_year'     => 'nullable|string|max:20',
 
-            'currency'          => 'required|string|max:20',
-            'currency_symbol'   => 'required|string|max:10',
-            'currency_format'   => 'required|string',
-            'symbol_position'   => 'required|in:prefix,suffix',
-
             'enable_registration_prefix' => 'boolean',
             'institution_code_prefix'    => 'nullable|string|max:50',
             'register_start_from'        => 'required|integer|min:1',
@@ -92,6 +84,8 @@ class InstitutionComponent extends Component
             'offline_payment_enabled'          => 'boolean',
             'due_days'                         => 'required|integer|min:0',
             'due_fees_calculation_with_fine'   => 'boolean',
+
+            'show_only_own_question' => 'boolean',
 
             'auto_generate_student_login'  => 'boolean',
             'auto_generate_guardian_login' => 'boolean',
@@ -124,11 +118,6 @@ class InstitutionComponent extends Component
         $this->teacher_restricted           = (bool) $setting->teacher_restricted;
         $this->academic_year                = $setting->academic_year;
 
-        $this->currency                     = $setting->currency        ?? 'BDT';
-        $this->currency_symbol              = $setting->currency_symbol ?? '৳';
-        $this->currency_format              = $setting->currency_format ?? '1,00,000.00';
-        $this->symbol_position              = $setting->symbol_position ?? 'prefix';
-
         $this->enable_registration_prefix   = (bool) $setting->enable_registration_prefix;
         $this->institution_code_prefix      = $setting->institution_code_prefix;
         $this->register_start_from          = (int) ($setting->register_start_from ?? 1);
@@ -137,6 +126,8 @@ class InstitutionComponent extends Component
         $this->offline_payment_enabled          = (bool) $setting->offline_payment_enabled;
         $this->due_days                         = (int) ($setting->due_days ?? 30);
         $this->due_fees_calculation_with_fine   = (bool) $setting->due_fees_calculation_with_fine;
+
+        $this->show_only_own_question = (bool) ($setting->show_only_own_question ?? false);
 
         $this->auto_generate_student_login  = (bool) $setting->auto_generate_student_login;
         $this->auto_generate_guardian_login = (bool) $setting->auto_generate_guardian_login;
@@ -191,11 +182,6 @@ class InstitutionComponent extends Component
             'teacher_restricted'             => $this->teacher_restricted,
             'academic_year'                  => $this->academic_year,
 
-            'currency'                       => $this->currency,
-            'currency_symbol'                => $this->currency_symbol,
-            'currency_format'                => $this->currency_format,
-            'symbol_position'                => $this->symbol_position,
-
             'enable_registration_prefix'     => $this->enable_registration_prefix,
             'institution_code_prefix'        => $this->institution_code_prefix,
             'register_start_from'            => $this->register_start_from,
@@ -204,6 +190,8 @@ class InstitutionComponent extends Component
             'offline_payment_enabled'        => $this->offline_payment_enabled,
             'due_days'                       => $this->due_days,
             'due_fees_calculation_with_fine' => $this->due_fees_calculation_with_fine,
+
+            // 'show_only_own_question'         => $this->show_only_own_question,
 
             'auto_generate_student_login'    => $this->auto_generate_student_login,
             'auto_generate_guardian_login'   => $this->auto_generate_guardian_login,
@@ -220,6 +208,7 @@ class InstitutionComponent extends Component
             'print_logo_upload',  'report_logo_upload',
         ]);
 
+        $this->redirect(request()->header('Referer'));
         $this->dispatch('toast', type: 'success', message: 'Institution settings saved successfully.');
     }
 

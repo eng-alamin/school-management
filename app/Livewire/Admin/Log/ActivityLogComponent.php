@@ -23,8 +23,8 @@ class ActivityLogComponent extends Component
     public function render()
     {
         $logs = Activity::with('causer')
-            ->when(auth()->user()->school_id, fn($q) =>
-                $q->where('school_id', auth()->user()->school_id)
+            ->when(auth()->user()->institution_id, fn($q) =>
+                $q->where('institution_id', auth()->user()->institution_id)
             )
             ->when($this->search, fn($q) =>
                 $q->where('description', 'like', "%{$this->search}%")

@@ -218,5 +218,11 @@
     .mailbox-content { padding: 16px; }
     .search-input { width: 160px; }
 }
+
+body.dark-mode .form-control{
+   background: #ffffff !important;
+    border-color: rgb(30 30 30 / 12%) !important;
+    color: #e2e8f0 !important;
+}
 </style>
 @endonce

@@ -1,73 +1,28 @@
-<div class="mat-card" style="padding-top:28px">
+<div class="card">
+        <div class="card-header border-0">
+            <div class="card-toolbar">
+                <div class="card-toolbar-title">
+                    <div style="position:relative;display:inline-flex;align-items:center">
+                        <h5>
+                            <span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">calendar_month</span>
+                            My Class Schedule
+                        </h5>
+                    </div>
+                </div>
 
-    <!-- Floating Header -->
-    <div class="mat-card-header header-pink-gradient">
-        <h5><span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">calendar_month</span>Class Schedules</h5>
-        <p>View class schedule by class and section</p>
-    </div>
-
-    <div class="row g-4 p-5">
-
-        {{-- Class --}}
-        <div class="col-md-6">
-            <div class="input-group input-group-outline">
-                <label class="form-label">Class</label>
-                <select wire:model.live="filterClass" class="form-select no-custom-select">
-                    <option value="">Select Class</option>
-                    @foreach ($classes as $item)
-                        <option value="{{ $item->id }}">{{ $item->name }}</option>
-                    @endforeach
-                </select>
+                <button onclick="window.print()" class="btn-outline bg-dark text-white">
+                    <span class="material-icons-round" style="font-size:16px">print</span>
+                    <span>Print</span>
+                </button>
+                <a href="{{ route('teacher.academic.class-schedule.create') }}" class="btn-outline bg-dark text-white">
+                    <span class="material-icons-round" style="font-size:16px">add</span>
+                    <span>New Schedule</span>
+                </a>
             </div>
         </div>
 
-        {{-- Section --}}
-        <div class="col-md-6">
-            <div class="input-group input-group-outline">
-                <label class="form-label">Section</label>
-                <select wire:model.live="filterSection" class="form-select no-custom-select"
-                    {{ empty($sections) ? 'disabled' : '' }}>
-                    <option value="">{{ !$filterClass ? 'Select Class First' : 'Select Section' }}</option>
-                    @if(!empty($sections))
-                        <option value="all">All Section</option>
-                        @foreach ($sections as $item)
-                            <option value="{{ $item->id }}">{{ $item->name }}</option>
-                        @endforeach
-                    @endif
-                </select>
-            </div>
-        </div>
-
-        {{-- Filter Button --}}
-        <div class="col-md-12 text-center">
-            <button wire:click="filter"
-                    wire:loading.attr="disabled"
-                    wire:target="filter"
-                    class="btn-pink w-100 d-flex justify-content-center align-items-center"
-                    type="button">
-                <span wire:loading.remove wire:target="filter">
-                    <span class="material-icons-round" style="font-size:16px;vertical-align:middle;margin-right:4px">filter_alt</span> Filter
-                </span>
-                <span wire:loading wire:target="filter">
-                    <span class="material-icons-round" style="font-size:16px;animation:spin .7s linear infinite">sync</span>
-                </span>
-            </button>
-        </div>
-
-        {{-- New Schedule Button --}}
-        <div class="col-md-12">
-            <a href="{{ route('teacher.academic.class-schedule.create') }}"
-                class="btn-pink w-100 d-flex justify-content-center align-items-center">
-                <span class="material-icons-round" style="font-size:16px">add</span>
-                <span>New Schedule</span>
-            </a>
-        </div>
-
-    </div>
-
-    {{-- Schedule Grid --}}
-    @if($hasSchedule)
-    <div id="sched-grid-wrap">
+    @if(!empty($scheduleGrid) && collect($scheduleGrid)->some(fn($row) => collect($days)->some(fn($d) => !empty($row[$d]))))
+    <div id="sched-grid-wrap" class="p-4">
         <table id="sched-grid" role="grid">
             <thead>
                 <tr class="sched-thead-row">
@@ -86,20 +41,17 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse($scheduleGrid as $periodIndex => $row)
+                @foreach($scheduleGrid as $periodIndex => $row)
                 <tr>
                     {{-- Period column --}}
                     <td class="sched-td-per">
                         <div class="sched-per-inner">
                             <span class="sched-per-num">{{ $periodIndex + 1 }}</span>
-                            @php
-                                $anyItem = collect($row)->first(fn($i) => $i !== null);
-                            @endphp
-                            @if($anyItem)
+                            @if(!empty($row['start_time']))
                             <span class="sched-per-time">
-                                {{ \Carbon\Carbon::createFromFormat('H:i', $anyItem['start_time'])->format('g:i A') }}
+                                {{ \Carbon\Carbon::createFromFormat('H:i', $row['start_time'])->format('g:i A') }}
                                 –
-                                {{ \Carbon\Carbon::createFromFormat('H:i', $anyItem['end_time'])->format('g:i A') }}
+                                {{ \Carbon\Carbon::createFromFormat('H:i', $row['end_time'])->format('g:i A') }}
                             </span>
                             @endif
                         </div>
@@ -115,7 +67,12 @@
                                     <span class="sched-subj-name">{{ $item['subject'] }}</span>
                                 </div>
                                 <div>
-                                    <span class="sched-tchr-name">{{ $item['teacher'] }}</span>
+                                    <span class="sched-tchr-name">
+                                        {{ $item['class'] }}
+                                        @if(!empty($item['section']))
+                                            – {{ $item['section'] }}
+                                        @endif
+                                    </span>
                                     @if(!empty($item['class_room']))
                                         <span class="sched-room-tag">{{ $item['class_room'] }}</span>
                                     @endif
@@ -127,15 +84,14 @@
                     </td>
                     @endforeach
                 </tr>
-                @empty
-                <tr>
-                    <td colspan="{{ count($days) + 1 }}" class="text-center p-4" style="color:var(--ink-faint)">
-                        No schedule found
-                    </td>
-                </tr>
-                @endforelse
+                @endforeach
             </tbody>
         </table>
+    </div>
+    @else
+    <div class="text-center py-5" style="color:var(--ink-faint)">
+        <span class="material-icons-round" style="font-size:48px;display:block;margin-bottom:12px;opacity:.3">event_busy</span>
+        <p style="font-size:.85rem">No schedule assigned yet.</p>
     </div>
     @endif
 
@@ -182,9 +138,18 @@
 
     @keyframes sched-up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 
-    @media print{
+    /* @media print{
         @page{size:A4 landscape;margin:8mm 10mm}
         #sched-grid-wrap{animation:none;opacity:1;overflow:visible}
+        #sched-grid{box-shadow:none;border:.5px solid #333}
+        .sched-cell-in{min-height:60px;padding:7px 10px}
+        .sched-td-per{width:58px;min-width:52px}
+    } */
+
+    @media print{
+        @page{size:A4 landscape;margin:8mm 10mm}
+        .mat-card-header, .card-header { display: none !important; }
+        #sched-grid-wrap{animation:none;opacity:1;overflow:visible;padding:0 !important}
         #sched-grid{box-shadow:none;border:.5px solid #333}
         .sched-cell-in{min-height:60px;padding:7px 10px}
         .sched-td-per{width:58px;min-width:52px}
@@ -194,44 +159,4 @@
         #sched-grid-wrap{padding:0 12px}
     }
 </style>
-@endpush
-
-@push('scripts')
-<script>
-    document.addEventListener('livewire:initialized', () => {
-        Livewire.hook('morph.updated', ({ el }) => {
-            setTimeout(() => {
-                el.querySelectorAll('.input-group-outline .form-select').forEach(function(select) {
-                    if (!select.nextElementSibling || !select.nextElementSibling.classList.contains('custom-select-wrapper')) {
-                        buildCustomSelect(select);
-                    }
-                });
-
-                el.querySelectorAll('.input-group-outline input').forEach(function(input) {
-                    var group = input.closest('.input-group');
-                    if (!group) return;
-                    if (input.value && input.value.trim() !== '') {
-                        group.classList.add('is-filled');
-                    } else {
-                        group.classList.remove('is-filled');
-                    }
-                    if (input._materialInit) return;
-                    input._materialInit = true;
-                    input.addEventListener('focus', function() { group.classList.add('is-focused'); });
-                    input.addEventListener('blur', function() {
-                        group.classList.remove('is-focused');
-                        group.classList.toggle('is-filled', !!input.value.trim());
-                    });
-                    input.addEventListener('input', function() {
-                        group.classList.toggle('is-filled', !!input.value.trim());
-                    });
-                });
-
-                el.querySelectorAll('.input-group-outline input[type="date"]').forEach(function(input) {
-                    if (!input._dpInit) { _initDatepickers(); }
-                });
-            }, 0);
-        });
-    });
-</script>
 @endpush

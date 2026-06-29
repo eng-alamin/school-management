@@ -4,8 +4,8 @@
 
         {{-- Floating header --}}
         <div class="mat-card-header header-pink-gradient">
-            <h5 id="cardHeaderTitleAllsections">Leave Application</h5>
-            <p id="cardHeaderSubtitle">Manage leave applications, review, approve, and track employee leave requests.</p>
+            <h5 id="cardHeaderTitleAllsections">Student Leave Application</h5>
+            <p id="cardHeaderSubtitle">Manage student leave applications, review, approve, and track leave requests.</p>
         </div>
 
         <div class="card-header border-0">
@@ -18,18 +18,6 @@
                         <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search"
                                style="border:1px solid rgba(0,0,0,.1);border-radius:8px;padding:7px 12px 7px 32px;font-size:.78rem;font-family:inherit;color:var(--dark);outline:none;background:#f8f9fa;width:220px"/>
                     </div>
-                </div>
-
-                {{-- Role filter --}}
-                <div>
-                    <select class="form-select form-select-sm" wire:model.live="filterRole" style="width:150px;">
-                        <option value="">Select Role</option>
-                        <option value="admin">Admin</option>
-                        <option value="teacher">Teacher</option>
-                        <option value="accountant">Accountant</option>
-                        <option value="staff">Staff</option>
-                        <option value="student">Student</option>
-                    </select>
                 </div>
 
                 {{-- Per page --}}
@@ -57,9 +45,6 @@
                     <thead>
                         <tr>
                             <th>SL</th>
-                            <th wire:click="sortBy('applicable_type')" style="cursor:pointer">
-                                Role @if($sortField === 'applicable_type') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
-                            </th>
                             <th>Applicant</th>
                             <th wire:click="sortBy('leave_category_id')" style="cursor:pointer">
                                 Leave Category @if($sortField === 'leave_category_id') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
@@ -84,7 +69,6 @@
                         @forelse($applications as $i => $app)
                         @php
                             $applicant = $app->applicable;
-                            $roleLabel = class_basename($app->applicable_type);
                             $statusMap = [
                                 'approved'  => ['label' => 'Accepted', 'color' => '#28a745'],
                                 'pending'   => ['label' => 'Pending',  'color' => '#fd7e14'],
@@ -95,14 +79,13 @@
                         @endphp
                         <tr>
                             <td class="text-muted">{{ $applications->firstItem() + $i }}</td>
-                            <td>{{ ucfirst(optional($applicant)->role ?? $roleLabel) }}</td>
                             <td>
                                 @if($app->document_path)
                                     <span class="material-icons-round" style="font-size:13px;vertical-align:middle;color:var(--muted)">attach_file</span>
                                 @endif
                                 {{ optional($applicant)->name ?? '—' }}
                                 <br>
-                                <small class="text-muted">- {{ optional($applicant)->employee_id ?? $app->applicable_id }}</small>
+                                <small class="text-muted">- {{ optional($applicant)->student_id ?? $app->applicable_id }}</small>
                             </td>
                             <td>{{ optional($app->leaveCategory)->name ?? '—' }}</td>
                             <td>{{ $app->start_date->format('d.M.Y') }}</td>
@@ -133,7 +116,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="10" class="text-center py-5 text-muted">
+                            <td colspan="9" class="text-center py-5 text-muted">
                                 <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
                                 No leave applications found. <a href="#" wire:click.prevent="openCreate">Create one now</a>.
                             </td>
@@ -160,33 +143,19 @@
                     <div class="modal-header border-0">
                         <h5 class="modal-title">
                             <span class="material-icons-round me-1" style="vertical-align:middle;font-size:1.1rem">add_circle_outline</span>
-                            {{ $editId ? 'Edit' : 'Add' }} Leave
+                            {{ $editId ? 'Edit' : 'Add' }} Student Leave
                         </h5>
                         <button type="button" class="btn-close" wire:click="$set('showModal',false)"></button>
                     </div>
                     <div class="modal-body">
                         <div class="row g-3">
 
-                            {{-- Role --}}
+                            {{-- Applicant --}}
                             <div class="col-md-12">
-                                <label class="form-label">Role <span class="text-danger">*</span></label>
-                                <select wire:model.live="role" class="form-select @error('role') is-invalid @enderror">
-                                    <option value="">Select</option>
-                                    <option value="admin" @selected($role == 'admin')>Admin</option>
-                                    <option value="teacher" @selected($role == 'teacher')>Teacher</option>
-                                    <option value="accountant" @selected($role == 'accountant')>Accountant</option>
-                                    <option value="staff" @selected($role == 'staff')>Staff</option>
-                                    <option value="student" @selected($role == 'student')>Student</option>
-                                </select>
-                                @error('role') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                            </div>
-
-                            {{-- Applicant — role select করার পর populate হয় --}}
-                            <div class="col-md-12">
-                                <label class="form-label">Applicant <span class="text-danger">*</span></label>
+                                <label class="form-label">Student <span class="text-danger">*</span></label>
                                 <select wire:model="applicable_id" class="form-select @error('applicable_id') is-invalid @enderror"
                                         {{ empty($applicants) ? 'disabled' : '' }}>
-                                    <option value="">{{ empty($applicants) ? 'Select role first' : 'Select' }}</option>
+                                    <option value="">{{ empty($applicants) ? 'No students found' : 'Select Student' }}</option>
                                     @foreach($applicants as $person)
                                         <option value="{{ $person['id'] }}">{{ $person['name'] }}</option>
                                     @endforeach
@@ -304,7 +273,7 @@
                                     <td>{{ $detail['applicant'] ?? '—' }}</td>
                                 </tr>
                                 <tr>
-                                    <td class="fw-600">Staff Id :</td>
+                                    <td class="fw-600">Student Id :</td>
                                     <td>{{ $detail['staff_id'] ?? '—' }}</td>
                                 </tr>
                                 <tr>

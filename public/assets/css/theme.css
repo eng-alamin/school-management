@@ -82,6 +82,9 @@ body.dark-mode .bg-white {
     background: rgba(26, 29, 39, 0.92) !important;
     color: #fff !important;
 }
+body.dark-mode .text-dark {
+    color: #fff !important;
+}
 
 /* ═══════════════════════════════════════
        SIDEBAR
@@ -2476,7 +2479,6 @@ body.dark-mode .toggle-pill button.active {
 }
 .dark-toggle-btn:hover {
     background: var(--pink-light);
-    color: var(--dark);
 }
 .dark-toggle-btn .material-icons-round {
     font-size: 20px;
@@ -2817,6 +2819,15 @@ body.dark-mode .toggle-pill button.active {
 .section-card:nth-child(5) {
     animation-delay: 0.16s;
 }
+body.dark-mode .section-card,
+body.dark-mode .section-head {
+    background: rgba(26, 29, 39, 0.92);
+    color: #fff;
+}
+body.dark-mode .f-lbl,
+body.dark-mode .f-val {
+    color: #fff;
+}
 
 @keyframes fadeUp {
     from {
@@ -3099,3 +3110,16 @@ body.dark-mode .table td {
     cursor: not-allowed;
 }
 /* END PAGINATION  */
+
+body.dark-mode .mailbox-wrapper,
+body.dark-mode .mailbox-sidebar,
+body.dark-mode .message-row {
+    background: rgba(26, 29, 39, 0.92);
+    color: #fff;
+}
+body.dark-mode .compose-btn,
+body.dark-mode .msg-from,
+body.dark-mode .msg-subject,
+body.dark-mode .mailbox-header h4 {
+    color: #fff !important;
+}

@@ -17,7 +17,7 @@
                         <span class="material-icons-round">check_circle</span>
                         <div>
                             <div class="stat-label">Total Collected</div>
-                            <div class="stat-value">৳ {{ number_format($totalPaid, 2) }}</div>
+                            <div class="stat-value">৳ {{ number_format($totalPaid, 0) }}</div>
                         </div>
                     </div>
                 </div>
@@ -26,7 +26,7 @@
                         <span class="material-icons-round">hourglass_top</span>
                         <div>
                             <div class="stat-label">Pending Amount</div>
-                            <div class="stat-value">৳ {{ number_format($totalPending, 2) }}</div>
+                            <div class="stat-value">৳ {{ number_format($totalPending, 0) }}</div>
                         </div>
                     </div>
                 </div>
@@ -128,17 +128,17 @@
                                 {{ \Carbon\Carbon::create($invoice->year, $invoice->month, 1)->format('M Y') }}
                             </td>
 
-                            <td>৳ {{ number_format($invoice->total_amount, 2) }}</td>
+                            <td>৳ {{ number_format($invoice->total_amount, 0) }}</td>
 
                             <td class="text-muted">
                                 @if($invoice->discount > 0)
-                                    <span class="text-success">- ৳ {{ number_format($invoice->discount, 2) }}</span>
+                                    <span class="text-success">- ৳ {{ number_format($invoice->discount, 0) }}</span>
                                 @else
                                     —
                                 @endif
                             </td>
 
-                            <td class="fw-600">৳ {{ number_format($invoice->payable_amount, 2) }}</td>
+                            <td class="fw-600">৳ {{ number_format($invoice->payable_amount, 0) }}</td>
 
                             <td class="text-muted" style="font-size:.78rem;">
                                 {{ \Carbon\Carbon::parse($invoice->due_date)->format('d M Y') }}
@@ -241,25 +241,25 @@
                                     <tr>
                                         <td>{{ ucfirst($item->type) }}</td>
                                         <td>{{ number_format($item->quantity) }}</td>
-                                        <td>৳ {{ number_format($item->rate, 2) }}</td>
-                                        <td class="text-end">৳ {{ number_format($item->amount, 2) }}</td>
+                                        <td>৳ {{ number_format($item->rate, 0) }}</td>
+                                        <td class="text-end">৳ {{ number_format($item->amount, 0) }}</td>
                                     </tr>
                                     @endforeach
                                 </tbody>
                                 <tfoot>
                                     <tr>
                                         <td colspan="3" class="text-end fw-600">Total</td>
-                                        <td class="text-end fw-600">৳ {{ number_format($viewInvoice->total_amount, 2) }}</td>
+                                        <td class="text-end fw-600">৳ {{ number_format($viewInvoice->total_amount, 0) }}</td>
                                     </tr>
                                     @if($viewInvoice->discount > 0)
                                     <tr>
                                         <td colspan="3" class="text-end text-success">Discount</td>
-                                        <td class="text-end text-success">- ৳ {{ number_format($viewInvoice->discount, 2) }}</td>
+                                        <td class="text-end text-success">- ৳ {{ number_format($viewInvoice->discount, 0) }}</td>
                                     </tr>
                                     @endif
                                     <tr>
                                         <td colspan="3" class="text-end fw-700">Payable</td>
-                                        <td class="text-end fw-700">৳ {{ number_format($viewInvoice->payable_amount, 2) }}</td>
+                                        <td class="text-end fw-700">৳ {{ number_format($viewInvoice->payable_amount, 0) }}</td>
                                     </tr>
                                 </tfoot>
                             </table>
@@ -328,7 +328,7 @@
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label class="form-label">Total Amount</label>
-                                    <input type="text" class="form-control" value="৳ {{ number_format($discountInvoice->total_amount, 2) }}" disabled>
+                                    <input type="text" class="form-control" value="৳ {{ number_format($discountInvoice->total_amount, 0) }}" disabled>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Discount Amount <span class="text-danger">*</span></label>
@@ -338,7 +338,7 @@
                                 <div class="col-12">
                                     <div class="alert alert-light border" style="font-size:.85rem;">
                                         Payable Amount after discount will be:
-                                        <strong>৳ {{ number_format(max(0, $discountInvoice->total_amount - (float)($discount ?: 0)), 2) }}</strong>
+                                        <strong>৳ {{ number_format(max(0, $discountInvoice->total_amount - (float)($discount ?: 0)), 0) }}</strong>
                                     </div>
                                 </div>
                             </div>

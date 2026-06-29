@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Mailbox;
 
 use App\Models\Message;
 use App\Models\User;
+use App\Services\NotificationService;
 use Livewire\Component;
 
 class ComposeComponent extends Component
@@ -13,7 +14,7 @@ class ComposeComponent extends Component
     public string $body       = '';
     public string $searchUser = '';
 
-    public ?int $receiver_id  = null;
+    public ?int $receiver_id    = null;
     public string $receiverName = '';
 
     public array $userSuggestions = [];
@@ -53,18 +54,18 @@ class ComposeComponent extends Component
 
     public function selectUser(int $id, string $name): void
     {
-        $this->receiver_id      = $id;
-        $this->receiverName     = $name;
-        $this->searchUser       = $name;
-        $this->userSuggestions  = [];
+        $this->receiver_id     = $id;
+        $this->receiverName    = $name;
+        $this->searchUser      = $name;
+        $this->userSuggestions = [];
     }
 
     public function clearReceiver(): void
     {
-        $this->receiver_id      = null;
-        $this->receiverName     = '';
-        $this->searchUser       = '';
-        $this->userSuggestions  = [];
+        $this->receiver_id     = null;
+        $this->receiverName    = '';
+        $this->searchUser      = '';
+        $this->userSuggestions = [];
     }
 
     /* ------------------------------------------------------------------ */
@@ -73,21 +74,44 @@ class ComposeComponent extends Component
     {
         $this->validate();
 
-        Message::create([
+        $record = Message::create([
             'sender_id'   => auth()->id(),
             'receiver_id' => $this->receiver_id,
             'subject'     => $this->subject,
             'body'        => $this->body,
         ]);
 
-        session()->flash('success', 'Message sent successfully!');
+        // ── Notification (receiver কে পাঠাবে) ─────────────────────────
+        $receiver = User::find($this->receiver_id);
+        if ($receiver) {
+            NotificationService::send(
+                $receiver,
+                'message',
+                'New Message',
+                auth()->user()->name . ' তোমাকে একটি message পাঠিয়েছে: ' . $this->subject,
+                ['icon' => 'mail', 'url' => route('admin.mailbox.inbox')],
+                'normal'
+            );
+        }
+
+        // ── Activity Log ───────────────────────────────────────────────
+        activity()
+            ->causedBy(auth()->user())
+            ->performedOn($record)
+            ->withProperties(['icon' => 'mail', 'type' => 'mailbox'])
+            ->tap(function ($activity) use ($record) {
+                $activity->institution_id = auth()->user()->institution_id;
+            })
+            ->log('Message sent to ' . $this->receiverName . ': ' . $this->subject);
+
+        $this->dispatch('toast', type: 'success', message: 'Message sent successfully!');
         $this->reset(['receiver_id', 'receiverName', 'searchUser', 'subject', 'body']);
     }
 
     public function saveDraft(): void
     {
         // Extend later: add `is_draft` column to messages table
-        session()->flash('info', 'Draft feature coming soon.');
+        $this->dispatch('toast', type: 'info', message: 'Draft feature coming soon.');
     }
 
     /* ------------------------------------------------------------------ */

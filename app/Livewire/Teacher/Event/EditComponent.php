@@ -157,7 +157,7 @@ class EditComponent extends Component
                 ->performedOn($event)
                 ->withProperties(['icon' => 'event', 'type' => 'event'])
                 ->tap(function ($activity) use ($event) {
-                    $activity->school_id = $event->school_id;
+                    $activity->institution_id = $event->institution_id;
                 })
                 ->log('Event updated: ' . $event->title);
 

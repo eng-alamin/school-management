@@ -5,139 +5,187 @@ namespace App\Livewire\Teacher;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
+use App\Models\User;
 
 class DashboardComponent extends Component
 {
-    // ── Stats ──────────────────────────────────────────────────────────────
-    public int   $totalStudents        = 0;
-    public int   $totalEmployees       = 0;
-    public int   $totalClasses         = 0;
-    public int   $activeNotices        = 0;
-    public int   $unreadMessages       = 0;
+    // ── Teacher Info ───────────────────────────────────────────────────────
+    public string $teacherName     = '';
+    public ?int   $teacherId       = null;
+    public ?int   $institutionId   = null;
 
-    // ── Fee / Finance ──────────────────────────────────────────────────────
-    public float $totalFeeCollected    = 0;
-    public float $totalFeeDue          = 0;
-    public float $totalFeeToday        = 0;
-    public float $totalDeposits        = 0;
-    public float $totalExpenses        = 0;
-    public float $accountBalance       = 0;
+    // ── My Classes ─────────────────────────────────────────────────────────
+    public int   $myTotalClasses   = 0;
+    public int   $myTotalStudents  = 0;
 
-    // ── Salary ─────────────────────────────────────────────────────────────
-    public float $salaryPaidThisMonth   = 0;
-    public float $salaryUnpaidThisMonth = 0;
+    // ── My Attendance (today) ──────────────────────────────────────────────
+    public ?string $myAttendanceToday = null;   // 'present' | 'absent' | 'leave' | null
 
-    // ── Attendance (today) ─────────────────────────────────────────────────
-    public int   $studentsPresentToday  = 0;
-    public int   $studentsAbsentToday   = 0;
-    public int   $employeesPresentToday = 0;
+    // ── My Students Attendance (today) ────────────────────────────────────
+    public int   $myStudentsPresentToday = 0;
+    public int   $myStudentsAbsentToday  = 0;
+    public float $myAttendancePercent    = 0;
 
-    // ── New Admissions (this month) ────────────────────────────────────────
-    public int   $newAdmissionsThisMonth = 0;
+    // ── My Leave ──────────────────────────────────────────────────────────
+    public int   $myPendingLeave   = 0;
+    public int   $myApprovedLeave  = 0;
+    public int   $myRejectedLeave  = 0;
 
-    // ── Pending Homework ───────────────────────────────────────────────────
-    public int   $pendingHomework        = 0;
+    // ── My Homework ───────────────────────────────────────────────────────
+    public int   $myPendingHomework   = 0;
+    public int   $myTotalHomework     = 0;
 
-    // ── Upcoming Exams ─────────────────────────────────────────────────────
-    public int   $upcomingExams          = 0;
+    // ── Upcoming Exams ────────────────────────────────────────────────────
+    public int   $upcomingExams    = 0;
 
-    // ── Attendance % ───────────────────────────────────────────────────────
-    public float $attendancePercent      = 0;
+    // ── Notices & Messages ────────────────────────────────────────────────
+    public int   $activeNotices    = 0;
+    public int   $unreadMessages   = 0;
 
-    // ── Inventory ──────────────────────────────────────────────────────────
-    public float $inventorySalesToday    = 0;
-
-    // ── Recent & Lists ─────────────────────────────────────────────────────
-    public $recentInvoices;
-    public $recentPayments;
-    public $recentNotices;
-    public $recentMessages;
-    public $recentActivities;
+    // ── Today's Birthdays ────────────────────────────────────────────────
     public $todayBirthdays;
-    public $monthlyFeeChart;
 
-    // ── Filters ────────────────────────────────────────────────────────────
-    public ?int $currentSessionId = null;
+    // ── Recent Notices ────────────────────────────────────────────────────
+    public $recentNotices;
+
+    // ── Recent Messages ───────────────────────────────────────────────────
+    public $recentMessages;
+
+    // ── My Recent Leave Applications ──────────────────────────────────────
+    public $myRecentLeaves;
+
+    // ── Recent Activities ─────────────────────────────────────────────────
+    public $recentActivities;
+
+    // ── Monthly Attendance Chart (my students, last 6 months) ────────────
+    public array $monthlyAttendanceChart = [];
 
     public function mount(): void
     {
-        $schoolId = auth()->user()->institution_id;
-        $today    = Carbon::today();
-        $month    = Carbon::now()->format('Y-m');
+        $user                 = auth()->user();
+        $this->teacherName    = $user->name;
+        $this->teacherId      = $user->id;
+        $this->institutionId  = $user->institution_id;
 
-        // ── Current Session ────────────────────────────────────────────────
-        $this->currentSessionId = DB::table('academic_sessions')
+        $schoolId = $this->institutionId;
+        $today    = Carbon::today();
+        $todayMD  = $today->format('m-d');
+
+        // ── Resolve Employee ID (users → employees) ────────────────────────
+        // academic_teacher_assigns.teacher_id = employees.id
+        // কিন্তু auth()->id() = users.id, তাই আগে employee record খুঁজতে হবে
+        $myEmployeeId = DB::table('employees')
             ->where('institution_id', $schoolId)
-            ->where('is_current', true)
+            ->where('user_id', $this->teacherId)
             ->value('id');
 
-        // ── Students & Employees ───────────────────────────────────────────
-        $this->totalStudents = DB::table('students')
-            ->where('institution_id', $schoolId)
-            ->count();
+        // ── My Classes & Students ──────────────────────────────────────────
+        $myAssigns = $myEmployeeId
+            ? DB::table('academic_teacher_assigns')
+                ->where('institution_id', $schoolId)
+                ->where('teacher_id', $myEmployeeId)
+                ->get(['class_id', 'section_id'])
+            : collect();
 
-        $this->totalEmployees = DB::table('employees')
-            ->where('institution_id', $schoolId)
-            ->count();
+        $this->myTotalClasses = $myAssigns->count();
 
-        $this->totalClasses = DB::table('academic_classes')
-            ->where('institution_id', $schoolId)
-            ->count();
+        if ($myAssigns->isNotEmpty()) {
 
-        // ── New Admissions this month ──────────────────────────────────────
-        $this->newAdmissionsThisMonth = DB::table('students')
-            ->where('institution_id', $schoolId)
-            ->whereRaw("DATE_FORMAT(created_at, '%Y-%m') = ?", [$month])
-            ->count();
+            $studentQuery = DB::table('students')
+                ->where('institution_id', $schoolId);
 
-        // ── Pending Homework ───────────────────────────────────────────────
-        // $this->pendingHomework = DB::table('homeworks')
-        //     ->where('institution_id', $schoolId)
-        //     ->where('status', 'published')      
-        //     ->whereDate('submission_date', '>=', $today)
-        //     ->count();
-            // ->where('institution_id', $schoolId)
-            // ->where('status', 'pending')
-            // ->whereDate('due_date', '>=', $today)
-            // ->count();
+            $studentQuery->where(function ($q) use ($myAssigns) {
+                foreach ($myAssigns as $assign) {
+                    $q->orWhere(function ($inner) use ($assign) {
+                        $inner->where('class_id', $assign->class_id);
 
-        // ── Upcoming Exams ─────────────────────────────────────────────────
-        // $this->upcomingExams = DB::table('exams')
-        //     ->where('institution_id', $schoolId)
-        //     ->whereDate('start_date', '>=', $today)
-        //     ->count();
+                        if (!empty($assign->section_id)) {
+                            $inner->where('section_id', $assign->section_id);
+                        }
+                    });
+                }
+            });
 
-        // ── Attendance % (today) ───────────────────────────────────────────
-        $totalMarked = DB::table('attendances')
-            ->where('institution_id', $schoolId)
-            ->where('type', 'student')
-            ->whereDate('date', $today)
-            ->count();
+            $this->myTotalStudents = $studentQuery->count();
+        }
 
-        $this->studentsPresentToday = DB::table('attendances')
-            ->where('institution_id', $schoolId)
-            ->where('type', 'student')
-            ->whereDate('date', $today)
-            ->where('status', 'present')
-            ->count();
+        // ── My Attendance Today ────────────────────────────────────────────
+        // employee attendance — attendable_id = employees.id
+        $myAttendance = $myEmployeeId
+            ? DB::table('attendances')
+                ->where('institution_id', $schoolId)
+                ->where('type', 'employee')
+                ->where('attendable_id', $myEmployeeId)
+                ->whereDate('date', $today)
+                ->value('status')
+            : null;
 
-        $this->studentsAbsentToday = DB::table('attendances')
-            ->where('institution_id', $schoolId)
-            ->where('type', 'student')
-            ->whereDate('date', $today)
-            ->where('status', 'absent')
-            ->count();
+        $this->myAttendanceToday = $myAttendance ?? null;
 
-        $this->attendancePercent = $totalMarked > 0
-            ? round(($this->studentsPresentToday / $totalMarked) * 100, 1)
-            : 0;
+        // ── My Students Attendance Today ───────────────────────────────────
+        if ($myAssigns->isNotEmpty()) {
 
-        $this->employeesPresentToday = DB::table('attendances')
-            ->where('institution_id', $schoolId)
-            ->where('type', 'employee')
-            ->whereDate('date', $today)
-            ->where('status', 'present')
-            ->count();
+            $myStudentIds = DB::table('students')
+                ->where('institution_id', $schoolId)
+                ->where(function ($q) use ($myAssigns) {
+                    foreach ($myAssigns as $assign) {
+                        $q->orWhere(function ($inner) use ($assign) {
+                            $inner->where('class_id', $assign->class_id);
+
+                            if (!empty($assign->section_id)) {
+                                $inner->where('section_id', $assign->section_id);
+                            }
+                        });
+                    }
+                })
+                ->pluck('id');
+
+            $totalMarked = DB::table('attendances')
+                ->where('institution_id', $schoolId)
+                ->where('type', 'student')
+                ->whereIn('attendable_id', $myStudentIds)
+                ->whereDate('date', $today)
+                ->count();
+
+            $this->myStudentsPresentToday = DB::table('attendances')
+                ->where('institution_id', $schoolId)
+                ->where('type', 'student')
+                ->whereIn('attendable_id', $myStudentIds)
+                ->whereDate('date', $today)
+                ->where('status', 'present')
+                ->count();
+
+            $this->myStudentsAbsentToday = DB::table('attendances')
+                ->where('institution_id', $schoolId)
+                ->where('type', 'student')
+                ->whereIn('attendable_id', $myStudentIds)
+                ->whereDate('date', $today)
+                ->where('status', 'absent')
+                ->count();
+
+            $this->myAttendancePercent = $totalMarked > 0
+                ? round(($this->myStudentsPresentToday / $totalMarked) * 100, 1)
+                : 0;
+        }
+
+        // ── My Leave Applications ──────────────────────────────────────────
+        $leaveBase = DB::table('leave_applications')
+            ->where('applicable_id', $this->teacherId)
+            ->where('applicable_type', User::class);
+
+        $this->myPendingLeave  = (clone $leaveBase)->where('status', 'pending')->count();
+        $this->myApprovedLeave = (clone $leaveBase)->where('status', 'approved')->count();
+        $this->myRejectedLeave = (clone $leaveBase)->where('status', 'rejected')->count();
+
+        // ── My Recent Leave Applications ───────────────────────────────────
+        $this->myRecentLeaves = DB::table('leave_applications as la')
+            ->leftJoin('leave_categories as lc', 'lc.id', '=', 'la.leave_category_id')
+            ->where('la.applicable_id', $this->teacherId)
+            ->where('la.applicable_type', User::class)
+            ->select('la.id', 'lc.name as category', 'la.start_date', 'la.end_date', 'la.total_days', 'la.status', 'la.created_at')
+            ->orderByDesc('la.created_at')
+            ->limit(5)
+            ->get();
 
         // ── Notices & Messages ─────────────────────────────────────────────
         $this->activeNotices = DB::table('notices')
@@ -150,93 +198,21 @@ class DashboardComponent extends Component
             ->count();
 
         $this->unreadMessages = DB::table('messages')
-            ->where('receiver_id', auth()->id())
+            ->where('receiver_id', $this->teacherId)
             ->where('is_read', false)
             ->where('is_trashed_by_receiver', false)
             ->where('is_deleted_by_receiver', false)
             ->count();
 
-        // ── Fee Collection ─────────────────────────────────────────────────
-        $feeStats = DB::table('fee_invoices')
-            ->where('institution_id', $schoolId)
-            ->selectRaw('
-                COALESCE(SUM(paid_amount), 0) AS total_paid,
-                COALESCE(SUM(due_amount), 0)  AS total_due
-            ')
-            ->first();
-
-        $this->totalFeeCollected = (float) ($feeStats->total_paid ?? 0);
-        $this->totalFeeDue       = (float) ($feeStats->total_due  ?? 0);
-
-        $this->totalFeeToday = (float) DB::table('fee_payments')
-            ->where('institution_id', $schoolId)
-            ->whereDate('payment_date', $today)
-            ->sum('paid_amount');
-
-        // ── Office Accounts ────────────────────────────────────────────────
-        $openingBalance       = (float) DB::table('office_accounts')
-            ->where('institution_id', $schoolId)
-            ->sum('opening_balance');
-
-        $this->totalDeposits  = (float) DB::table('office_deposits')
-            ->where('institution_id', $schoolId)
-            ->sum('amount');
-
-        $this->totalExpenses  = (float) DB::table('office_expenses')
-            ->where('institution_id', $schoolId)
-            ->sum('amount');
-
-        $this->accountBalance = $openingBalance + $this->totalDeposits - $this->totalExpenses;
-
-        // ── Salary (current month) ─────────────────────────────────────────
-        $salaryStats = DB::table('salary_payments')
-            ->where('institution_id', $schoolId)
-            ->whereNull('deleted_at')
-            ->whereRaw("DATE_FORMAT(month, '%Y-%m') = ?", [$month])
-            ->selectRaw("
-                COALESCE(SUM(CASE WHEN status = 'paid'   THEN net_salary ELSE 0 END), 0) AS paid,
-                COALESCE(SUM(CASE WHEN status = 'unpaid' THEN net_salary ELSE 0 END), 0) AS unpaid
-            ")
-            ->first();
-
-        $this->salaryPaidThisMonth   = (float) ($salaryStats->paid   ?? 0);
-        $this->salaryUnpaidThisMonth = (float) ($salaryStats->unpaid ?? 0);
-
-        // ── Inventory Sales Today ──────────────────────────────────────────
-        $this->inventorySalesToday = (float) DB::table('inventory_sales')
-            ->where('institution_id', $schoolId)
-            ->whereDate('date', $today)
-            ->sum('net_payable');
-
-        // ── Recent Invoices ────────────────────────────────────────────────
-        $this->recentInvoices = DB::table('fee_invoices as fi')
-            ->join('students as s', 's.id', '=', 'fi.student_id')
-            ->where('fi.institution_id', $schoolId)
-            ->select(
-                'fi.id', 'fi.invoice_no', 's.name as student_name',
-                'fi.total_amount', 'fi.paid_amount', 'fi.due_amount',
-                'fi.payment_status', 'fi.invoice_date'
-            )
-            ->orderByDesc('fi.created_at')
-            ->limit(5)
-            ->get();
-
-        // ── Recent Fee Payments ────────────────────────────────────────────
-        $this->recentPayments = DB::table('fee_payments as fp')
-            ->join('students as s', 's.id', '=', 'fp.student_id')
-            ->where('fp.institution_id', $schoolId)
-            ->select(
-                'fp.id', 's.name as student_name', 'fp.paid_amount',
-                'fp.payment_method', 'fp.payment_date', 'fp.payment_status'
-            )
-            ->orderByDesc('fp.created_at')
-            ->limit(5)
-            ->get();
-
         // ── Recent Notices ─────────────────────────────────────────────────
         $this->recentNotices = DB::table('notices')
             ->where('institution_id', $schoolId)
             ->where('status', 'active')
+            ->where(function ($q) use ($today) {
+                $q->whereNull('audience')
+                  ->orWhere('audience', 'all')
+                  ->orWhere('audience', 'teacher');
+            })
             ->select('id', 'title', 'audience', 'priority', 'published_at')
             ->orderByDesc('published_at')
             ->limit(5)
@@ -245,7 +221,7 @@ class DashboardComponent extends Component
         // ── Recent Messages ────────────────────────────────────────────────
         $this->recentMessages = DB::table('messages as m')
             ->join('users as u', 'u.id', '=', 'm.sender_id')
-            ->where('m.receiver_id', auth()->id())
+            ->where('m.receiver_id', $this->teacherId)
             ->where('m.is_deleted_by_receiver', false)
             ->select('m.id', 'u.name as sender_name', 'm.subject', 'm.is_read', 'm.created_at')
             ->orderByDesc('m.created_at')
@@ -253,62 +229,67 @@ class DashboardComponent extends Component
             ->get();
 
         // ── Recent Activities ──────────────────────────────────────────────
-        // Assumes an `activity_logs` table with: institution_id, description, icon, created_at
         $this->recentActivities = DB::table('activity_log')
+            ->where('causer_id', $this->teacherId)
             ->orderByDesc('created_at')
             ->limit(5)
             ->select('id', 'description', 'properties', 'created_at')
             ->get()
             ->map(function ($act) {
-                $props = json_decode($act->properties, true);
-                $act->icon = $props['icon'] ?? 'notifications';
+                $props      = json_decode($act->properties, true);
+                $act->icon  = $props['icon'] ?? 'notifications';
                 return $act;
             });
 
-        // ── Today's Birthdays ──────────────────────────────────────────────
-        $todayMD = $today->format('m-d');
+        // ── Today's Birthdays (students from my classes + teachers) ───────
+        $myStudentIdsForBirthday = isset($myStudentIds) && $myStudentIds->isNotEmpty()
+            ? $myStudentIds
+            : collect();
 
-        $studentBirthdays = DB::table('students')
+        $studentBirthdays = $myStudentIdsForBirthday->isNotEmpty()
+            ? DB::table('students')
+                ->whereIn('id', $myStudentIdsForBirthday)
+                ->whereRaw("DATE_FORMAT(dob, '%m-%d') = ?", [$todayMD])
+                ->select('name', DB::raw("'Student' as role"))
+                ->get()
+            : collect();
+
+        $teacherBirthdays = DB::table('employees')
             ->where('institution_id', $schoolId)
             ->whereRaw("DATE_FORMAT(dob, '%m-%d') = ?", [$todayMD])
-            ->select(
-                'name',
-                DB::raw("'Student' as role")
-            )
+            ->select('name', DB::raw("'Teacher' as role"))
             ->get();
 
-        $employeeBirthdays = DB::table('employees as e')
-            ->leftJoin('employee_designations as d', 'd.id', '=', 'e.designation_id')
-            ->where('e.institution_id', $schoolId)
-            ->whereRaw("DATE_FORMAT(e.dob, '%m-%d') = ?", [$todayMD])
-            ->select(
-                'e.name',
-                DB::raw("COALESCE(d.name, 'Staff') as role")
-            )
-            ->get();
+        $this->todayBirthdays = $studentBirthdays->merge($teacherBirthdays)->take(5);
 
-        $this->todayBirthdays = $studentBirthdays->merge($employeeBirthdays)->take(5);
-
-        // ── Monthly Fee Collection (last 6 months) for chart ───────────────
-        $this->monthlyFeeChart = DB::table('fee_payments')
-            ->where('institution_id', $schoolId)
-            ->where('payment_date', '>=', Carbon::now()->subMonths(5)->startOfMonth())
-            ->selectRaw("DATE_FORMAT(payment_date, '%Y-%m') as month, COALESCE(SUM(paid_amount), 0) as total")
-            ->groupBy('month')
-            ->orderBy('month')
-            ->get()
-            ->map(fn($row) => [
-                'month' => Carbon::createFromFormat('Y-m', $row->month)->format('M Y'),
-                'total' => (float) $row->total,
-            ])
-            ->toArray();
+        // ── Monthly Student Attendance Chart (my students, last 6 months) ──
+        if ($myAssigns->isNotEmpty() && isset($myStudentIds) && $myStudentIds->isNotEmpty()) {
+            $this->monthlyAttendanceChart = DB::table('attendances')
+                ->where('institution_id', $schoolId)
+                ->where('type', 'student')
+                ->whereIn('attendable_id', $myStudentIds ?? [])
+                ->where('date', '>=', Carbon::now()->subMonths(5)->startOfMonth())
+                ->selectRaw("
+                    DATE_FORMAT(date, '%Y-%m') as month,
+                    COUNT(*) as total,
+                    SUM(CASE WHEN status = 'present' THEN 1 ELSE 0 END) as present
+                ")
+                ->groupBy('month')
+                ->orderBy('month')
+                ->get()
+                ->map(fn($row) => [
+                    'month'   => Carbon::createFromFormat('Y-m', $row->month)->format('M Y'),
+                    'percent' => $row->total > 0 ? round(($row->present / $row->total) * 100, 1) : 0,
+                ])
+                ->toArray();
+        }
     }
 
     public function render()
     {
         return view('livewire.teacher.dashboard-component')
             ->layout('layouts.teacher.app', [
-                'title' => 'Dashboard | Monarchy School',
+                'title' => 'Dashboard | ' . institution()->name,
             ]);
     }
 }

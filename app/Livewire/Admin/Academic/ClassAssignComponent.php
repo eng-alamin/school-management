@@ -37,8 +37,8 @@ class ClassAssignComponent extends Component
     protected function rules(): array
     {
         return [
-            'class_id'        => 'required|exists:academic_classes,id',
-            'section_id'      => 'nullable|exists:academic_sections,id',
+            'class_id'        => 'required',
+            'section_id'      => 'nullable',
             'subject_array'   => 'nullable|array',
             'subject_array.*' => 'nullable|string',
         ];

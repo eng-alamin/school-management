@@ -247,7 +247,6 @@
                 @this.set('subject_array', $(this).val());
             });
 
-            // ðŸ”¥ THIS IS THE MOST IMPORTANT FIX
             Livewire.on('showModalChanged', () => {
                 setTimeout(() => {
                     initPicker();

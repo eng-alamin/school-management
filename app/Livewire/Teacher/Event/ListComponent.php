@@ -58,7 +58,7 @@ class ListComponent extends Component
             ->performedOn($record)
             ->withProperties(['icon' => 'event', 'type' => 'event'])
             ->tap(function ($activity) use ($record) {
-                    $activity->school_id = $record->school_id;
+                    $activity->institution_id = $record->institution_id;
                 })
             ->log('Event deleted: ' . $record->title);
 

@@ -1,4 +1,4 @@
-<div class="card-custom profile-card p-4 mb-4">
+<div class="card profile-card p-4 mb-4">
     <!-- Avatar + Info -->
     <div class="d-flex flex-wrap gap-4 align-items-start">
         <div class="avatar-wrap me-2">

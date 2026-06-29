@@ -13,7 +13,7 @@
             <!-- START CONTENT -->
 
             {{-- Profile Details --}}
-            <div class="card-custom profile-card p-4 mb-4">
+            <div class="card profile-card p-4 mb-4">
 
                 <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
                     <span class="fw-bold fs-5">Profile Details</span>

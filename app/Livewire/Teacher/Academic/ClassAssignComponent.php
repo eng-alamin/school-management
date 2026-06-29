@@ -4,9 +4,12 @@ namespace App\Livewire\Teacher\Academic;
 
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Models\AcademicClassAssign;
+use App\Models\AcademicTeacherAssign;
 use App\Models\AcademicClass;
+use App\Models\AcademicSection;
+use App\Models\AcademicClassAssign;
 use App\Models\AcademicSubject;
+use App\Models\Employee;
 
 class ClassAssignComponent extends Component
 {
@@ -34,11 +37,55 @@ class ClassAssignComponent extends Component
     // Dependent dropdown
     public array $availableSections = [];
 
+    public function getAvailableClasses()
+    {
+        return AcademicClass::whereIn('id', AcademicClassAssign::distinct()->pluck('class_id'))
+            ->orderBy('name')
+            ->get();
+    }
+
+    public function getAvailableSections()
+    {
+        if (!$this->class_id) return collect();
+
+        return AcademicSection::whereIn('id',
+            AcademicClassAssign::where('class_id', $this->class_id)->pluck('section_id')
+        )->orderBy('name')->get();
+    }
+
+    public function getAvailableSubjects()
+    {
+        if (!$this->class_id) return collect();
+
+        return AcademicClassAssign::where('class_id', $this->class_id)
+            ->when(
+                $this->section_id && $this->section_id !== 'all' && $this->section_id !== '',
+                fn($q) => $q->where('section_id', $this->section_id)
+            )
+            ->get()
+            ->flatMap(fn($row) => $row->subjects ?? [])
+            ->unique()
+            ->values();
+    }
+
+    public function updatedClassId($value): void
+    {
+        $this->section_id = '';
+        $this->subject_array = [];
+        $this->dispatch('showModalChanged', selected: []);
+    }
+
+    public function updatedSectionId($value): void
+    {
+        $this->subject_array = [];
+        $this->dispatch('showModalChanged', selected: []);
+    }
+
     protected function rules(): array
     {
         return [
-            'class_id'        => 'required|exists:academic_classes,id',
-            'section_id'      => 'nullable|exists:academic_sections,id',
+            'class_id'        => 'required',
+            'section_id'      => 'nullable',
             'subject_array'   => 'nullable|array',
             'subject_array.*' => 'nullable|string',
         ];
@@ -47,21 +94,6 @@ class ClassAssignComponent extends Component
     public function updatingSearch(): void
     {
         $this->resetPage();
-    }
-
-    public function updatedClassId(string $value): void
-    {
-        $this->section_id;
-        $this->availableSections = [];
-
-        if ($value) {
-            $class = AcademicClass::with('sections')->find($value);
-            if ($class) {
-                $this->availableSections = $class->sections
-                    ->map(fn($s) => ['id' => $s->id, 'name' => $s->name])
-                    ->toArray();
-            }
-        }
     }
 
     public function sortBy(string $field): void
@@ -86,7 +118,7 @@ class ClassAssignComponent extends Component
 
     public function openEdit(int $id): void
     {
-        $record = AcademicClassAssign::findOrFail($id);
+        $record = AcademicTeacherAssign::findOrFail($id);
 
         $this->editId        = $id;
         $this->class_id      = $record->class_id;
@@ -107,18 +139,37 @@ class ClassAssignComponent extends Component
     {
         $this->validate();
 
+        $teacherId = auth()->user()->employee->id;
+
+        $sectionId = ($this->section_id && $this->section_id !== 'all')
+            ? $this->section_id
+            : null;
+
+        // Duplicate check — নিজের record বাদ দিয়ে same combination আছে কিনা দেখো
+        $duplicate = AcademicTeacherAssign::where('teacher_id', $teacherId)
+            ->where('class_id', $this->class_id)
+            ->where('section_id', $sectionId)
+            ->when($this->editId, fn($q) => $q->where('id', '!=', $this->editId))
+            ->exists();
+
+        if ($duplicate) {
+            $this->addError('class_id', 'This class & section combination is already assigned to you.');
+            return;
+        }
+
         $data = [
             'class_id'   => $this->class_id,
-            'section_id' => $this->section_id,
+            'section_id' => $sectionId,
+            'teacher_id' => $teacherId,
             'subjects'   => $this->subject_array,
         ];
 
         if ($this->editId) {
-            AcademicClassAssign::findOrFail($this->editId)->update($data);
-            $this->dispatch('toast', type: 'success', message: 'Assignment updated successfully!');
+            AcademicTeacherAssign::findOrFail($this->editId)->update($data);
+            $this->dispatch('toast', type: 'success', message: 'Data updated successfully!');
         } else {
-            AcademicClassAssign::create($data);
-            $this->dispatch('toast', type: 'success', message: 'Class assigned successfully!');
+            AcademicTeacherAssign::create($data);
+            $this->dispatch('toast', type: 'success', message: 'Data created successfully!');
         }
 
         $this->showModal = false;
@@ -133,34 +184,34 @@ class ClassAssignComponent extends Component
 
     public function deleteRecord(): void
     {
-        AcademicClassAssign::findOrFail($this->deleteId)->delete();
+        AcademicTeacherAssign::findOrFail($this->deleteId)->delete();
         $this->confirmDelete = false;
         $this->deleteId      = null;
-        $this->dispatch('toast', type: 'success', message: 'Assignment deleted successfully!');
+        $this->dispatch('toast', type: 'success', message: 'Data deleted successfully!');
     }
 
     private function resetForm(): void
     {
-        $this->reset(['class_id', 'section_id', 'subject_array', 'editId', 'availableSections']);
+        $this->reset(['class_id', 'section_id', 'editId', 'availableSections']);
         $this->resetValidation();
     }
 
     public function render()
     {
-        $assigns = AcademicClassAssign::with('class', 'section')
+        $assigns = AcademicTeacherAssign::with('class', 'section')
+            ->where('teacher_id', auth()->user()->employee->id)
             ->when($this->search, fn($q) => $q
-                ->whereHas('class', fn($q) => $q->where('name', 'like', "%{$this->search}%"))
+                ->whereHas('teacher', fn($q) => $q->where('name', 'like', "%{$this->search}%"))
+                ->orWhereHas('class', fn($q) => $q->where('name', 'like', "%{$this->search}%"))
                 ->orWhereHas('section', fn($q) => $q->where('name', 'like', "%{$this->search}%")))
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
-        $classes  = AcademicClass::orderBy('id')->get();
-        $subjects = AcademicSubject::orderBy('name')->pluck('name', 'id');
-
         return view('livewire.teacher.academic.class-assign-component')
             ->with('assigns', $assigns)
-            ->with('classes', $classes)
-            ->with('subjects', $subjects)
+            ->with('classes', $this->getAvailableClasses())
+            ->with('sections', $this->getAvailableSections())
+            ->with('subjects', $this->getAvailableSubjects())
             ->layout('layouts.teacher.app', [
                 'title' => 'Class Assignments | ' . institution()->name,
             ]);

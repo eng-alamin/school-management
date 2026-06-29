@@ -83,7 +83,24 @@
 
         {{-- Footer --}}
         <div class="notif-footer">
-            <a href="{{ route('admin.notifications.index') }}">View all notifications →</a>
+            @if(auth()->user()->role == 'super_admin')
+                <a href="{{ route('superadmin.notifications.index') }}">View all notifications →</a>
+
+            @elseif(auth()->user()->role == 'admin')
+                <a href="{{ route('admin.notifications.index') }}">View all notifications →</a>
+
+            @elseif(auth()->user()->role == 'teacher')
+                <a href="{{ route('teacher.notifications.index') }}">View all notifications →</a>
+
+            @elseif(auth()->user()->role == 'accountant')
+                <a href="{{ route('accountant.notifications.index') }}">View all notifications →</a>
+
+            @elseif(auth()->user()->role == 'student')
+                <a href="{{ route('student.notifications.index') }}">View all notifications →</a>
+
+            @elseif(auth()->user()->role == 'parent')
+                <a href="{{ route('parent.notifications.index') }}">View all notifications →</a>
+            @endif
         </div>
 
     </div>

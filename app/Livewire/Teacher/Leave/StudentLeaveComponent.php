@@ -10,7 +10,7 @@ use App\Models\LeaveCategory;
 use App\Models\User;
 use Carbon\Carbon;
 
-class ApplicationComponent extends Component
+class StudentLeaveComponent extends Component
 {
     use WithPagination, WithFileUploads;
 
@@ -21,7 +21,6 @@ class ApplicationComponent extends Component
     public int    $perPage       = 10;
     public string $sortField     = 'id';
     public string $sortDirection = 'asc';
-    public string $filterRole    = '';
 
     // ── Modal flags ──
     public bool $showModal     = false;
@@ -32,7 +31,6 @@ class ApplicationComponent extends Component
 
     // ── Form fields ──
     public ?int    $editId            = null;
-    public string  $role              = '';
     public ?int    $applicable_id     = null;
     public string  $applicable_type   = '';
     public ?int    $leave_category_id = null;
@@ -44,21 +42,15 @@ class ApplicationComponent extends Component
     public ?string $document_path     = null;
     public $attachment                = null;
 
-    // ── Dynamic applicant list (role select করলে populate হবে) ──
+    // ── Student list ──
     public array $applicants = [];
 
     // ── Detail modal data ──
     public array $detail = [];
 
-    // ── Role → Model class map ──
-    // আলাদা model থাকলে এখানে map করো, যেমন: 'student' => \App\Models\Student::class
-    protected array $roleModelMap = [
-        'teacher'        => User::class,
-        'teacher'      => User::class,
-        'accountant'   => User::class,
-        'staff'        => User::class,
-        'student'      => User::class,
-    ];
+    // ── Hardcoded role & model for this component ──
+    protected string $fixedRole  = 'student';
+    protected string $modelClass = User::class;
 
     // ──────────────────────────────────────────
     // Validation
@@ -66,9 +58,7 @@ class ApplicationComponent extends Component
     protected function rules(): array
     {
         return [
-            'role'              => 'required|string',
             'applicable_id'     => 'required|integer',
-            'applicable_type'   => 'required|string',
             'leave_category_id' => 'required|integer',
             'start_date'        => 'required|date',
             'end_date'          => 'required|date|after_or_equal:start_date',
@@ -83,28 +73,13 @@ class ApplicationComponent extends Component
     // ──────────────────────────────────────────
     public function mount(): void
     {
-        $this->start_date = now()->format('Y-m-d');
-        $this->end_date   = now()->format('Y-m-d');
+        $this->applicable_type = $this->modelClass;
+        $this->start_date      = now()->format('Y-m-d');
+        $this->end_date        = now()->format('Y-m-d');
+        $this->loadApplicants();
     }
 
-    public function updatingSearch(): void    { $this->resetPage(); }
-    public function updatingFilterRole(): void { $this->resetPage(); }
-
-    // Role select করলে applicant list লোড হবে, applicable_type সেট হবে
-    public function updatedRole(string $value): void
-    {
-        $this->applicable_id   = null;
-        $this->applicable_type = '';
-        $this->applicants      = [];
-
-        if (!$value) return;
-
-        $modelClass = $this->roleModelMap[$value] ?? null;
-        if (!$modelClass) return;
-
-        $this->applicable_type = $modelClass;
-        $this->applicants      = $this->loadApplicantsForRole($value);
-    }
+    public function updatingSearch(): void { $this->resetPage(); }
 
     public function sortBy(string $field): void
     {
@@ -126,33 +101,22 @@ class ApplicationComponent extends Component
         return 0;
     }
 
-    // role অনুযায়ী applicant list লোড করার জন্য আলাদা helper —
-    // এটা applicable_id রিসেট করে না, তাই edit মোডে নিরাপদে ব্যবহার করা যায়
-    private function loadApplicantsForRole(string $value): array
+    private function loadApplicants(): void
     {
-        if (!$value) return [];
-
-        $modelClass = $this->roleModelMap[$value] ?? null;
-        if (!$modelClass) return [];
-
-        if ($modelClass === User::class) {
-            return $modelClass::where('role', $value)
-                ->orderBy('name')
-                ->get(['id', 'name'])
-                ->toArray();
-        }
-
-        return $modelClass::orderBy('name')->get(['id', 'name'])->toArray();
+        $this->applicants = User::where('role', $this->fixedRole)
+            ->orderBy('name')
+            ->get(['id', 'name'])
+            ->toArray();
     }
 
     private function resetForm(): void
     {
         $this->reset([
-            'editId', 'role', 'applicable_id', 'applicable_type',
+            'editId', 'applicable_id',
             'leave_category_id', 'start_date', 'end_date',
             'reason', 'document_path', 'attachment', 'comments', 'status',
         ]);
-        $this->applicants = [];
+        $this->applicable_type = $this->modelClass;
         $this->resetValidation();
     }
 
@@ -168,7 +132,7 @@ class ApplicationComponent extends Component
     }
 
     // ──────────────────────────────────────────
-    // Modal: Edit — table row থেকে edit icon click করলে
+    // Modal: Edit
     // ──────────────────────────────────────────
     public function openEdit(int $id): void
     {
@@ -184,13 +148,6 @@ class ApplicationComponent extends Component
         $this->comments          = $record->approval_note ?? '';
         $this->status            = $record->status;
         $this->document_path     = $record->document_path;
-
-        // applicable_type দিয়ে role বের করা সম্ভব না কারণ সব role-ই User::class এর সাথে map করা।
-        // আসল role আসবে সম্পর্কিত User রেকর্ডের 'role' column থেকে।
-        $this->role = optional($record->applicable)->role ?? '';
-
-        // updatedRole() কল করলে applicable_id null হয়ে যেত, তাই সরাসরি applicants লোড করি
-        $this->applicants = $this->loadApplicantsForRole($this->role);
 
         $this->showDetail = false;
         $this->showModal  = true;
@@ -208,7 +165,7 @@ class ApplicationComponent extends Component
             'id'             => $record->id,
             'reviewed_by'    => optional($record->approvedByUser)->name ?? '—',
             'applicant'      => optional($applicant)->name ?? '—',
-            'staff_id'       => optional($applicant)->employee_id ?? optional($applicant)->id ?? '—',
+            'staff_id'       => optional($applicant)->student_id ?? optional($applicant)->id ?? '—',
             'leave_category' => optional($record->leaveCategory)->name ?? '—',
             'apply_date'     => $record->created_at?->format('d.M.Y h:i A'),
             'start_date'     => $record->start_date->format('d.M.Y'),
@@ -304,29 +261,22 @@ class ApplicationComponent extends Component
     {
         $applications = LeaveApplication::query()
             ->with(['applicable', 'leaveCategory'])
+            ->where('applicable_type', $this->modelClass)
+            ->whereHasMorph('applicable', $this->modelClass, fn($q) => $q->where('role', $this->fixedRole))
             ->when($this->search, function ($q) {
                 $q->where(function ($inner) {
-                    $inner->whereHasMorph('applicable', '*', fn($e) => $e->where('name', 'like', "%{$this->search}%"))
+                    $inner->whereHasMorph('applicable', $this->modelClass, fn($e) => $e->where('name', 'like', "%{$this->search}%"))
                           ->orWhereHas('leaveCategory', fn($c) => $c->where('name', 'like', "%{$this->search}%"));
                 });
-            })
-            ->when($this->filterRole, function ($q) {
-                $model = $this->roleModelMap[$this->filterRole] ?? null;
-                if ($model) {
-                    $q->where('applicable_type', $model);
-                    if ($model === User::class) {
-                        $q->whereHasMorph('applicable', $model, fn($e) => $e->where('role', $this->filterRole));
-                    }
-                }
             })
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
         $categories = LeaveCategory::orderBy('name')->get();
 
-        return view('livewire.teacher.leave.application-component', compact('applications', 'categories'))
+        return view('livewire.teacher.leave.student-leave-component', compact('applications', 'categories'))
             ->layout('layouts.teacher.app', [
-                'title' => 'Leave Application | ' . institution()->name,
+                'title' => 'Student Leave Application | ' . institution()->name,
             ]);
     }
 }

@@ -107,11 +107,15 @@
                     @error('timezone') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
 
-                <!-- Weekends -->
+                <!-- Weekends — selectpicker (subjects pattern) -->
                 <div class="col-md-12">
-                    <div class="input-group input-group-outline" wire:ignore>
-                        <label class="form-label">Weekends</label>
-                        <select wire:model="weekends" class="form-select" id="weekendsSelect" multiple>
+                    <label class="form-label">Weekends</label>
+                    <div wire:ignore>
+                        <select
+                            id="weekendsSelect"
+                            multiple
+                            title="Select Weekends..."
+                            class="form-select w-100 selectpicker">
                             <option value="Saturday">Saturday</option>
                             <option value="Sunday">Sunday</option>
                             <option value="Monday">Monday</option>
@@ -155,69 +159,6 @@
                         <input wire:model="teacher_restricted" class="form-check-input" type="checkbox" id="teacherRestricted">
                         <label class="form-check-label" for="teacherRestricted">Teacher Restricted</label>
                     </div>
-                </div>
-
-            </div>
-        </div>
-    </div>
-
-    <!-- ══ CURRENCY ══ -->
-    <div class="mat-card" style="padding-top:28px; margin-bottom:24px">
-
-        <div class="mat-card-header header-pink-gradient">
-            <h5>
-                <span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">payments</span>
-                Currency
-            </h5>
-        </div>
-
-        <div class="form-section">
-            <div class="row g-4">
-
-                <!-- Currency -->
-                <div class="col-md-6">
-                    <div class="input-group input-group-outline">
-                        <label class="form-label">Currency <span class="req">*</span></label>
-                        <input type="text" wire:model="currency" class="form-control"
-                               placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
-                    </div>
-                    @error('currency') <span class="text-danger">{{ $message }}</span> @enderror
-                </div>
-
-                <!-- Currency Symbol -->
-                <div class="col-md-6">
-                    <div class="input-group input-group-outline">
-                        <label class="form-label">Currency Symbol <span class="req">*</span></label>
-                        <input type="text" wire:model="currency_symbol" class="form-control"
-                               placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
-                    </div>
-                    @error('currency_symbol') <span class="text-danger">{{ $message }}</span> @enderror
-                </div>
-
-                <!-- Currency Formats -->
-                <div class="col-md-6">
-                    <div class="input-group input-group-outline" wire:ignore>
-                        <label class="form-label">Currency Formats <span class="req">*</span></label>
-                        <select wire:model="currency_format" class="form-select">
-                            <option value="1230000.50">1230000.50</option>
-                            <option value="1,230,000.50">1,230,000.50</option>
-                            <option value="1.230.000,50">1.230.000,50</option>
-                            <option value="1 230 000.50">1 230 000.50</option>
-                        </select>
-                    </div>
-                    @error('currency_format') <span class="text-danger">{{ $message }}</span> @enderror
-                </div>
-
-                <!-- Symbol Position -->
-                <div class="col-md-6">
-                    <div class="input-group input-group-outline" wire:ignore>
-                        <label class="form-label">Symbol Position <span class="req">*</span></label>
-                        <select wire:model="symbol_position" class="form-select">
-                            <option value="prefix">$123,000.00</option>
-                            <option value="suffix">123,000.00$</option>
-                        </select>
-                    </div>
-                    @error('symbol_position') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
 
             </div>
@@ -518,8 +459,6 @@
         <div class="form-footer">
             <button class="btn-pink"
                     type="submit"
-                    {{-- type="button" --}}
-                    {{-- wire:click="save" --}}
                     wire:loading.attr="disabled"
                     wire:target="save">
 
@@ -542,88 +481,116 @@
 
 </div>
 
+@push('styles')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css">
+@endpush
+
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.0/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
 <script>
-    document.addEventListener('livewire:initialized', () => {
+    function initAllFields() {
 
-        setTimeout(() => initAllFields(), 100);
+        // Text/Textarea is-filled
+        document.querySelectorAll('.input-group-outline input, .input-group-outline textarea').forEach(function(input) {
+            var group = input.closest('.input-group');
+            if (!group) return;
+            if (input.value && input.value.trim() !== '') {
+                group.classList.add('is-filled');
+            } else {
+                group.classList.remove('is-filled');
+            }
+            if (input._materialInit) return;
+            input._materialInit = true;
+            input.addEventListener('focus', function() { group.classList.add('is-focused'); });
+            input.addEventListener('blur', function() {
+                group.classList.remove('is-focused');
+                group.classList.toggle('is-filled', !!input.value.trim());
+            });
+            input.addEventListener('input', function() {
+                group.classList.toggle('is-filled', !!input.value.trim());
+            });
+        });
 
-        Livewire.hook('morph.updated', ({ el }) => {
+        // Select is-filled
+        document.querySelectorAll('.input-group-outline select').forEach(function(select) {
+            var group = select.closest('.input-group');
+            if (!group) return;
+            if (select.value && select.value !== '') {
+                group.classList.add('is-filled');
+            } else {
+                group.classList.remove('is-filled');
+            }
+            if (select._materialInit) return;
+            select._materialInit = true;
+            select.addEventListener('change', function() {
+                group.classList.toggle('is-filled', !!select.value);
+            });
+            select.addEventListener('focus', function() { group.classList.add('is-focused'); });
+            select.addEventListener('blur', function() { group.classList.remove('is-focused'); });
+        });
+
+        // Custom Select rebuild
+        document.querySelectorAll('.input-group-outline .form-select').forEach(function(select) {
+            var old = select.parentNode.querySelector('.custom-select-wrapper');
+            if (old) old.remove();
+            select.style.display = '';
+            if (typeof buildCustomSelect === 'function') {
+                buildCustomSelect(select);
+            }
+        });
+    }
+
+    // ── Weekends selectpicker ────────────────────────────────────────────
+    function initWeekendsPicker() {
+        var $sel = $('#weekendsSelect');
+        if (!$sel.length) return;
+
+        // আগের instance destroy kore notun kore init kora — idempotent,
+        // tai kotobar e function call hoy oita matter kore na
+        try { $sel.selectpicker('destroy'); } catch (e) {}
+
+        var currentWeekends = @json($weekends ?? []);
+        $sel.val(currentWeekends);
+        $sel.selectpicker();
+    }
+
+    function refreshWeekendsPicker() {
+        var $sel = $('#weekendsSelect');
+        if ($sel.length && $sel.data('selectpicker')) {
+            $sel.selectpicker('refresh');
+        }
+    }
+
+    // ✅ MAIN FIX: 'livewire:initialized' / 'livewire:init' pura session-e
+    // MAATTRO EKBAR fire hoy — wire:navigate diye onno page theke fire e
+    // page-e fire ashle eta abar fire e hoy na, tai picker init e hoy na.
+    // 'livewire:navigated' initial load + protek wire:navigate navigation-e
+    // fire hoy, tai eta e thik event.
+    document.addEventListener('livewire:navigated', () => {
+        setTimeout(() => {
+            initAllFields();
+            initWeekendsPicker();
+        }, 250);
+    });
+
+    // sync value to Livewire — delegated, ekbar bind korai jothesto
+    $(document).on('changed.bs.select', '#weekendsSelect', function () {
+        @this.set('weekends', $(this).val() ?? []);
+    });
+
+    // Livewire.hook globally protibar register hoy — guard diye duplicate atkano
+    if (!window.__institutionSettingsHooksBound) {
+        window.__institutionSettingsHooksBound = true;
+
+        Livewire.hook('morph.updated', () => {
             setTimeout(() => initAllFields(), 50);
         });
 
-        function initAllFields() {
+        Livewire.hook('message.processed', () => {
+            setTimeout(() => refreshWeekendsPicker(), 50);
+        });
 
-            // Text/Textarea is-filled
-            document.querySelectorAll('.input-group-outline input, .input-group-outline textarea').forEach(function(input) {
-                var group = input.closest('.input-group');
-                if (!group) return;
-                if (input.value && input.value.trim() !== '') {
-                    group.classList.add('is-filled');
-                } else {
-                    group.classList.remove('is-filled');
-                }
-                if (input._materialInit) return;
-                input._materialInit = true;
-                input.addEventListener('focus', function() { group.classList.add('is-focused'); });
-                input.addEventListener('blur', function() {
-                    group.classList.remove('is-focused');
-                    group.classList.toggle('is-filled', !!input.value.trim());
-                });
-                input.addEventListener('input', function() {
-                    group.classList.toggle('is-filled', !!input.value.trim());
-                });
-            });
-
-            // Select is-filled
-            document.querySelectorAll('.input-group-outline select').forEach(function(select) {
-                var group = select.closest('.input-group');
-                if (!group) return;
-                if (select.value && select.value !== '') {
-                    group.classList.add('is-filled');
-                } else {
-                    group.classList.remove('is-filled');
-                }
-                if (select._materialInit) return;
-                select._materialInit = true;
-                select.addEventListener('change', function() {
-                    group.classList.toggle('is-filled', !!select.value);
-                });
-                select.addEventListener('focus', function() { group.classList.add('is-focused'); });
-                select.addEventListener('blur', function() { group.classList.remove('is-focused'); });
-            });
-
-            // Custom Select rebuild
-            document.querySelectorAll('.input-group-outline .form-select').forEach(function(select) {
-                var old = select.parentNode.querySelector('.custom-select-wrapper');
-                if (old) old.remove();
-                select.style.display = '';
-                if (typeof buildCustomSelect === 'function') {
-                    buildCustomSelect(select);
-                }
-            });
-
-            // Weekends multi-select sync
-            var weekendsSelect = document.getElementById('weekendsSelect');
-            if (weekendsSelect && !weekendsSelect._multiInit) {
-                weekendsSelect._multiInit = true;
-
-                // Set initial selected values from Livewire
-                var currentWeekends = @json($weekends ?? []);
-                Array.from(weekendsSelect.options).forEach(function(opt) {
-                    opt.selected = currentWeekends.includes(opt.value);
-                });
-
-                weekendsSelect.addEventListener('change', function() {
-                    var selected = Array.from(weekendsSelect.selectedOptions).map(opt => opt.value);
-                    @this.set('weekends', selected);
-                });
-            }
-
-            
-        }
-
-        // Flash message auto-dismiss
         Livewire.on('saved', () => {
             setTimeout(() => {
                 document.querySelectorAll('.alert-success').forEach(el => {
@@ -632,7 +599,6 @@
                 });
             }, 3000);
         });
-
-    });
+    }
 </script>
 @endpush

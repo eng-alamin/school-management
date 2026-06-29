@@ -48,8 +48,8 @@
                         @forelse($assigns as $i => $assign)
                         <tr>
                             <td class="text-muted">{{ $assigns->firstItem() + $i }}</td>
-                            <td>{{ $assign->class?->name ?? 'all' }}</td>
-                            <td>{{ $assign->section?->name ?? 'all' }}</td>
+                            <td>{{ $assign->class?->name ?? '—' }}</td>
+                            <td>{{ $assign->section?->name ?? '—' }}</td>
                             <td>
                                 @if(!empty($assign->subjects))
                                     <div class="d-flex flex-wrap gap-1">
@@ -86,7 +86,7 @@
         </div>
 
         <div class="card-footer border-0 bg-white d-flex align-items-center justify-content-between flex-wrap gap-2 py-2 px-3">
-            <small class="text-muted">Showing {{ $assigns->firstItem() ?? 0 }}â€“{{ $assigns->lastItem() ?? 0 }} of {{ $assigns->total() }}</small>
+            <small class="text-muted">Showing {{ $assigns->firstItem() ?? 0 }}–{{ $assigns->lastItem() ?? 0 }} of {{ $assigns->total() }}</small>
             {{ $assigns->links('vendor.pagination.custom') }}
         </div>
 
@@ -116,14 +116,17 @@
                                 @error('class_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
 
-                            {{-- Section all dependent on class --}}
+                            {{-- Section --}}
                             <div class="col-md-12">
-                                <label class="form-label">Section <span class="text-danger">*</span></label>
-                                <select class="form-select @error('section_id') is-invalid @enderror" wire:model.defer="section_id" @disabled(empty($availableSections))>
-                                    <option value="">{{ empty($availableSections) ? 'Select class first' : 'Select Section' }}</option>
-                                    @foreach($availableSections as $s)
-                                        <option value="{{ $s['id'] }}">{{ $s['name'] }}</option>
-                                    @endforeach
+                                <label class="form-label">Section</label>
+                                <select class="form-select @error('section_id') is-invalid @enderror" wire:model.live="section_id" @disabled(empty($sections))>
+                                    <option value="">{{ empty($sections) ? 'Select class first' : 'Select Section' }}</option>
+                                    @if(!empty($sections))
+                                        <option value="all">All Section</option>
+                                        @foreach ($sections as $item)
+                                            <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                        @endforeach
+                                    @endif
                                 </select>
                                 @error('section_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
@@ -131,15 +134,17 @@
                             {{-- Subjects --}}
                             <div class="col-md-12">
                                 <label class="form-label">Subjects</label>
+
+                                {{-- subjects JSON এখানে render হবে, wire:ignore এর বাইরে --}}
+                                <span id="subjectData" style="display:none"
+                                      data-subjects="{{ json_encode($subjects->values()) }}"></span>
+
                                 <div wire:ignore>
                                     <select
-                                        wire:model.defer="subject_array"
+                                        id="subjectArrayPicker"
                                         multiple
                                         title="Select Subject..."
                                         class="form-select w-100 selectpicker">
-                                        @foreach($subjects as $subjectId => $subjectName)
-                                            <option value="{{ $subjectName }}">{{ $subjectName }}</option>
-                                        @endforeach
                                     </select>
                                 </div>
                                 @error('subject_array') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
@@ -214,44 +219,90 @@
     {{-- selectpicker --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css">
 @endpush
+
 @push('scripts')
     {{-- selectpicker --}}
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.0/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
     <script>
-        // $('.selectpicker').selectpicker();
         document.addEventListener('livewire:init', function () {
 
-            function initPicker() {
-                $('.selectpicker').selectpicker();
+            // subject select এর কারণে commit হচ্ছে কিনা track করতে flag
+            let isSubjectChanging = false;
+
+            // পূর্বের subjects JSON track করো — পরিবর্তন হলেই rebuild করবো
+            let previousSubjectsJson = '';
+
+            function getSubjectsJson() {
+                const span = document.getElementById('subjectData');
+                if (!span) return '[]';
+                return span.dataset.subjects || '[]';
             }
 
-            function refreshPicker() {
-                $('.selectpicker').selectpicker('refresh');
+            function getSubjects() {
+                try { return JSON.parse(getSubjectsJson()); } catch(e) { return []; }
             }
 
-            // initial load
-            setTimeout(() => {
-                initPicker();
-            }, 300);
+            function destroyPicker() {
+                try { $('#subjectArrayPicker').selectpicker('destroy'); } catch(e) {}
+            }
 
-            // Livewire update fix
-            Livewire.hook('message.processed', () => {
-                setTimeout(() => {
-                    refreshPicker();
-                }, 50);
+            function buildAndInitPicker(selected = []) {
+                const subjects = getSubjects();
+                const $select = $('#subjectArrayPicker');
+                if (!$select.length) return;
+
+                $select.empty();
+                subjects.forEach(function(sub) {
+                    $select.append(new Option(sub, sub));
+                });
+
+                destroyPicker();
+                $select.selectpicker();
+
+                if (selected.length > 0) {
+                    setTimeout(function() {
+                        $select.selectpicker('val', selected);
+                    }, 50);
+                }
+            }
+
+            // Livewire commit hook — শুধু subjects পরিবর্তন হলেই rebuild
+            Livewire.hook('commit', ({ component, commit, respond, succeed, fail }) => {
+                succeed(({ snapshot, effect }) => {
+                    // subject select এর কারণে commit হলে rebuild করবো না
+                    if (isSubjectChanging) {
+                        isSubjectChanging = false;
+                        return;
+                    }
+
+                    setTimeout(function() {
+                        if (!$('#subjectArrayPicker').length) return;
+
+                        const newSubjectsJson = getSubjectsJson();
+
+                        // subjects JSON পরিবর্তন হলেই rebuild করো
+                        if (newSubjectsJson !== previousSubjectsJson) {
+                            previousSubjectsJson = newSubjectsJson;
+                            buildAndInitPicker([]);
+                        }
+                    }, 150);
+                });
             });
 
-            // sync value
-            $(document).on('changed.bs.select', '.selectpicker', function () {
-                @this.set('subject_array', $(this).val());
+            // selectpicker change → Livewire sync, flag set করো
+            $(document).on('changed.bs.select', '#subjectArrayPicker', function () {
+                isSubjectChanging = true;
+                @this.set('subject_array', $(this).val() || []);
             });
 
-            // ðŸ”¥ THIS IS THE MOST IMPORTANT FIX
-            Livewire.on('showModalChanged', () => {
-                setTimeout(() => {
-                    initPicker();
-                }, 300);
+            // modal open (create / edit)
+            Livewire.on('showModalChanged', function(event) {
+                previousSubjectsJson = ''; // reset করো যাতে প্রথম load এ rebuild হয়
+                setTimeout(function() {
+                    buildAndInitPicker(event.selected || []);
+                    previousSubjectsJson = getSubjectsJson();
+                }, 400);
             });
 
         });

@@ -27,12 +27,6 @@ return new class extends Migration
             $table->boolean('teacher_restricted')->default(false);
             $table->string('academic_year')->nullable();
 
-            // Currency
-            $table->string('currency', 20)->default('BDT');
-            $table->string('currency_symbol', 10)->default('৳');
-            $table->string('currency_format')->default('1,00,000.00'); // ✏️ format টা বদলে দিলাম
-            $table->string('symbol_position')->default('prefix');
-
             // Registration
             $table->boolean('enable_registration_prefix')->default(false);
             $table->string('institution_code_prefix')->nullable();
