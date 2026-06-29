@@ -1,6 +1,6 @@
-{{-- resources/views/livewire/admin/mailbox/trash.blade.php --}}
+{{-- resources/views/livewire/teacher/mailbox/trash.blade.php --}}
 <div class="mailbox-wrapper">
-    @include('livewire.admin.mailbox.partials.sidebar')
+    @include('livewire.teacher.mailbox.partials.sidebar')
 
     <div class="mailbox-content">
         @if($viewing)
@@ -132,4 +132,4 @@
     </div>
 </div>
 
-@include('livewire.admin.mailbox.partials.styles')
+@include('livewire.teacher.mailbox.partials.styles')

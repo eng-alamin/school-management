@@ -26,13 +26,13 @@
                     </div>
                 @endif
 
-                <a href="{{ route('admin.academic.classes') }}" class="btn-outline bg-dark text-white">
+                <a href="{{ route('teacher.academic.classes') }}" class="btn-outline bg-dark text-white">
                     <span class="material-icons-round" style="font-size:16px">flight_class</span><span>Class</span>
                 </a>
-                <a href="{{ route('admin.academic.sections') }}" class="btn-outline">
+                <a href="{{ route('teacher.academic.sections') }}" class="btn-outline">
                     <span class="material-icons-round" style="font-size:16px">border_inner</span><span>Section</span>
                 </a>
-                <a href="{{ route('admin.academic.groups') }}" class="btn-outline">
+                <a href="{{ route('teacher.academic.groups') }}" class="btn-outline">
                     <span class="material-icons-round" style="font-size:16px">group</span><span>Groups</span>
                 </a>
 

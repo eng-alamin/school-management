@@ -8,7 +8,7 @@
 
         <div class="container-xl mt-4">
 
-            @include('livewire.admin.student.student-navbar')
+            @include('livewire.teacher.student.student-navbar')
 
             {{-- Collect Button --}}
             <div class="mb-3 no-print">

@@ -88,7 +88,7 @@ class HomeworkListComponent extends Component
             ->orderBy('name')
             ->get();
 
-        $homeworks = Homework::with(['class', 'section', 'subject'])
+        $homeworks = Homework::with(['class', 'section', 'subject'])->where('teacher_id', auth()->user()->employee->id)
             ->when($this->search, fn($q) =>
                 $q->where('title', 'like', '%' . $this->search . '%')
             )

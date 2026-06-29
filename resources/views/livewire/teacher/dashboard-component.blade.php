@@ -1,10 +1,10 @@
-{{-- resources/views/livewire/admin/dashboard-component.blade.php --}}
+{{-- resources/views/livewire/teacher/dashboard-component.blade.php --}}
 
 <div class="dash-wrap">
 
     {{-- ══ Welcome Header ══════════════════════════════════════════════════ --}}
     <div class="dash-header px-3 pt-3 pb-2">
-        <h5 class="fw-bold mb-0 text-dark">Welcome back, Admin! 👋</h5>
+        <h5 class="fw-bold mb-0 text-dark">Welcome back, Teacher! 👋</h5>
         <p class="text-secondary mb-0" style="font-size:12px;">Here's what's happening at your school today</p>
     </div>
 

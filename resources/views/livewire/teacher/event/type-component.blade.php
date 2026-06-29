@@ -29,7 +29,7 @@
                         </select>
                     </div>
                 @endif
-                <a href="{{ route('admin.event.list') }}" class="btn-sm btn-outline bg-dark text-white">
+                <a href="{{ route('teacher.event.list') }}" class="btn-sm btn-outline bg-dark text-white">
                     <span class="material-icons-round">keyboard_backspace</span> Back Event
                 </a>
                 <button class="btn-outline bg-dark text-white" wire:click="openCreate">

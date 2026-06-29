@@ -56,7 +56,7 @@
 
         {{-- New Schedule Button --}}
         <div class="col-md-12">
-            <a href="{{ route('admin.academic.class-schedule.create') }}"
+            <a href="{{ route('teacher.academic.class-schedule.create') }}"
                 class="btn-pink w-100 d-flex justify-content-center align-items-center">
                 <span class="material-icons-round" style="font-size:16px">add</span>
                 <span>New Schedule</span>

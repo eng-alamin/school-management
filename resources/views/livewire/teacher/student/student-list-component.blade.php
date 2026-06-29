@@ -106,7 +106,7 @@
                         <span class="material-icons-round" style="font-size:16px">refresh</span> Reset
                     </button>
 
-                    <a href="{{ route('admin.student.add') }}" class="btn-outline bg-dark text-white">
+                    <a href="{{ route('teacher.student.add') }}" class="btn-outline bg-dark text-white">
                         <span class="material-icons-round">add</span> Add Student
                     </a>
                 </div>
@@ -146,11 +146,11 @@
                                 <td>{{ $student->guardians->first()?->name ?? '—' }}</td>
                                 <td class="no-print">
                                     <div class="d-flex gap-1">
-                                        <a href="{{ route('admin.student.overview', ['id' => $student->id]) }}" target="_blank"
+                                        <a href="{{ route('teacher.student.overview', ['id' => $student->id]) }}" target="_blank"
                                             class="act-btn view" title="View">
                                             <span class="material-icons-round">visibility</span>
                                         </a>
-                                        <a href="{{ route('admin.student.edit', ['id' => $student->id]) }}"
+                                        <a href="{{ route('teacher.student.edit', ['id' => $student->id]) }}"
                                             class="act-btn edit" title="Edit">
                                             <span class="material-icons-round">drive_file_rename_outline</span>
                                         </a>

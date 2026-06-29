@@ -200,7 +200,7 @@
             <div class="col-md-6">
                 <div class="input-group input-group-outline">
                     <label class="form-label">Username <span class="req">*</span></label>
-                    <input type="text" wire:model="username" class="form-control" value="admin@ramom.com" onfocus="focused(this)" onfocusout="defocused(this)">
+                    <input type="text" wire:model="username" class="form-control" value="teacher@demo.com" onfocus="focused(this)" onfocusout="defocused(this)">
                     @error('username') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
             </div>

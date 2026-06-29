@@ -120,9 +120,9 @@ class HomeworkAddComponent extends Component
     public function save(): void
     {
         $this->validate([
-            'class_id'        => 'required|exists:academic_classes,id',
+            'class_id'        => 'required',
             'section_id'      => 'nullable',
-            'subject_id'      => 'required|exists:academic_subjects,id',
+            'subject_id'      => 'required',
             'title'           => 'required|string|max:255',
             'description'     => 'required|string',
             'homework_date'   => 'required|date',
@@ -144,6 +144,7 @@ class HomeworkAddComponent extends Component
                 : null;
 
             Homework::create([
+                'teacher_id'      => auth()->user()->employee->id,
                 'class_id'        => $this->class_id,
                 'section_id'      => $sectionId,
                 'subject_id'      => $this->subject_id,

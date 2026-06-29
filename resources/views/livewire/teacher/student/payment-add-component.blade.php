@@ -13,7 +13,7 @@
 
     <div class="container-xl mt-4">
 
-        @include('livewire.admin.student.student-navbar')
+        @include('livewire.teacher.student.student-navbar')
 
         <div class="form-section">
     <div class="row g-4">

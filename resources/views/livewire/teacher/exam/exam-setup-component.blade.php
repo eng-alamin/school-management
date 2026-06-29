@@ -30,16 +30,16 @@
                         </select>
                     </div>
                 @endif
-                <a href="{{route('admin.exam.terms')}}" target="_blank" class="btn-sm btn-outline">
+                <a href="{{route('teacher.exam.terms')}}" target="_blank" class="btn-sm btn-outline">
                     <span class="material-icons-round fs-6">history_edu</span> <span id="newSectionBtn">Terms</span>
                 </a>
-                <a href="{{route('admin.exam.halls')}}" target="_blank" class="btn-sm btn-outline">
+                <a href="{{route('teacher.exam.halls')}}" target="_blank" class="btn-sm btn-outline">
                     <span class="material-icons-round fs-6">room_preferences</span> <span id="newSectionBtn">Halls</span>
                 </a >
-                <a href="{{route('admin.exam.marks')}}" target="_blank" class="btn-sm btn-outline">
+                <a href="{{route('teacher.exam.marks')}}" target="_blank" class="btn-sm btn-outline">
                     <span class="material-icons-round fs-6">check_box_outline_blank</span> <span id="newSectionBtn">Marks</span>
                 </a>
-                <a href="{{route('admin.exam.types')}}" target="_blank" class="btn-sm btn-outline">
+                <a href="{{route('teacher.exam.types')}}" target="_blank" class="btn-sm btn-outline">
                     <span class="material-icons-round fs-6">check_circle</span> <span id="newSectionBtn">Types</span>
                 </a>
                 <button class="btn-sm btn-outline bg-dark text-white" wire:click="openCreate">

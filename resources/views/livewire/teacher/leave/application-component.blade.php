@@ -43,12 +43,6 @@
                     </div>
                 @endif
 
-                
-                <a href="{{ route('admin.leave.categories') }}" target="_blank" class="btn-sm btn-outline" wire:click="openCreate">
-                    <span class="material-icons-round">category</span>
-                    <span>Add Category</span>
-                </a>
-
                 <button class="btn-sm btn-outline bg-dark text-white" wire:click="openCreate">
                     <span class="material-icons-round">add</span>
                     <span>Add Leave</span>

@@ -55,7 +55,7 @@
                     </div>
                 @endif
 
-                <a href="{{ route('admin.homework.add') }}" class="btn-outline bg-dark text-white">
+                <a href="{{ route('teacher.homework.add') }}" class="btn-outline bg-dark text-white">
                     <span class="material-icons-round">add</span> New Homework
                 </a>
 
@@ -110,7 +110,7 @@
                                     @if ($homework['attachment'])
                                         <a href="{{ Storage::url($homework['attachment']) }}" target="_blank" class="act-btn"><span class="material-icons-round">attachment</span></a>
                                     @endif
-                                    <a href="{{ route('admin.homework.edit', ['id' => $homework->id]) }}"
+                                    <a href="{{ route('teacher.homework.edit', ['id' => $homework->id]) }}"
                                        class="act-btn edit" title="Edit">
                                         <span class="material-icons-round">drive_file_rename_outline</span>
                                     </a>
@@ -126,7 +126,7 @@
                             <td colspan="9" class="text-center py-5 text-muted">
                                 <span class="material-icons-round d-block mb-2" style="font-size:2.5rem;opacity:.2">assignment</span>
                                 No homeworks found.
-                                <a href="{{ route('admin.homework.add') }}">Add one now</a>.
+                                <a href="{{ route('teacher.homework.add') }}">Add one now</a>.
                             </td>
                         </tr>
                         @endforelse

@@ -134,9 +134,9 @@ class HomeworkEditComponent extends Component
     public function update(): void
     {
         $this->validate([
-            'class_id'        => 'required|exists:academic_classes,id',
-            'section_id'      => 'nullable|exists:academic_sections,id',
-            'subject_id'      => 'required|exists:academic_subjects,id',
+            'class_id'        => 'required',
+            'section_id'      => 'nullable',
+            'subject_id'      => 'required',
             'title'           => 'required|string|max:255',
             'description'     => 'required|string',
             'homework_date'   => 'required|date',

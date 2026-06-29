@@ -8,7 +8,7 @@
 
         <div class="container-xl mt-4">
 
-            @include('livewire.admin.parent.parent-navbar', ['parent' => $parent])
+            @include('livewire.teacher.parent.parent-navbar', ['parent' => $parent])
 
             <!-- START CONTENT -->
 
@@ -63,7 +63,7 @@
 
             <!-- Footer -->
             <div class="footer-actions no-print">
-                <a href="{{ route('admin.parent.edit', ['id' => $parent->id]) }}" class="btn btn-ghost">
+                <a href="{{ route('teacher.parent.edit', ['id' => $parent->id]) }}" class="btn btn-ghost">
                     <span class="material-icons-round">edit</span> Edit
                 </a>
                 <button type="button" class="btn btn-dark" onclick="window.print()">

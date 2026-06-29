@@ -30,7 +30,7 @@
                         </select>
                     </div>
                 @endif
-                <a href="{{route('admin.exam.schedule.add')}}" class="btn-outline btn-sm bg-dark text-white" wire:click="openCreate">
+                <a href="{{route('teacher.exam.schedule.add')}}" class="btn-outline btn-sm bg-dark text-white" wire:click="openCreate">
                     <span class="material-icons-round">add</span> <span id="newSectionBtn">Add Schedule</span>
                 </a>
 

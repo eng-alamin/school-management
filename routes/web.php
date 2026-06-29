@@ -330,7 +330,7 @@ Route::middleware(['auth', 'role:teacher', 'billing.check'])->group(function () 
     Route::get('teacher/parent/{id}/child', \App\Livewire\Teacher\Parent\ParentChildComponent::class)->name('teacher.parent.child');
 
     // // Academic
-    Route::get('teacher/academic/categories', \App\Livewire\Teacher\Academic\CategoryComponent::class)->name('teacher.academic.categories');
+    Route::get('teacher/academic/groups', \App\Livewire\Teacher\Academic\GroupComponent::class)->name('teacher.academic.groups');
     Route::get('teacher/academic/classes', \App\Livewire\Teacher\Academic\ClassComponent::class)->name('teacher.academic.classes');
     Route::get('teacher/academic/sections', \App\Livewire\Teacher\Academic\SectionComponent::class)->name('teacher.academic.sections');
     Route::get('teacher/academic/subjects', \App\Livewire\Teacher\Academic\SubjectComponent::class)->name('teacher.academic.subjects');
