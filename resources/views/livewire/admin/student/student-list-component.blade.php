@@ -118,14 +118,14 @@
                     <table class="table table-hover mb-0" id="studentTable">
                         <thead>
                             <tr>
-                                <th>Name</th>
-                                <th>Class</th>
-                                <th>Section</th>
-                                <th>Gender</th>
-                                <th>Register No</th>
-                                <th>Roll No</th>
-                                <th>Guardian</th>
-                                <th class="no-print">Actions</th>
+                                <th id="th-sl">Name</th>
+                                <th id="th-class">Class</th>
+                                <th id="th-section">Section</th>
+                                <th id="th-gender">Gender</th>
+                                <th id="th-register-no">Register No</th>
+                                <th id="th-roll-no">Roll No</th>
+                                <th id="th-guardian">Guardian</th>
+                                <th id="th-actions" class="no-print">Actions</th>
                             </tr>
                         </thead>
                         <tbody>

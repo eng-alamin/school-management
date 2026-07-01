@@ -54,19 +54,6 @@
       </li>
 
       <li class="nav1-item">
-        <div class="nav1-link {{ str_contains(request()->url(), 'teacher/academic') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
-          <span class="material-icons-round nav-icon">menu_book</span>
-          <span class="nav-label" id="nav-academic">My Class</span>
-          <span class="material-icons-round nav-arrow">expand_more</span>
-        </div>
-        <div class="nav2-collapse {{ str_contains(request()->url(), 'teacher/academic') == true ? 'show' : '' }}">
-          <ul>
-            <li class="nav2-item"><a href="{{route('teacher.academic.class-assign') }}" class="nav2-link {{ str_contains(request()->url(), 'teacher/academic/class-assign') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-class-assign">Class Assign</span></a></li>
-            <li class="nav2-item"><a href="{{route('teacher.academic.class-schedule.list') }}" class="nav2-link {{ str_contains(request()->url(), 'teacher/academic/class-schedule') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-class-schedule">Class Schedule</span></a></li>
-        </div>
-      </li>
-
-      <li class="nav1-item">
         <a class="nav1-link {{ str_contains(request()->url(), 'teacher/homework') == true ? 'active' : '' }}" href="{{ route('teacher.homework.list')  }}">
           <span class="material-icons-round nav-icon">assignment</span>
           <span class="nav-label" id="nav-home-work">Home Work</span>
@@ -74,16 +61,17 @@
       </li>
 
       <li class="nav1-item">
-        <div class="nav1-link {{ str_contains(request()->url(), 'teacher/exam/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
-          <span class="material-icons-round nav-icon">quiz</span>
-          <span class="nav-label" id="nav-exam-master">Exam Master</span>
-          <span class="material-icons-round nav-arrow">expand_more</span>
-        </div>
-        <div class="nav2-collapse {{ str_contains(request()->url(), 'exam') == true ? 'show' : '' }}">
-          <ul>
-            <li class="nav2-item"><a href="{{route('teacher.exam.schedule.list') }}" class="nav2-link {{ str_contains(request()->url(), 'teacher/exam/schedule') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-exam-schedule">Exam Schedule</span></a></li>
-          </ul>
-        </div>
+        <a class="nav1-link {{ str_contains(request()->url(), 'teacher/academic/class-schedule') == true ? 'active' : '' }}" href="{{route('teacher.academic.class-schedule.list') }}">
+          <span class="material-icons-round nav-icon">menu_book</span>
+          <span class="nav-label" id="nav-parents">Class Schedule</span>
+        </a>
+      </li>
+
+      <li class="nav1-item">
+        <a class="nav1-link {{ str_contains(request()->url(), 'teacher/exam/schedule') == true ? 'active' : '' }}" href="{{ route('teacher.exam.schedule.list')  }}">
+          <span class="material-icons-round nav-icon">assignment</span>
+          <span class="nav-label" id="nav-home-work">Exam Schedule</span>
+        </a>
       </li>
 
       <li class="nav1-item">

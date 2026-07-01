@@ -4,47 +4,70 @@ namespace App\Livewire\Admin\Academic;
 
 use Livewire\Component;
 use App\Models\AcademicClassSchedule;
-use App\Models\AcademicTeacherAssign;
-use App\Models\Employee;
+use App\Models\AcademicClassAssignDetail;
+use App\Models\User;
 
 class TeacherScheduleComponent extends Component
 {
     public string $teacher_id = '';
 
-    public bool $hasSchedule = false;
+    public bool  $hasSchedule  = false;
     public array $scheduleGrid = [];
-    public array $days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    public array $days         = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
     public function filter(): void
     {
         $this->validate([
-            'teacher_id' => 'required|exists:employees,id',
+            'teacher_id' => 'required|exists:users,id',
         ]);
 
-        $this->hasSchedule   = false;
-        $this->scheduleGrid  = [];
+        $this->hasSchedule  = false;
+        $this->scheduleGrid = [];
 
-        // Find all class+section pairs assigned to this teacher
-        $assigns = AcademicTeacherAssign::where('teacher_id', $this->teacher_id)->get();
+        // এই teacher যে class+section এ assign আছে সেগুলো বের করো
+        // academic_class_assign_details.teacher_id দিয়ে
+        $assignDetails = AcademicClassAssignDetail::with('classAssign')
+            ->where('teacher_id', $this->teacher_id)
+            ->get();
 
-        if ($assigns->isEmpty()) {
+        if ($assignDetails->isEmpty()) {
             return;
         }
 
-        // Collect all schedules for those class+section pairs
+        // class+section pair collect করো
+        $classSectionPairs = $assignDetails
+            ->map(fn($d) => [
+                'class_id'   => $d->classAssign->class_id ?? null,
+                'section_id' => $d->classAssign->section_id ?? null,
+            ])
+            ->filter(fn($p) => $p['class_id'])
+            ->unique(fn($p) => $p['class_id'] . '-' . $p['section_id'])
+            ->values();
+
+        // Teacher এর নাম বের করো (schedule JSON এ teacher নাম string হিসেবে আছে)
+        $teacher = User::find($this->teacher_id);
+        $teacherName = $teacher?->name ?? '';
+
         $allRows = collect();
 
-        foreach ($assigns as $assign) {
-            $schedules = AcademicClassSchedule::where('class_id', $assign->class_id)
-                ->where('section_id', $assign->section_id)
+        foreach ($classSectionPairs as $pair) {
+            $schedules = AcademicClassSchedule::with(['class', 'section'])
+                ->where('class_id', $pair['class_id'])
+                ->where('section_id', $pair['section_id'])
                 ->get();
 
             foreach ($schedules as $schedule) {
                 foreach ($schedule->data ?? [] as $period) {
+                    // JSON এ teacher নাম match করো
+                    $periodTeacher = $period['teacher'] ?? '';
+                    if (strcasecmp(trim($periodTeacher), trim($teacherName)) !== 0) {
+                        continue;
+                    }
+
                     $allRows->push([
                         'day'        => $schedule->day,
-                        'class'      => $assign->class?->name ?? '—',
-                        'section'    => $assign->section?->name ?? '—',
+                        'class'      => $schedule->class?->name   ?? '—',
+                        'section'    => $schedule->section?->name ?? '',
                         'subject'    => $period['subject']    ?? '—',
                         'teacher'    => $period['teacher']    ?? '—',
                         'start_time' => $period['start_time'] ?? null,
@@ -59,14 +82,14 @@ class TeacherScheduleComponent extends Component
             return;
         }
 
-        // Determine unique time-slots (periods) sorted by start_time
+        // Unique time slots sort by start_time
         $timeSlots = $allRows
             ->map(fn($r) => ['start_time' => $r['start_time'], 'end_time' => $r['end_time']])
             ->unique('start_time')
             ->sortBy('start_time')
             ->values();
 
-        // Build grid: period × day
+        // Grid: period × day
         $grid = [];
         foreach ($timeSlots as $slot) {
             $row = [
@@ -88,12 +111,11 @@ class TeacherScheduleComponent extends Component
 
     public function render()
     {
-        $teachers = Employee::with(['designation', 'department', 'user'])
-            ->whereHas('user', function ($q) {
-                $q->where('role', 'teacher');
-            })
-            ->orderBy('id', 'asc')
-            ->get();
+        // Teacher role এর সব user
+        $teachers = User::where('role', 'teacher')
+            ->where('institution_id', institution()->id)
+            ->orderBy('name')
+            ->get(['id', 'name']);
 
         return view('livewire.admin.academic.teacher-schedule-component')
             ->with('teachers', $teachers)

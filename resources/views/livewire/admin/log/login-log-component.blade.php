@@ -162,12 +162,12 @@
                             <table class="table table-hover align-middle">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>#</th>
-                                        <th>User</th>
-                                        <th>Role</th>
-                                        <th>Last Login</th>
-                                        <th>Last IP</th>
-                                        <th>Status</th>
+                                        <th id="th-sl">SL</th>
+                                        <th id="th-user">User</th>
+                                        <th id="th-role">Role</th>
+                                        <th id="th-user-login">User Login</th>
+                                        <th id="th-last-ip">Last IP</th>
+                                        <th id="th-status">Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>

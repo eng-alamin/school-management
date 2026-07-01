@@ -47,15 +47,15 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th id="prod-th-sl">SL</th>
-                            <th id="prod-th-name" wire:click="sortBy('name')" style="cursor:pointer">Name @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif</th>
-                            <th id="prod-th-code" wire:click="sortBy('code')" style="cursor:pointer">Code @if($sortField === 'code') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif</th>
-                            <th id="prod-th-category">Category</th>
-                            <th id="prod-th-purchase-unit">Purchase Unit</th>
-                            <th id="prod-th-sales-unit">Sales Unit</th>
-                            <th id="prod-th-purchase-price">Purchase Price</th>
-                            <th id="prod-th-sales-price">Sales Price</th>
-                            <th id="prod-th-actions">Actions</th>
+                            <th id="th-sl">SL</th>
+                            <th id="th-name" wire:click="sortBy('name')" style="cursor:pointer">Name @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif</th>
+                            <th id="th-code" wire:click="sortBy('code')" style="cursor:pointer">Code @if($sortField === 'code') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif</th>
+                            <th id="th-category">Category</th>
+                            <th id="th-purchase-unit">Purchase Unit</th>
+                            <th id="th-sales-unit">Sales Unit</th>
+                            <th id="th-purchase-price">Purchase Price</th>
+                            <th id="th-sales-price">Sales Price</th>
+                            <th id="th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>

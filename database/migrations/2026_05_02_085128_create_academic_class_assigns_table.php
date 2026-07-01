@@ -11,15 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('exam_schedules', function (Blueprint $table) {
+        Schema::create('academic_class_assigns', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
-            $table->foreignId('exam_id')->constrained('exam_setups')->cascadeOnDelete();
             $table->foreignId('class_id')->constrained('academic_classes')->cascadeOnDelete();
             $table->foreignId('section_id')->nullable()->constrained('academic_sections')->nullOnDelete();
-            $table->json('data')->nullable();
-            $table->unique(['exam_id', 'class_id', 'section_id']);
             $table->timestamps();
+
+            $table->unique([
+                'institution_id',
+                'class_id',
+                'section_id'
+            ], 'class_section_unique');
+
         });
     }
 
@@ -28,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('exam_schedules');
+        Schema::dropIfExists('academic_class_assigns');
     }
 };

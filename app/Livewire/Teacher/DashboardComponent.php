@@ -72,20 +72,23 @@ class DashboardComponent extends Component
         $todayMD  = $today->format('m-d');
 
         // ── Resolve Employee ID (users → employees) ────────────────────────
-        // academic_teacher_assigns.teacher_id = employees.id
-        // কিন্তু auth()->id() = users.id, তাই আগে employee record খুঁজতে হবে
+        // employee attendance/leave er jonno employee id lagbe (attendances.attendable_id = employees.id)
+        // kintu class/section assign ekhon academic_class_assign_details theke ashbe, jeta
+        // sরাসরি teacher_id = users.id use kore, employee id lagbe na
         $myEmployeeId = DB::table('employees')
             ->where('institution_id', $schoolId)
             ->where('user_id', $this->teacherId)
             ->value('id');
 
         // ── My Classes & Students ──────────────────────────────────────────
-        $myAssigns = $myEmployeeId
-            ? DB::table('academic_teacher_assigns')
-                ->where('institution_id', $schoolId)
-                ->where('teacher_id', $myEmployeeId)
-                ->get(['class_id', 'section_id'])
-            : collect();
+        // academic_class_assign_details.teacher_id = users.id (auth()->id() direct compare)
+        $myAssigns = DB::table('academic_class_assign_details as d')
+            ->join('academic_class_assigns as a', 'a.id', '=', 'd.academic_class_assign_id')
+            ->where('a.institution_id', $schoolId)
+            ->where('d.teacher_id', $this->teacherId)
+            ->select('a.class_id', 'a.section_id')
+            ->distinct()
+            ->get();
 
         $this->myTotalClasses = $myAssigns->count();
 
@@ -110,7 +113,7 @@ class DashboardComponent extends Component
         }
 
         // ── My Attendance Today ────────────────────────────────────────────
-        // employee attendance — attendable_id = employees.id
+        // employee attendance — attendable_id = employees.id (eta age-er moto thake)
         $myAttendance = $myEmployeeId
             ? DB::table('attendances')
                 ->where('institution_id', $schoolId)

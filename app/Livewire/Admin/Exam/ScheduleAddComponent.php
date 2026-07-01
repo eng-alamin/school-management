@@ -5,193 +5,148 @@ namespace App\Livewire\Admin\Exam;
 use Livewire\Component;
 use App\Models\ExamSchedule;
 use App\Models\ExamSetup;
-use App\Models\AcademicClass;
-use App\Models\AcademicSection;
-use App\Models\AcademicClassAssign;
+use Illuminate\Support\Facades\DB;
 
 class ScheduleAddComponent extends Component
 {
-    public $filterExam    = '';
-    public $filterClass   = '';
-    public $filterSection = '';
-    public $data          = [];
+    public $filterExam = '';
 
-    public $hasSchedule = false;
-    public $schedule_id;
+    // নির্বাচিত exam এর class info দেখানোর জন্য (read-only)
+    public ?string $selectedClassLabel = null;
 
-    public function getAvailableClasses()
+    // rows[index] = ['exam_setup_detail_id'=>, 'subject_name'=>, 'full_mark'=>, 'pass_mark'=>, 'exam_date'=>, 'start_time'=>, 'end_time'=>, 'class_room'=>, 'remarks'=>, 'is_published'=>]
+    public array $rows = [];
+
+    public bool $hasSchedule = false;
+
+    public function updatedFilterExam(): void
     {
-        return AcademicClass::whereIn('id', AcademicClassAssign::distinct()->pluck('class_id'))
-            ->orderBy('name')
-            ->get();
+        $this->hasSchedule        = false;
+        $this->rows               = [];
+        $this->selectedClassLabel = null;
     }
 
-    public function getAvailableSections()
-    {
-        if (!$this->filterClass) return [];
-
-        return AcademicSection::whereIn('id',
-            AcademicClassAssign::where('class_id', $this->filterClass)->pluck('section_id')
-        )->orderBy('name')->get();
-    }
-
-    public function updatedFilterClass()
-    {
-        $this->filterSection = '';
-        $this->hasSchedule   = false;
-        $this->data          = [];
-
-        if (!$this->filterClass) return;
-    }
-
-    public function updatedFilterSection()
-    {
-        $this->hasSchedule = false;
-        $this->data        = [];
-
-        if (!$this->filterClass) return;
-    }
-
-    public function filter()
+    public function filter(): void
     {
         if (!$this->filterExam) {
             $this->dispatch('toast', type: 'error', message: 'Please select an exam.');
             return;
         }
 
-        if (!$this->filterClass) {
-            $this->dispatch('toast', type: 'error', message: 'Please select a class.');
+        $examSetup = ExamSetup::with([
+            'classAssign.class',
+            'classAssign.section',
+            'details.classAssignDetail.subject',
+        ])->find($this->filterExam);
+
+        if (!$examSetup) {
+            $this->dispatch('toast', type: 'error', message: 'Exam setup পাওয়া যায়নি।');
             return;
         }
 
-        $sectionId = ($this->filterSection && $this->filterSection !== 'all')
-            ? $this->filterSection
-            : null;
-
-        $assign = AcademicClassAssign::where('class_id', $this->filterClass)
-            ->where('section_id', $sectionId)
-            ->first();
-
-        $subjects = collect($assign?->subjects ?? []);
-
-        if ($subjects->isEmpty()) {
-            $this->dispatch('toast', type: 'error', message: 'No subjects found for this class & section.');
+        if ($examSetup->details->isEmpty()) {
+            $this->dispatch('toast', type: 'error', message: 'এই Exam এ কোনো Subject পাওয়া যায়নি।');
             return;
         }
 
-        $schedule = ExamSchedule::where('exam_id', $this->filterExam)
-            ->where('class_id', $this->filterClass)
-            ->where('section_id', $sectionId)
-            ->first();
+        $this->selectedClassLabel = ($examSetup->classAssign->class->name ?? '—')
+            . ($examSetup->classAssign->section ? ' - ' . $examSetup->classAssign->section->name : '');
 
-        if ($schedule) {
-            $savedData         = collect($schedule->data);
-            $savedSubjectNames = $savedData->pluck('subject');
+        // existing schedules load করো (edit case)
+        $existingSchedules = ExamSchedule::where('exam_setup_id', $examSetup->id)
+            ->get()
+            ->keyBy('exam_setup_detail_id');
 
-            $newRows = $subjects
-                ->diff($savedSubjectNames)
-                ->values()
-                ->map(fn($subject) => $this->emptyRow($subject));
+        $this->rows = [];
+        foreach ($examSetup->details as $detail) {
+            $existing = $existingSchedules->get($detail->id);
 
-            $this->data        = $savedData->concat($newRows)->values()->toArray();
-            $this->schedule_id = $schedule->id;
-            $this->hasSchedule = true;
-            return;
+            $this->rows[] = [
+                'exam_setup_detail_id' => $detail->id,
+                'subject_name'         => $detail->classAssignDetail->subject->name ?? '—',
+                'full_mark'            => $detail->full_mark,
+                'pass_mark'            => $detail->pass_mark,
+                'exam_date'            => $existing?->exam_date?->format('Y-m-d') ?? '',
+                'start_time'           => $existing?->start_time ? substr($existing->start_time, 0, 5) : '10:00',
+                'end_time'             => $existing?->end_time ? substr($existing->end_time, 0, 5) : '13:00',
+                'class_room'           => $existing?->class_room ?? '',
+                'remarks'              => $existing?->remarks ?? '',
+                'is_published'         => $existing?->is_published ?? false,
+            ];
         }
 
-        $this->schedule_id = null;
-        $this->data        = $subjects->map(fn($subject) => $this->emptyRow($subject))->toArray();
         $this->hasSchedule = true;
     }
 
-    private function emptyRow(string $subject): array
-    {
-        return [
-            'subject'             => $subject,
-            'exam_date'           => '',
-            'start_time'          => '10:00',
-            'end_time'            => '01:00',
-            'hall_room'           => '',
-            'practical_full_mark' => '',
-            'practical_pass_mark' => '',
-            'written_full_mark'   => '',
-            'written_pass_mark'   => '',
-        ];
-    }
-
-    public function save()
+    public function save(): void
     {
         $this->validate([
-            'filterExam'    => 'required|exists:exam_setups,id',
-            'filterClass'   => 'required|exists:academic_classes,id',
-            'filterSection' => 'nullable',
+            'filterExam' => 'required|exists:exam_setups,id',
 
-            'data.*.subject'             => 'required',
-            'data.*.exam_date'           => 'required',
-            'data.*.start_time'          => [
+            'rows.*.exam_date'   => 'required|date',
+            'rows.*.start_time'  => [
                 'required',
                 'date_format:H:i',
                 function ($attribute, $value, $fail) {
                     $this->failIfSameDateTimeClash($attribute, $value, $fail, 'start_time', 'Starting Time');
                 },
             ],
-            'data.*.end_time'            => [
+            'rows.*.end_time'    => [
                 'required',
                 'date_format:H:i',
                 function ($attribute, $value, $fail) {
                     $this->failIfSameDateTimeClash($attribute, $value, $fail, 'end_time', 'Ending Time');
                 },
             ],
-            'data.*.hall_room'           => 'required|string|max:100',
-            'data.*.practical_full_mark' => 'required|numeric|min:0',
-            'data.*.practical_pass_mark' => 'required|numeric|min:0',
-            'data.*.written_full_mark'   => 'required|numeric|min:0',
-            'data.*.written_pass_mark'   => 'required|numeric|min:0',
+            'rows.*.class_room'  => 'nullable|string|max:100',
+            'rows.*.remarks'     => 'nullable|string',
         ], [], [
-            'data.*.subject'             => 'Subject',
-            'data.*.exam_date'           => 'Date',
-            'data.*.start_time'          => 'Starting Time',
-            'data.*.end_time'            => 'Ending Time',
-            'data.*.hall_room'           => 'Hall Room',
-            'data.*.practical_full_mark' => 'Practical Full Mark',
-            'data.*.practical_pass_mark' => 'Practical Pass Mark',
-            'data.*.written_full_mark'   => 'Written Full Mark',
-            'data.*.written_pass_mark'   => 'Written Pass Mark',
+            'rows.*.exam_date'  => 'Date',
+            'rows.*.start_time' => 'Starting Time',
+            'rows.*.end_time'   => 'Ending Time',
+            'rows.*.class_room' => 'Class Room',
         ]);
 
+        DB::beginTransaction();
         try {
-            $sectionId = ($this->filterSection && $this->filterSection !== 'all')
-                ? $this->filterSection
-                : null;
+            foreach ($this->rows as $row) {
+                ExamSchedule::updateOrCreate(
+                    [
+                        'exam_setup_id'        => $this->filterExam,
+                        'exam_setup_detail_id' => $row['exam_setup_detail_id'],
+                    ],
+                    [
+                        'exam_date'    => $row['exam_date'],
+                        'start_time'   => $row['start_time'],
+                        'end_time'     => $row['end_time'],
+                        'class_room'   => $row['class_room'] ?: null,
+                        'remarks'      => $row['remarks'] ?: null,
+                        'is_published' => $row['is_published'] ?? false,
+                    ]
+                );
+            }
 
-            ExamSchedule::updateOrCreate(
-                [
-                    'exam_id'    => $this->filterExam,
-                    'class_id'   => $this->filterClass,
-                    'section_id' => $sectionId,
-                ],
-                [
-                    'data' => $this->data,
-                ]
-            );
-
-            $this->dispatch('toast', type: 'success', message: 'Exam schedule saved successfully!');
-
-        } catch (\Exception $e) {
-            $this->dispatch('toast', type: 'error', message: 'Creation failed: ' . $e->getMessage());
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            $this->dispatch('toast', type: 'error', message: 'Something went wrong!');
+            return;
         }
+
+        $this->dispatch('toast', type: 'success', message: 'Exam schedule saved successfully!');
     }
 
+    // একই Exam এর মধ্যে একই তারিখ ও একই সময়ে দুইটা subject clash করছে কিনা চেক করে
     private function failIfSameDateTimeClash($attribute, $value, $fail, string $field, string $label): void
     {
-        if (!preg_match('/^data\.(\d+)\.' . $field . '$/', $attribute, $matches)) return;
+        if (!preg_match('/^rows\.(\d+)\.' . $field . '$/', $attribute, $matches)) return;
 
         $currentIndex = (int) $matches[1];
-        $currentDate  = $this->data[$currentIndex]['exam_date'] ?? null;
+        $currentDate  = $this->rows[$currentIndex]['exam_date'] ?? null;
 
         if (!$currentDate || !$value) return;
 
-        foreach ($this->data as $index => $row) {
+        foreach ($this->rows as $index => $row) {
             if ($index === $currentIndex) continue;
             if (($row['exam_date'] ?? null) === $currentDate && ($row[$field] ?? null) === $value) {
                 $fail("Same date-e {$label} alada hote hobe.");
@@ -200,23 +155,21 @@ class ScheduleAddComponent extends Component
         }
     }
 
-    public function resetForm()
+    public function resetForm(): void
     {
-        $this->filterExam    = '';
-        $this->filterClass   = '';
-        $this->filterSection = '';
-        $this->data          = [];
-        $this->hasSchedule   = false;
-        $this->schedule_id   = null;
+        $this->filterExam         = '';
+        $this->rows               = [];
+        $this->hasSchedule        = false;
+        $this->selectedClassLabel = null;
         $this->resetValidation();
     }
 
     public function render()
     {
         return view('livewire.admin.exam.schedule-add-component')
-            ->with('exams', ExamSetup::orderBy('name')->get())
-            ->with('classes', $this->getAvailableClasses())
-            ->with('sections', $this->getAvailableSections())
+            ->with('exams', ExamSetup::with('classAssign.class', 'classAssign.section')
+                ->orderBy('name')
+                ->get())
             ->layout('layouts.admin.app', [
                 'title' => 'Exam Schedule | ' . institution()->name,
             ]);

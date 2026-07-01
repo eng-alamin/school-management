@@ -81,15 +81,15 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>SL</th>
-                            <th>Invoice No</th>
-                            <th>Period</th>
-                            <th>Total Amount</th>
-                            <th>Discount</th>
-                            <th>Payable</th>
-                            <th>Due Date</th>
-                            <th>Status</th>
-                            <th>Actions</th>
+                            <th id="th-sl">SL</th>
+                            <th id="th-invoice-no">Invoice No</th>
+                            <th id="th-period">Period</th>
+                            <th id="th-total-amount">Total Amount</th>
+                            <th id="th-discount">Discount</th>
+                            <th id="th-payable">Payable</th>
+                            <th id="th-due-date">Due Date</th>
+                            <th id="th-status">Status</th>
+                            <th id="th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>

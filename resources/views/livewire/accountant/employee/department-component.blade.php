@@ -37,11 +37,11 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th id="dept-th-sl">SL</th>
+                            <th id="th-sl">SL</th>
                             <th wire:click="sortBy('name')" style="cursor:pointer">
-                                <span id="dept-th-name">Name</span> @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
+                                <span id="th-name">Name</span> @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th id="dept-th-actions">Actions</th>
+                            <th id="th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>

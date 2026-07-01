@@ -8,6 +8,7 @@ use App\Traits\BelongsToInstitution;
 class FeeType extends Model
 {
     use BelongsToInstitution;
+    
     protected $guarded = [];
     
     public function feeGroupItems()

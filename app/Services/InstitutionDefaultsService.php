@@ -17,6 +17,7 @@ use App\Models\ExamTerm;
 use App\Models\ExamType;
 use App\Models\ExamMark;
 use App\Models\ExamHall;
+use App\Models\ExamGrade;
 use App\Models\FeeType;
 use App\Models\LeaveCategory;
 use App\Models\OfficeHead;
@@ -40,6 +41,7 @@ class InstitutionDefaultsService
         self::createExamTypes($institution);
         self::createExamMarks($institution);
         self::createExamHalls($institution);
+        self::createExamGrades($institution);
         // self::createFeeTypes($institution);
         self::createLeaveCategories($institution);
         self::createOfficeHeads($institution);
@@ -309,6 +311,35 @@ class InstitutionDefaultsService
             ]);
         }
     }
+
+    private static function createExamGrades(Institution $institution): void
+    {
+        $grades = [
+            ['name' => 'A+', 'point' => 5.0, 'min' => 80, 'max' => 100, 'remark' => 'Excellent'],
+            ['name' => 'A',  'point' => 4.0, 'min' => 70, 'max' => 79,  'remark' => 'Very Good'],
+            ['name' => 'A-', 'point' => 3.5, 'min' => 60, 'max' => 69,  'remark' => 'Good'],
+            ['name' => 'B',  'point' => 3.0, 'min' => 50, 'max' => 59,  'remark' => 'Average'],
+            ['name' => 'C',  'point' => 2.5, 'min' => 40, 'max' => 49,  'remark' => 'Adequate'],
+            ['name' => 'D',  'point' => 2.0, 'min' => 33, 'max' => 39,  'remark' => 'Poor'],
+            ['name' => 'F',  'point' => 0.0, 'min' => 0,  'max' => 32,  'remark' => 'Fail'],
+        ];
+
+        foreach ($grades as $grade) {
+            ExamGrade::firstOrCreate(
+                [
+                    'institution_id' => $institution->id,
+                    'name' => $grade['name'],
+                ],
+                [
+                    'grade_point' => $grade['point'],
+                    'min_percentage' => $grade['min'],
+                    'max_percentage' => $grade['max'],
+                    'remarks' => $grade['remark'],
+                ]
+            );
+        }
+    }
+
     private static function createFeeTypes(Institution $institution): void
     {
         $feeTypes = [

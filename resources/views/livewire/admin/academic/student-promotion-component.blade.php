@@ -27,12 +27,15 @@
 
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
-                        <label class="form-label">Section <span class="req">*</span></label>
+                        <label class="form-label">Section</label>
                         <select wire:model="section_id" class="form-select" @disabled(empty($availableSections))>
-                            <option value="">{{ empty($availableSections) ? 'Select class first' : 'Select Section' }}</option>
-                            @foreach($availableSections as $s)
-                                <option value="{{ $s['id'] }}">{{ $s['name'] }}</option>
-                            @endforeach
+                            <option value="">{{ empty($availableSections) ? 'Select class first' : 'All Section' }}</option>
+                            @if(!empty($availableSections) && $availableSections->count())
+                                <option value="all">All Section</option>
+                                @foreach($availableSections as $s)
+                                    <option value="{{ $s->id }}">{{ $s->name }}</option>
+                                @endforeach
+                            @endif
                         </select>
                     </div>
                     @error('section_id') <span class="text-danger small">{{ $message }}</span> @enderror
@@ -65,7 +68,6 @@
         {{-- ===== PROMOTION SETTINGS ===== --}}
         <div style="margin:0 28px 20px">
 
-            {{-- Carry Forward --}}
             <div class="form-check mb-3">
                 <input class="form-check-input" type="checkbox" wire:model="carryForwardDue" id="carryForward">
                 <label class="form-check-label" for="carryForward" style="font-size:.82rem;font-weight:600">
@@ -97,12 +99,15 @@
                 </div>
 
                 <div class="col-md-4">
-                    <label class="form-label" style="font-size:.78rem;font-weight:600">Promote To Section <span class="text-danger">*</span></label>
+                    <label class="form-label" style="font-size:.78rem;font-weight:600">Promote To Section</label>
                     <select class="form-select form-select-sm @error('to_section_id') is-invalid @enderror" wire:model="to_section_id" @disabled(empty($toAvailableSections))>
-                        <option value="">{{ empty($toAvailableSections) ? 'Select class first' : 'Select Section' }}</option>
-                        @foreach($toAvailableSections as $s)
-                            <option value="{{ $s['id'] }}">{{ $s['name'] }}</option>
-                        @endforeach
+                        <option value="">{{ empty($toAvailableSections) ? 'Select class first' : 'All Section' }}</option>
+                        @if(!empty($toAvailableSections) && $toAvailableSections->count())
+                            <option value="all">All Section</option>
+                            @foreach($toAvailableSections as $s)
+                                <option value="{{ $s->id }}">{{ $s->name }}</option>
+                            @endforeach
+                        @endif
                     </select>
                     @error('to_section_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
@@ -117,39 +122,39 @@
                         <th style="width:40px">
                             <input type="checkbox" wire:model.live="selectAll" class="form-check-input">
                         </th>
-                        <th>#</th>
-                        <th>Student Name</th>
-                        <th>Register No</th>
-                        <th>Guardian Name</th>
-                        <th>Class</th>
-                        <th>Roll</th>
-                        <th>Current Due Amount (With Fine)</th>
-                        <th>Status</th>
+                        <th id="th-sl">SL</th>
+                        <th id="th-student-name">Student Name</th>
+                        <th id="th-registration-no">Registration No</th>
+                        <th id="th-guardian-name">Guardian Name</th>
+                        <th id="th-class">Class</th>
+                        <th id="th-role">Roll</th>
+                        <th id="th-current-due-amount-with-fine">Current Due Amount (With Fine)</th>
+                        <th id="th-status">Status</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($students as $enrollmentId => $student)
-                    <tr>
+                    @foreach($students as $studentId => $student)
+                    <tr wire:key="promote-row-{{ $studentId }}">
                         <td>
                             <input type="checkbox"
                                 class="form-check-input"
-                                value="{{ $enrollmentId }}"
+                                value="{{ $studentId }}"
                                 wire:model.live="selectedStudents">
                         </td>
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ $student['name'] }}</td>
-                        <td>{{ $student['register_no'] }}</td>
+                        <td>{{ $student['registration_no'] }}</td>
                         <td>{{ $student['guardian_name'] }}</td>
                         <td>
                             <div class="d-flex align-items-center gap-2">
                                 <label class="d-flex align-items-center gap-1" style="cursor:pointer;font-size:.75rem">
                                     <input type="radio"
-                                        wire:model="students.{{ $enrollmentId }}.status"
+                                        wire:model="students.{{ $studentId }}.status"
                                         value="running"> Running
                                 </label>
                                 <label class="d-flex align-items-center gap-1" style="cursor:pointer;font-size:.75rem">
                                     <input type="radio"
-                                        wire:model="students.{{ $enrollmentId }}.status"
+                                        wire:model="students.{{ $studentId }}.status"
                                         value="promoted">
                                     <span style="width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block"></span>
                                     Promoted
@@ -159,16 +164,16 @@
                         <td>
                             <input type="text"
                                 class="form-control form-control-sm"
-                                wire:model.defer="students.{{ $enrollmentId }}.roll"
+                                wire:model.defer="students.{{ $studentId }}.roll"
                                 style="width:80px">
                         </td>
                         <td>{{ $student['due_amount'] }}</td>
                         <td>
                             <div class="form-check d-flex align-items-center gap-1">
                                 <input class="form-check-input" type="checkbox"
-                                    wire:model="students.{{ $enrollmentId }}.is_alumni"
-                                    id="alumni_{{ $enrollmentId }}">
-                                <label class="form-check-label" for="alumni_{{ $enrollmentId }}" style="font-size:.72rem;white-space:nowrap">
+                                    wire:model="students.{{ $studentId }}.is_alumni"
+                                    id="alumni_{{ $studentId }}">
+                                <label class="form-check-label" for="alumni_{{ $studentId }}" style="font-size:.72rem;white-space:nowrap">
                                     Leave / Add Alumni
                                 </label>
                             </div>
@@ -207,56 +212,51 @@
 </style>
 @endpush
 
- @push('scripts')
-    <script>
-        document.addEventListener('livewire:initialized', () => {
-            Livewire.hook('morph.updated', ({ el }) => {
-                setTimeout(() => {
+@push('scripts')
+<script>
+    document.addEventListener('livewire:initialized', () => {
+        Livewire.hook('morph.updated', ({ el }) => {
+            setTimeout(() => {
 
-                    // ✅ Select re-init
-                    el.querySelectorAll('.input-group-outline .form-select').forEach(function(select) {
-                        if (!select.nextElementSibling || !select.nextElementSibling.classList.contains('custom-select-wrapper')) {
-                            buildCustomSelect(select);
-                        }
+                el.querySelectorAll('.input-group-outline .form-select').forEach(function(select) {
+                    if (!select.nextElementSibling || !select.nextElementSibling.classList.contains('custom-select-wrapper')) {
+                        buildCustomSelect(select);
+                    }
+                });
+
+                el.querySelectorAll('.input-group-outline input').forEach(function(input) {
+                    var group = input.closest('.input-group');
+                    if (!group) return;
+
+                    if (input.value && input.value.trim() !== '') {
+                        group.classList.add('is-filled');
+                    } else {
+                        group.classList.remove('is-filled');
+                    }
+
+                    if (input._materialInit) return;
+                    input._materialInit = true;
+
+                    input.addEventListener('focus', function() {
+                        group.classList.add('is-focused');
                     });
-
-                    // ✅ Text/Time input — is-filled re-apply
-                    el.querySelectorAll('.input-group-outline input').forEach(function(input) {
-                        var group = input.closest('.input-group');
-                        if (!group) return;
-
-                        // value থাকলে is-filled দাও
-                        if (input.value && input.value.trim() !== '') {
-                            group.classList.add('is-filled');
-                        } else {
-                            group.classList.remove('is-filled');
-                        }
-
-                        // Duplicate listener এড়াতে flag চেক
-                        if (input._materialInit) return;
-                        input._materialInit = true;
-
-                        input.addEventListener('focus', function() {
-                            group.classList.add('is-focused');
-                        });
-                        input.addEventListener('blur', function() {
-                            group.classList.remove('is-focused');
-                            group.classList.toggle('is-filled', !!input.value.trim());
-                        });
-                        input.addEventListener('input', function() {
-                            group.classList.toggle('is-filled', !!input.value.trim());
-                        });
+                    input.addEventListener('blur', function() {
+                        group.classList.remove('is-focused');
+                        group.classList.toggle('is-filled', !!input.value.trim());
                     });
-
-                    // ✅ Datepicker re-init
-                    el.querySelectorAll('.input-group-outline input[type="date"]').forEach(function(input) {
-                        if (!input._dpInit) {
-                            _initDatepickers();
-                        }
+                    input.addEventListener('input', function() {
+                        group.classList.toggle('is-filled', !!input.value.trim());
                     });
+                });
 
-                }, 0);
-            });
+                el.querySelectorAll('.input-group-outline input[type="date"]').forEach(function(input) {
+                    if (!input._dpInit) {
+                        _initDatepickers();
+                    }
+                });
+
+            }, 0);
         });
-    </script>
-    @endpush
+    });
+</script>
+@endpush

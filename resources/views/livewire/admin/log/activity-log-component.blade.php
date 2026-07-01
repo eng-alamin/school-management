@@ -58,12 +58,12 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>SL</th>
-                            <th>Activity</th>
-                            <th>Type</th>
-                            <th>Done By</th>
-                            <th>Model</th>
-                            <th>Time</th>
+                            <th id="th-sl">SL</th>
+                            <th id="th-activity">Activity</th>
+                            <th id="th-type">Type</th>
+                            <th id="th-done">Done By</th>
+                            <th id="th-model">Model</th>
+                            <th id="th-time">Time</th>
                         </tr>
                     </thead>
                     <tbody>

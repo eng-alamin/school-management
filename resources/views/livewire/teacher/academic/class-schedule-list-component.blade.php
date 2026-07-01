@@ -10,20 +10,16 @@
                     </div>
                 </div>
 
-                <button onclick="window.print()" class="btn-outline bg-dark text-white">
+                <button onclick="printableArea()" class="btn-outline bg-dark text-white">
                     <span class="material-icons-round" style="font-size:16px">print</span>
                     <span>Print</span>
                 </button>
-                <a href="{{ route('teacher.academic.class-schedule.create') }}" class="btn-outline bg-dark text-white">
-                    <span class="material-icons-round" style="font-size:16px">add</span>
-                    <span>New Schedule</span>
-                </a>
             </div>
         </div>
 
     @if(!empty($scheduleGrid) && collect($scheduleGrid)->some(fn($row) => collect($days)->some(fn($d) => !empty($row[$d]))))
-    <div id="sched-grid-wrap" class="p-4">
-        <table id="sched-grid" role="grid">
+    <div id="printableArea" class="sched-grid-wrap p-4">
+        <table class="w-100" role="grid">
             <thead>
                 <tr class="sched-thead-row">
                     <th scope="col">
@@ -110,8 +106,8 @@
         --r:4px;--rlg:14px;
     }
 
-    #sched-grid-wrap{animation:sched-up .45s .08s ease both;opacity:0;animation-fill-mode:forwards;overflow-x:auto}
-    #sched-grid{width:100%;min-width:680px;border-collapse:collapse;border:1px solid var(--rule-dark);border-radius:var(--rlg);overflow:hidden;box-shadow:var(--shadow-lg)}
+    .sched-grid-wrap{animation:sched-up .45s .08s ease both;opacity:0;animation-fill-mode:forwards;overflow-x:auto}
+    .sched-grid{width:100%;min-width:680px;border-collapse:collapse;border:1px solid var(--rule-dark);border-radius:var(--rlg);overflow:hidden;box-shadow:var(--shadow-lg)}
 
     .sched-thead-row th{background:var(--ink);color:#fff;padding:0;border:none}
     .sched-th-in{padding:13px 15px;border-right:1px solid rgba(255,255,255,.08)}
@@ -137,26 +133,57 @@
     .sched-room-tag{font-family:var(--font-m);font-size:.48rem;font-weight:500;padding:2px 6px;border:1px solid var(--rule);border-radius:3px;color:var(--ink-faint);letter-spacing:.05em;display:inline-block;margin-top:3px;align-self:flex-start}
 
     @keyframes sched-up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-
-    /* @media print{
-        @page{size:A4 landscape;margin:8mm 10mm}
-        #sched-grid-wrap{animation:none;opacity:1;overflow:visible}
-        #sched-grid{box-shadow:none;border:.5px solid #333}
-        .sched-cell-in{min-height:60px;padding:7px 10px}
-        .sched-td-per{width:58px;min-width:52px}
-    } */
-
-    @media print{
-        @page{size:A4 landscape;margin:8mm 10mm}
-        .mat-card-header, .card-header { display: none !important; }
-        #sched-grid-wrap{animation:none;opacity:1;overflow:visible;padding:0 !important}
-        #sched-grid{box-shadow:none;border:.5px solid #333}
-        .sched-cell-in{min-height:60px;padding:7px 10px}
-        .sched-td-per{width:58px;min-width:52px}
-    }
-
     @media(max-width:820px){
-        #sched-grid-wrap{padding:0 12px}
+        .sched-grid-wrap{padding:0 12px}
     }
 </style>
+@endpush
+
+@push('scripts')
+    <script>
+        function printableArea() {
+            const printableEl = document.getElementById('printableArea');
+
+            if (!printableEl) {
+                return;
+            }
+
+            const printContent = printableEl.innerHTML;
+            const printWindow = window.open('', '_blank', 'width=900,height=650');
+
+            if (!printWindow) {
+                alert('Print window block hoye গেছে। Browser-er popup blocker check korun.');
+                return;
+            }
+
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Exam Schedule</title>
+                        <style>
+                            * { box-sizing: border-box; }
+                            body { font-family: Arial, Helvetica, sans-serif; padding: 28px; color: #222; }
+                            table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                            th, td { border: 1px solid #ddd; padding: 8px 10px; text-align: left; font-size: 13px; }
+                            thead th { background: #f5f5f5; }
+                            h6 { margin: 0 0 2px 0; font-size: 16px; }
+                            p { margin: 0; color: #555; font-size: 13px; }
+                            .text-muted { color: #777 !important; text-transform: uppercase; font-size: 11px; }
+                        </style>
+                    </head>
+                    <body>
+                        ${printContent}
+                    </body>
+                </html>
+            `);
+
+            printWindow.document.close();
+            printWindow.focus();
+
+            setTimeout(() => {
+                printWindow.print();
+                printWindow.close();
+            }, 250);
+        }
+    </script>
 @endpush

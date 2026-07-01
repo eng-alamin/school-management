@@ -3,8 +3,9 @@
 namespace App\Livewire\Teacher\Exam;
 
 use Livewire\Component;
-use App\Models\ExamSchedule;
 use Livewire\WithPagination;
+use App\Models\ExamSetup;
+use App\Models\AcademicClassAssignDetail;
 
 class ScheduleListComponent extends Component
 {
@@ -13,40 +14,67 @@ class ScheduleListComponent extends Component
     protected string $paginationTheme = 'bootstrap';
 
     // List
-    public string $search = '';
-    public int $perPage = 10;
-    public string $sortField = 'id';
+    public string $search        = '';
+    public int    $perPage       = 10;
+    public string $sortField     = 'id';
     public string $sortDirection = 'asc';
 
     // Modal
-    public bool $showViewModal = false;
-    public bool $confirmDelete = false;
-    public ?int $deleteId = null;
-    public ?ExamSchedule $viewRecord = null;
+    public bool      $showViewModal = false;
+    public ?ExamSetup $viewRecord   = null;
 
-    public function updatingSearch(): void { $this->resetPage(); }
+    public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
 
     public function sortBy(string $field): void
     {
         if ($this->sortField === $field) {
             $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
         } else {
-            $this->sortField = $field;
+            $this->sortField     = $field;
             $this->sortDirection = 'asc';
         }
-
         $this->resetPage();
     }
 
     public function openView(int $id): void
     {
-        $this->viewRecord = ExamSchedule::findOrFail($id);
+        $this->viewRecord    = ExamSetup::with([
+            'term',
+            'type',
+            'details.classAssignDetail.subject',
+            'details.classAssignDetail.classAssign.class',
+            'details.classAssignDetail.classAssign.section',
+        ])->findOrFail($id);
+
         $this->showViewModal = true;
+    }
+
+    // ── Teacher এর assigned class+section গুলো বের করো ──────────────────
+    private function getTeacherClassAssignIds(): array
+    {
+        return AcademicClassAssignDetail::where('teacher_id', auth()->id())
+            ->pluck('academic_class_assign_id')
+            ->toArray();
     }
 
     public function render()
     {
-        $schedules = ExamSchedule::query()
+        // Teacher যে class+section এ আছে সেই assign IDs
+        $assignIds = $this->getTeacherClassAssignIds();
+
+        // Published ExamSetup যেগুলোতে এই teacher এর class এর subject আছে
+        $schedules = ExamSetup::with(['term', 'type', 'details'])
+            ->withCount([
+                'schedules as total_subjects',
+                'schedules as published_count' => fn($q) => $q->where('is_published', true),
+            ])
+            ->where('is_published', true)
+            ->whereHas('details.classAssignDetail', function ($q) use ($assignIds) {
+                $q->whereIn('academic_class_assign_id', $assignIds);
+            })
             ->when($this->search, fn($q) => $q->where('name', 'like', "%{$this->search}%"))
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
@@ -56,21 +84,5 @@ class ScheduleListComponent extends Component
             ->layout('layouts.teacher.app', [
                 'title' => 'Exam Schedule | ' . institution()->name,
             ]);
-
-    }
-
-    public function confirmDeleteRecord(int $id): void
-    {
-        $this->deleteId = $id;
-        $this->confirmDelete = true;
-    }
-
-    public function deleteRecord(): void
-    {
-        $record = ExamSchedule::findOrFail($this->deleteId);
-        $record->delete();
-        $this->confirmDelete = false;
-        $this->deleteId = null;
-        session()->flash('success', 'Data deleted successfully!');
     }
 }

@@ -62,28 +62,28 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>SL</th>
-                            <th wire:click="sortBy('applicable_type')" style="cursor:pointer">
+                            <th id="th-sl">SL</th>
+                            <th id="th-role" wire:click="sortBy('applicable_type')" style="cursor:pointer">
                                 Role @if($sortField === 'applicable_type') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th>Applicant</th>
+                            <th id="th-applicant">Applicant</th>
                             <th wire:click="sortBy('leave_category_id')" style="cursor:pointer">
                                 Leave Category @if($sortField === 'leave_category_id') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th wire:click="sortBy('start_date')" style="cursor:pointer">
+                            <th id="th-date-of-start" wire:click="sortBy('start_date')" style="cursor:pointer">
                                 Date Of Start @if($sortField === 'start_date') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th wire:click="sortBy('end_date')" style="cursor:pointer">
+                            <th id="th-date-of-end" wire:click="sortBy('end_date')" style="cursor:pointer">
                                 Date Of End @if($sortField === 'end_date') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th wire:click="sortBy('total_days')" style="cursor:pointer">
+                            <th id="th-days" wire:click="sortBy('total_days')" style="cursor:pointer">
                                 Days @if($sortField === 'total_days') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th wire:click="sortBy('created_at')" style="cursor:pointer">
+                            <th id="th-apply-date" wire:click="sortBy('created_at')" style="cursor:pointer">
                                 Apply Date @if($sortField === 'created_at') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th>Status</th>
-                            <th>Action</th>
+                            <th id="th-status">Status</th>
+                            <th id="th-actions">Action</th>
                         </tr>
                     </thead>
                     <tbody>

@@ -102,11 +102,11 @@
                         <thead>
                             <tr>
                                 <th class="check-col"><input type="checkbox" class="red-check" wire:model.live="selectAll" @if($employees->isEmpty()) disabled @endif></th>
-                                <th>SL</th>
-                                <th>Employee Name</th>
-                                <th>Department</th>
-                                <th>Designation</th>
-                                <th>Mobile No</th>
+                                <th id="th-sl">SL</th>
+                                <th id="th-employee-name">Employee Name</th>
+                                <th id="th-department">Department</th>
+                                <th id="th-designation">Designation</th>
+                                <th id="th-mobile-no">Mobile No</th>
                             </tr>
                         </thead>
                         <tbody>

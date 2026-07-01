@@ -8,5 +8,6 @@ use App\Traits\BelongsToInstitution;
 class ExamMark extends Model
 {
     use BelongsToInstitution;
+    
     protected $guarded = [];
 }

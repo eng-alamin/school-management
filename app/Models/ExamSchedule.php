@@ -8,29 +8,22 @@ use App\Traits\BelongsToInstitution;
 class ExamSchedule extends Model
 {
     use BelongsToInstitution;
+
     protected $guarded = [];
 
     protected $casts = [
-        'data' => 'array',
+        'exam_date'     => 'date',
+        'seat_plan'     => 'array',
+        'is_published'  => 'boolean',
     ];
 
-    public function getDetailsAttribute()
+    public function examSetup()
     {
-        return $this->data ?? [];
+        return $this->belongsTo(ExamSetup::class, 'exam_setup_id');
     }
 
-    public function exam()
+    public function examSetupDetail()
     {
-        return $this->belongsTo(ExamSetup::class, 'exam_id');
-    }
-
-    public function class()
-    {
-        return $this->belongsTo(AcademicClass::class, 'class_id');
-    }
-
-    public function section()
-    {
-        return $this->belongsTo(AcademicSection::class, 'section_id');
+        return $this->belongsTo(ExamSetupDetail::class, 'exam_setup_detail_id');
     }
 }

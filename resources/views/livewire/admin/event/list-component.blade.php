@@ -42,18 +42,18 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>SL</th>
-                            <th wire:click="sortBy('title')" style="cursor:pointer">
+                            <th id="th-sl">SL</th>
+                            <th id="th-title" wire:click="sortBy('title')" style="cursor:pointer">
                                 Title @if($sortField === 'title') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th>Type</th>
-                            <th>Audience</th>
-                            <th wire:click="sortBy('date_from')" style="cursor:pointer">
+                            <th id="th-type">Type</th>
+                            <th id="th-audience">Audience</th>
+                            <th id="th-date" wire:click="sortBy('date_from')" style="cursor:pointer">
                                 Date @if($sortField === 'date_from') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th>Holiday</th>
-                            <th>Website</th>
-                            <th>Actions</th>
+                            <th id="th-holiday">Holiday</th>
+                            <th id="th-website">Website</th>
+                            <th id="th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>

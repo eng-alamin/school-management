@@ -37,15 +37,15 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>SL</th>
-                            <th wire:click="sortBy('name')" style="cursor:pointer">
+                            <th id="th-sl">SL</th>
+                            <th id="th-fee-name" wire:click="sortBy('name')" style="cursor:pointer">
                                 Fee Name @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th wire:click="sortBy('fee_code')" style="cursor:pointer">
+                            <th id="th-fee-code" wire:click="sortBy('fee_code')" style="cursor:pointer">
                                 Fee Code @if($sortField === 'fee_code') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th>Description</th>
-                            <th>Actions</th>
+                            <th id="th-description">Description</th>
+                            <th id="th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>

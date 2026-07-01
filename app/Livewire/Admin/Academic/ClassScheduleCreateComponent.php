@@ -5,22 +5,26 @@ namespace App\Livewire\Admin\Academic;
 use Livewire\Component;
 use App\Models\AcademicClassSchedule;
 use App\Models\AcademicClassAssign;
-use App\Models\AcademicTeacherAssign;
 use App\Models\AcademicSubject;
 use App\Models\AcademicClass;
 use App\Models\AcademicSection;
+use App\Models\User;
 
 class ClassScheduleCreateComponent extends Component
 {
     public $filterClass   = '';
     public $filterSection = '';
-    public $filterDay           = 'Sunday';
+    public $filterDay     = 'Sunday';
     public $data          = [];
 
     public $hasSchedule = false;
     public $schedule_id;
 
+    // ekhon shudhu subject na, subject + tar default teacher_id o thakbe
     public array $availableSubjects = [];
+
+    // class+section er shob possible teacher (dropdown er jonno)
+    public array $availableTeachers = [];
 
     public function mount()
     {
@@ -39,16 +43,19 @@ class ClassScheduleCreateComponent extends Component
         if (!$this->filterClass) return collect();
 
         return AcademicSection::whereIn('id',
-            AcademicClassAssign::where('class_id', $this->filterClass)->pluck('section_id')
+            AcademicClassAssign::where('class_id', $this->filterClass)
+                ->whereNotNull('section_id')
+                ->pluck('section_id')
         )->orderBy('name')->get();
     }
 
     public function updatedFilterClass()
     {
-        $this->filterSection     = '';
-        $this->availableSubjects = [];
-        $this->hasSchedule       = false;
-        $this->data              = [];
+        $this->filterSection      = '';
+        $this->availableSubjects  = [];
+        $this->availableTeachers  = [];
+        $this->hasSchedule        = false;
+        $this->data                = [];
 
         if (!$this->filterClass) return;
 
@@ -58,33 +65,18 @@ class ClassScheduleCreateComponent extends Component
     public function updatedFilterSection()
     {
         $this->availableSubjects = [];
+        $this->availableTeachers = [];
         $this->hasSchedule       = false;
         $this->data              = [];
 
         if (!$this->filterClass || !$this->filterSection) return;
 
         if ($this->filterSection === 'all') {
-            $rows = AcademicClassAssign::where('class_id', $this->filterClass)->get();
+            $details = \App\Models\AcademicClassAssignDetail::with(['subject', 'teacher'])
+                ->whereHas('classAssign', fn($q) => $q->where('class_id', $this->filterClass))
+                ->get();
 
-            $subjectNames = $rows->flatMap(function ($row) {
-                $subjects = $row->subjects;
-                if (is_string($subjects)) {
-                    $subjects = json_decode($subjects, true) ?? [];
-                }
-                return $subjects ?: [];
-            })
-            ->filter()
-            ->unique()
-            ->values();
-
-            $this->availableSubjects = $subjectNames->isNotEmpty()
-                ? AcademicSubject::whereIn('name', $subjectNames)
-                    ->orderBy('name')
-                    ->get()
-                    ->map(fn($s) => ['id' => $s->id, 'name' => $s->name])
-                    ->toArray()
-                : [];
-
+            $this->buildSubjectsAndTeachers($details);
             return;
         }
 
@@ -93,7 +85,8 @@ class ClassScheduleCreateComponent extends Component
 
     protected function loadSubjects($class_id, $section_id = null): void
     {
-        $query = AcademicClassAssign::where('class_id', $class_id);
+        $query = AcademicClassAssign::with('details.subject', 'details.teacher')
+            ->where('class_id', $class_id);
 
         if ($section_id) {
             $query->where('section_id', $section_id);
@@ -103,15 +96,37 @@ class ClassScheduleCreateComponent extends Component
 
         $assign = $query->first();
 
-        if ($assign && !empty($assign->subjects)) {
-            $this->availableSubjects = AcademicSubject::whereIn('name', $assign->subjects)
-                ->orderBy('name')
-                ->get()
-                ->map(fn($s) => ['id' => $s->id, 'name' => $s->name])
-                ->toArray();
-        } else {
-            $this->availableSubjects = [];
-        }
+        $details = $assign ? $assign->details : collect();
+
+        $this->buildSubjectsAndTeachers($details);
+    }
+
+    /**
+     * AcademicClassAssignDetail collection theke availableSubjects (with default teacher)
+     * ar availableTeachers (unique list) build kore
+     */
+    protected function buildSubjectsAndTeachers($details): void
+    {
+        $this->availableSubjects = $details
+            ->filter(fn($d) => $d->subject)
+            ->unique('subject_id')
+            ->map(fn($d) => [
+                'id'              => $d->subject->id,
+                'name'            => $d->subject->name,
+                'default_teacher' => $d->teacher->name ?? '',
+            ])
+            ->values()
+            ->toArray();
+
+        $this->availableTeachers = $details
+            ->filter(fn($d) => $d->teacher)
+            ->unique('teacher_id')
+            ->map(fn($d) => [
+                'id'   => $d->teacher->id,
+                'name' => $d->teacher->name,
+            ])
+            ->values()
+            ->toArray();
     }
 
     public function filter()
@@ -145,15 +160,33 @@ class ClassScheduleCreateComponent extends Component
             $subjectCount = count($this->availableSubjects);
             $rows         = $subjectCount > 0 ? $subjectCount : 1;
 
+            // subject select korar shathe shathei tar default teacher o auto-fill hoye jabe
             $this->data = array_map(fn($i) => [
                 'subject'    => $this->availableSubjects[$i]['name'] ?? '',
-                'teacher'    => '',
+                'teacher'    => $this->availableSubjects[$i]['default_teacher'] ?? '',
                 'start_time' => '09:00',
                 'end_time'   => '10:00',
                 'class_room' => '',
             ], range(0, $rows - 1));
 
             $this->hasSchedule = true;
+        }
+    }
+
+    /**
+     * Subject change hole, oi subject er jonno assign kora teacher ke
+     * automatically data row e boshiye dao
+     */
+    public function updatedData($value, $key)
+    {
+        if (str_ends_with($key, '.subject')) {
+            $index = explode('.', $key)[0];
+
+            $subject = collect($this->availableSubjects)->firstWhere('name', $value);
+
+            if ($subject && !empty($subject['default_teacher'])) {
+                $this->data[$index]['teacher'] = $subject['default_teacher'];
+            }
         }
     }
 
@@ -180,11 +213,12 @@ class ClassScheduleCreateComponent extends Component
     {
         $this->filterClass       = '';
         $this->filterSection     = '';
-        $this->filterDay               = 'Sunday';
+        $this->filterDay         = 'Sunday';
         $this->data              = [];
         $this->hasSchedule       = false;
         $this->schedule_id       = null;
         $this->availableSubjects = [];
+        $this->availableTeachers = [];
         $this->resetValidation();
     }
 
@@ -193,7 +227,7 @@ class ClassScheduleCreateComponent extends Component
         $this->validate([
             'filterClass'       => 'required|exists:academic_classes,id',
             'filterSection'     => 'nullable',
-            'filterDay'               => 'required|string|max:20',
+            'filterDay'         => 'required|string|max:20',
             'data.*.subject'    => 'required',
             'data.*.teacher'    => 'required',
             'data.*.start_time' => 'required|date_format:H:i',
@@ -226,25 +260,11 @@ class ClassScheduleCreateComponent extends Component
 
     public function render()
     {
-        $teachers = AcademicTeacherAssign::with(['teacher.user', 'teacher.designation', 'teacher.department'])
-            ->when($this->filterClass, fn($q) => $q->where('class_id', $this->filterClass))
-            ->when($this->filterSection && $this->filterSection !== 'all',
-                fn($q) => $q->where('section_id', $this->filterSection))
-            ->get()
-            ->map(fn($a) => $a->teacher)
-            ->filter()
-            ->unique('id')
-            ->map(fn($t) => [
-                'id'   => $t->id,
-                'name' => $t->user->name ?? $t->name ?? 'Unknown',
-            ])
-            ->values();
-
         return view('livewire.admin.academic.class-schedule-create-component')
             ->with('classes', $this->getAvailableClasses())
             ->with('sections', $this->getAvailableSections())
             ->with('subjects', $this->availableSubjects)
-            ->with('teachers', $teachers)
+            ->with('teachers', $this->availableTeachers)
             ->layout('layouts.admin.app', [
                 'title' => 'Class Schedule | ' . institution()->name,
             ]);

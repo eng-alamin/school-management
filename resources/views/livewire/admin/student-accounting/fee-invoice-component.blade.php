@@ -92,17 +92,17 @@
                     <thead>
                         <tr>
                             <th style="width:44px"><input type="checkbox" class="alloc-checkbox" wire:model.live="selectAll"></th>
-                            <th>SL</th>
-                            <th>Name</th>
-                            <th>Class</th>
-                            <th>Section</th>
-                            <th>Register No</th>
-                            <th>Roll No</th>
-                            <th>Mobile</th>
-                            <th>Fee Items</th>
-                            <th>Total</th>
-                            <th>Status</th>
-                            <th>Actions</th>
+                            <th id="th-sl">SL</th>
+                            <th id="th-name">Name</th>
+                            <th id="th-class">Class</th>
+                            <th id="th-section">Section</th>
+                            <th id="th-register-no">Register No</th>
+                            <th id="th-roll-no">Roll No</th>
+                            <th id="th-mobile">Mobile</th>
+                            <th id="th-fee-items">Fee Items</th>
+                            <th id="th-total">Total</th>
+                            <th id="th-status">Status</th>
+                            <th id="th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>

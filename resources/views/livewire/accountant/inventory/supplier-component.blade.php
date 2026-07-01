@@ -41,12 +41,12 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th id="sup-th-sl">SL</th>
-                            <th id="sup-th-name" wire:click="sortBy('name')" style="cursor:pointer">Name @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif</th>
-                            <th id="sup-th-mobile">Mobile</th>
-                            <th id="sup-th-email">Email</th>
-                            <th id="sup-th-address">Address</th>
-                            <th id="sup-th-actions">Actions</th>
+                            <th id="th-sl">SL</th>
+                            <th id="th-name" wire:click="sortBy('name')" style="cursor:pointer">Name @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif</th>
+                            <th id="th-mobile">Mobile</th>
+                            <th id="th-email">Email</th>
+                            <th id="th-address">Address</th>
+                            <th id="th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>

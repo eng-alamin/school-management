@@ -56,14 +56,14 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>SL</th>
-                            <th>Template Name</th>
-                            <th>Type</th>
-                            <th>Colors</th>
-                            <th>Size</th>
-                            <th>Features</th>
-                            <th>Status</th>
-                            <th>Actions</th>
+                            <th id="th-sl">SL</th>
+                            <th id="th-template-name">Template Name</th>
+                            <th id="th-type">Type</th>
+                            <th id="th-colors">Colors</th>
+                            <th id="th-size">Size</th>
+                            <th id="th-features">Features</th>
+                            <th id="th-status">Status</th>
+                            <th id="th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>

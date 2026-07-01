@@ -12,7 +12,7 @@
         <div class="col-md-8 offset-md-2">
             <div class="input-group input-group-outline">
                 <label class="form-label">Teacher</label>
-                <select wire:model.live="teacher_id" class="form-select">
+                <select wire:model="teacher_id" class="form-select">
                     <option value="">Select Teacher</option>
                     @foreach ($teachers as $t)
                         <option value="{{ $t->id }}">{{ $t->name }}</option>
@@ -104,6 +104,13 @@
             </tbody>
         </table>
     </div>
+    @elseif($teacher_id)
+        <div class="px-5 pb-4">
+            <div class="alert alert-warning py-2 mb-0" style="font-size:.82rem">
+                <span class="material-icons-round" style="font-size:16px;vertical-align:middle">info</span>
+                এই teacher এর কোনো schedule পাওয়া যায়নি।
+            </div>
+        </div>
     @endif
 
 </div>

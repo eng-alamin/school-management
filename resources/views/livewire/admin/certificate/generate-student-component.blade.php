@@ -134,13 +134,14 @@
                                            wire:model.live="selectAll"
                                            @if($students->isEmpty()) disabled @endif>
                                 </th>
-                                <th>SL</th>
-                                <th>Student Name</th>
-                                <th>Class</th>
-                                <th>Section</th>
-                                <th>Register No</th>
-                                <th>Roll No</th>
-                                <th>Mobile No</th>
+                                <th id="th-sl">SL</th>
+                                <th id="th-student-name">Student Name</th>
+                                <th id="th-class">Class</th>
+                                <th id="th-section">Section</th>
+                                <th id="th-group">Group</th>
+                                <th id="th-register-no">Register No</th>
+                                <th id="th-roll-no">Roll No</th>
+                                <th id="th-mobile-no">Mobile No</th>
                             </tr>
                         </thead>
                         <tbody>

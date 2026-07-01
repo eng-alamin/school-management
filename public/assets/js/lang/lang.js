@@ -709,5 +709,4 @@ window.setLang = setLang;
 window.setLangFromSettings = setLangFromSettings;
 
 export { translations, currentLang, applyLang, setLang, setLangFromSettings };
-import("./inventory.js");
-import("./employee.js");
+import("./table.js");

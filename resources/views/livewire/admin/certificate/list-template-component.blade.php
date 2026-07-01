@@ -52,22 +52,22 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>SL</th>
-                            <th wire:click="sortBy('certificate_name')" style="cursor:pointer">
+                            <th id="th-sl">SL</th>
+                            <th id="th-name" wire:click="sortBy('certificate_name')" style="cursor:pointer">
                                 Name
                                 @if($sortField === 'certificate_name')
                                     {!! $sortDirection === 'asc' ? '↑' : '↓' !!}
                                 @endif
                             </th>
-                            <th wire:click="sortBy('applicable_user')" style="cursor:pointer">
+                            <th id="th-applicable-for" wire:click="sortBy('applicable_user')" style="cursor:pointer">
                                 Applicable For
                                 @if($sortField === 'applicable_user')
                                     {!! $sortDirection === 'asc' ? '↑' : '↓' !!}
                                 @endif
                             </th>
-                            <th>Page Layout</th>
-                            <th>Status</th>
-                            <th>Actions</th>
+                            <th id="th-page-layout">Page Layout</th>
+                            <th id="th-status">Status</th>
+                            <th id="th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>

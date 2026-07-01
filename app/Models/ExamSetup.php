@@ -8,10 +8,12 @@ use App\Traits\BelongsToInstitution;
 class ExamSetup extends Model
 {
     use BelongsToInstitution;
+
     protected $guarded = [];
 
     protected $casts = [
-        'marks' => 'array',
+        'is_published'        => 'boolean',
+        'is_result_published' => 'boolean',
     ];
 
     public function term()
@@ -22,5 +24,20 @@ class ExamSetup extends Model
     public function type()
     {
         return $this->belongsTo(ExamType::class, 'exam_type_id');
+    }
+
+    public function classAssign()
+    {
+        return $this->belongsTo(AcademicClassAssign::class, 'academic_class_assign_id');
+    }
+
+    public function details()
+    {
+        return $this->hasMany(ExamSetupDetail::class);
+    }
+
+    public function schedules()
+    {
+        return $this->hasMany(ExamSchedule::class);
     }
 }

@@ -35,7 +35,7 @@
       <li class="nav1-item">
         <a href="{{route('accountant.dashboard') }}" class="nav1-link {{ str_contains(request()->url(), 'dashboard') == true ? 'active' : '' }}">
           <span class="material-icons-round nav-icon">space_dashboard</span>
-          <span class="nav-label" id="nav-dashboards">Dashboard</span>
+          <span class="nav-label" id="nav-dashboard">Dashboard</span>
         </a>
       </li>
 

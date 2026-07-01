@@ -5,8 +5,11 @@ namespace App\Livewire\Admin\Academic;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\AcademicClassAssign;
+use App\Models\AcademicClassAssignDetail;
 use App\Models\AcademicClass;
 use App\Models\AcademicSubject;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class ClassAssignComponent extends Component
 {
@@ -29,7 +32,12 @@ class ClassAssignComponent extends Component
     public ?int $editId = null;
     public string $class_id = '';
     public $section_id;
+
+    // ekhon subject_array = selected subject_id array
     public array $subject_array = [];
+
+    // teacher_array = [subject_id => teacher_id]
+    public array $teacher_array = [];
 
     // Dependent dropdown
     public array $availableSections = [];
@@ -37,10 +45,12 @@ class ClassAssignComponent extends Component
     protected function rules(): array
     {
         return [
-            'class_id'        => 'required',
-            'section_id'      => 'nullable',
-            'subject_array'   => 'nullable|array',
-            'subject_array.*' => 'nullable|string',
+            'class_id'          => 'required',
+            'section_id'        => 'nullable',
+            'subject_array'     => 'nullable|array',
+            'subject_array.*'   => 'required|integer|exists:academic_subjects,id',
+            'teacher_array'     => 'nullable|array',
+            'teacher_array.*'   => 'nullable|integer|exists:users,id',
         ];
     }
 
@@ -62,6 +72,14 @@ class ClassAssignComponent extends Component
                     ->toArray();
             }
         }
+    }
+
+    public function updatedSubjectArray(): void
+    {
+        // notun subject add hole purano teacher_array theke baad deya subject gula rekhe baki sob clean kore dao
+        $this->teacher_array = collect($this->teacher_array)
+            ->only($this->subject_array)
+            ->toArray();
     }
 
     public function sortBy(string $field): void
@@ -86,12 +104,17 @@ class ClassAssignComponent extends Component
 
     public function openEdit(int $id): void
     {
-        $record = AcademicClassAssign::findOrFail($id);
+        $record = AcademicClassAssign::with('details')->findOrFail($id);
 
         $this->editId        = $id;
         $this->class_id      = $record->class_id;
         $this->section_id    = $record->section_id;
-        $this->subject_array = $record->subjects ?? [];
+
+        $this->subject_array = $record->details->pluck('subject_id')->toArray();
+
+        $this->teacher_array = $record->details
+            ->mapWithKeys(fn($d) => [$d->subject_id => $d->teacher_id])
+            ->toArray();
 
         // Load sections via belongsToMany
         $class = AcademicClass::with('sections')->find($record->class_id);
@@ -107,19 +130,36 @@ class ClassAssignComponent extends Component
     {
         $this->validate();
 
-        $data = [
-            'class_id'   => $this->class_id,
-            'section_id' => $this->section_id,
-            'subjects'   => $this->subject_array,
-        ];
+        DB::transaction(function () {
+            $data = [
+                'institution_id' => institution()->id,
+                'class_id'       => $this->class_id,
+                'section_id'     => $this->section_id ?: null,
+            ];
 
-        if ($this->editId) {
-            AcademicClassAssign::findOrFail($this->editId)->update($data);
-            $this->dispatch('toast', type: 'success', message: 'Assignment updated successfully!');
-        } else {
-            AcademicClassAssign::create($data);
-            $this->dispatch('toast', type: 'success', message: 'Class assigned successfully!');
-        }
+            if ($this->editId) {
+                $assign = AcademicClassAssign::findOrFail($this->editId);
+                $assign->update($data);
+            } else {
+                $assign = AcademicClassAssign::create($data);
+            }
+            // purano details mucche notun kore boshao (simple & safe approach)
+            $assign->details()->delete();
+
+            foreach ($this->subject_array as $subjectId) {
+                AcademicClassAssignDetail::create([
+                    'academic_class_assign_id' => $assign->id,
+                    'subject_id'                => $subjectId,
+                    'teacher_id'                => $this->teacher_array[$subjectId] ?? null,
+                ]);
+            }
+        });
+
+        $this->dispatch(
+            'toast',
+            type: 'success',
+            message: $this->editId ? 'Assignment updated successfully!' : 'Class assigned successfully!'
+        );
 
         $this->showModal = false;
         $this->resetForm();
@@ -141,13 +181,13 @@ class ClassAssignComponent extends Component
 
     private function resetForm(): void
     {
-        $this->reset(['class_id', 'section_id', 'subject_array', 'editId', 'availableSections']);
+        $this->reset(['class_id', 'section_id', 'subject_array', 'teacher_array', 'editId', 'availableSections']);
         $this->resetValidation();
     }
 
     public function render()
     {
-        $assigns = AcademicClassAssign::with('class', 'section')
+        $assigns = AcademicClassAssign::with(['class', 'section', 'details.subject', 'details.teacher'])
             ->when($this->search, fn($q) => $q
                 ->whereHas('class', fn($q) => $q->where('name', 'like', "%{$this->search}%"))
                 ->orWhereHas('section', fn($q) => $q->where('name', 'like', "%{$this->search}%")))
@@ -156,11 +196,16 @@ class ClassAssignComponent extends Component
 
         $classes  = AcademicClass::orderBy('id')->get();
         $subjects = AcademicSubject::orderBy('name')->pluck('name', 'id');
+        $teachers = User::where('role', User::ROLE_TEACHER)
+            ->where('institution_id', institution()->id)
+            ->orderBy('name')
+            ->pluck('name', 'id');
 
         return view('livewire.admin.academic.class-assign-component')
             ->with('assigns', $assigns)
             ->with('classes', $classes)
             ->with('subjects', $subjects)
+            ->with('teachers', $teachers)
             ->layout('layouts.admin.app', [
                 'title' => 'Class Assignments | ' . institution()->name,
             ]);

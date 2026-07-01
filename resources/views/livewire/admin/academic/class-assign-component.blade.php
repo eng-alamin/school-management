@@ -37,11 +37,11 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>SL</th>
-                            <th>Class</th>
-                            <th>Section</th>
-                            <th>Subjects</th>
-                            <th>Actions</th>
+                            <th id="th-sl">SL</th>
+                            <th id="th-class">Class</th>
+                            <th id="th-section">Section</th>
+                            <th id="th-subject">Subjects &amp; Teachers</th>
+                            <th id="th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -51,10 +51,17 @@
                             <td>{{ $assign->class?->name ?? 'all' }}</td>
                             <td>{{ $assign->section?->name ?? 'all' }}</td>
                             <td>
-                                @if(!empty($assign->subjects))
-                                    <div class="d-flex flex-wrap gap-1">
-                                        @foreach($assign->subjects as $subject)
-                                            <span class="badge bg-secondary">{{ $subject }}</span>
+                                @if($assign->details->isNotEmpty())
+                                    <div class="d-flex flex-column gap-1">
+                                        @foreach($assign->details as $detail)
+                                            <span>
+                                                {{ $detail->subject?->name }}
+                                                @if($detail->teacher)
+                                                    <span>— {{ $detail->teacher->name }}</span>
+                                                @else
+                                                    <span>— no teacher</span>
+                                                @endif
+                                            </span>
                                         @endforeach
                                     </div>
                                 @else
@@ -86,7 +93,7 @@
         </div>
 
         <div class="card-footer border-0 bg-white d-flex align-items-center justify-content-between flex-wrap gap-2 py-2 px-3">
-            <small class="text-muted">Showing {{ $assigns->firstItem() ?? 0 }}â€“{{ $assigns->lastItem() ?? 0 }} of {{ $assigns->total() }}</small>
+            <small class="text-muted">Showing {{ $assigns->firstItem() ?? 0 }}–{{ $assigns->lastItem() ?? 0 }} of {{ $assigns->total() }}</small>
             {{ $assigns->links('vendor.pagination.custom') }}
         </div>
 
@@ -95,7 +102,7 @@
     {{-- ===== CREATE/EDIT MODAL ===== --}}
     @if($showModal)
         <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.5);" wire:ignore.self>
-            <div class="modal-dialog modal-md modal-dialog-scrollable">
+            <div class="modal-dialog modal-xl modal-dialog-scrollable">
                 <div class="modal-content">
                     <div class="modal-header border-0">
                         <h5 class="modal-title">{{ $editId ? 'Edit' : 'Create' }} Assignment</h5>
@@ -105,7 +112,7 @@
                         <div class="row g-3">
 
                             {{-- Class --}}
-                            <div class="col-md-12">
+                            <div class="col-md-6">
                                 <label class="form-label">Class <span class="text-danger">*</span></label>
                                 <select class="form-select @error('class_id') is-invalid @enderror" wire:model.live="class_id">
                                     <option value="">Select Class</option>
@@ -116,8 +123,8 @@
                                 @error('class_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
 
-                            {{-- Section all dependent on class --}}
-                            <div class="col-md-12">
+                            {{-- Section dependent on class --}}
+                            <div class="col-md-6">
                                 <label class="form-label">Section <span class="text-danger">*</span></label>
                                 <select class="form-select @error('section_id') is-invalid @enderror" wire:model.defer="section_id" @disabled(empty($availableSections))>
                                     <option value="">{{ empty($availableSections) ? 'Select class first' : 'Select Section' }}</option>
@@ -138,18 +145,46 @@
                                         title="Select Subject..."
                                         class="form-select w-100 selectpicker">
                                         @foreach($subjects as $subjectId => $subjectName)
-                                            <option value="{{ $subjectName }}">{{ $subjectName }}</option>
+                                            <option value="{{ $subjectId }}">{{ $subjectName }}</option>
                                         @endforeach
                                     </select>
                                 </div>
                                 @error('subject_array') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+                                @error('subject_array.*') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                             </div>
+
+                            {{-- Teacher per selected subject --}}
+                            @if(!empty($subject_array))
+                                <div class="col-md-12">
+                                    <label class="form-label">Assign Teacher (subject wise)</label>
+                                    <div class="border rounded p-2" style="max-height:260px;overflow-y:auto;">
+                                        @foreach($subject_array as $subjectId)
+                                            <div class="row g-2 align-items-center mb-2">
+                                                <div class="col-5">
+                                                    <span class="badge bg-light text-dark border" style="font-weight:500;">
+                                                        {{ $subjects[$subjectId] ?? '—' }}
+                                                    </span>
+                                                </div>
+                                                <div class="col-7">
+                                                    <select class="form-select form-select-sm" wire:model.defer="teacher_array.{{ $subjectId }}">
+                                                        <option value="">No teacher</option>
+                                                        @foreach($teachers as $teacherId => $teacherName)
+                                                            <option value="{{ $teacherId }}">{{ $teacherName }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    @error('teacher_array.*') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+                                </div>
+                            @endif
 
                         </div>
                     </div>
-                    <div class="modal-footer border-0">
+                    <div class="modal-footer border-0 mt-5">
                         <button type="button" class="btn btn-light" wire:click="$set('showModal', false)">Cancel</button>
-                        <button type="button" class="btn bg-dark text-white" wire:click="save" wire:loading.attr="disabled">
+                        <button type="button" class="btn bg-dark text-white" wire:click="save" wire:loading.attr="disabled" wire:target="save">
                             <span wire:loading wire:target="save" class="spinner-border spinner-border-sm me-1"></span>
                             {{ $editId ? 'Update' : 'Create' }}
                         </button>
@@ -219,7 +254,6 @@
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.0/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
     <script>
-        // $('.selectpicker').selectpicker();
         document.addEventListener('livewire:init', function () {
 
             function initPicker() {
@@ -242,9 +276,11 @@
                 }, 50);
             });
 
-            // sync value
+            // sync value (subject_id gulo string hishebe ashbe, integer e convert kore pathacchi)
             $(document).on('changed.bs.select', '.selectpicker', function () {
-                @this.set('subject_array', $(this).val());
+                let values = $(this).val() || [];
+                values = values.map(v => parseInt(v));
+                @this.set('subject_array', values);
             });
 
             Livewire.on('showModalChanged', () => {

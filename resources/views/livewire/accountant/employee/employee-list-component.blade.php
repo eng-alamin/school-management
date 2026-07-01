@@ -40,20 +40,20 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th id="emp-th-sl">SL</th>
+                            <th id="th-sl">SL</th>
                             <th wire:click="sortBy('name')" style="cursor:pointer">
-                                <span id="emp-th-name">Name</span> @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
+                                <span id="th-name">Name</span> @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th id="emp-th-role">Role</th>
-                            <th id="emp-th-designation">Designation</th>
-                            <th id="emp-th-department">Department</th>
+                            <th id="th-role">Role</th>
+                            <th id="th-designation">Designation</th>
+                            <th id="th-department">Department</th>
                             <th wire:click="sortBy('email')" style="cursor:pointer">
-                                <span id="emp-th-email">Email</span> @if($sortField === 'email') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
+                                <span id="th-email">Email</span> @if($sortField === 'email') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
                             <th wire:click="sortBy('phone')" style="cursor:pointer">
-                                <span id="emp-th-phone">Phone</span> @if($sortField === 'phone') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
+                                <span id="th-phone">Phone</span> @if($sortField === 'phone') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th id="emp-th-actions">Actions</th>
+                            <th id="th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>

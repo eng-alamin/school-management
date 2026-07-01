@@ -13,11 +13,12 @@ return new class extends Migration
     {
         Schema::create('exam_setups', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
+            $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('academic_session_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('academic_class_assign_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->foreignId('exam_term_id')->nullable()->constrained('exam_terms')->nullOnDelete();
             $table->foreignId('exam_type_id')->nullable()->constrained('exam_types')->nullOnDelete();
-            $table->json('marks')->nullable();
             $table->text('remarks')->nullable();
             $table->boolean('is_published')->default(false);
             $table->boolean('is_result_published')->default(false);

@@ -4,7 +4,7 @@ namespace App\Livewire\Teacher\Academic;
 
 use Livewire\Component;
 use App\Models\AcademicClassSchedule;
-use App\Models\AcademicTeacherAssign;
+use App\Models\AcademicClassAssignDetail;
 
 class ClassScheduleListComponent extends Component
 {
@@ -18,26 +18,39 @@ class ClassScheduleListComponent extends Component
 
     public function loadSchedule(): void
     {
-        $employeeId = auth()->user()->employee->id;
-
-        // এই teacher এর সব assigned class+section নাও
-        $assigns = AcademicTeacherAssign::with(['class', 'section'])
-            ->where('teacher_id', $employeeId)
+        // Admin panel theke EI teacher (login kora user) ke je je class+section e
+        // subject assign kora ache, shegula AcademicClassAssignDetail theke nao
+        $details = AcademicClassAssignDetail::with(['subject', 'classAssign.class', 'classAssign.section'])
+            ->where('teacher_id', auth()->id())
             ->get();
 
-        if ($assigns->isEmpty()) {
+        if ($details->isEmpty()) {
             return;
         }
+
+        // class_assign_id => [tar nijer subject name gula] — shudhu EI subject gula e
+        // schedule theke dekhabo, oi class/section er onno subject na
+        $mySubjectsByAssign = $details->groupBy('academic_class_assign_id')
+            ->map(fn($group) => $group->pluck('subject.name')->filter()->values());
+
+        $assigns = $details->pluck('classAssign')->filter()->unique('id');
 
         $allRows = collect();
 
         foreach ($assigns as $assign) {
+            $mySubjects = $mySubjectsByAssign[$assign->id] ?? collect();
+
             $schedules = AcademicClassSchedule::where('class_id', $assign->class_id)
                 ->where('section_id', $assign->section_id)
                 ->get();
 
             foreach ($schedules as $schedule) {
                 foreach ($schedule->data ?? [] as $period) {
+                    // shudhu nijer subject hole e row e dhukbe
+                    if (!$mySubjects->contains($period['subject'] ?? null)) {
+                        continue;
+                    }
+
                     $allRows->push([
                         'day'        => $schedule->day,
                         'class'      => $assign->class?->name ?? '—',
@@ -62,7 +75,7 @@ class ClassScheduleListComponent extends Component
             ->sortBy('start_time')
             ->values();
 
-        // Grid তৈরি করো period × day
+        // Grid toiri koro period × day
         $grid = [];
         foreach ($timeSlots as $slot) {
             $row = [

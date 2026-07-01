@@ -3111,6 +3111,7 @@ body.dark-mode .table td {
 }
 /* END PAGINATION  */
 
+/* Mailbox  */
 body.dark-mode .mailbox-wrapper,
 body.dark-mode .mailbox-sidebar,
 body.dark-mode .message-row {
@@ -3122,4 +3123,23 @@ body.dark-mode .msg-from,
 body.dark-mode .msg-subject,
 body.dark-mode .mailbox-header h4 {
     color: #fff !important;
+}
+body.dark-mode .dash-wrap,
+body.dark-mode .dash-stat-card,
+body.dark-mode .dash-section-card,
+body.dark-mode .dash-quick-action,
+body.dark-mode .dash-notice-row,
+body.dark-mode .dash-institution-row {
+    background: rgba(26, 29, 39, 0.92);
+    color: #fff;
+}
+body.dark-mode .dash-section-title,
+body.dark-mode p,
+body.dark-mode h4,
+body.dark-mode .dash-quick-label {
+    color: #fff !important;
+}
+body.dark-mode .bg-light,
+body.dark-mode .usage-estimate-box {
+    background: rgba(26, 29, 39, 0.92) !important;
 }

@@ -4,16 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\BelongsToInstitution;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class AcademicClassAssign extends Model
 {
     use BelongsToInstitution;
     
     protected $guarded = [];
-
-    protected $casts = [
-        'subjects' => 'array',
-    ];
 
     public function class()
     {
@@ -28,6 +25,11 @@ class AcademicClassAssign extends Model
     public function sections()
     {
         return $this->hasMany(AcademicSection::class, 'class_id');
+    }
+
+    public function details(): HasMany
+    {
+        return $this->hasMany(AcademicClassAssignDetail::class, 'academic_class_assign_id');
     }
 
     public function teacherAssign()

@@ -67,7 +67,6 @@ Route::middleware(['auth', 'role:admin', 'billing.check'])->group(function () {
     Route::get('/academic/sections', \App\Livewire\Admin\Academic\SectionComponent::class)->name('admin.academic.sections');
     Route::get('/academic/subjects', \App\Livewire\Admin\Academic\SubjectComponent::class)->name('admin.academic.subjects');
     Route::get('/academic/class-assign', \App\Livewire\Admin\Academic\ClassAssignComponent::class)->name('admin.academic.class-assign');
-    Route::get('/academic/teacher-assign', \App\Livewire\Admin\Academic\TeacherAssignComponent::class)->name('admin.academic.teacher-assign');
     Route::get('/academic/class-schedule/create', \App\Livewire\Admin\Academic\ClassScheduleCreateComponent::class)->name('admin.academic.class-schedule.create');
     Route::get('/academic/class-schedule/list', \App\Livewire\Admin\Academic\ClassScheduleListComponent::class)->name('admin.academic.class-schedule.list');
     Route::get('/academic/teacher-schedule', \App\Livewire\Admin\Academic\TeacherScheduleComponent::class)->name('admin.academic.teacher-schedule');
@@ -121,7 +120,8 @@ Route::middleware(['auth', 'role:admin', 'billing.check'])->group(function () {
     Route::get('exam/setups', \App\Livewire\Admin\Exam\ExamSetupComponent::class)->name('admin.exam.setups');
     Route::get('exam/schedule/add', \App\Livewire\Admin\Exam\ScheduleAddComponent::class)->name('admin.exam.schedule.add');       
     Route::get('exam/schedule/list', \App\Livewire\Admin\Exam\ScheduleListComponent::class)->name('admin.exam.schedule.list');    
-    
+    Route::get('exam/entries', \App\Livewire\Admin\Exam\EntryComponent::class)->name('admin.exam.entries');    
+    Route::get('exam/positions', \App\Livewire\Admin\Exam\PositionComponent::class)->name('admin.exam.positions');    
     Route::get('exam/grades', \App\Livewire\Admin\Exam\GradeComponent::class)->name('admin.exam.grades');
 
     Route::get('attendance/students', \App\Livewire\Admin\Attendance\StudentComponent::class)->name('admin.attendance.students');
@@ -329,9 +329,7 @@ Route::middleware(['auth', 'role:teacher', 'billing.check'])->group(function () 
     Route::get('teacher/parent/{id}/overview', \App\Livewire\Teacher\Parent\ParentOverviewComponent::class)->name('teacher.parent.overview');
     Route::get('teacher/parent/{id}/child', \App\Livewire\Teacher\Parent\ParentChildComponent::class)->name('teacher.parent.child');
 
-    // My Class
-    Route::get('teacher/academic/class-assign', \App\Livewire\Teacher\Academic\ClassAssignComponent::class)->name('teacher.academic.class-assign');
-    Route::get('teacher/academic/class-schedule/create', \App\Livewire\Teacher\Academic\ClassScheduleCreateComponent::class)->name('teacher.academic.class-schedule.create');
+    // Class Schedule
     Route::get('teacher/academic/class-schedule/list', \App\Livewire\Teacher\Academic\ClassScheduleListComponent::class)->name('teacher.academic.class-schedule.list');
 
     // Homework
@@ -343,7 +341,7 @@ Route::middleware(['auth', 'role:teacher', 'billing.check'])->group(function () 
     Route::get('teacher/leave/apply', \App\Livewire\Teacher\Leave\ApplyLeaveComponent::class)->name('teacher.leave.apply');
     Route::get('teacher/leave/students', \App\Livewire\Teacher\Leave\StudentLeaveComponent::class)->name('teacher.leave.students');
      
-    // Exam 
+    // Exam Schedule
     Route::get('teacher/exam/schedule/list', \App\Livewire\Teacher\Exam\ScheduleListComponent::class)->name('teacher.exam.schedule.list');    
 
     // Attendance

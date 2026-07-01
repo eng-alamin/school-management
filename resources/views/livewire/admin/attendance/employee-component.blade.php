@@ -68,12 +68,12 @@
 
                 <thead>
                     <tr>
-                        <th>SL</th>
-                        <th>Name</th>
-                        <th>Designation</th>
-                        <th>Department</th>
-                        <th>Status</th>
-                        <th>Remarks</th>
+                        <th id="th-sl">SL</th>
+                        <th id="th-name">Name</th>
+                        <th id="th-designation">Designation</th>
+                        <th id="th-department">Department</th>
+                        <th id="th-status">Status</th>
+                        <th id="th-remarks">Remarks</th>
                     </tr>
                 </thead>
 

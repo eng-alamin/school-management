@@ -36,15 +36,15 @@
                                 <input type="checkbox" class="alloc-checkbox"
                                     wire:model.live="selectAll">
                             </th>
-                            <th>SL#</th>
-                            <th>Fees Type</th>
-                            <th>Due Date</th>
-                            <th>Status</th>
-                            <th>Amount</th>
-                            <th>Discount</th>
-                            <th>Fine</th>
-                            <th>Paid</th>
-                            <th>Balance</th>
+                            <th id="th-sl">SL</th>
+                            <th id="th-fees-type">Fees Type</th>
+                            <th id="th-due-date">Due Date</th>
+                            <th id="th-status">Status</th>
+                            <th id="th-amount">Amount</th>
+                            <th id="th-discount">Discount</th>
+                            <th id="th-fine">Fine</th>
+                            <th id="th-paid">Paid</th>
+                            <th id="th-balance">Balance</th>
                         </tr>
                     </thead>
                     <tbody>

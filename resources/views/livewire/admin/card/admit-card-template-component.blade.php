@@ -55,14 +55,14 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>SL</th>
-                            <th>Template Name</th>
-                            <th>Exam Type</th>
-                            <th>Colors</th>
-                            <th>Features</th>
-                            <th>Status</th>
-                            <th>Created</th>
-                            <th>Actions</th>
+                            <th id="th-sl">SL</th>
+                            <th id="th-template-name">Template Name</th>
+                            <th id="th-exam-type">Exam Type</th>
+                            <th id="th-colors">Colors</th>
+                            <th id="th-features">Features</th>
+                            <th id="th-status">Status</th>
+                            <th id="th-created">Created</th>
+                            <th id="th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>

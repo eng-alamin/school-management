@@ -42,10 +42,10 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>SL</th>
-                            <th wire:click="sortBy('hall_no')" style="cursor:pointer">Hall No @if($sortField === 'hall_no') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif </th>
-                            <th wire:click="sortBy('no_of_seat')" style="cursor:pointer">No of Seats @if($sortField === 'no_of_seat') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif </th>
-                            <th>Actions</th>
+                            <th id="th-sl">SL</th>
+                            <th id="th-hall-no" wire:click="sortBy('hall_no')" style="cursor:pointer">Hall No @if($sortField === 'hall_no') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif </th>
+                            <th id="th-no-of-seat" wire:click="sortBy('no_of_seat')" style="cursor:pointer">No of Seats @if($sortField === 'no_of_seat') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif </th>
+                            <th id="th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>

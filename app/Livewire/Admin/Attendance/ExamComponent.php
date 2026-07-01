@@ -9,6 +9,7 @@ use App\Models\AcademicClass;
 use App\Models\AcademicSection;
 use App\Models\AcademicSubject;
 use App\Models\AcademicClassAssign;
+use App\Models\AcademicClassAssignDetail;
 use App\Models\ExamSetup;
 
 class ExamComponent extends Component
@@ -44,11 +45,33 @@ class ExamComponent extends Component
     {
         if (!$this->filterClass) return [];
 
-        return AcademicSection::whereIn('id', AcademicClassAssign::where('class_id', $this->filterClass)->pluck('section_id'))
-            ->orderBy('name')
-            ->get();
+        return AcademicSection::whereIn('id',
+            AcademicClassAssign::where('class_id', $this->filterClass)
+                ->whereNotNull('section_id')
+                ->pluck('section_id')
+        )->orderBy('name')->get();
     }
 
+    /**
+     * Class_id (ar optionally section_id) diye academic_class_assign_details
+     * theke unique subject list ber kore — age JSON 'subjects' column theke ashto
+     */
+    protected function loadSubjects(): void
+    {
+        $query = AcademicClassAssignDetail::whereHas('classAssign', function ($q) {
+            $q->where('class_id', $this->filterClass);
+
+            if ($this->filterSection && $this->filterSection !== 'all') {
+                $q->where('section_id', $this->filterSection);
+            }
+        });
+
+        $subjectIds = $query->pluck('subject_id')->unique()->values();
+
+        $this->subjects = $subjectIds->isNotEmpty()
+            ? AcademicSubject::whereIn('id', $subjectIds)->orderBy('name')->get()
+            : [];
+    }
 
     public function updatedFilterClass()
     {
@@ -60,22 +83,7 @@ class ExamComponent extends Component
 
         if (!$this->filterClass) return;
 
-        $rows = AcademicClassAssign::where('class_id', $this->filterClass)->get();
-
-        $subjectNames = $rows->flatMap(function ($row) {
-            $subjects = $row->subjects;
-            if (is_string($subjects)) {
-                $subjects = json_decode($subjects, true) ?? [];
-            }
-            return $subjects ?: [];
-        })
-        ->filter()
-        ->unique()
-        ->values();
-
-        if ($subjectNames->isNotEmpty()) {
-            $this->subjects = AcademicSubject::whereIn('name', $subjectNames)->get();
-        }
+        $this->loadSubjects();
     }
 
     public function updatedFilterSection()
@@ -86,28 +94,7 @@ class ExamComponent extends Component
 
         if (!$this->filterClass || !$this->filterSection) return;
 
-        if ($this->filterSection === 'all') {
-            $rows = AcademicClassAssign::where('class_id', $this->filterClass)->get();
-        } else {
-            $rows = AcademicClassAssign::where('class_id', $this->filterClass)
-                ->where('section_id', $this->filterSection)
-                ->get();
-        }
-
-        $subjectNames = $rows->flatMap(function ($row) {
-            $subjects = $row->subjects;
-            if (is_string($subjects)) {
-                $subjects = json_decode($subjects, true) ?? [];
-            }
-            return $subjects ?: [];
-        })
-        ->filter()
-        ->unique()
-        ->values();
-
-        $this->subjects = $subjectNames->isNotEmpty()
-            ? AcademicSubject::whereIn('name', $subjectNames)->get()
-            : [];
+        $this->loadSubjects();
     }
 
     public function filter()

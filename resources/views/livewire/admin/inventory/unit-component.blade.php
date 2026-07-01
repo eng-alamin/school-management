@@ -41,9 +41,9 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th id="unit-th-sl">SL</th>
-                            <th id="unit-th-name" wire:click="sortBy('name')" style="cursor:pointer">Name @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif </th>
-                            <th id="unit-th-actions">Actions</th>
+                            <th id="th-sl">SL</th>
+                            <th id="th-name" wire:click="sortBy('name')" style="cursor:pointer">Name @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif </th>
+                            <th id="th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>

@@ -40,22 +40,22 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th id="plist-th-sl">SL</th>
-                            <th wire:click="sortBy('bill_no')" style="cursor:pointer">
+                            <th id="th-sl">SL</th>
+                            <th id="th-bill-no" wire:click="sortBy('bill_no')" style="cursor:pointer">
                                 Bill No @if($sortField === 'bill_no') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th wire:click="sortBy('supplier_id')" style="cursor:pointer">
+                            <th id="th-supplier" wire:click="sortBy('supplier_id')" style="cursor:pointer">
                                 Supplier @if($sortField === 'supplier_id') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th id="plist-th-store">Store</th>
-                            <th wire:click="sortBy('date')" style="cursor:pointer">
+                            <th id="th-store">Store</th>
+                            <th id="th-date" wire:click="sortBy('date')" style="cursor:pointer">
                                 Date @if($sortField === 'date') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th id="plist-th-status">Status</th>
-                            <th wire:click="sortBy('net_total')" style="cursor:pointer">
+                            <th id="th-status">Status</th>
+                            <th id="th-net-total" wire:click="sortBy('net_total')" style="cursor:pointer">
                                 Net Total @if($sortField === 'net_total') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th id="plist-th-actions">Actions</th>
+                            <th id="th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>

@@ -41,12 +41,12 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>SL</th>
-                            <th wire:click="sortBy('name')" style="cursor:pointer">Name @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif</th>
-                            <th wire:click="sortBy('start_date')" style="cursor:pointer">Start Date @if($sortField === 'start_date') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif</th>
-                            <th wire:click="sortBy('end_date')" style="cursor:pointer">End Date @if($sortField === 'end_date') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif</th>
-                            <th>Status</th>
-                            <th>Actions</th>
+                            <th id="th-sl">SL</th>
+                            <th id="th-name" wire:click="sortBy('name')" style="cursor:pointer">Name @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif</th>
+                            <th id="th-start-date" wire:click="sortBy('start_date')" style="cursor:pointer">Start Date @if($sortField === 'start_date') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif</th>
+                            <th id="th-end-date" wire:click="sortBy('end_date')" style="cursor:pointer">End Date @if($sortField === 'end_date') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif</th>
+                            <th id="th-status">Status</th>
+                            <th id="th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>

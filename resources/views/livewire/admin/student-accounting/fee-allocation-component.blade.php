@@ -108,14 +108,14 @@
                     <thead>
                         <tr>
                             <th style="width:44px"></th>
-                            <th>SL</th>
-                            <th>Name</th>
-                            <th>Section</th>
-                            <th>Register No</th>
-                            <th>Roll No</th>
-                            <th>Gender</th>
-                            <th>Mobile</th>
-                            <th>Guardian</th>
+                            <th id="th-sl">SL</th>
+                            <th id="th-name">Name</th>
+                            <th id="th-section">Section</th>
+                            <th id="th-register-no">Register No</th>
+                            <th id="th-roll-no">Roll No</th>
+                            <th id="th-gender">Gender</th>
+                            <th id="th-mobile">Mobile</th>
+                            <th id="th-guardian">Guardian</th>
                         </tr>
                     </thead>
                     <tbody>

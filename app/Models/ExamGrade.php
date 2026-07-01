@@ -8,5 +8,6 @@ use App\Traits\BelongsToInstitution;
 class ExamGrade extends Model
 {
     use BelongsToInstitution;
+    
     protected $guarded = [];
 }

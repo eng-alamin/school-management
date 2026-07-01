@@ -37,15 +37,15 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>SL</th>
-                            <th wire:click="sortBy('fee_group_id')" style="cursor:pointer">
+                            <th id="th-sl">SL</th>
+                            <th id="th-fee-group" wire:click="sortBy('fee_group_id')" style="cursor:pointer">
                                 Fee Group @if($sortField === 'fee_group_id') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th>Fee Item</th>
-                            <th>Fine Type</th>
-                            <th>Fine Value</th>
-                            <th>Frequency</th>
-                            <th>Actions</th>
+                            <th id="th-fee-item">Fee Item</th>
+                            <th id="th-fine-type">Fine Type</th>
+                            <th id="th-fine-value">Fine Value</th>
+                            <th id="th-frequency">Frequency</th>
+                            <th id="th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>

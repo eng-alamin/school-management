@@ -9,54 +9,38 @@
     {{-- Select Ground --}}
     <div class="form-section" style="padding-top:40px; padding-bottom:20px">
         <div class="section-heading">
-            <span class="material-icons-round">tune</span> Select Ground
+            <span class="material-icons-round">tune</span> Select Exam
         </div>
         <div class="row g-4">
 
             {{-- Exam --}}
-            <div class="col-md-4">
-                <div class="input-group input-group-outline">
+            <div class="col-md-6 offset-md-3">
+                <div class="input-group input-group-outline" wire:ignore>
                     <label class="form-label">Exam Name</label>
-                    <select wire:model="filterExam" class="form-select">
+                    <select wire:model.live="filterExam" class="form-select">
                         <option value="">Select Exam</option>
                         @foreach ($exams as $item)
-                            <option value="{{ $item->id }}">{{ $item->name }}</option>
+                            <option value="{{ $item->id }}">
+                                {{ $item->name }}
+                                @if($item->classAssign)
+                                    — {{ $item->classAssign->class->name ?? '' }}
+                                    @if($item->classAssign->section) ({{ $item->classAssign->section->name }}) @endif
+                                @endif
+                            </option>
                         @endforeach
                     </select>
                 </div>
                 @error('filterExam') <span class="text-danger small">{{ $message }}</span> @enderror
             </div>
 
-            {{-- Class --}}
-            <div class="col-md-4">
-                <div class="input-group input-group-outline">
-                    <label class="form-label">Class</label>
-                    <select wire:model.live="filterClass" class="form-select">
-                        <option value="">Select Class</option>
-                        @foreach ($classes as $item)
-                            <option value="{{ $item->id }}">{{ $item->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                @error('filterClass') <span class="text-danger small">{{ $message }}</span> @enderror
-            </div>
-
-            {{-- Section --}}
-            <div class="col-md-4">
-                <div class="input-group input-group-outline">
-                    <label class="form-label">Section</label>
-                    <select wire:model.live="filterSection" class="form-select"
-                        {{ empty($sections) ? 'disabled' : '' }}>
-                        <option value="">{{ !$filterClass ? 'Select Class First' : 'Select Section' }}</option>
-                        @if(!empty($sections))
-                            <option value="all">All Section</option>
-                            @foreach ($sections as $item)
-                                <option value="{{ $item->id }}">{{ $item->name }}</option>
-                            @endforeach
-                        @endif
-                    </select>
-                </div>
-                @error('filterSection') <span class="text-danger small">{{ $message }}</span> @enderror
+            {{-- Class (read-only display) --}}
+            <div class="col-md-6 d-flex align-items-center">
+                @if($selectedClassLabel)
+                    <span class="badge bg-info-subtle text-dark" style="font-size:.85rem;padding:8px 14px">
+                        <span class="material-icons-round" style="font-size:15px;vertical-align:middle">class</span>
+                        Class: {{ $selectedClassLabel }}
+                    </span>
+                @endif
             </div>
 
             {{-- Filter Button --}}
@@ -67,10 +51,10 @@
                         class="btn-pink w-100 d-flex justify-content-center align-items-center"
                         type="button">
                     <span wire:loading.remove wire:target="filter">
-                        <span class="material-icons-round" style="font-size:16px;vertical-align:middle;margin-right:4px">filter_alt</span> Filter
+                        <span class="material-icons-round" style="font-size:16px;vertical-align:middle;margin-right:4px">filter_alt</span> Load Subjects
                     </span>
                     <span wire:loading wire:target="filter">
-                        <span class="material-icons-round" style="font-size:16px;animation:spin .7s linear infinite">sync</span> Filtering...
+                        <span class="material-icons-round" style="font-size:16px;animation:spin .7s linear infinite">sync</span> Loading...
                     </span>
                 </button>
             </div>
@@ -89,87 +73,68 @@
             <table class="schedule-table">
                 <thead>
                     <tr>
-                        <th>Subject <span class="req">*</span></th>
-                        <th>Date <span class="req">*</span></th>
-                        <th>Starting Time <span class="req">*</span></th>
-                        <th>Ending Time <span class="req">*</span></th>
-                        <th>Hall Room <span class="req">*</span></th>
-                        <th colspan="2">
-                            Practical <span class="req">*</span>
-                            <div class="marks-sub-header">
-                                <span>Full Mark</span><span>Pass Mark</span>
-                            </div>
-                        </th>
-                        <th colspan="2">
-                            Written <span class="req">*</span>
-                            <div class="marks-sub-header">
-                                <span>Full Mark</span><span>Pass Mark</span>
-                            </div>
-                        </th>
+                        <th id="th-subject">Subject</th>
+                        <th id="th-marks">Full / Pass</th>
+                        <th id="th-date">Date <span class="req">*</span></th>
+                        <th id="th-starting-time">Starting Time <span class="req">*</span></th>
+                        <th id="th-ending-time">Ending Time <span class="req">*</span></th>
+                        <th id="th-hall-room">Class Room</th>
+                        <th id="th-remarks">Remarks</th>
+                        <th id="th-publish">Publish</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($data as $index => $item)
-                    <tr wire:key="schedule-row-{{ $index }}">
+                    @foreach($rows as $index => $row)
+                    <tr wire:key="schedule-row-{{ $row['exam_setup_detail_id'] }}">
 
                         <td>
-                            <input type="text" wire:model="data.{{ $index }}.subject"
-                                class="schedule-input" placeholder="Subject">
-                            @error('data.'.$index.'.subject') <span class="text-danger small d-block">{{ $message }}</span> @enderror
+                            <strong>{{ $row['subject_name'] }}</strong>
+                        </td>
+
+                        <td class="text-muted" style="white-space:nowrap">
+                            {{ $row['full_mark'] }} / {{ $row['pass_mark'] }}
                         </td>
 
                         <td>
-                            <input type="date" wire:model="data.{{ $index }}.exam_date"
+                            <input type="date" wire:model="rows.{{ $index }}.exam_date"
                                 class="schedule-input schedule-date">
-                            @error('data.'.$index.'.exam_date') <span class="text-danger small d-block">{{ $message }}</span> @enderror
+                            @error('rows.'.$index.'.exam_date') <span class="text-danger small d-block">{{ $message }}</span> @enderror
                         </td>
 
                         <td>
                             <div class="schedule-time-wrap">
                                 <span class="material-icons-round schedule-time-icon">schedule</span>
-                                <input type="time" wire:model="data.{{ $index }}.start_time"
+                                <input type="time" wire:model="rows.{{ $index }}.start_time"
                                     class="schedule-input schedule-time">
                             </div>
-                            @error('data.'.$index.'.start_time') <span class="text-danger small d-block">{{ $message }}</span> @enderror
+                            @error('rows.'.$index.'.start_time') <span class="text-danger small d-block">{{ $message }}</span> @enderror
                         </td>
 
                         <td>
                             <div class="schedule-time-wrap">
                                 <span class="material-icons-round schedule-time-icon">schedule</span>
-                                <input type="time" wire:model="data.{{ $index }}.end_time"
+                                <input type="time" wire:model="rows.{{ $index }}.end_time"
                                     class="schedule-input schedule-time">
                             </div>
-                            @error('data.'.$index.'.end_time') <span class="text-danger small d-block">{{ $message }}</span> @enderror
+                            @error('rows.'.$index.'.end_time') <span class="text-danger small d-block">{{ $message }}</span> @enderror
                         </td>
 
                         <td>
-                            <input type="text" wire:model="data.{{ $index }}.hall_room"
+                            <input type="text" wire:model="rows.{{ $index }}.class_room"
                                 class="schedule-input" placeholder="Room No.">
-                            @error('data.'.$index.'.hall_room') <span class="text-danger small d-block">{{ $message }}</span> @enderror
+                            @error('rows.'.$index.'.class_room') <span class="text-danger small d-block">{{ $message }}</span> @enderror
                         </td>
 
                         <td>
-                            <input type="number" wire:model="data.{{ $index }}.practical_full_mark"
-                                class="schedule-input schedule-number" placeholder="0" min="0">
-                            @error('data.'.$index.'.practical_full_mark') <span class="text-danger small d-block">{{ $message }}</span> @enderror
+                            <input type="text" wire:model="rows.{{ $index }}.remarks"
+                                class="schedule-input" placeholder="Optional">
                         </td>
 
-                        <td>
-                            <input type="number" wire:model="data.{{ $index }}.practical_pass_mark"
-                                class="schedule-input schedule-number" placeholder="0" min="0">
-                            @error('data.'.$index.'.practical_pass_mark') <span class="text-danger small d-block">{{ $message }}</span> @enderror
-                        </td>
-
-                        <td>
-                            <input type="number" wire:model="data.{{ $index }}.written_full_mark"
-                                class="schedule-input schedule-number" placeholder="0" min="0">
-                            @error('data.'.$index.'.written_full_mark') <span class="text-danger small d-block">{{ $message }}</span> @enderror
-                        </td>
-
-                        <td>
-                            <input type="number" wire:model="data.{{ $index }}.written_pass_mark"
-                                class="schedule-input schedule-number" placeholder="0" min="0">
-                            @error('data.'.$index.'.written_pass_mark') <span class="text-danger small d-block">{{ $message }}</span> @enderror
+                        <td class="text-center">
+                            <label class="toggle-switch">
+                                <input type="checkbox" wire:model="rows.{{ $index }}.is_published">
+                                <span class="toggle-slider"></span>
+                            </label>
                         </td>
 
                     </tr>
@@ -219,18 +184,6 @@
         padding: 7px 8px;
         vertical-align: top;
     }
-    .marks-sub-header {
-        display: flex;
-        gap: 4px;
-        margin-top: 3px;
-        font-size: 10px;
-        color: #666;
-        font-weight: 400;
-    }
-    .marks-sub-header span {
-        width: 64px;
-        text-align: center;
-    }
     .schedule-input {
         border: 1px solid #3d3d3d;
         padding: 6px 10px;
@@ -275,56 +228,16 @@
         padding: 0;
         width: 100%;
     }
-    .schedule-time:focus {
-        border-color: transparent;
-    }
     input[type="time"]::-webkit-calendar-picker-indicator {
         display: none;
     }
-    .schedule-number {
-        width: 64px;
-        text-align: center;
-        -moz-appearance: textfield;
-    }
-    .schedule-number::-webkit-outer-spin-button,
-    .schedule-number::-webkit-inner-spin-button {
-        -webkit-appearance: none;
-    }
+
+    /* Toggle */
+    .toggle-switch { position: relative; display: inline-block; width: 40px; height: 20px; vertical-align: middle; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #d1d5db; transition: .2s; border-radius: 999px; }
+    .toggle-slider::before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: #fff; transition: .2s; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+    .toggle-switch input:checked + .toggle-slider { background: linear-gradient(195deg, #ec407a, #d81b60); }
+    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
 </style>
-@endpush
-
-@push('scripts')
-<script>
-    document.addEventListener('livewire:initialized', () => {
-        Livewire.hook('morph.updated', ({ el }) => {
-            setTimeout(() => {
-                el.querySelectorAll('.input-group-outline .form-select').forEach(function(select) {
-                    if (!select.nextElementSibling || !select.nextElementSibling.classList.contains('custom-select-wrapper')) {
-                        buildCustomSelect(select);
-                    }
-                });
-
-                el.querySelectorAll('.input-group-outline input').forEach(function(input) {
-                    var group = input.closest('.input-group');
-                    if (!group) return;
-                    if (input.value && input.value.trim() !== '') {
-                        group.classList.add('is-filled');
-                    } else {
-                        group.classList.remove('is-filled');
-                    }
-                    if (input._materialInit) return;
-                    input._materialInit = true;
-                    input.addEventListener('focus', function() { group.classList.add('is-focused'); });
-                    input.addEventListener('blur', function() {
-                        group.classList.remove('is-focused');
-                        group.classList.toggle('is-filled', !!input.value.trim());
-                    });
-                    input.addEventListener('input', function() {
-                        group.classList.toggle('is-filled', !!input.value.trim());
-                    });
-                });
-            }, 0);
-        });
-    });
-</script>
 @endpush

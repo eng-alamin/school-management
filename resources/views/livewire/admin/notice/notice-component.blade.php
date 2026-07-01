@@ -67,14 +67,14 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>SL</th>
-                            <th>Title</th>
-                            <th>Audience</th>
-                            <th>Priority</th>
-                            <th>Published</th>
-                            <th>Expires</th>
-                            <th>Status</th>
-                            <th>Actions</th>
+                            <th id="th-sl">SL</th>
+                            <th id="th-tittle">Title</th>
+                            <th id="th-audience">Audience</th>
+                            <th id="th-priority">Priority</th>
+                            <th id="th-published">Published</th>
+                            <th id="th-expires">Expires</th>
+                            <th id="th-status">Status</th>
+                            <th id="th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>

@@ -95,7 +95,9 @@
             <div class="col-md-2">
                 <div class="input-group input-group-outline">
                     <label class="form-label">Subject <span class="req">*</span></label>
-                    <select wire:model="data.{{ $index }}.subject" class="form-select no-custom-select">
+                    {{-- wire:model.live: subject select korar shathe shathei tar default teacher
+                         auto-fill howar jonno (academic_class_assign_details theke) --}}
+                    <select wire:model.live="data.{{ $index }}.subject" class="form-select no-custom-select">
                         <option value="">Select Subject</option>
                         @foreach ($subjects as $s)
                             <option value="{{ $s['name'] }}">{{ $s['name'] }}</option>
