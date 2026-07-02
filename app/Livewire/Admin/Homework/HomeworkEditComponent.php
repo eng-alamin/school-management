@@ -118,13 +118,19 @@ class HomeworkEditComponent extends Component
             $query->whereNull('section_id');
         }
 
-        $assign = $query->first();
+        // ✅ Ekhon subjects asbe details -> subject relation theke
+        $assign = $query->with('details.subject')->first();
 
-        if ($assign && !empty($assign->subjects)) {
-            $this->availableSubjects = AcademicSubject::whereIn('name', $assign->subjects)
-                ->orderBy('name')
-                ->get()
-                ->map(fn($s) => ['id' => $s->id, 'name' => $s->name])
+        if ($assign && $assign->details->isNotEmpty()) {
+            $this->availableSubjects = $assign->details
+                ->filter(fn($detail) => $detail->subject)
+                ->map(fn($detail) => [
+                    'id'   => $detail->subject->id,
+                    'name' => $detail->subject->name,
+                ])
+                ->unique('id')
+                ->sortBy('name')
+                ->values()
                 ->toArray();
         } else {
             $this->availableSubjects = [];
