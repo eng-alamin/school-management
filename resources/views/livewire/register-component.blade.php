@@ -443,7 +443,7 @@
                                     ">
                                         <div class="step-circle">
                                             @if($currentStep > 1)
-                                                <i class="bi bi-check-lg"></i>
+                                                1
                                             @else
                                                 1
                                             @endif
@@ -461,7 +461,7 @@
                                     ">
                                         <div class="step-circle">
                                             @if($currentStep > 2)
-                                                <i class="bi bi-check-lg"></i>
+                                                2
                                             @else
                                                 2
                                             @endif
@@ -479,7 +479,7 @@
                                     ">
                                         <div class="step-circle">
                                             @if($currentStep > 3)
-                                                <i class="bi bi-check-lg"></i>
+                                                3
                                             @else
                                                 3
                                             @endif

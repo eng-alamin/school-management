@@ -1,4 +1,4 @@
-{{-- livewire/tenant/theme/employee-add-component.blade.php --}}
+{{-- livewire/admin/employee-add-component.blade.php --}}
 
 <div>
 
@@ -284,3 +284,45 @@
     </div>
 
 </div>
+
+@push('scripts')
+    <script>
+        document.addEventListener('livewire:initialized', () => {
+
+            // ✅ resetForm() call howar por wire:ignore select/date input gulo manually reset koro
+            Livewire.on('form-reset', () => {
+
+                // -- Native select gulo khali koro (Role, Designation, Department, Religion) --
+                document.querySelectorAll('.input-group-outline select').forEach(function (select) {
+                    select.value = '';
+
+                    var group = select.closest('.input-group');
+                    if (group) group.classList.remove('is-filled');
+
+                    // Custom select UI (bootstrap-select er moto wrapper) thakle rebuild koro
+                    var wrapper = select.parentNode.querySelector('.custom-select-wrapper');
+                    if (wrapper) wrapper.remove();
+                    select.style.display = '';
+                    if (typeof buildCustomSelect === 'function') {
+                        buildCustomSelect(select);
+                    }
+                });
+
+                // -- Date input gulo khali koro (Joining Date, DOB) --
+                document.querySelectorAll('.input-group-outline input[type="date"], .input-group-outline input[type="datetime-local"]').forEach(function (input) {
+                    input.value = '';
+
+                    var group = input.closest('.input-group');
+                    if (group) group.classList.remove('is-filled');
+
+                    // Flatpickr/custom datepicker use korle oitao reset koro
+                    if (input._flatpickr) {
+                        input._flatpickr.clear();
+                    }
+                });
+
+            });
+
+        });
+    </script>
+@endpush

@@ -1099,12 +1099,12 @@
               >
             </p>
             <div class="mt-4 d-flex gap-3 flex-wrap fade-up delay-2">
-              <a href="#" class="btn btn-primary btn-lg px-4 rounded-pill">
+              <a href="{{route('register')}}" class="btn btn-primary btn-lg px-4 rounded-pill">
                 <span class="lang-bn">বিনামূল্যে শুরু করুন</span>
                 <span class="lang-en">Get Started Free</span>
               </a>
               <a
-                href="#"
+                href="http://education.monarchysolutions.com/"
                 class="btn btn-outline-primary btn-lg px-4 rounded-pill"
               >
                 <i class="bi bi-play-circle me-1"></i>
@@ -3070,14 +3070,25 @@
       // ── LANGUAGE TOGGLE ──
       const html = document.documentElement;
       const langBtn = document.getElementById("langToggle");
-      let currentLang = "bn";
+
+      // Saved language অথবা default
+      let currentLang = localStorage.getItem("language") || "bn";
+
+      setLanguage(currentLang);
 
       langBtn.addEventListener("click", () => {
-        currentLang = currentLang === "bn" ? "en" : "bn";
-        html.setAttribute("data-lang", currentLang);
-        langBtn.textContent = currentLang === "bn" ? "EN" : "বাং";
-        html.setAttribute("lang", currentLang === "bn" ? "bn" : "en");
+          currentLang = currentLang === "bn" ? "en" : "bn";
+
+          localStorage.setItem("language", currentLang);
+
+          setLanguage(currentLang);
       });
+
+      function setLanguage(lang) {
+          html.setAttribute("data-lang", lang);
+          html.setAttribute("lang", lang);
+          langBtn.textContent = lang === "bn" ? "EN" : "বাং";
+      }
 
       // ── DARK MODE TOGGLE ──
       const themeToggle = document.getElementById("themeToggle");

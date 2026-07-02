@@ -48,6 +48,8 @@
 
 </div>
 
+@livewire('chatbox-component')
+
 <!-- ═══════ Toast Container ═══════ -->
 <div class="toast-container" id="toastContainer"></div>
 

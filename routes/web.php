@@ -339,8 +339,7 @@ Route::middleware(['auth', 'role:teacher', 'billing.check'])->group(function () 
 
     // Leave
     Route::get('teacher/leave/apply', \App\Livewire\Teacher\Leave\ApplyLeaveComponent::class)->name('teacher.leave.apply');
-    Route::get('teacher/leave/students', \App\Livewire\Teacher\Leave\StudentLeaveComponent::class)->name('teacher.leave.students');
-     
+ 
     // Exam Schedule
     Route::get('teacher/exam/schedule/list', \App\Livewire\Teacher\Exam\ScheduleListComponent::class)->name('teacher.exam.schedule.list');    
 

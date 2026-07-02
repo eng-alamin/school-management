@@ -76,6 +76,7 @@ class EmployeeAddComponent extends Component
     public function resetForm(): void
     {
         $this->reset();
+        $this->dispatch('form-reset');
     }
 
     public function save(): void

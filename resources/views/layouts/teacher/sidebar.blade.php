@@ -90,21 +90,14 @@
       </li>
 
       <li class="nav1-item">
-        <div class="nav1-link {{ str_contains(request()->url(), 'teacher/leave') ? 'active open' : '' }}" onclick="toggleNav1(this)">
+        <a href="{{route('teacher.leave.apply') }}" class="nav1-link {{ str_contains(request()->url(), 'teacher/leave') == true ? 'active' : '' }}">
           <span class="material-icons-round nav-icon">event</span>
           <span class="nav-label" id="nav-leaves">Leaves</span>
-          <span class="material-icons-round nav-arrow">expand_more</span>
-        </div>
-        <div class="nav2-collapse {{ str_contains(request()->url(), 'teacher/leave') == true ? 'show' : '' }}">
-          <ul>
-            <li class="nav2-item"><a href="{{route('teacher.leave.apply') }}" class="nav2-link {{ str_contains(request()->url(), 'teacher/leave/apply') == true ? 'active' : '' }}"><span class="nav2-icon">P</span><span class="nav2-label" id="nav-idcard-template">Apply</span></a></li>
-            <li class="nav2-item"><a href="{{route('teacher.leave.students') }}" class="nav2-link {{ str_contains(request()->url(), 'teacher/leave/students') == true ? 'active' : '' }}"><span class="nav2-icon">P</span><span class="nav2-label" id="nav-idcard-template">Students</span></a></li>
-          </ul>
-        </div>
+        </a>
       </li>
 
       <li class="nav1-item">
-        <a href="{{route('teacher.event.list') }}" class="nav1-link {{ str_contains(request()->url(), 'event') == true ? 'active' : '' }}">
+        <a href="{{route('teacher.event.list') }}" class="nav1-link {{ str_contains(request()->url(), 'teacher/event') == true ? 'active' : '' }}">
           <span class="material-icons-round nav-icon">event</span>
           <span class="nav-label" id="nav-events">Events</span>
         </a>

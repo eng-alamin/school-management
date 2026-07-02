@@ -30,6 +30,31 @@ class RegisterComponent extends Component
     public string $password = '';
     public string $password_confirmation = '';
 
+    public function mount(): void
+    {
+        $pending = session('pending_registration');
+ 
+        if (!$pending) {
+            return;
+        }
+ 
+        $this->institution_name = $pending['institution_name'] ?? '';
+        $this->institution_type = $pending['institution_type'] ?? '';
+        $this->email            = $pending['email'] ?? '';
+        $this->phone            = $pending['phone'] ?? '';
+        $this->timezone         = $pending['timezone'] ?? 'Asia/Dhaka';
+        $this->admin_name       = $pending['admin_name'] ?? '';
+        $this->admin_email      = $pending['admin_email'] ?? '';
+        $this->password         = $pending['password'] ?? 1234;
+        $this->password_confirmation         = $pending['password'] ?? 1234;
+ 
+        $this->existing_logo_path = session('pending_logo');
+
+        $this->currentStep = 3;
+ 
+        session()->flash('info', 'Ager fill kora tothyo restore kora hoyeche. Password ta abar diye continue korun.');
+    }
+
     protected function rules(): array
     {
         return [

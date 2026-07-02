@@ -36,7 +36,6 @@
                         {{ empty($availableSections) ? 'disabled' : '' }}>
                         <option value="">{{ !$filterClass ? 'All Sections' : 'All Sections' }}</option>
                         @if(!empty($availableSections))
-                            <option value="all">All Section</option>
                             @foreach ($availableSections as $s)
                                 <option value="{{ $s['id'] }}">{{ $s['name'] }}</option>
                             @endforeach
@@ -81,6 +80,7 @@
                                 Submission Date @if($sortField === 'submission_date') {!! $sortDir === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
                             <th id="th-status">Status</th>
+                            <th id="th-updated-at">Updated At</th>
                             <th id="th-actions">Actions</th>
                         </tr>
                     </thead>
@@ -105,6 +105,7 @@
                                 @endphp
                                 <span class="badge bg-{{ $badge }}">{{ ucfirst($homework->status) }}</span>
                             </td>
+                            <td>{{ $homework->updated_at ? \Carbon\Carbon::parse($homework->updated_at)->diffForHumans() : '—' }}</td>
                             <td>
                                 <div class="d-flex gap-1">
                                     @if ($homework['attachment'])

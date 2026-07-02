@@ -120,6 +120,32 @@ class StudentAddComponent extends Component
     public function resetForm()
     {
         $this->reset();
+
+        $session = AcademicSession::where('is_current', true)->first();
+        $this->session_id = $session?->id;
+
+        // ── Generate Student ID (SAFE - avoid duplicate)
+        $institutionId = auth()->user()->institution_id;
+        $institutionCode = 'RG' . str_pad($institutionId, 2, '0', STR_PAD_LEFT);
+        $year = now()->format('y');
+
+        $lastStudent = Student::where('institution_id', $institutionId)
+            ->lockForUpdate()
+            ->orderByDesc('id')
+            ->first();
+
+        $serial = $lastStudent
+            ? ((int) substr($lastStudent->student_id, -6)) + 1
+            : 1;
+
+        $this->register_no = $institutionCode . $year . str_pad($serial, 6, '0', STR_PAD_LEFT);
+
+
+        $this->admission_date = now()->format('Y-m-d');
+        $this->gender = 'male';
+
+        $this->dispatch('date-updated', date: $this->admission_date);
+        $this->dispatch('date-updated', date: $this->dob);
     }
 
     protected function failedValidation($validator)

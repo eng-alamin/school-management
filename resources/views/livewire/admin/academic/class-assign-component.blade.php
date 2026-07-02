@@ -135,50 +135,46 @@
                                 @error('section_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
 
-                            {{-- Subjects --}}
+                            {{-- Subjects + Teacher (checkbox list, ekhane e select o kora jabe) --}}
                             <div class="col-md-12">
-                                <label class="form-label">Subjects</label>
-                                <div wire:ignore>
-                                    <select
-                                        wire:model.defer="subject_array"
-                                        multiple
-                                        title="Select Subject..."
-                                        class="form-select w-100 selectpicker">
-                                        @foreach($subjects as $subjectId => $subjectName)
-                                            <option value="{{ $subjectId }}">{{ $subjectName }}</option>
-                                        @endforeach
-                                    </select>
+                                <label class="form-label">Assign Subjects &amp; Teachers</label>
+                                <div class="border rounded p-2" style="max-height:320px;overflow-y:auto;">
+                                    @forelse($subjects as $subjectId => $subjectName)
+                                        <div class="row g-2 align-items-center py-2 {{ !$loop->last ? 'border-bottom' : '' }}">
+                                            <div class="col-6">
+                                                <div class="form-check d-flex align-items-center gap-2 m-0">
+                                                    <input
+                                                        class="form-check-input m-0"
+                                                        type="checkbox"
+                                                        wire:model.live="subject_array"
+                                                        value="{{ $subjectId }}"
+                                                        id="subject-check-{{ $subjectId }}"
+                                                        style="cursor:pointer">
+                                                    <label class="form-check-label" for="subject-check-{{ $subjectId }}" style="font-weight:500;cursor:pointer">
+                                                        {{ $subjectName }}
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <select
+                                                    class="form-select form-select-sm"
+                                                    wire:model.defer="teacher_array.{{ $subjectId }}"
+                                                    @disabled(!in_array($subjectId, $subject_array))>
+                                                    <option value="">No teacher</option>
+                                                    @foreach($teachers as $teacherId => $teacherName)
+                                                        <option value="{{ $teacherId }}">{{ $teacherName }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        </div>
+                                    @empty
+                                        <p class="text-muted small mb-0">No subjects found. Please create subjects first.</p>
+                                    @endforelse
                                 </div>
                                 @error('subject_array') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                                 @error('subject_array.*') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+                                @error('teacher_array.*') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                             </div>
-
-                            {{-- Teacher per selected subject --}}
-                            @if(!empty($subject_array))
-                                <div class="col-md-12">
-                                    <label class="form-label">Assign Teacher (subject wise)</label>
-                                    <div class="border rounded p-2" style="max-height:260px;overflow-y:auto;">
-                                        @foreach($subject_array as $subjectId)
-                                            <div class="row g-2 align-items-center mb-2">
-                                                <div class="col-5">
-                                                    <span class="badge bg-light text-dark border" style="font-weight:500;">
-                                                        {{ $subjects[$subjectId] ?? '—' }}
-                                                    </span>
-                                                </div>
-                                                <div class="col-7">
-                                                    <select class="form-select form-select-sm" wire:model.defer="teacher_array.{{ $subjectId }}">
-                                                        <option value="">No teacher</option>
-                                                        @foreach($teachers as $teacherId => $teacherName)
-                                                            <option value="{{ $teacherId }}">{{ $teacherName }}</option>
-                                                        @endforeach
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                    @error('teacher_array.*') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
-                                </div>
-                            @endif
 
                         </div>
                     </div>
@@ -243,52 +239,4 @@
     .form-check-input:checked { background-color: #212529; border-color: #212529; }
     .btn-sm { font-size: .78rem; padding: .3rem .65rem; border-radius: 6px; }
 </style>
-@endpush
-
-@push('styles')
-    {{-- selectpicker --}}
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css">
-@endpush
-@push('scripts')
-    {{-- selectpicker --}}
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.0/dist/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
-    <script>
-        document.addEventListener('livewire:init', function () {
-
-            function initPicker() {
-                $('.selectpicker').selectpicker();
-            }
-
-            function refreshPicker() {
-                $('.selectpicker').selectpicker('refresh');
-            }
-
-            // initial load
-            setTimeout(() => {
-                initPicker();
-            }, 300);
-
-            // Livewire update fix
-            Livewire.hook('message.processed', () => {
-                setTimeout(() => {
-                    refreshPicker();
-                }, 50);
-            });
-
-            // sync value (subject_id gulo string hishebe ashbe, integer e convert kore pathacchi)
-            $(document).on('changed.bs.select', '.selectpicker', function () {
-                let values = $(this).val() || [];
-                values = values.map(v => parseInt(v));
-                @this.set('subject_array', values);
-            });
-
-            Livewire.on('showModalChanged', () => {
-                setTimeout(() => {
-                    initPicker();
-                }, 300);
-            });
-
-        });
-    </script>
 @endpush

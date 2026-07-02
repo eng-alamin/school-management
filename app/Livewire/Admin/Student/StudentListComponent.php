@@ -6,7 +6,6 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Student;
 use App\Models\AcademicClass;
-use App\Models\AcademicSection;
 use App\Models\AcademicClassAssign;
 
 class StudentListComponent extends Component
@@ -15,62 +14,63 @@ class StudentListComponent extends Component
 
     protected string $paginationTheme = 'bootstrap';
 
-    // Filter
+    public $search    = '';
+    public $perPage   = 10;
+    public $sortField = 'created_at';
+    public $sortDir   = 'desc';
+
     public $filterClass   = '';
     public $filterSection = '';
-    public string $search = '';
-    public int $perPage   = 10;
-    public bool $hasFilter = false;
+
+    public array $availableSections = [];
 
     // Delete
     public bool $confirmDelete = false;
     public ?int $deleteId      = null;
 
-    public function updatingSearch(): void { $this->resetPage(); }
-
-    public function getAvailableClasses()
+    public function updatedSearch(): void
     {
-        return AcademicClass::whereIn('id', AcademicClassAssign::distinct()->pluck('class_id'))
-            ->orderBy('name')
-            ->get();
-    }
-
-    public function getAvailableSections()
-    {
-        if (!$this->filterClass) return [];
-
-        return AcademicSection::whereIn('id',
-            AcademicClassAssign::where('class_id', $this->filterClass)->pluck('section_id')
-        )->orderBy('name')->get();
-    }
-
-    public function updatedFilterClass(): void
-    {
-        $this->filterSection = '';
-        $this->hasFilter     = false;
         $this->resetPage();
     }
 
-    public function updatedFilterSection(): void
+    // ── Class filter change → sections reload, page reset ──
+    public function updatedFilterClass($value): void
     {
-        $this->hasFilter = false;
+        $this->filterSection     = '';
+        $this->availableSections = [];
         $this->resetPage();
-    }
 
-    public function filter(): void
-    {
-        if (!$this->filterClass) {
-            $this->dispatch('toast', type: 'error', message: 'Please select a class.');
+        if (!$value) {
             return;
         }
 
-        $this->validate([
-            'filterClass'   => 'required|exists:academic_classes,id',
-            'filterSection' => 'nullable',
-        ]);
+        $assigns = AcademicClassAssign::with('section')
+            ->where('class_id', $value)
+            ->whereNotNull('section_id')
+            ->get();
 
-        $this->hasFilter = true;
+        $this->availableSections = $assigns
+            ->filter(fn($a) => $a->section)
+            ->map(fn($a) => ['id' => $a->section->id, 'name' => $a->section->name])
+            ->unique('id')
+            ->values()
+            ->toArray();
+    }
+
+    // ── Section filter change → just reset page, table auto-refresh hobe ──
+    public function updatedFilterSection(): void
+    {
         $this->resetPage();
+    }
+
+    public function sortBy($field): void
+    {
+        if ($this->sortField === $field) {
+            $this->sortDir = $this->sortDir === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortField = $field;
+            $this->sortDir   = 'asc';
+        }
     }
 
     public function confirmDeleteRecord(int $id): void
@@ -84,8 +84,10 @@ class StudentListComponent extends Component
         try {
             $student = Student::findOrFail($this->deleteId);
             $student->user()->delete();
+
             $this->confirmDelete = false;
             $this->deleteId      = null;
+
             $this->dispatch('toast', type: 'success', message: 'Student deleted successfully!');
         } catch (\Exception $e) {
             $this->dispatch('toast', type: 'error', message: 'Delete failed: ' . $e->getMessage());
@@ -94,36 +96,39 @@ class StudentListComponent extends Component
 
     public function resetForm(): void
     {
-        $this->filterClass   = '';
-        $this->filterSection = '';
-        $this->search        = '';
-        $this->hasFilter     = false;
-        $this->confirmDelete = false;
-        $this->deleteId      = null;
+        $this->filterClass       = '';
+        $this->filterSection     = '';
+        $this->availableSections = [];
+        $this->search            = '';
+        $this->confirmDelete     = false;
+        $this->deleteId          = null;
         $this->resetPage();
         $this->resetValidation();
     }
 
     public function render()
     {
+        $classes = AcademicClass::whereIn('id', AcademicClassAssign::distinct()->pluck('class_id'))
+            ->orderBy('name')
+            ->get();
+
         $students = Student::with(['guardians', 'class', 'section'])
-            ->when($this->hasFilter, function ($q) {
-                $q->where('class_id', $this->filterClass);
-                if ($this->filterSection && $this->filterSection !== 'all') {
-                    $q->where('section_id', $this->filterSection);
-                }
-            })
+            ->when($this->filterClass, fn($q) =>
+                $q->where('class_id', $this->filterClass)
+            )
+            ->when($this->filterSection && $this->filterSection !== 'all', fn($q) =>
+                $q->where('section_id', $this->filterSection)
+            )
             ->when($this->search, fn($q) => $q->where(fn($q) => $q
                 ->where('name', 'like', "%{$this->search}%")
                 ->orWhere('register_no', 'like', "%{$this->search}%")
                 ->orWhere('roll_no', 'like', "%{$this->search}%")))
-            ->latest()
+            ->orderBy($this->sortField, $this->sortDir)
             ->paginate($this->perPage);
 
         return view('livewire.admin.student.student-list-component')
             ->with('students', $students)
-            ->with('classes', $this->getAvailableClasses())
-            ->with('sections', $this->getAvailableSections())
+            ->with('classes', $classes)
             ->layout('layouts.admin.app', [
                 'title' => 'Student List | ' . institution()->name,
             ]);

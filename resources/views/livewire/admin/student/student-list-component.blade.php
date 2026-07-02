@@ -3,182 +3,155 @@
     <div class="card">
 
         <div class="mat-card-header header-pink-gradient">
-            <h5 id="cardHeaderTitleAllStudents">All Students</h5>
+            <h5 id="cardHeaderTitleAllStudents">
+                <span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">groups</span>
+                All Students
+            </h5>
             <p id="cardHeaderSubtitle">Manage students, filter by class and section.</p>
         </div>
 
-        {{-- ===== FILTER ===== --}}
-        <div class="form-section" style="padding-top:40px; padding-bottom:20px">
-            <div class="section-heading">
-                <span class="material-icons-round">tune</span> Select Ground
-            </div>
-            <div class="row g-4">
+        {{-- ===== TOOLBAR (search + live filter + actions) ===== --}}
+        <div class="card-header border-0">
+            <div class="card-toolbar">
 
-                {{-- Class --}}
-                <div class="col-md-6">
-                    <div class="input-group input-group-outline">
-                        <label class="form-label">Class</label>
-                        <select wire:model.live="filterClass" class="form-select">
-                            <option value="">Select Class</option>
-                            @foreach ($classes as $item)
-                                <option value="{{ $item->id }}">{{ $item->name }}</option>
+                {{-- Search --}}
+                <div class="card-toolbar-title">
+                    <div style="position:relative;display:inline-flex;align-items:center">
+                        <span class="material-icons-round" style="position:absolute;left:10px;font-size:17px;color:var(--muted);pointer-events:none">search</span>
+                        <input type="text" wire:model.live.debounce.300ms="search"
+                            placeholder="Search name, reg no..."
+                            style="border:1px solid rgba(0,0,0,.1);border-radius:8px;padding:7px 12px 7px 32px;font-size:.78rem;font-family:inherit;color:var(--dark);outline:none;background:#f8f9fa;width:220px"/>
+                    </div>
+                </div>
+
+                {{-- Class filter --}}
+                <div>
+                    <select wire:model.live="filterClass" class="form-select form-select-sm" style="min-width:140px">
+                        <option value="">All Classes</option>
+                        @foreach ($classes as $c)
+                            <option value="{{ $c->id }}">{{ $c->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Section filter --}}
+                <div>
+                    <select wire:model.live="filterSection" class="form-select form-select-sm" style="min-width:140px"
+                        {{ empty($availableSections) ? 'disabled' : '' }}>
+                        <option value="">All Sections</option>
+                        @if(!empty($availableSections))
+                            @foreach ($availableSections as $s)
+                                <option value="{{ $s['id'] }}">{{ $s['name'] }}</option>
                             @endforeach
-                        </select>
-                    </div>
-                    @error('filterClass') <span class="text-danger small">{{ $message }}</span> @enderror
+                        @endif
+                    </select>
                 </div>
 
-                {{-- Section --}}
-                <div class="col-md-6">
-                    <div class="input-group input-group-outline">
-                        <label class="form-label">Section</label>
-                        <select wire:model.live="filterSection" class="form-select"
-                            {{ empty($sections) ? 'disabled' : '' }}>
-                            <option value="">{{ !$filterClass ? 'Select Class First' : 'Select Section' }}</option>
-                            @if(!empty($sections))
-                                <option value="all">All Section</option>
-                                @foreach ($sections as $item)
-                                    <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                @endforeach
-                            @endif
+                {{-- Per page --}}
+                @if($students->total() > 10)
+                    <div>
+                        <select class="form-select form-select-sm" wire:model.live="perPage">
+                            <option value="10">10 / page</option>
+                            <option value="25">25 / page</option>
+                            <option value="50">50 / page</option>
                         </select>
                     </div>
-                    @error('filterSection') <span class="text-danger small">{{ $message }}</span> @enderror
-                </div>
+                @endif
 
-                {{-- Filter Button --}}
-                <div class="col-md-12 text-center">
-                    <button wire:click="filter"
-                            wire:loading.attr="disabled"
-                            wire:target="filter"
-                            class="btn-pink w-100 d-flex justify-content-center align-items-center"
-                            type="button">
-                        <span wire:loading.remove wire:target="filter">
-                            <span class="material-icons-round" style="font-size:16px;vertical-align:middle;margin-right:4px">filter_alt</span> Filter
-                        </span>
-                        <span wire:loading wire:target="filter">
-                            <span class="material-icons-round" style="font-size:16px;animation:spin .7s linear infinite">sync</span> Filtering...
-                        </span>
-                    </button>
-                </div>
+                {{-- Reset --}}
+                <button class="btn-outline" type="button" wire:click="resetForm">
+                    <span class="material-icons-round" style="font-size:16px">refresh</span> Reset
+                </button>
+
+                {{-- Import --}}
+                <button class="btn-outline" data-bs-toggle="modal" data-bs-target="#importModal">
+                    <span class="material-icons-round" style="font-size:16px">upload</span> Import
+                </button>
+
+                {{-- Export CSV --}}
+                <button class="btn-outline" onclick="exportStudentCSV()">
+                    <span class="material-icons-round" style="font-size:16px">download</span> Export CSV
+                </button>
+
+                {{-- Print --}}
+                <button class="btn-outline" onclick="printTable()">
+                    <span class="material-icons-round" style="font-size:16px">print</span> Print
+                </button>
+
+                <a href="{{ route('admin.student.add') }}" class="btn-outline bg-dark text-white">
+                    <span class="material-icons-round">add</span> Add Student
+                </a>
 
             </div>
         </div>
 
-        @if($hasFilter)
-            {{-- ===== TOOLBAR ===== --}}
-            <div class="card-header border-0">
-                <div class="card-toolbar">
-                    <div class="card-toolbar-title">
-                        <div style="position:relative;display:inline-flex;align-items:center">
-                            <span class="material-icons-round" style="position:absolute;left:10px;font-size:17px;color:var(--muted);pointer-events:none">search</span>
-                            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search name, reg no..." style="border:1px solid rgba(0,0,0,.1);border-radius:8px;padding:7px 12px 7px 32px;font-size:.78rem;font-family:inherit;color:var(--dark);outline:none;background:#f8f9fa;width:220px"/>
-                        </div>
-                    </div>
-
-                    @if($students->total() > 10)
-                        <div class="col-md-2">
-                            <select class="form-select form-select-sm" wire:model.live="perPage">
-                                <option value="10">10 / page</option>
-                                <option value="25">25 / page</option>
-                                <option value="50">50 / page</option>
-                            </select>
-                        </div>
-                    @endif
-
-                    {{-- Import --}}
-                    <button class="btn-outline" data-bs-toggle="modal" data-bs-target="#importModal">
-                        <span class="material-icons-round" style="font-size:16px">upload</span> Import
-                    </button>
-
-                    {{-- Export CSV --}}
-                    <button class="btn-outline" onclick="exportStudentCSV()">
-                        <span class="material-icons-round" style="font-size:16px">download</span> Export CSV
-                    </button>
-
-                    {{-- Print --}}
-                    <button class="btn-outline" onclick="printTable()">
-                        <span class="material-icons-round" style="font-size:16px">print</span> Print
-                    </button>
-
-                    {{-- Reset --}}
-                    <button class="btn-outline" type="button" wire:click="resetForm">
-                        <span class="material-icons-round" style="font-size:16px">refresh</span> Reset
-                    </button>
-
-                    <a href="{{ route('admin.student.add') }}" class="btn-outline bg-dark text-white">
-                        <span class="material-icons-round">add</span> Add Student
-                    </a>
-                </div>
+        {{-- ===== TABLE (always visible, live-filtered) ===== --}}
+        <div class="card-body pt-0" id="printArea">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="studentTable">
+                    <thead>
+                        <tr>
+                            <th id="th-name">Name</th>
+                            <th id="th-class">Class</th>
+                            <th id="th-section">Section</th>
+                            <th id="th-gender">Gender</th>
+                            <th id="th-register-no">Register No</th>
+                            <th id="th-roll-no">Roll No</th>
+                            <th id="th-guardian">Guardian</th>
+                            <th id="th-actions" class="no-print">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($students as $student)
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <img src="{{ $student->photo ? asset('storage/' . $student->photo) : asset('assets/img/boy.jpg') }}"
+                                        style="width:36px;height:36px;border-radius:8px;object-fit:cover;" alt="">
+                                    <span class="fw-500">{{ $student->name }}</span>
+                                </div>
+                            </td>
+                            <td>{{ $student->class?->name ?? '—' }}</td>
+                            <td>{{ $student->section?->name ?? '—' }}</td>
+                            <td>{{ $student->gender ?? '—' }}</td>
+                            <td>{{ $student->register_no }}</td>
+                            <td>{{ $student->roll_no ?? '—' }}</td>
+                            <td>{{ $student->guardians->first()?->name ?? '—' }}</td>
+                            <td class="no-print">
+                                <div class="d-flex gap-1">
+                                    <a href="{{ route('admin.student.overview', ['id' => $student->id]) }}" target="_blank"
+                                        class="act-btn view" title="View">
+                                        <span class="material-icons-round">visibility</span>
+                                    </a>
+                                    <a href="{{ route('admin.student.edit', ['id' => $student->id]) }}"
+                                        class="act-btn edit" title="Edit">
+                                        <span class="material-icons-round">drive_file_rename_outline</span>
+                                    </a>
+                                    <button class="act-btn delete" title="Delete"
+                                        wire:click="confirmDeleteRecord({{ $student->user?->id }})">
+                                        <span class="material-icons-round">delete</span>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="8" class="text-center py-5 text-muted">
+                                <span class="material-icons-round d-block mb-2" style="font-size:2.5rem;opacity:.2">groups</span>
+                                No students found.
+                                <a href="{{ route('admin.student.add') }}">Add one now</a>.
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
+        </div>
 
-            {{-- ===== TABLE ===== --}}
-            <div class="card-body pt-0" id="printArea">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0" id="studentTable">
-                        <thead>
-                            <tr>
-                                <th id="th-sl">Name</th>
-                                <th id="th-class">Class</th>
-                                <th id="th-section">Section</th>
-                                <th id="th-gender">Gender</th>
-                                <th id="th-register-no">Register No</th>
-                                <th id="th-roll-no">Roll No</th>
-                                <th id="th-guardian">Guardian</th>
-                                <th id="th-actions" class="no-print">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($students as $student)
-                            <tr>
-                                <td>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <img src="{{ $student->photo ? asset('storage/' . $student->photo) : asset('assets/img/boy.jpg') }}"
-                                            style="width:36px;height:36px;border-radius:8px;object-fit:cover;" alt="">
-                                        <span class="fw-500">{{ $student->name }}</span>
-                                    </div>
-                                </td>
-                                <td>{{ $student->class?->name ?? '—' }}</td>
-                                <td>{{ $student->section?->name ?? '—' }}</td>
-                                <td>{{ $student->gender ?? '—' }}</td>
-                                <td>{{ $student->register_no }}</td>
-                                <td>{{ $student->roll_no ?? '—' }}</td>
-                                <td>{{ $student->guardians->first()?->name ?? '—' }}</td>
-                                <td class="no-print">
-                                    <div class="d-flex gap-1">
-                                        <a href="{{ route('admin.student.overview', ['id' => $student->id]) }}" target="_blank"
-                                            class="act-btn view" title="View">
-                                            <span class="material-icons-round">visibility</span>
-                                        </a>
-                                        <a href="{{ route('admin.student.edit', ['id' => $student->id]) }}"
-                                            class="act-btn edit" title="Edit">
-                                            <span class="material-icons-round">drive_file_rename_outline</span>
-                                        </a>
-                                        <button class="act-btn delete" title="Delete"
-                                            wire:click="confirmDeleteRecord({{ $student->user?->id }})">
-                                            <span class="material-icons-round">delete</span>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="8" class="text-center py-5 text-muted">
-                                    <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
-                                    No students found.
-                                </td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="card-footer border-0 bg-white d-flex align-items-center justify-content-between flex-wrap gap-2 py-2 px-3">
-                <small class="text-muted">Showing {{ $students->firstItem() ?? 0 }}–{{ $students->lastItem() ?? 0 }} of {{ $students->total() }}</small>
-                {{ $students->links('vendor.pagination.custom') }}
-            </div>
-        @endif
+        <div class="card-footer border-0 bg-white d-flex align-items-center justify-content-between flex-wrap gap-2 py-2 px-3">
+            <small class="text-muted">Showing {{ $students->firstItem() ?? 0 }}–{{ $students->lastItem() ?? 0 }} of {{ $students->total() }}</small>
+            {{ $students->links('vendor.pagination.custom') }}
+        </div>
 
     </div>
 
@@ -222,7 +195,7 @@
                 <div class="modal-content">
                     <div class="modal-body text-center py-4">
                         <div style="width:56px;height:56px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
-                            <i class="bi bi-exclamation-triangle text-danger" style="font-size:1.5rem;"></i>
+                            <span class="material-icons-round text-danger" style="font-size:1.5rem;">warning</span>
                         </div>
                         <h6 class="fw-700">Delete Student?</h6>
                         <p class="text-muted small">This action cannot be undone.</p>
@@ -246,8 +219,7 @@
     :root { --primary: rgba(33,37,41); --primary-light: rgba(239,84,84,.12); }
     .card { border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
     .card-header { background: #fff; border-bottom: 1px solid var(--border); border-radius: 12px 12px 0 0 !important; padding: 16px 20px; }
-    .form-label { font-size: .8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
-    .form-control, .form-select { border-radius: 8px; border: 1px solid var(--border); font-size: .875rem; padding: .45rem .75rem; }
+    .form-select { border-radius: 8px; border: 1px solid var(--border); font-size: .875rem; }
     .table th { font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); }
     .table td { vertical-align: middle; font-size: .875rem; }
 
@@ -301,41 +273,5 @@
         win.print();
         win.close();
     }
-</script>
-@endpush
-
-@push('scripts')
-<script>
-    document.addEventListener('livewire:initialized', () => {
-        Livewire.hook('morph.updated', ({ el }) => {
-            setTimeout(() => {
-                el.querySelectorAll('.input-group-outline .form-select').forEach(function(select) {
-                    if (!select.nextElementSibling || !select.nextElementSibling.classList.contains('custom-select-wrapper')) {
-                        if (typeof buildCustomSelect === 'function') buildCustomSelect(select);
-                    }
-                });
-
-                el.querySelectorAll('.input-group-outline input').forEach(function(input) {
-                    var group = input.closest('.input-group');
-                    if (!group) return;
-                    if (input.value && input.value.trim() !== '') {
-                        group.classList.add('is-filled');
-                    } else {
-                        group.classList.remove('is-filled');
-                    }
-                    if (input._materialInit) return;
-                    input._materialInit = true;
-                    input.addEventListener('focus', function() { group.classList.add('is-focused'); });
-                    input.addEventListener('blur', function() {
-                        group.classList.remove('is-focused');
-                        group.classList.toggle('is-filled', !!input.value.trim());
-                    });
-                    input.addEventListener('input', function() {
-                        group.classList.toggle('is-filled', !!input.value.trim());
-                    });
-                });
-            }, 0);
-        });
-    });
 </script>
 @endpush

@@ -67,21 +67,22 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>SL</th>
+                            <th id="th-sl">SL</th>
                             <th wire:click="sortBy('title')" style="cursor:pointer">
                                 Title @if($sortField === 'title') {!! $sortDir === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th>Class</th>
-                            <th>Section</th>
-                            <th>Subject</th>
-                            <th wire:click="sortBy('homework_date')" style="cursor:pointer">
+                            <th id="th-class">Class</th>
+                            <th id="th-section">Section</th>
+                            <th id="th-subject">Subject</th>
+                            <th id="th-homework-date" wire:click="sortBy('homework_date')" style="cursor:pointer">
                                 Homework Date @if($sortField === 'homework_date') {!! $sortDir === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th wire:click="sortBy('submission_date')" style="cursor:pointer">
+                            <th id="th-submission-date" wire:click="sortBy('submission_date')" style="cursor:pointer">
                                 Submission Date @if($sortField === 'submission_date') {!! $sortDir === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th>Status</th>
-                            <th>Actions</th>
+                            <th id="th-status">Status</th>
+                            <th id="th-updated-at">Updated At</th>
+                            <th id="th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -105,6 +106,7 @@
                                 @endphp
                                 <span class="badge bg-{{ $badge }}">{{ ucfirst($homework->status) }}</span>
                             </td>
+                            <td>{{ $homework->updated_at ? \Carbon\Carbon::parse($homework->updated_at)->diffForHumans() : '—' }}</td>
                             <td>
                                 <div class="d-flex gap-1">
                                     @if ($homework['attachment'])

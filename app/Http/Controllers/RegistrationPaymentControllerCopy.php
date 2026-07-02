@@ -53,7 +53,7 @@ class RegistrationPaymentController extends Controller
             'value_a'          => $tran_id,
         ];
 
-        // meta তে সব data রাখো — session হারালেও কাজ করবে (fail/cancel/mobile session loss সবক্ষেত্রেই)
+        // meta তে সব data রাখো — session হারালেও কাজ করবে
         // institution_id, month, year ফাঁকা থাকবে — registration এর সময় এগুলো প্রযোজ্য নয়
         Invoice::withoutGlobalScopes()->create([
             'invoice_no'     => 'REG_' . strtoupper(uniqid()),
@@ -203,16 +203,12 @@ class RegistrationPaymentController extends Controller
 
     public function fail(Request $request)
     {
-        $this->restoreSessionFromInvoice($request->input('tran_id'), 'failed');
-
         return redirect()->route('register')
             ->with('error', 'Payment ব্যর্থ হয়েছে। আবার চেষ্টা করুন।');
     }
 
     public function cancel(Request $request)
     {
-        $this->restoreSessionFromInvoice($request->input('tran_id'), 'cancelled');
-
         return redirect()->route('register')
             ->with('error', 'Payment বাতিল করা হয়েছে।');
     }
@@ -252,55 +248,5 @@ class RegistrationPaymentController extends Controller
         }
 
         return response()->json(['status' => 'ok']);
-    }
-
-    /**
-     * Payment fail/cancel howar por Invoice er meta theke
-     * session('pending_registration') abar restore kore dey,
-     * jate user register form e fire gele age vora data abar dekhte pay,
-     * notun kore shob typing korte na hoy.
-     */
-    protected function restoreSessionFromInvoice(?string $tran_id, string $newStatus): void
-    {
-        if (!$tran_id) {
-            return;
-        }
-
-        $record = Invoice::withoutGlobalScopes()
-            ->where('transaction_id', $tran_id)
-            ->where('type', 'registration')
-            ->first();
-
-        if (!$record) {
-            Log::warning('Payment ' . $newStatus . ': Invoice not found', ['tran_id' => $tran_id]);
-            return;
-        }
-
-        // Invoice status update koro tracking er jonno (only jodi already paid na hoy)
-        if ($record->status === 'pending') {
-            $record->update(['status' => $newStatus]);
-        }
-
-        $meta = json_decode($record->meta, true);
-
-        if (!$meta) {
-            return;
-        }
-
-        // ✅ session abar bhore dao — form field gulo age moto thakbe
-        session(['pending_registration' => [
-            'institution_name' => $meta['institution_name'] ?? null,
-            'institution_type' => $meta['institution_type'] ?? null,
-            'email'             => $meta['email'] ?? null,
-            'phone'             => $meta['phone'] ?? null,
-            'timezone'          => $meta['timezone'] ?? 'Asia/Dhaka',
-            'admin_name'        => $meta['admin_name'] ?? null,
-            'admin_email'       => $meta['admin_email'] ?? null,
-            'password'          => $meta['password'] ?? null,
-        ]]);
-
-        if (!empty($meta['system_logo'])) {
-            session(['pending_logo' => $meta['system_logo']]);
-        }
     }
 }

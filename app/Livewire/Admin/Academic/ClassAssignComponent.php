@@ -33,7 +33,7 @@ class ClassAssignComponent extends Component
     public string $class_id = '';
     public $section_id;
 
-    // ekhon subject_array = selected subject_id array
+    // subject_array = checkbox diye select kora subject_id array
     public array $subject_array = [];
 
     // teacher_array = [subject_id => teacher_id]
@@ -74,9 +74,9 @@ class ClassAssignComponent extends Component
         }
     }
 
+    // Checkbox theke subject uncheck korle, oi subject er teacher_array entry o clean kore dao
     public function updatedSubjectArray(): void
     {
-        // notun subject add hole purano teacher_array theke baad deya subject gula rekhe baki sob clean kore dao
         $this->teacher_array = collect($this->teacher_array)
             ->only($this->subject_array)
             ->toArray();
@@ -99,7 +99,6 @@ class ClassAssignComponent extends Component
         $this->resetForm();
         $this->editId = null;
         $this->showModal = true;
-        $this->dispatch('showModalChanged', selected: $this->subject_array);
     }
 
     public function openEdit(int $id): void
@@ -123,7 +122,6 @@ class ClassAssignComponent extends Component
             : [];
 
         $this->showModal = true;
-        $this->dispatch('showModalChanged', selected: $this->subject_array);
     }
 
     public function save(): void
