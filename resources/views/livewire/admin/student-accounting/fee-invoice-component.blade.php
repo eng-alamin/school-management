@@ -7,98 +7,71 @@
             <p>View and manage student fee invoices by class and section</p>
         </div>
 
-        {{-- Select Ground --}}
-        <div class="form-section" style="padding-top:40px; padding-bottom:20px">
-            <div class="section-heading">
-                <span class="material-icons-round">tune</span> Select Ground
-            </div>
-            <div class="row g-4">
+        <div class="card-header border-0">
+            <div class="card-toolbar">
 
-                {{-- Class --}}
-                <div class="col-md-6">
-                    <div class="input-group input-group-outline">
-                        <label class="form-label">Class</label>
-                        <select wire:model.live="filterClass" class="form-select">
-                            <option value="">Select Class</option>
-                            @foreach ($classes as $item)
-                                <option value="{{ $item->id }}">{{ $item->name }}</option>
+                {{-- Search --}}
+                <div class="card-toolbar-title">
+                    <div style="position:relative;display:inline-flex;align-items:center">
+                        <span class="material-icons-round" style="position:absolute;left:10px;font-size:17px;color:var(--muted);pointer-events:none">search</span>
+                        <input type="text" wire:model.live.debounce.300ms="search"
+                            placeholder="Search by name, roll or register no"
+                            style="border:1px solid rgba(0,0,0,.1);border-radius:8px;padding:7px 12px 7px 32px;font-size:.78rem;font-family:inherit;color:var(--dark);outline:none;background:#f8f9fa;width:240px"/>
+                    </div>
+                </div>
+
+                {{-- Class filter --}}
+                <div>
+                    <select wire:model.live="filterClass" class="form-select form-select-sm" style="min-width:140px">
+                        <option value="">All Classes</option>
+                        @foreach ($classes as $c)
+                            <option value="{{ $c->id }}">{{ $c->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Section filter --}}
+                <div>
+                    <select wire:model.live="filterSection" class="form-select form-select-sm" style="min-width:140px"
+                        {{ empty($availableSections) ? 'disabled' : '' }}>
+                        <option value="">All Sections</option>
+                        @if(!empty($availableSections))
+                            @foreach ($availableSections as $s)
+                                <option value="{{ $s['id'] }}">{{ $s['name'] }}</option>
                             @endforeach
-                        </select>
-                    </div>
-                    @error('filterClass') <span class="text-danger small">{{ $message }}</span> @enderror
+                        @endif
+                    </select>
                 </div>
 
-                {{-- Section --}}
-                <div class="col-md-6">
-                    <div class="input-group input-group-outline">
-                        <label class="form-label">Section</label>
-                        <select wire:model.live="filterSection" class="form-select"
-                            {{ empty($sections) ? 'disabled' : '' }}>
-                            <option value="">{{ !$filterClass ? 'Select Class First' : 'Select Section' }}</option>
-                            @if (!empty($sections))
-                                <option value="all">All Section</option>
-                                @foreach ($sections as $item)
-                                    <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                @endforeach
-                            @endif
+                {{-- Per page --}}
+                @if($students->total() > 10)
+                    <div>
+                        <select class="form-select form-select-sm" wire:model.live="perPage">
+                            <option value="10">10 / page</option>
+                            <option value="25">25 / page</option>
+                            <option value="50">50 / page</option>
                         </select>
                     </div>
-                </div>
-
-                {{-- Filter Button --}}
-                <div class="col-md-12 text-center">
-                    <button wire:click="filter"
-                            wire:loading.attr="disabled"
-                            wire:target="filter"
-                            class="btn-pink w-100 d-flex justify-content-center align-items-center"
-                            type="button">
-                        <span wire:loading.remove wire:target="filter">
-                            <span class="material-icons-round" style="font-size:16px;vertical-align:middle;margin-right:4px">filter_alt</span> Filter
-                        </span>
-                        <span wire:loading wire:target="filter">
-                            <span class="material-icons-round" style="font-size:16px;animation:spin .7s linear infinite">sync</span> Filtering...
-                        </span>
-                    </button>
-                </div>
+                @endif
 
             </div>
         </div>
 
-        {{-- Student Invoice List --}}
-        @if ($hasFiltered)
-        <div class="form-section">
-            <div class="section-heading">
-                <span class="material-icons-round">receipt_long</span> Invoice List
-                <span class="badge-count">{{ $students->count() }} Students</span>
-            </div>
-
-            @if ($students->count() > 0)
-
-            {{-- Toolbar --}}
-            <div class="alloc-toolbar">
-                <div class="d-flex align-items-center gap-3">
-                    <span class="alloc-counter">
-                        <span class="material-icons-round" style="font-size:15px;vertical-align:middle">people</span>
-                        {{ count($selectedStudents) }} / {{ $students->count() }} selected
-                    </span>
-                    <button class="btn-outline btn-sm-custom" type="button" wire:click="resetForm">
-                        <span class="material-icons-round" style="font-size:14px">refresh</span> Reset
-                    </button>
-                </div>
-            </div>
-
-            <div class="table-responsive mt-2">
+        <div class="card-body pt-0">
+            <div class="table-responsive">
                 <table class="table-loader">
                     <thead>
                         <tr>
-                            <th style="width:44px"><input type="checkbox" class="alloc-checkbox" wire:model.live="selectAll"></th>
                             <th id="th-sl">SL</th>
-                            <th id="th-name">Name</th>
+                            <th id="th-name" wire:click="sortBy('name')" style="cursor:pointer">
+                                Name @if($sortField === 'name') {!! $sortDir === 'asc' ? '↑' : '↓' !!} @endif
+                            </th>
                             <th id="th-class">Class</th>
                             <th id="th-section">Section</th>
                             <th id="th-register-no">Register No</th>
-                            <th id="th-roll-no">Roll No</th>
-                            <th id="th-mobile">Mobile</th>
+                            <th id="th-roll-no" wire:click="sortBy('roll_no')" style="cursor:pointer">
+                                Roll No @if($sortField === 'roll_no') {!! $sortDir === 'asc' ? '↑' : '↓' !!} @endif
+                            </th>
                             <th id="th-fee-items">Fee Items</th>
                             <th id="th-total">Total</th>
                             <th id="th-status">Status</th>
@@ -106,48 +79,48 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($students as $i => $student)
+                        @forelse ($students as $i => $student)
                         @php
-                            $invoice = $student->feeInvoices->first();
+                            $invoices     = $student->feeInvoices;
+                            $totalAmount  = $invoices->sum('total_amount');
+                            $allPaid      = $invoices->isNotEmpty() && $invoices->every(fn($inv) => $inv->payment_status === 'paid');
+                            $nonePaid     = $invoices->isEmpty() || $invoices->every(fn($inv) => $inv->payment_status === 'unpaid');
+                            $feeItemNames = $invoices->flatMap->items->map(fn($item) => $item->feeSetup?->feeType?->name ?? '—')->unique();
                         @endphp
-                        <tr wire:key="student-{{ $student->id }}"
-                            class="{{ in_array($student->id, $selectedStudents) ? 'row-selected' : '' }}">
-                            <td>
-                                <input type="checkbox"
-                                       class="alloc-checkbox"
-                                       wire:model.live="selectedStudents"
-                                       value="{{ $student->id }}">
-                            </td>
-                            <td>{{ $i + 1 }}</td>
+                        <tr wire:key="student-{{ $student->id }}">
+                            <td class="text-muted">{{ $students->firstItem() + $i }}</td>
                             <td>{{ $student->name }}</td>
                             <td>{{ $student->class->name ?? '—' }}</td>
                             <td>{{ $student->section->name ?? '—' }}</td>
                             <td>{{ $student->student_id ?? '—' }}</td>
                             <td>{{ $student->roll_no ?? '—' }}</td>
-                            <td>{{ $student->mobile ?? '—' }}</td>
                             <td>
-                                @forelse ($student->feeInvoices as $inv)
-                                    @foreach ($inv->items as $item)
-                                        <span class="fee-tag">{{ $item->fee_type_name }}</span>
-                                    @endforeach
+                                @forelse ($feeItemNames as $name)
+                                    <span class="fee-tag">{{ $name }}</span>
                                 @empty
                                     <span class="text-muted">—</span>
                                 @endforelse
                             </td>
                             <td>
-                                @if ($invoice)
-                                    <span class="amount-text">৳{{ number_format($invoice->total_amount, 0) }}</span>
+                                @if ($invoices->isEmpty())
+                                    <span class="text-muted">—</span>
+                                @elseif ($allPaid)
+                                    <span class="amount-text text-success">৳{{ number_format($totalAmount, 0) }}</span>
+                                @elseif ($nonePaid)
+                                    <span class="amount-text text-danger">৳{{ number_format($totalAmount, 0) }}</span>
                                 @else
-                                    —
+                                    <span class="amount-text text-warning">৳{{ number_format($totalAmount, 0) }}</span>
                                 @endif
                             </td>
                             <td>
-                                @if ($invoice?->payment_status === 'paid')
+                                @if ($invoices->isEmpty())
+                                    <span class="text-muted">—</span>
+                                @elseif ($allPaid)
                                     <span class="status-badge paid">Paid</span>
-                                @elseif ($invoice?->payment_status === 'partial')
-                                    <span class="status-badge partial">Partial</span>
-                                @else
+                                @elseif ($nonePaid)
                                     <span class="status-badge unpaid">Unpaid</span>
+                                @else
+                                    <span class="status-badge partial">Partial</span>
                                 @endif
                             </td>
                             <td>
@@ -166,51 +139,55 @@
                                 </div>
                             </td>
                         </tr>
-                        @endforeach
+                        @empty
+                        <tr>
+                            <td colspan="10" class="text-center py-5 text-muted">
+                                <span class="material-icons-round d-block mb-2" style="font-size:2.5rem;opacity:.2">inbox</span>
+                                No students with fee invoices found.
+                            </td>
+                        </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
-
-            @else
-            {{-- Empty State --}}
-            <div class="empty-state">
-                <span class="material-icons-round empty-icon">inbox</span>
-                <p>No students with fee allocations found.</p>
-            </div>
-            @endif
         </div>
-        @endif
 
-        {{-- Delete Confirm Modal --}}
-        @if ($confirmDelete)
-        <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.5);">
-            <div class="modal-dialog modal-sm">
-                <div class="modal-content">
-                    <div class="modal-body text-center py-4">
-                        <div style="width:56px;height:56px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
-                            <span class="material-icons-round text-danger" style="font-size:28px">warning</span>
-                        </div>
-                        <h6 class="fw-bold">Delete All Invoices?</h6>
-                        <p class="text-muted small mb-0">This will remove all fee allocations and invoices for this student. This action cannot be undone.</p>
+        <div class="card-footer border-0 bg-white d-flex align-items-center justify-content-between flex-wrap gap-2 py-2 px-3">
+            <small class="text-muted">Showing {{ $students->firstItem() ?? 0 }}–{{ $students->lastItem() ?? 0 }} of {{ $students->total() }}</small>
+            {{ $students->links('vendor.pagination.custom') }}
+        </div>
+
+    </div>
+
+    {{-- Delete Confirm Modal --}}
+    @if ($confirmDelete)
+    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.5);">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-body text-center py-4">
+                    <div style="width:56px;height:56px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+                        <span class="material-icons-round text-danger" style="font-size:28px">warning</span>
                     </div>
-                    <div class="modal-footer justify-content-center border-0 pt-0 pb-3">
-                        <button class="btn btn-light btn-sm px-4"
-                                wire:click="$set('confirmDelete', false)">Cancel</button>
-                        <button class="btn btn-danger btn-sm px-4"
-                                wire:click="deleteRecord"
-                                wire:loading.attr="disabled"
-                                wire:target="deleteRecord">
-                            <span wire:loading wire:target="deleteRecord"
-                                  class="spinner-border spinner-border-sm me-1"></span>
-                            Delete
-                        </button>
-                    </div>
+                    <h6 class="fw-bold">Delete All Invoices?</h6>
+                    <p class="text-muted small mb-0">This will remove all fee invoices (and their items) for this student. This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer justify-content-center border-0 pt-0 pb-3">
+                    <button class="btn btn-light btn-sm px-4"
+                            wire:click="$set('confirmDelete', false)">Cancel</button>
+                    <button class="btn btn-danger btn-sm px-4"
+                            wire:click="deleteRecord"
+                            wire:loading.attr="disabled"
+                            wire:target="deleteRecord">
+                        <span wire:loading wire:target="deleteRecord"
+                              class="spinner-border spinner-border-sm me-1"></span>
+                        Delete
+                    </button>
                 </div>
             </div>
         </div>
-        @endif
-
     </div>
+    @endif
+
 </div>
 
 @push('styles')
@@ -239,70 +216,6 @@
     }
     .table-loader tbody tr:hover {
         background: rgba(255,255,255,.03);
-    }
-    .row-selected {
-        background: rgba(224, 82, 82, .10) !important;
-    }
-
-    /* ── Checkbox ── */
-    .alloc-checkbox {
-        width: 16px;
-        height: 16px;
-        cursor: pointer;
-        accent-color: #e05252;
-    }
-
-    /* ── Toolbar ── */
-    .alloc-toolbar {
-        display: flex;
-        align-items: center;
-        justify-content: end;
-        padding: 10px 12px;
-        background: rgba(255,255,255,.03);
-        border-radius: 6px;
-        border: 1px solid rgba(255,255,255,.06);
-        margin-bottom: 4px;
-    }
-    .alloc-select-all {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 13px;
-        font-weight: 500;
-        cursor: pointer;
-        margin: 0;
-    }
-    .alloc-counter {
-        font-size: 12px;
-        color: #aaa;
-    }
-    .btn-sm-custom {
-        font-size: 12px;
-        padding: 4px 12px;
-        height: auto;
-    }
-
-    /* ── Section Heading ── */
-    .section-heading {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 13px;
-        font-weight: 600;
-        color: #bbb;
-        text-transform: uppercase;
-        letter-spacing: .5px;
-        margin-bottom: 16px;
-    }
-    .badge-count {
-        margin-left: auto;
-        background: rgba(224, 82, 82, .15);
-        color: #e05252;
-        font-size: 11px;
-        font-weight: 600;
-        padding: 2px 10px;
-        border-radius: 20px;
-        text-transform: none;
     }
 
     /* ── Fee Tag ── */
@@ -345,56 +258,5 @@
         background: rgba(239,68,68,.15);
         color: #ef4444;
     }
-
-    /* ── Empty State ── */
-    .empty-state {
-        text-align: center;
-        padding: 48px 20px;
-        color: #666;
-    }
-    .empty-icon {
-        font-size: 48px;
-        opacity: 0.2;
-        display: block;
-        margin-bottom: 10px;
-    }
-    .empty-state p {
-        font-size: 13px;
-    }
 </style>
-@endpush
-
-@push('scripts')
-<script>
-    document.addEventListener('livewire:initialized', () => {
-        Livewire.hook('morph.updated', ({ el }) => {
-            setTimeout(() => {
-                el.querySelectorAll('.input-group-outline .form-select').forEach(function(select) {
-                    if (!select.nextElementSibling || !select.nextElementSibling.classList.contains('custom-select-wrapper')) {
-                        buildCustomSelect(select);
-                    }
-                });
-                el.querySelectorAll('.input-group-outline input').forEach(function(input) {
-                    var group = input.closest('.input-group');
-                    if (!group) return;
-                    if (input.value && input.value.trim() !== '') {
-                        group.classList.add('is-filled');
-                    } else {
-                        group.classList.remove('is-filled');
-                    }
-                    if (input._materialInit) return;
-                    input._materialInit = true;
-                    input.addEventListener('focus', function() { group.classList.add('is-focused'); });
-                    input.addEventListener('blur', function() {
-                        group.classList.remove('is-focused');
-                        group.classList.toggle('is-filled', !!input.value.trim());
-                    });
-                    input.addEventListener('input', function() {
-                        group.classList.toggle('is-filled', !!input.value.trim());
-                    });
-                });
-            }, 0);
-        });
-    });
-</script>
 @endpush

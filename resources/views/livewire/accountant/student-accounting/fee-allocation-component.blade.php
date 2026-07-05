@@ -84,38 +84,30 @@
         <div class="form-section">
             <div class="section-heading">
                 <span class="material-icons-round">format_list_bulleted</span> Student List
-                <span class="badge-count">{{ count($students) }} Students</span>
+                @if (count($selectedStudents) > 0)
+                    <span class="badge-count">{{ count($selectedStudents) }} / {{ count($students) }} Students Selected</span>
+                @else
+                    <span class="badge-count">{{ count($students) }} Students</span>
+                @endif
             </div>
 
             @if (count($students) > 0)
-
-            {{-- Select All Toolbar --}}
-            <div class="alloc-toolbar">
-                <label class="alloc-select-all">
-                    <input type="checkbox"
-                           class="alloc-checkbox"
-                           wire:model.live="selectAll">
-                    <span>Select All</span>
-                </label>
-                <span class="alloc-counter">
-                    <span class="material-icons-round" style="font-size:15px;vertical-align:middle">people</span>
-                    {{ count($selectedStudents) }} / {{ count($students) }} selected
-                </span>
-            </div>
 
             <div class="table-responsive mt-2">
                 <table class="table-loader">
                     <thead>
                         <tr>
-                            <th style="width:44px"></th>
-                            <th>SL</th>
-                            <th>Name</th>
-                            <th>Section</th>
-                            <th>Register No</th>
-                            <th>Roll No</th>
-                            <th>Gender</th>
-                            <th>Mobile</th>
-                            <th>Guardian</th>
+                            <th style="width:44px">
+                                <input type="checkbox" class="alloc-checkbox" wire:model.live="selectAll">
+                            </th>
+                            <th id="th-sl">SL</th>
+                            <th id="th-name">Name</th>
+                            <th id="th-section">Section</th>
+                            <th id="th-register-no">Register No</th>
+                            <th id="th-roll-no">Roll No</th>
+                            <th id="th-gender">Gender</th>
+                            <th id="th-mobile">Mobile</th>
+                            <th id="th-guardian">Guardian</th>
                         </tr>
                     </thead>
                     <tbody>

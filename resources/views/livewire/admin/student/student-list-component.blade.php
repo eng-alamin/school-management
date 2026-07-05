@@ -58,11 +58,6 @@
                     </div>
                 @endif
 
-                {{-- Reset --}}
-                <button class="btn-outline" type="button" wire:click="resetForm">
-                    <span class="material-icons-round" style="font-size:16px">refresh</span> Reset
-                </button>
-
                 {{-- Import --}}
                 <button class="btn-outline" data-bs-toggle="modal" data-bs-target="#importModal">
                     <span class="material-icons-round" style="font-size:16px">upload</span> Import

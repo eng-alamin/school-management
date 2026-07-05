@@ -8,7 +8,7 @@
 
         <div class="container-xl mt-4">
 
-            @include('livewire.admin.student.student-navbar')
+            @include('livewire.accountant.student.student-navbar')
 
             {{-- Collect Button --}}
             <div class="mb-3 no-print">
@@ -36,15 +36,15 @@
                                 <input type="checkbox" class="alloc-checkbox"
                                     wire:model.live="selectAll">
                             </th>
-                            <th>SL#</th>
-                            <th>Fees Type</th>
-                            <th>Due Date</th>
-                            <th>Status</th>
-                            <th>Amount</th>
-                            <th>Discount</th>
-                            <th>Fine</th>
-                            <th>Paid</th>
-                            <th>Balance</th>
+                            <th id="th-sl">SL</th>
+                            <th id="th-fees-type">Fees Type</th>
+                            <th id="th-due-date">Due Date</th>
+                            <th id="th-status">Status</th>
+                            <th id="th-amount">Amount</th>
+                            <th id="th-discount">Discount</th>
+                            <th id="th-fine">Fine</th>
+                            <th id="th-paid">Paid</th>
+                            <th id="th-balance">Balance</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -54,66 +54,62 @@
                             $grandDiscount = 0;
                             $grandFine     = 0;
                             $grandPaid     = 0;
+                            $grandDue      = 0;
                         @endphp
 
-                        @forelse($feeAllocations as $allocation)
+                        @forelse($invoices as $invoice)
 
-                        {{-- Group Header --}}
-                        <tr class="group-header-row">
-                            <td colspan="10">
+                        {{-- Invoice Group Header --}}
+                        <tr class="group-header-row {{ in_array($invoice->id, $selectedIds) ? 'row-selected' : '' }}">
+                            <td class="no-print">
+                                <input type="checkbox" class="alloc-checkbox"
+                                    wire:model.live="selectedIds"
+                                    value="{{ $invoice->id }}">
+                            </td>
+                            <td colspan="9">
                                 <span class="material-icons-round"
                                     style="font-size:14px;vertical-align:middle;color:#e05252">
                                     arrow_drop_down
                                 </span>
-                                {{ $allocation->feeGroup->name }}
+                                Invoice #{{ $invoice->invoice_no }}
+                                <span class="text-muted" style="font-size:11px">
+                                    ({{ \Carbon\Carbon::parse($invoice->invoice_date)->format('d.M.Y') }})
+                                </span>
                             </td>
                         </tr>
 
-                        @forelse($allocation->feeGroup->items as $item)
+                        @forelse($invoice->items as $item)
                         @php
-                            $invItem  = $invoiceItemsMap[$item->id] ?? null;
-                            $amount   = (float) ($item->amount ?? 0);
-                            $discount = (float) ($invItem?->discount_amount ?? 0);
-                            $fine     = (float) ($invItem?->fine_amount ?? 0);
-                            $paid     = (float) ($invItem?->total_paid ?? 0);
-                            $balance  = max(0, $amount - $discount + $fine - $paid);
-                            $status   = $invItem?->payment_status ?? 'unpaid';
-                            $dueDate  = $invItem?->invoice?->due_date;
+                            $amount   = (float) $item->base_amount;
+                            $discount = (float) $item->discount_amount;
+                            $fine     = (float) $item->fine_amount;
 
                             $grandTotal    += $amount;
                             $grandDiscount += $discount;
                             $grandFine     += $fine;
-                            $grandPaid     += $paid;
                         @endphp
-                        <tr wire:key="item-{{ $item->id }}"
-                            class="{{ in_array($item->id, $selectedIds) ? 'row-selected' : '' }}">
-
-                            <td class="no-print">
-                                <input type="checkbox" class="alloc-checkbox"
-                                    wire:model.live="selectedIds"
-                                    value="{{ $item->id }}">
-                            </td>
+                        <tr wire:key="invoice-item-{{ $item->id }}">
+                            <td class="no-print"></td>
                             <td class="text-muted">{{ $sl++ }}</td>
-                            <td>{{ $item->feeType?->name ?? '—' }}</td>
+                            <td>{{ $item->feeGroupItem?->feeType?->name ?? '—' }}</td>
                             <td>
-                                {{ $dueDate ? \Carbon\Carbon::parse($dueDate)->format('d.M.Y') : '—' }}
+                                {{ $invoice->due_date ? \Carbon\Carbon::parse($invoice->due_date)->format('d.M.Y') : '—' }}
                             </td>
                             <td>
-                                @if($status === 'paid')
-                                    <span class="inv-badge paid">Total Paid</span>
-                                @elseif($status === 'partial')
+                                @if($invoice->payment_status === 'paid')
+                                    <span class="inv-badge paid">Paid</span>
+                                @elseif($invoice->payment_status === 'partial')
                                     <span class="inv-badge partial">Partial</span>
                                 @else
                                     <span class="inv-badge unpaid">Unpaid</span>
                                 @endif
                             </td>
-                            <td>{{ number_format($amount, 2) }}</td>
-                            <td>{{ number_format($discount, 2) }}</td>
-                            <td>{{ number_format($fine, 2) }}</td>
-                            <td>{{ number_format($paid, 2) }}</td>
-                            <td>{{ number_format($balance, 2) }}</td>
+                            <td>{{ number_format($amount, 0) }}</td>
+                            <td>{{ number_format($discount, 0) }}</td>
+                            <td>{{ number_format($fine, 0) }}</td>
+                            <td class="text-muted">—</td>
+                            <td class="text-muted">—</td>
                         </tr>
-
                         @empty
                         <tr>
                             <td colspan="10" class="text-center py-3 text-muted">
@@ -122,11 +118,25 @@
                         </tr>
                         @endforelse
 
+                        {{-- Invoice Summary Row --}}
+                        @php
+                            $grandPaid += (float) $invoice->paid_amount;
+                            $grandDue  += (float) $invoice->due_amount;
+                        @endphp
+                        <tr class="invoice-subtotal-row">
+                            <td class="no-print"></td>
+                            <td colspan="7" class="text-end text-muted" style="font-size:12px">
+                                Invoice Total: {{ number_format($invoice->total_amount, 0) }}
+                            </td>
+                            <td>{{ number_format($invoice->paid_amount, 0) }}</td>
+                            <td>{{ number_format($invoice->due_amount, 0) }}</td>
+                        </tr>
+
                         @empty
                         <tr>
                             <td colspan="10" class="text-center py-5 text-muted">
                                 <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
-                                No fee allocations found for this student.
+                                No invoices found for this student.
                             </td>
                         </tr>
                         @endforelse
@@ -135,27 +145,27 @@
             </div>
 
             {{-- Grand Total --}}
-            @if($feeAllocations->isNotEmpty())
+            @if($invoices->isNotEmpty())
             <div class="invoice-summary">
                 <div class="inv-summary-row">
                     <span>Grand Total :</span>
-                    <span>{{ number_format($grandTotal, 2) }}</span>
+                    <span>{{ number_format($grandTotal, 0) }}</span>
                 </div>
                 <div class="inv-summary-row">
                     <span>Discount :</span>
-                    <span>{{ number_format($grandDiscount, 2) }}</span>
+                    <span>{{ number_format($grandDiscount, 0) }}</span>
                 </div>
                 <div class="inv-summary-row">
                     <span>Fine :</span>
-                    <span>{{ number_format($grandFine, 2) }}</span>
+                    <span>{{ number_format($grandFine, 0) }}</span>
                 </div>
                 <div class="inv-summary-row">
                     <span>Paid :</span>
-                    <span>{{ number_format($grandPaid, 2) }}</span>
+                    <span>{{ number_format($grandPaid, 0) }}</span>
                 </div>
                 <div class="inv-summary-row fw-bold">
                     <span>Balance :</span>
-                    <span>{{ number_format($grandTotal - $grandDiscount + $grandFine - $grandPaid, 2) }}</span>
+                    <span>{{ number_format($grandDue, 0) }}</span>
                 </div>
             </div>
             @endif
@@ -170,6 +180,101 @@
         </div>
 
     </div>
+
+    {{-- ============================================================ --}}
+    {{-- PAYMENT COLLECT MODAL --}}
+    {{-- ============================================================ --}}
+    @if($showPaymentModal)
+    <div class="pay-modal-backdrop" wire:click.self="closePaymentModal">
+        <div class="pay-modal-box">
+
+            <div class="card-header border-0 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Payment Collect</h5>
+                <button type="button" class="btn-close" wire:click="closePaymentModal"></button>
+            </div>
+
+            <div class="pay-modal-body">
+
+                <div class="table-responsive mb-3">
+                    <table class="table-loader">
+                        <thead>
+                            <tr>
+                                <th>Invoice No</th>
+                                <th>Due Amount</th>
+                                <th style="width:160px">Pay Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($paymentRows as $invoiceId => $row)
+                            <tr wire:key="pay-row-{{ $invoiceId }}">
+                                <td>#{{ $row['invoice_no'] }}</td>
+                                <td>{{ number_format($row['due'], 2) }}</td>
+                                <td>
+                                    <input type="number" step="0.01" min="0" max="{{ $row['due'] }}"
+                                        class="form-control form-control-sm"
+                                        wire:model.live="paymentRows.{{ $invoiceId }}.pay_amount">
+                                    @error("paymentRows.$invoiceId.pay_amount")
+                                        <div class="text-danger" style="font-size:11px">{{ $message }}</div>
+                                    @enderror
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Payment Method</label>
+                        <select class="form-select" wire:model="paymentMethod">
+                            <option value="cash">Cash</option>
+                            <option value="bkash">bKash</option>
+                            <option value="nagad">Nagad</option>
+                            <option value="bank">Bank</option>
+                            <option value="cheque">Cheque</option>
+                        </select>
+                        @error('paymentMethod') <div class="text-danger" style="font-size:11px">{{ $message }}</div> @enderror
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Payment Date</label>
+                        <input type="date" class="form-control" wire:model="paymentDate">
+                        @error('paymentDate') <div class="text-danger" style="font-size:11px">{{ $message }}</div> @enderror
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Office Account (Optional)</label>
+                        <select class="form-select" wire:model="officeAccountId">
+                            <option value="">-- Select --</option>
+                            @foreach($officeAccounts as $account)
+                                <option value="{{ $account->id }}">{{ $account->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('officeAccountId') <div class="text-danger" style="font-size:11px">{{ $message }}</div> @enderror
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Remarks (Optional)</label>
+                        <textarea class="form-control" rows="2" wire:model="remarks"></textarea>
+                    </div>
+                </div>
+
+                <div class="pay-total-row mt-3">
+                    <span>Total Pay Amount :</span>
+                    <span class="fw-bold">{{ number_format($this->totalPayAmount, 2) }}</span>
+                </div>
+
+            </div>
+
+            <div class="pay-modal-footer">
+                <button type="button" class="btn-outline" wire:click="closePaymentModal">Cancel</button>
+                <button type="button" class="btn-pink" wire:click="savePayment" wire:loading.attr="disabled">
+                    <span wire:loading wire:target="savePayment" class="spinner-border spinner-border-sm me-1"></span>
+                    Confirm Payment
+                </button>
+            </div>
+
+        </div>
+    </div>
+    @endif
+
 </div>
 
 @push('styles')
@@ -206,6 +311,11 @@
         color: #888;
         background: transparent;
         border-bottom: none !important;
+    }
+    .invoice-subtotal-row td {
+        background: rgba(0,0,0,.015);
+        font-weight: 600;
+        border-top: 1px dashed rgba(0,0,0,.08);
     }
     .row-selected {
         background: rgba(224, 82, 82, .08) !important;
@@ -249,25 +359,65 @@
         justify-content: flex-end;
         padding: 16px 0 8px;
     }
+
+    /* ---- Payment Modal ---- */
+    .pay-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.5);
+        z-index: 1055;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+    .pay-modal-box {
+        background: #fff;
+        width: 100%;
+        max-width: 640px;
+        max-height: 90vh;
+        overflow-y: auto;
+        border-radius: 10px;
+        box-shadow: 0 10px 40px rgba(0,0,0,.25);
+    }
+    .btn-close-modal {
+        background: none;
+        border: none;
+        color: #fff;
+        cursor: pointer;
+        line-height: 0;
+    }
+    .pay-modal-body {
+        padding: 18px;
+    }
+    .pay-total-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 14px;
+        padding: 10px;
+        background: rgba(224,82,82,.06);
+        border-radius: 6px;
+    }
+    .pay-modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 14px 18px;
+        border-top: 1px solid rgba(0,0,0,.06);
+    }
 </style>
 
 <style>
     @media print {
-        /* sidebar, navbar, header সব hide */
         .no-print, .sidenav, .navbar,
         .student-navbar,
         nav, header, aside, footer { display: none !important; }
 
-        /* card এর padding/shadow সরাও */
         .card {background: none !important; border: none !important; box-shadow: none !important; padding: 0 !important; }
 
-        /* container full width */
         .container-xl { max-width: 100% !important; padding: 0 !important; }
 
-        /* section card border রাখো কিন্তু shadow সরাও */
         .section-card { box-shadow: none !important; break-inside: avoid; }
-
-        /* page break যাতে section মাঝখানে না ভাঙে */
         .section-card { page-break-inside: avoid; }
 
         body { background: white !important; }

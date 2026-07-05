@@ -65,7 +65,7 @@ class Student extends Model
 
     public function feeInvoices()
     {
-        return $this->hasMany(FeeInvoice::class, 'student_id');
+        return $this->hasMany(FeeInvoice::class);
     }
     
     public function sales()

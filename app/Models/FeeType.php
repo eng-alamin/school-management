@@ -10,9 +10,5 @@ class FeeType extends Model
     use BelongsToInstitution;
     
     protected $guarded = [];
-    
-    public function feeGroupItems()
-    {
-        return $this->hasMany(FeeGroupItem::class);
-    }
+
 }

@@ -13,12 +13,15 @@ return new class extends Migration
     {
         Schema::create('fee_types', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
+            $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
             $table->string('name');
-            $table->string('fee_code')->unique();
+            $table->string('code');
             $table->text('description')->nullable();
             $table->boolean('status')->default(true);
             $table->timestamps();
+
+            $table->softDeletes();
+            $table->unique(['institution_id', 'code'], 'unique_fee_type');
         });
     }
 

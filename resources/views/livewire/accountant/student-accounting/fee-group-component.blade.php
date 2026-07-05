@@ -12,7 +12,7 @@
                 <div class="card-toolbar-title">
                     <div style="position:relative;display:inline-flex;align-items:center">
                         <span class="material-icons-round" style="position:absolute;left:10px;font-size:17px;color:var(--muted);pointer-events:none">search</span>
-                        <input type="text" wire:model.live.debounce.300ms="search" id="tableSearch" placeholder="Search" style="border:1px solid rgba(0,0,0,.1);border-radius:8px;padding:7px 12px 7px 32px;font-size:.78rem;font-family:inherit;color:var(--dark);outline:none;background:#f8f9fa;width:220px"/>
+                        <input type="text" wire:model.live.debounce.300ms="search" id="tableSearch" placeholder="Search name or code" style="border:1px solid rgba(0,0,0,.1);border-radius:8px;padding:7px 12px 7px 32px;font-size:.78rem;font-family:inherit;color:var(--dark);outline:none;background:#f8f9fa;width:220px"/>
                     </div>
                 </div>
 
@@ -37,37 +37,61 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>SL</th>
-                            <th wire:click="sortBy('name')" style="cursor:pointer">
+                            <th id="th-sl">SL</th>
+                            <th id="th-group-name" wire:click="sortBy('name')" style="cursor:pointer">
                                 Group Name @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th>Fee Items</th>
-                            <th>Description</th>
-                            <th>Actions</th>
+                            <th id="th-code">Code</th>
+                            <th id="th-fee-items">Fee Items</th>
+                            <th id="th-status" wire:click="sortBy('status')" style="cursor:pointer">
+                                Status @if($sortField === 'status') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
+                            </th>
+                            <th id="th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($feeGroups as $i => $feeGroup)
-                        <tr>
+                        <tr wire:key="fee-group-{{ $feeGroup->id }}">
                             <td class="text-muted">{{ $feeGroups->firstItem() + $i }}</td>
                             <td>{{ $feeGroup->name }}</td>
+                            <td><span class="badge bg-light text-dark">{{ $feeGroup->code }}</span></td>
                             <td>
                                 @if($feeGroup->items->count())
                                     <div class="fee-items-list">
-                                        @foreach($feeGroup->items as $item)
+                                        @foreach($feeGroup->items->take(2) as $item)
                                             <div class="fee-item-row">
                                                 <span class="fee-item-name">{{ $item->feeType->name }}</span>
                                                 <span class="fee-item-amount">- ৳{{ number_format($item->amount, 0) }}</span>
                                             </div>
                                         @endforeach
+                                        @if($feeGroup->items->count() > 2)
+                                            <small class="text-muted">+{{ $feeGroup->items->count() - 2 }} more</small>
+                                        @endif
                                     </div>
                                 @else
                                     <span class="text-muted">—</span>
                                 @endif
                             </td>
-                            <td>{{ $feeGroup->description ?? '—' }}</td>
+                            <td>
+                                <div class="form-check form-switch m-0">
+                                    <input
+                                        class="form-check-input"
+                                        type="checkbox"
+                                        role="switch"
+                                        style="cursor:pointer"
+                                        wire:click="toggleStatus({{ $feeGroup->id }})"
+                                        wire:loading.attr="disabled"
+                                        wire:target="toggleStatus({{ $feeGroup->id }})"
+                                        @checked($feeGroup->status)
+                                        title="{{ $feeGroup->status ? 'Active' : 'Inactive' }}"
+                                    >
+                                </div>
+                            </td>
                             <td>
                                 <div class="d-flex gap-1">
+                                    <button class="act-btn view" title="View" wire:click="openView({{ $feeGroup->id }})">
+                                        <span class="material-icons-round">visibility</span>
+                                    </button>
                                     <button class="act-btn edit" title="Edit" wire:click="openEdit({{ $feeGroup->id }})">
                                         <span class="material-icons-round">drive_file_rename_outline</span>
                                     </button>
@@ -110,11 +134,18 @@
                         <form wire:submit.prevent="save">
                             <div class="row g-3">
 
-                                <div class="col-md-12">
-                                    <label class="form-label">Group Name <span class="text-danger">*</span></label>
+                                <div class="col-md-8">
+                                    <label class="form-label">Name <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control @error('name') is-invalid @enderror"
-                                           wire:model.defer="name" placeholder="e.g. Monthly Fee">
+                                           wire:model.live="name" placeholder="e.g. Monthly Fee">
                                     @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </div>
+
+                                <div class="col-md-12">
+                                    <label class="form-label">Code</label>
+                                    <input type="text" disabled class="form-control @error('code') is-invalid @enderror"
+                                           wire:model.defer="code">
+                                    @error('code') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-12">
@@ -127,6 +158,7 @@
                                 {{-- ── Fee Items ── --}}
                                 <div class="col-md-12">
                                     <label class="form-label mb-2">Fee Items</label>
+                                    @error('selectedItems') <div class="text-danger small mb-2">{{ $message }}</div> @enderror
                                     <div class="table-responsive">
                                         <table class="table table-sm mb-0">
                                             <thead class="table-light">
@@ -136,28 +168,26 @@
                                                             wire:model.live="selectAll">
                                                     </th>
                                                     <th>Fee Type</th>
-                                                    <th style="width:200px">Amount (৳) <span class="text-danger">*</span></th>
+                                                    <th style="width:200px">Amount (৳)</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 @foreach($items as $index => $item)
-                                                <tr wire:key="item-{{ $index }}">
+                                                <tr wire:key="item-{{ $item['fee_type_id'] }}">
                                                     <td class="align-middle text-center">
                                                         <input type="checkbox" class="form-check-input"
-                                                            wire:model="selectedItems"
+                                                            wire:model.live="selectedItems"
                                                             value="{{ $item['fee_type_id'] }}">
                                                     </td>
                                                     <td class="align-middle">
                                                         <span>{{ $item['fee_type_name'] }}</span>
-                                                        <input type="hidden" wire:model.defer="items.{{ $index }}.fee_type_id">
-                                                        <input type="hidden" wire:model.defer="items.{{ $index }}.fee_type_name">
                                                     </td>
                                                     <td>
                                                         <input type="number" step="0.01" min="0"
                                                             class="form-control form-control-sm @error('items.'.$index.'.amount') is-invalid @enderror"
                                                             wire:model.defer="items.{{ $index }}.amount"
                                                             placeholder="0.00"
-                                                            @if(!in_array($item['fee_type_id'], $selectedItems)) @endif>
+                                                            @disabled(!in_array($item['fee_type_id'], $selectedItems))>
                                                         @error('items.'.$index.'.amount')
                                                             <div class="invalid-feedback">{{ $message }}</div>
                                                         @enderror
@@ -177,6 +207,42 @@
                         <button type="button" class="btn bg-dark text-white" wire:click="save" wire:loading.attr="disabled">
                             <span wire:loading wire:target="save" class="spinner-border spinner-border-sm me-1"></span>
                             {{ $editId ? 'Update' : 'Create' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- ===== VIEW MODAL ===== --}}
+    @if($showViewModal && $viewGroup)
+        <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.5);">
+            <div class="modal-dialog modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header border-0">
+                        <h5 class="modal-title">{{ $viewGroup->name }}</h5>
+                        <button type="button" class="btn-close" wire:click="$set('showViewModal',false)"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-1"><strong>Code:</strong> {{ $viewGroup->code }}</p>
+                        <p class="mb-1"><strong>Status:</strong> {{ $viewGroup->status ? 'Active' : 'Inactive' }}</p>
+                        <p class="mb-3"><strong>Description:</strong> {{ $viewGroup->description ?? '—' }}</p>
+                        <hr>
+                        <h6 class="mb-2">Fee Items</h6>
+                        @forelse($viewGroup->items as $item)
+                            <div class="d-flex justify-content-between border-bottom py-1">
+                                <span>{{ $item->feeType->name }}</span>
+                                <span>৳{{ number_format($item->amount, 2) }}</span>
+                            </div>
+                        @empty
+                            <p class="text-muted">No items added.</p>
+                        @endforelse
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-light" wire:click="$set('showViewModal',false)">Close</button>
+                         <button type="button" class="btn bg-dark text-white"
+                                wire:click="$set('showViewModal', false); openEdit({{ $viewGroup->id }})">
+                            <span class="material-icons-round" style="font-size:16px;vertical-align:-3px">edit</span> Edit
                         </button>
                     </div>
                 </div>

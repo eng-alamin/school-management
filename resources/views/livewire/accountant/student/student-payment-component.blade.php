@@ -13,7 +13,7 @@
 
     <div class="container-xl mt-4">
 
-        @include('livewire.admin.student.student-navbar')
+        @include('livewire.accountant.student.student-navbar')
 
         <div class="form-section">
     <div class="row g-4">
@@ -22,30 +22,21 @@
         <div class="col-md-6 offset-md-1">
             <div class="row g-4">
 
-                {{-- Fees Type --}}
+                {{-- Invoice --}}
                 <div class="col-md-12">
                     <div class="input-group input-group-outline" wire:ignore>
-                        <label class="form-label">Fees Type <span class="req">*</span></label>
-                        <select wire:model.live="fee_invoice_item_id" class="form-select">
+                        <label class="form-label">Invoice <span class="req">*</span></label>
+                        <select wire:model.live="fee_invoice_id" class="form-select">
                             <option value="">Select</option>
                             @foreach($invoices as $invoice)
-                                @php
-                                    $unpaid = $invoice->items->filter(fn($i) => !$i->is_paid);
-                                @endphp
-                                @if($unpaid->isNotEmpty())
-                                    <optgroup label="{{ $invoice->invoice_no }}">
-                                        @foreach($unpaid as $item)
-                                            <option value="{{ $item->id }}">
-                                                {{ $item->fee_type_name }}
-                                                (Due: {{ number_format($item->remaining, 2) }})
-                                            </option>
-                                        @endforeach
-                                    </optgroup>
-                                @endif
+                                <option value="{{ $invoice->id }}">
+                                    {{ $invoice->invoice_no }}
+                                    (Due: {{ number_format($invoice->remaining, 0) }})
+                                </option>
                             @endforeach
                         </select>
                     </div>
-                    @error('fee_invoice_item_id') <span class="text-danger small">{{ $message }}</span> @enderror
+                    @error('fee_invoice_id') <span class="text-danger small">{{ $message }}</span> @enderror
                 </div>
 
                 {{-- Date --}}
@@ -72,34 +63,6 @@
                     @error('amount') <span class="text-danger small">{{ $message }}</span> @enderror
                 </div>
 
-                {{-- Discount --}}
-                <div class="col-md-12">
-                    <div class="input-group input-group-outline">
-                        <label class="form-label">Discount</label>
-                        <input type="number" step="0.01" min="0"
-                               wire:model.live="discount"
-                               class="form-control"
-                               placeholder=" "
-                               onfocus="focused(this)"
-                               onfocusout="defocused(this)">
-                    </div>
-                    @error('discount') <span class="text-danger small">{{ $message }}</span> @enderror
-                </div>
-
-                {{-- Fine --}}
-                <div class="col-md-12">
-                    <div class="input-group input-group-outline">
-                        <label class="form-label">Fine</label>
-                        <input type="number" step="0.01" min="0"
-                               wire:model.live="fine"
-                               class="form-control"
-                               placeholder=" "
-                               onfocus="focused(this)"
-                               onfocusout="defocused(this)">
-                    </div>
-                    @error('fine') <span class="text-danger small">{{ $message }}</span> @enderror
-                </div>
-
                 {{-- Payment Method --}}
                 <div class="col-md-12">
                     <div class="input-group input-group-outline" wire:ignore>
@@ -119,7 +82,7 @@
                 {{-- Account --}}
                 <div class="col-md-12">
                     <div class="input-group input-group-outline" wire:ignore>
-                        <label class="form-label">Account <span class="req">*</span></label>
+                        <label class="form-label">Account</label>
                         <select wire:model="office_account_id" class="form-select">
                             <option value="">Select</option>
                             @foreach($officeAccounts as $account)
@@ -134,12 +97,7 @@
                 <div class="col-md-12">
                     <div class="input-group input-group-outline">
                         <label class="form-label">Remarks</label>
-                        <textarea wire:model="remarks"
-                                  class="form-control"
-                                  style="min-height:100px"
-                                  placeholder="Write Your Remarks"
-                                  onfocus="focused(this)"
-                                  onfocusout="defocused(this)"></textarea>
+                        <textarea wire:model="remarks" class="form-control" placeholder="" onfocus="focused(this)" onfocusout="defocused(this)"></textarea>
                     </div>
                     @error('remarks') <span class="text-danger small">{{ $message }}</span> @enderror
                 </div>
@@ -163,27 +121,36 @@
             </div>
         </div>
 
-        {{-- Right Column - Empty for now --}}
+        {{-- Right Column --}}
         <div class="col-md-4">
-            {{-- Paid Amount (calculated) --}}
-            @if($amount || $discount || $fine)
+
+            {{-- Selected Invoice Breakdown --}}
+            @if($fee_invoice_id)
+                @php
+                    $selectedInvoice = $invoices->firstWhere('id', (int) $fee_invoice_id);
+                    // dd($selectedInvoice->items);
+                @endphp
+                @if($selectedInvoice)
+                
+                    <div class="pay-summary mb-3">
+                        <strong style="display:block;margin-bottom:8px">Invoice Breakdown</strong>
+                        @foreach($selectedInvoice->items as $item)
+                            <div class="pay-summary-row">
+                                <span>{{ $item->fee_type_name }}</span>
+                                <span>৳{{ number_format($item->total_amount, 0) }}</span>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+            @endif
+
+            {{-- Amount Summary --}}
+            @if($amount)
             <div class="col-md-12">
                 <div class="pay-summary">
-                    <div class="pay-summary-row">
-                        <span>Amount</span>
-                        <span>${{ number_format((float)$amount, 2) }}</span>
-                    </div>
-                    <div class="pay-summary-row">
-                        <span>Discount</span>
-                        <span>- ${{ number_format((float)$discount, 2) }}</span>
-                    </div>
-                    <div class="pay-summary-row">
-                        <span>Fine</span>
-                        <span>+ ${{ number_format((float)$fine, 2) }}</span>
-                    </div>
                     <div class="pay-summary-row total">
-                        <span>Paid Amount</span>
-                        <span>${{ number_format((float)$amount - (float)$discount + (float)$fine, 2) }}</span>
+                        <span>Paying Amount</span>
+                        <span>৳{{ number_format((float)$amount, 0) }}</span>
                     </div>
                 </div>
             </div>
@@ -281,6 +248,20 @@
                     select.style.display = '';
                     if (typeof buildCustomSelect === 'function') {
                         buildCustomSelect(select);
+                    }
+                });
+
+                // ── 4. Datepicker ──
+                Livewire.on('date-updated', function (event) {
+                    var input = document.querySelector('.input-group-outline input[type="date"]');
+                    if (!input) return;
+                    var newDate = event.date || '';
+                    if (newDate) {
+                        input.value = newDate;
+                        input.dataset.dpValue = newDate;
+                        if (input._dpTriggerSync) {
+                            input._dpTriggerSync(newDate);
+                        }
                     }
                 });
             }

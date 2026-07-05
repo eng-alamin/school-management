@@ -17,14 +17,19 @@ class FeeInvoiceItem extends Model
         'total_amount'    => 'decimal:2',
     ];
 
+    public function feeSetup()
+    {
+        return $this->belongsTo(FeeSetup::class, 'fee_setup_id');
+    }
+
+    public function feeInvoice()
+    {
+        return $this->belongsTo(FeeInvoice::class);
+    }
+
     public function invoice()
     {
         return $this->belongsTo(FeeInvoice::class, 'fee_invoice_id');
-    }
-
-    public function feeGroupItem()
-    {
-        return $this->belongsTo(FeeGroupItem::class);
     }
 
     // This item এর জন্য সব payment

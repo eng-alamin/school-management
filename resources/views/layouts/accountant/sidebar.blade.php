@@ -182,9 +182,9 @@
       </li>
 
       <li class="nav1-item">
-        <a href="{{route('accountant.notice') }}" class="nav1-link {{ str_contains(request()->url(), 'accountant/notice-board') == true ? 'active' : '' }}">
+        <a href="{{route('accountant.notices') }}" class="nav1-link {{ str_contains(request()->url(), 'accountant/notices') == true ? 'active' : '' }}">
           <span class="material-icons-round nav-icon">chat</span>
-          <span class="nav-label" id="nav-notices">Notice</span>
+          <span class="nav-label" id="nav-notices">Notices</span>
         </a>
       </li>
       

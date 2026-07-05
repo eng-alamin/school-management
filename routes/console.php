@@ -11,3 +11,5 @@ Artisan::command('inspire', function () {
 
 Schedule::command('billing:monthly-generate')->monthlyOn(1, '00:30')->withoutOverlapping(); // প্রতি মাসের ১ তারিখ রাত ১২:৩০ এ চলবে
 Schedule::command('billing:check-overdue')->daily(); // প্রতিদিন মধ্যরাত ১২:০০ তে চলবে
+
+Schedule::command('fee:monthly-generate')->monthlyOn(1, '01:00')->withoutOverlapping(); //php artisan fee:monthly-generate --month=2026-06

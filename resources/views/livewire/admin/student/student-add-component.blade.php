@@ -7,8 +7,25 @@
         <p>Create new student admission record</p>
       </div>
 
-        <!-- ══ ACADEMIC DETAILS ══ -->
+        <!-- ══ ADMISSION TYPE ══ -->
         <div class="form-section" style="padding-top:40px">
+            <div class="section-heading">
+                <span class="material-icons-round">switch_account</span> Admission Type
+            </div>
+            <div class="row g-4">
+                <div class="col-12">
+                    <div class="form-check form-switch">
+                        <input wire:model.live="is_new_student" class="form-check-input" type="checkbox" id="isNewStudent" role="switch">
+                        <label class="form-check-label" for="isNewStudent">
+                            {{ $is_new_student ? 'New Student (Fee Invoice will be generated)' : 'Existing Student (No Invoice will be generated)' }}
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══ ACADEMIC DETAILS ══ -->
+        <div class="form-section">
             <div class="section-heading">
                 <span class="material-icons-round">school</span> Academic Details
             </div>
@@ -27,14 +44,14 @@
                 <div class="col-md-3">
                     <div class="input-group input-group-outline">
                         <label class="form-label">Register No </label>
-                        <input type="text" wire:model="register_no" class="form-control" value="ISC-0001" onfocus="focused(this)" onfocusout="defocused(this)">
+                        <input type="text" wire:model="register_no" class="form-control" onfocus="focused(this)" onfocusout="defocused(this)">
                         @error('register_no') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="input-group input-group-outline">
-                        <label class="form-label">Roll</label>
-                        <input type="text" wire:model="roll_no" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
+                        <label class="form-label">Roll (Auto)</label>
+                        <input type="text" wire:model="roll_no" class="form-control" readonly style="background:#f5f5f5;cursor:not-allowed">
                         @error('roll_no') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
                 </div>
@@ -45,10 +62,11 @@
                         @error('admission_date') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
                 </div>
+
                 <div class="col-md-4">
                     <div class="input-group input-group-outline" wire:ignore>
                         <label class="form-label">Class <span class="req">*</span></label>
-                        <select wire:model="class_id" class="form-select" id="classSelect">
+                        <select wire:model.live="class_id" class="form-select" id="classSelect">
                             <option value="">Select Class</option>
                             @foreach($classes as $class)
                                 <option value="{{ $class->id }}">{{ $class->name }}</option>
@@ -57,18 +75,20 @@
                     </div>
                     @error('class_id') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
+
                 <div class="col-md-4">
                     <div class="input-group input-group-outline" wire:ignore>
                         <label class="form-label">Section</label>
                         <select wire:model="section_id" class="form-select" id="sectionSelect">
                             <option value="">Select Section</option>
-                            @foreach($sections as $section)
-                                <option value="{{ $section->id }}">{{ $section->name }}</option>
+                            @foreach($availableSections as $section)
+                                <option value="{{ $section['id'] }}">{{ $section['name'] }}</option>
                             @endforeach
                         </select>
                     </div>
                     @error('section_id') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
+
                 <div class="col-md-4">
                     <div class="input-group input-group-outline" wire:ignore>
                         <label class="form-label">Group</label>
@@ -129,7 +149,7 @@
                 <div class="input-group input-group-outline" wire:ignore>
                     <label class="form-label">Date Of Birth</label>
                     <input type="date" wire:model="dob" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
-                    @error('dob') <span class="text-danger">{{ $message }}</span> @enderror     
+                    @error('dob') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
             </div>
             <div class="col-md-4">
@@ -198,15 +218,15 @@
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
                         <label class="form-label">Username <span class="req">*</span></label>
-                        <input type="text" wire:model="username" class="form-control" value="admin@ramom.com" onfocus="focused(this)" onfocusout="defocused(this)">
-                        @error('username') <span class="text-danger">{{ $message }}</span> @enderror     
+                        <input type="text" wire:model="username" class="form-control" onfocus="focused(this)" onfocusout="defocused(this)">
+                        @error('username') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
                         <label class="form-label">Password</label>
-                        <input type="password" wire:model="password" class="form-control" value="1234" onfocus="focused(this)" onfocusout="defocused(this)">
-                        @error('password') <span class="text-danger">{{ $message }}</span> @enderror     
+                        <input type="password" wire:model="password" class="form-control" placeholder="Default: 1234" onfocus="focused(this)" onfocusout="defocused(this)">
+                        @error('password') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
                 </div>
             </div>
@@ -248,21 +268,21 @@
                     <div class="input-group input-group-outline">
                         <label class="form-label">Name <span class="req">*</span></label>
                         <input type="text" wire:model="guardian_name" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
-                        @error('guardian_name') <span class="text-danger">{{ $message }}</span> @enderror     
+                        @error('guardian_name') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
                         <label class="form-label">Relation <span class="req">*</span></label>
                         <input type="text" wire:model="guardian_relation" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
-                        @error('guardian_relation') <span class="text-danger">{{ $message }}</span> @enderror     
+                        @error('guardian_relation') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
                         <label class="form-label">Father Name</label>
                         <input type="text" wire:model="guardian_father_name" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
-                        @error('guardian_father_name') <span class="text-danger">{{ $message }}</span> @enderror     
+                        @error('guardian_father_name') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
                 </div>
                 <div class="col-md-6">
@@ -294,7 +314,7 @@
                 </div>
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
-                        <label class="form-label">Mobile No <span class="req">*</span></label>
+                        <label class="form-label">Mobile No</label>
                         <input type="tel" wire:model="guardian_mobile" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
                         @error('guardian_mobile') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
@@ -303,7 +323,7 @@
                     <div class="input-group input-group-outline">
                         <label class="form-label">Email</label>
                         <input type="email" wire:model="guardian_email" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
-                        @error('guardian_email') <span class="text-danger">{{ $message }}</span> @enderror  
+                        @error('guardian_email') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
                 </div>
                 <div class="col-12">
@@ -383,20 +403,154 @@
                 <span class="material-icons-round" style="font-size:16px">refresh</span> Reset
             </button>
 
-            <button class="btn-pink" type="button" wire:click="save" wire:loading.attr="disabled" wire:target="save">
-                <span wire:loading.remove wire:target="save" style="display: inline-flex;align-items: center;gap: 6px">
+            <button class="btn-pink" type="button" wire:click="openFeeConfirmModal" wire:loading.attr="disabled" wire:target="openFeeConfirmModal,save">
+                <span wire:loading.remove wire:target="openFeeConfirmModal,save" style="display: inline-flex;align-items: center;gap: 6px">
                     <span class="material-icons-round">save</span> Save
                 </span>
 
-                <span wire:loading wire:target="save">
+                <span wire:loading wire:target="openFeeConfirmModal,save">
                     <span class="material-icons-round" style="font-size:16px;animation:spin .7s linear infinite">sync</span>
-                    Saving...
+                    Processing...
                 </span>
             </button>
         </div>
 
-
     </div>
+
+    {{-- ══════════════ STEP 1: FEE CONFIRMATION MODAL ══════════════ --}}
+    @if($showFeeModal)
+        <div class="modal-dark-overlay" wire:click.self="closeFeeModal">
+            <div class="modal-box">
+                <div class="modal-box-header">
+                    <h5>
+                        <span class="material-icons-round" style="font-size:20px;vertical-align:middle;margin-right:6px">receipt_long</span>
+                        Confirm Fee for Invoice
+                    </h5>
+                    <button type="button" class="modal-box-close" wire:click="closeFeeModal">&times;</button>
+                </div>
+
+                <div class="modal-box-body">
+                    @if(empty($feeItems))
+                        <p class="text-muted mb-0">No fee setup found for this class. Student will be saved without any invoice.</p>
+                    @else
+                        @foreach($feeItems as $key => $item)
+                            <label class="fee-item-row">
+                                <span class="fee-item-left">
+                                    <input type="checkbox" wire:model.live="selectedFees.{{ $key }}">
+                                    <span>{{ $item['label'] }}</span>
+                                </span>
+                                <span class="fee-item-amount">{{ number_format($item['amount'], 2) }}</span>
+                            </label>
+                        @endforeach
+
+                        <div class="fee-item-row fee-total-row">
+                            <span>TOTAL</span>
+                            <span>{{ number_format($this->feeModalTotal, 2) }}</span>
+                        </div>
+                    @endif
+                </div>
+
+                <div class="modal-box-footer">
+                    <button type="button" class="btn-outline" wire:click="closeFeeModal">Cancel</button>
+                    <button type="button" class="btn-pink" wire:click="save" wire:loading.attr="disabled" wire:target="save">
+                        <span wire:loading.remove wire:target="save">Confirm &amp; Save</span>
+                        <span wire:loading wire:target="save">Saving...</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- ══════════════ STEP 2: PAYMENT COLLECT MODAL ══════════════ --}}
+    @if($showPaymentModal)
+        <div class="modal-dark-overlay" wire:click.self="closePaymentModal">
+            <div class="modal-box" style="max-width:640px">
+
+                <div class="modal-box-header">
+                    <h5 class="mb-0">Payment Collect</h5>
+                    <button type="button" class="modal-box-close" wire:click="closePaymentModal">&times;</button>
+                </div>
+
+                <div class="modal-box-body">
+
+                    <div class="table-responsive mb-3">
+                        <table class="table-loader">
+                            <thead>
+                                <tr>
+                                    <th>Invoice No</th>
+                                    <th>Due Amount</th>
+                                    <th style="width:160px">Pay Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>#{{ $createdInvoiceNo }}</td>
+                                    <td>{{ number_format($createdInvoiceDue, 2) }}</td>
+                                    <td>
+                                        <input type="number" step="0.01" min="0" max="{{ $createdInvoiceDue }}"
+                                            class="form-control form-control-sm"
+                                            wire:model.live="payAmount">
+                                        @error('payAmount')
+                                            <div class="text-danger" style="font-size:11px">{{ $message }}</div>
+                                        @enderror
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Payment Method</label>
+                            <select class="form-select" wire:model="paymentMethod">
+                                <option value="cash">Cash</option>
+                                <option value="bkash">bKash</option>
+                                <option value="nagad">Nagad</option>
+                                <option value="bank">Bank</option>
+                                <option value="cheque">Cheque</option>
+                            </select>
+                            @error('paymentMethod') <div class="text-danger" style="font-size:11px">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Payment Date</label>
+                            <input type="date" class="form-control" wire:model="paymentDate">
+                            @error('paymentDate') <div class="text-danger" style="font-size:11px">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Office Account (Optional)</label>
+                            <select class="form-select" wire:model="officeAccountId">
+                                <option value="">-- Select --</option>
+                                @foreach($officeAccounts as $account)
+                                    <option value="{{ $account->id }}">{{ $account->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('officeAccountId') <div class="text-danger" style="font-size:11px">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Remarks (Optional)</label>
+                            <textarea class="form-control" rows="2" wire:model="paymentRemarks"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="pay-total-row mt-3">
+                        <span>Total Pay Amount :</span>
+                        <span class="fw-bold">{{ number_format($payAmount, 2) }}</span>
+                    </div>
+
+                </div>
+
+                <div class="modal-box-footer">
+                    <button type="button" class="btn-outline" wire:click="skipPayment">Skip / Later</button>
+                    <button type="button" class="btn-pink" wire:click="confirmPayment" wire:loading.attr="disabled" wire:target="confirmPayment">
+                        <span wire:loading.remove wire:target="confirmPayment">Confirm Payment</span>
+                        <span wire:loading wire:target="confirmPayment">Processing...</span>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    @endif
+
 </div>
 @push('styles')
     <style>
@@ -415,6 +569,106 @@
 
         .btn-sm { font-size: .78rem; padding: .3rem .65rem; border-radius: 6px; }
 
+        /* ── Shared Modal Styles (Fee Confirm + Payment Collect) ── */
+        .modal-dark-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.65);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1055;
+            padding: 20px;
+        }
+
+        .modal-box {
+            background: #fff;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 480px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,.25);
+        }
+
+        .modal-box-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border, #eee);
+        }
+
+        .modal-box-header h5 { margin: 0; font-size: .95rem; font-weight: 600; }
+
+        .modal-box-close {
+            background: none;
+            border: none;
+            font-size: 1.4rem;
+            line-height: 1;
+            cursor: pointer;
+            color: #888;
+        }
+
+        .modal-box-body { padding: 16px 20px; }
+
+        .fee-item-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: .88rem;
+            cursor: pointer;
+        }
+
+        .fee-item-left { display: flex; align-items: center; gap: 10px; }
+        .fee-item-left input[type="checkbox"] { width: 16px; height: 16px; }
+
+        .fee-total-row {
+            font-weight: 700;
+            border-bottom: none;
+            border-top: 2px solid #eee;
+            margin-top: 4px;
+            padding-top: 12px;
+            cursor: default;
+        }
+
+        .modal-box-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 14px 20px;
+            border-top: 1px solid var(--border, #eee);
+        }
+
+        /* Payment Collect table + total */
+        .table-loader {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .table-loader thead th {
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            white-space: nowrap;
+            border-bottom: 1px solid rgba(0,0,0,.08);
+        }
+        .table-loader tbody td {
+            padding: 9px 10px;
+            vertical-align: middle;
+            font-size: 13px;
+        }
+        .pay-total-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            padding: 10px;
+            background: rgba(224,82,82,.06);
+            border-radius: 6px;
+        }
     </style>
 @endpush
 
@@ -430,7 +684,6 @@
 
             function initAllFields() {
 
-                // ── 1. Text/Textarea/Number is-filled ──
                 document.querySelectorAll('.input-group-outline input, .input-group-outline textarea').forEach(function(input) {
                     var group = input.closest('.input-group');
                     if (!group) return;
@@ -451,7 +704,6 @@
                     });
                 });
 
-                // ── 2. Select is-filled ──
                 document.querySelectorAll('.input-group-outline select').forEach(function(select) {
                     var group = select.closest('.input-group');
                     if (!group) return;
@@ -469,7 +721,6 @@
                     select.addEventListener('blur', function() { group.classList.remove('is-focused'); });
                 });
 
-                // ── 3. Custom Select rebuild ──
                 document.querySelectorAll('.input-group-outline .form-select').forEach(function(select) {
                     var old = select.parentNode.querySelector('.custom-select-wrapper');
                     if (old) old.remove();
@@ -479,7 +730,6 @@
                     }
                 });
 
-                // ── 4. Datepicker ──
                 Livewire.on('date-updated', function (event) {
                     var input = document.querySelector('.input-group-outline input[type="date"]');
                     if (!input) return;
@@ -493,6 +743,90 @@
                     }
                 });
             }
+
+            // ── Payment confirm howar por Invoice notun tab e print korar jonno ──
+            Livewire.on('open-invoice-print', function (event) {
+                var data = Array.isArray(event) ? event[0] : event;
+
+                var printWindow = window.open('', '_blank', 'width=800,height=650');
+                if (!printWindow) {
+                    alert('Print window block hoye গেছে। Browser-er popup blocker check korun.');
+                    return;
+                }
+
+                // ── Item Breakdown Rows বানানো (invoicePrintable এর মতোই Fee Type + Month + Amount/Discount/Fine) ──
+                var itemRows = '';
+                (data.items || []).forEach(function (item) {
+                    var feeLabel = item.feeTypeName + (item.monthLabel ? ' — ' + item.monthLabel : '');
+                    itemRows += `
+                        <tr>
+                            <td>${feeLabel}</td>
+                            <td>${item.amount}</td>
+                            <td>${item.discount}</td>
+                            <td>${item.fine}</td>
+                        </tr>
+                    `;
+                });
+
+                var html = `
+                    <html>
+                        <head>
+                            <title>Fee Invoice #${data.invoiceNo}</title>
+                            <style>
+                                * { box-sizing: border-box; }
+                                body { font-family: Arial, Helvetica, sans-serif; padding: 28px; color: #222; }
+                                h4 { margin: 0 0 4px 0; }
+                                p { margin: 2px 0; color: #555; font-size: 13px; }
+                                table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+                                th, td { border: 1px solid #ddd; padding: 8px 10px; text-align: left; font-size: 13px; }
+                                thead th { background: #f5f5f5; }
+                                .total-row td { font-weight: bold; background: #fafafa; }
+                            </style>
+                        </head>
+                        <body>
+                            <h4>Fee Invoice</h4>
+                            <p>Invoice No: #${data.invoiceNo}</p>
+                            <p>Student: ${data.studentName}</p>
+                            <p>Payment Date: ${data.paymentDate}</p>
+
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Fees Type</th>
+                                        <th>Amount</th>
+                                        <th>Discount</th>
+                                        <th>Fine</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${itemRows}
+                                </tbody>
+                            </table>
+
+                            <table>
+                                <thead>
+                                    <tr><th>Total Amount</th><th>Paid Amount</th><th>Due Amount</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="total-row">
+                                        <td>${data.totalAmount}</td>
+                                        <td>${data.paidAmount}</td>
+                                        <td>${data.dueAmount}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </body>
+                    </html>
+                `;
+
+                printWindow.document.write(html);
+                printWindow.document.close();
+                printWindow.focus();
+
+                setTimeout(() => {
+                    printWindow.print();
+                }, 250);
+            });
 
         });
     </script>

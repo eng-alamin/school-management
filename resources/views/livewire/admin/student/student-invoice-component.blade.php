@@ -10,13 +10,18 @@
 
             @include('livewire.admin.student.student-navbar')
 
-            {{-- Collect Button --}}
-            <div class="mb-3 no-print">
+            {{-- Action Buttons --}}
+            <div class="mb-3 no-print d-flex gap-2">
                 @if(count($selectedIds) > 0)
                     <button class="btn-pink d-inline-flex align-items-center gap-1"
                             wire:click="collectSelected" type="button">
                         <span class="material-icons-round" style="font-size:16px">payments</span>
                         Selected Fees Collect ({{ count($selectedIds) }})
+                    </button>
+                    <button class="btn-outline d-inline-flex align-items-center gap-1"
+                            type="button" onclick="printSelectedInvoices()">
+                        <span class="material-icons-round" style="font-size:16px">print</span>
+                        Print Selected
                     </button>
                 @else
                     <button class="btn-outline d-inline-flex align-items-center gap-1"
@@ -27,149 +32,317 @@
                 @endif
             </div>
 
-            {{-- Invoice Table --}}
-            <div class="table-responsive">
-                <table class="table-loader">
-                    <thead>
-                        <tr>
-                            <th class="no-print" style="width:42px">
-                                <input type="checkbox" class="alloc-checkbox"
-                                    wire:model.live="selectAll">
-                            </th>
-                            <th id="th-sl">SL</th>
-                            <th id="th-fees-type">Fees Type</th>
-                            <th id="th-due-date">Due Date</th>
-                            <th id="th-status">Status</th>
-                            <th id="th-amount">Amount</th>
-                            <th id="th-discount">Discount</th>
-                            <th id="th-fine">Fine</th>
-                            <th id="th-paid">Paid</th>
-                            <th id="th-balance">Balance</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @php
-                            $sl            = 1;
-                            $grandTotal    = 0;
-                            $grandDiscount = 0;
-                            $grandFine     = 0;
-                            $grandPaid     = 0;
-                        @endphp
+            {{-- ============================================================ --}}
+            {{-- SESSION YEAR ACCORDION --}}
+            {{-- ============================================================ --}}
+            @forelse($invoicesBySession as $groupIndex => $group)
+                @php
+                    $session = $group['session'];
+                    $sessionInvoices = $group['invoices'];
 
-                        @forelse($feeAllocations as $allocation)
+                    $sGrandTotal = 0; $sGrandDiscount = 0; $sGrandFine = 0; $sGrandPaid = 0; $sGrandDue = 0;
+                @endphp
 
-                        {{-- Group Header --}}
-                        <tr class="group-header-row">
-                            <td colspan="10">
-                                <span class="material-icons-round"
-                                    style="font-size:14px;vertical-align:middle;color:#e05252">
-                                    arrow_drop_down
-                                </span>
-                                {{ $allocation->feeGroup->name }}
-                            </td>
-                        </tr>
+                <div class="session-accordion-item">
+                    <div class="session-accordion-header" onclick="toggleSessionPanel(this)">
+                        <span class="material-icons-round chevron" style="font-size:18px">expand_more</span>
+                        <span class="session-name">{{ $session->name }}</span>
+                        <span class="session-count">({{ $sessionInvoices->count() }} Invoice)</span>
+                    </div>
 
-                        @forelse($allocation->feeGroup->items as $item)
-                        @php
-                            $invItem  = $invoiceItemsMap[$item->id] ?? null;
-                            $amount   = (float) ($item->amount ?? 0);
-                            $discount = (float) ($invItem?->discount_amount ?? 0);
-                            $fine     = (float) ($invItem?->fine_amount ?? 0);
-                            $paid     = (float) ($invItem?->total_paid ?? 0);
-                            $balance  = max(0, $amount - $discount + $fine - $paid);
-                            $status   = $invItem?->payment_status ?? 'unpaid';
-                            $dueDate  = $invItem?->invoice?->due_date;
+                    <div class="session-accordion-body" style="display:{{ $loop->first ? 'block' : 'none' }}">
 
-                            $grandTotal    += $amount;
-                            $grandDiscount += $discount;
-                            $grandFine     += $fine;
-                            $grandPaid     += $paid;
-                        @endphp
-                        <tr wire:key="item-{{ $item->id }}"
-                            class="{{ in_array($item->id, $selectedIds) ? 'row-selected' : '' }}">
+                        <div class="table-responsive">
+                            <table class="table-loader">
+                                <thead>
+                                    <tr>
+                                        <th class="no-print" style="width:42px">
+                                            <input type="checkbox" class="alloc-checkbox"
+                                                onclick="toggleSessionSelectAll(this, {{ $groupIndex }})">
+                                        </th>
+                                        <th>SL</th>
+                                        <th>Fees Type</th>
+                                        <th>Due Date</th>
+                                        <th>Status</th>
+                                        <th>Amount</th>
+                                        <th>Discount</th>
+                                        <th>Fine</th>
+                                        <th>Paid</th>
+                                        <th>Balance</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @php $sl = 1; @endphp
+                                    @forelse($sessionInvoices as $invoice)
 
-                            <td class="no-print">
-                                <input type="checkbox" class="alloc-checkbox"
-                                    wire:model.live="selectedIds"
-                                    value="{{ $item->id }}">
-                            </td>
-                            <td class="text-muted">{{ $sl++ }}</td>
-                            <td>{{ $item->feeType?->name ?? '—' }}</td>
-                            <td>
-                                {{ $dueDate ? \Carbon\Carbon::parse($dueDate)->format('d.M.Y') : '—' }}
-                            </td>
-                            <td>
-                                @if($status === 'paid')
-                                    <span class="inv-badge paid">Total Paid</span>
-                                @elseif($status === 'partial')
-                                    <span class="inv-badge partial">Partial</span>
-                                @else
-                                    <span class="inv-badge unpaid">Unpaid</span>
-                                @endif
-                            </td>
-                            <td>{{ number_format($amount, 2) }}</td>
-                            <td>{{ number_format($discount, 2) }}</td>
-                            <td>{{ number_format($fine, 2) }}</td>
-                            <td>{{ number_format($paid, 2) }}</td>
-                            <td>{{ number_format($balance, 2) }}</td>
-                        </tr>
+                                    <tr class="group-header-row {{ in_array($invoice->id, $selectedIds) ? 'row-selected' : '' }}"
+                                        wire:key="invoice-group-{{ $invoice->id }}">
+                                        <td class="no-print">
+                                            <input type="checkbox" class="alloc-checkbox session-{{ $groupIndex }}-checkbox"
+                                                wire:model.live="selectedIds"
+                                                value="{{ $invoice->id }}">
+                                        </td>
+                                        <td colspan="9">
+                                            <span class="material-icons-round"
+                                                style="font-size:14px;vertical-align:middle;color:#e05252">
+                                                arrow_drop_down
+                                            </span>
+                                            Invoice #{{ $invoice->invoice_no }}
+                                            <span class="text-muted" style="font-size:11px">
+                                                ({{ \Carbon\Carbon::parse($invoice->invoice_date)->format('d.M.Y') }})
+                                            </span>
+                                        </td>
+                                    </tr>
 
-                        @empty
-                        <tr>
-                            <td colspan="10" class="text-center py-3 text-muted">
-                                No fee items found.
-                            </td>
-                        </tr>
-                        @endforelse
+                                    @forelse($invoice->items as $item)
+                                        @php
+                                            $amount   = (float) $item->base_amount;
+                                            $discount = (float) $item->discount_amount;
+                                            $fine     = (float) $item->fine_amount;
 
-                        @empty
-                        <tr>
-                            <td colspan="10" class="text-center py-5 text-muted">
-                                <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
-                                No fee allocations found for this student.
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+                                            $sGrandTotal    += $amount;
+                                            $sGrandDiscount += $discount;
+                                            $sGrandFine     += $fine;
 
-            {{-- Grand Total --}}
-            @if($feeAllocations->isNotEmpty())
-            <div class="invoice-summary">
-                <div class="inv-summary-row">
-                    <span>Grand Total :</span>
-                    <span>{{ number_format($grandTotal, 2) }}</span>
+                                            $isMonthly   = $item->feeSetup?->frequency === 'monthly';
+                                            $feeTypeName = $item->feeSetup?->feeType?->name ?? '—';
+                                            $monthLabel  = $isMonthly
+                                                ? \Carbon\Carbon::parse($invoice->invoice_date)->format('F')
+                                                : null;
+                                        @endphp
+                                        <tr wire:key="invoice-item-{{ $item->id }}">
+                                            <td class="no-print"></td>
+                                            <td class="text-muted">{{ $sl++ }}</td>
+                                            <td>
+                                                {{ $feeTypeName }}
+                                                @if($monthLabel)
+                                                    <span class="text-muted" style="font-size:11px"> — {{ $monthLabel }}</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                {{ $invoice->due_date ? \Carbon\Carbon::parse($invoice->due_date)->format('d.M.Y') : '—' }}
+                                            </td>
+                                            <td>
+                                                @if($invoice->payment_status === 'paid')
+                                                    <span class="inv-badge paid">Paid</span>
+                                                @elseif($invoice->payment_status === 'partial')
+                                                    <span class="inv-badge partial">Partial</span>
+                                                @else
+                                                    <span class="inv-badge unpaid">Unpaid</span>
+                                                @endif
+                                            </td>
+                                            <td>{{ number_format($amount, 0) }}</td>
+                                            <td>{{ number_format($discount, 0) }}</td>
+                                            <td>{{ number_format($fine, 0) }}</td>
+                                            <td class="text-muted">—</td>
+                                            <td class="text-muted">—</td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="10" class="text-center py-3 text-muted">No fee items found.</td>
+                                        </tr>
+                                    @endforelse
+
+                                    @php
+                                        $sGrandPaid += (float) $invoice->paid_amount;
+                                        $sGrandDue  += (float) $invoice->due_amount;
+                                    @endphp
+                                    <tr class="invoice-subtotal-row">
+                                        <td class="no-print"></td>
+                                        <td colspan="7" class="text-end text-muted" style="font-size:12px">
+                                            Invoice Total: {{ number_format($invoice->total_amount, 0) }}
+                                        </td>
+                                        <td>{{ number_format($invoice->paid_amount, 0) }}</td>
+                                        <td>{{ number_format($invoice->due_amount, 0) }}</td>
+                                    </tr>
+
+                                    @empty
+                                    <tr>
+                                        <td colspan="10" class="text-center py-5 text-muted">No invoices found.</td>
+                                    </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {{-- Session Subtotal --}}
+                        <div class="invoice-summary">
+                            <div class="inv-summary-row">
+                                <span>Session Total :</span>
+                                <span>{{ number_format($sGrandTotal, 0) }}</span>
+                            </div>
+                            <div class="inv-summary-row">
+                                <span>Discount :</span>
+                                <span>{{ number_format($sGrandDiscount, 0) }}</span>
+                            </div>
+                            <div class="inv-summary-row">
+                                <span>Fine :</span>
+                                <span>{{ number_format($sGrandFine, 0) }}</span>
+                            </div>
+                            <div class="inv-summary-row">
+                                <span>Paid :</span>
+                                <span>{{ number_format($sGrandPaid, 0) }}</span>
+                            </div>
+                            <div class="inv-summary-row fw-bold">
+                                <span>Balance :</span>
+                                <span>{{ number_format($sGrandDue, 0) }}</span>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
-                <div class="inv-summary-row">
-                    <span>Discount :</span>
-                    <span>{{ number_format($grandDiscount, 2) }}</span>
-                </div>
-                <div class="inv-summary-row">
-                    <span>Fine :</span>
-                    <span>{{ number_format($grandFine, 2) }}</span>
-                </div>
-                <div class="inv-summary-row">
-                    <span>Paid :</span>
-                    <span>{{ number_format($grandPaid, 2) }}</span>
-                </div>
-                <div class="inv-summary-row fw-bold">
-                    <span>Balance :</span>
-                    <span>{{ number_format($grandTotal - $grandDiscount + $grandFine - $grandPaid, 2) }}</span>
-                </div>
-            </div>
-            @endif
 
-            {{-- Footer --}}
-            <div class="footer-actions mt-3 no-print">
-                <button type="button" class="btn btn-dark" onclick="window.print()">
-                    <span class="material-icons-round">print</span> Print
-                </button>
-            </div>
+            @empty
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
+                    No invoices found for this student.
+                </div>
+            @endforelse
 
         </div>
 
     </div>
+
+    {{-- ============================================================ --}}
+    {{-- PRINTABLE — শুধু Selected Invoice গুলোর জন্য (Hidden, JS দিয়ে Print হবে) --}}
+    {{-- ============================================================ --}}
+    <div id="invoicePrintable" style="display:none">
+        <h6>{{ $student->name ?? '' }} — Fee Invoice</h6>
+        <p>Class: {{ $student->class->name ?? '—' }} | Section: {{ $student->section->name ?? '—' }}</p>
+
+        @php
+            $selectedInvoices = $invoices->whereIn('id', $selectedIds);
+        @endphp
+
+        @foreach($selectedInvoices as $invoice)
+            <h6 style="margin-top:16px">Invoice #{{ $invoice->invoice_no }} ({{ \Carbon\Carbon::parse($invoice->invoice_date)->format('d.M.Y') }})</h6>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fees Type</th>
+                        <th>Amount</th>
+                        <th>Discount</th>
+                        <th>Fine</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($invoice->items as $item)
+                        @php
+                            $isMonthly   = $item->feeSetup?->frequency === 'monthly';
+                            $feeTypeName = $item->feeSetup?->feeType?->name ?? '—';
+                            $monthLabel  = $isMonthly ? \Carbon\Carbon::parse($invoice->invoice_date)->format('F') : null;
+                        @endphp
+                        <tr>
+                            <td>{{ $feeTypeName }}{{ $monthLabel ? ' — '.$monthLabel : '' }}</td>
+                            <td>{{ number_format($item->base_amount, 0) }}</td>
+                            <td>{{ number_format($item->discount_amount, 0) }}</td>
+                            <td>{{ number_format($item->fine_amount, 0) }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+            <p style="text-align:right;margin-top:6px">
+                Total: {{ number_format($invoice->total_amount, 0) }} |
+                Paid: {{ number_format($invoice->paid_amount, 0) }} |
+                Due: {{ number_format($invoice->due_amount, 0) }}
+            </p>
+        @endforeach
+    </div>
+
+    {{-- ============================================================ --}}
+    {{-- PAYMENT COLLECT MODAL — ✅ FIX: এখন Root div-এর ভেতরেই আছে --}}
+    {{-- ============================================================ --}}
+    @if($showPaymentModal)
+    <div class="pay-modal-backdrop" wire:click.self="closePaymentModal">
+        <div class="pay-modal-box">
+
+            <div class="card-header border-0 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Payment Collect</h5>
+                <button type="button" class="btn-close" wire:click="closePaymentModal"></button>
+            </div>
+
+            <div class="pay-modal-body">
+
+                <div class="table-responsive mb-3">
+                    <table class="table-loader">
+                        <thead>
+                            <tr>
+                                <th>Invoice No</th>
+                                <th>Due Amount</th>
+                                <th style="width:160px">Pay Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($paymentRows as $invoiceId => $row)
+                            <tr wire:key="pay-row-{{ $invoiceId }}">
+                                <td>#{{ $row['invoice_no'] }}</td>
+                                <td>{{ number_format($row['due'], 2) }}</td>
+                                <td>
+                                    <input type="number" step="0.01" min="0" max="{{ $row['due'] }}"
+                                        class="form-control form-control-sm"
+                                        wire:model.live="paymentRows.{{ $invoiceId }}.pay_amount">
+                                    @error("paymentRows.$invoiceId.pay_amount")
+                                        <div class="text-danger" style="font-size:11px">{{ $message }}</div>
+                                    @enderror
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Payment Method</label>
+                        <select class="form-select" wire:model="paymentMethod">
+                            <option value="cash">Cash</option>
+                            <option value="bkash">bKash</option>
+                            <option value="nagad">Nagad</option>
+                            <option value="bank">Bank</option>
+                            <option value="cheque">Cheque</option>
+                        </select>
+                        @error('paymentMethod') <div class="text-danger" style="font-size:11px">{{ $message }}</div> @enderror
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Payment Date</label>
+                        <input type="date" class="form-control" wire:model="paymentDate">
+                        @error('paymentDate') <div class="text-danger" style="font-size:11px">{{ $message }}</div> @enderror
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Office Account (Optional)</label>
+                        <select class="form-select" wire:model="officeAccountId">
+                            <option value="">-- Select --</option>
+                            @foreach($officeAccounts as $account)
+                                <option value="{{ $account->id }}">{{ $account->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('officeAccountId') <div class="text-danger" style="font-size:11px">{{ $message }}</div> @enderror
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Remarks (Optional)</label>
+                        <textarea class="form-control" rows="2" wire:model="remarks"></textarea>
+                    </div>
+                </div>
+
+                <div class="pay-total-row mt-3">
+                    <span>Total Pay Amount :</span>
+                    <span class="fw-bold">{{ number_format($this->totalPayAmount, 2) }}</span>
+                </div>
+
+            </div>
+
+            <div class="pay-modal-footer">
+                <button type="button" class="btn-outline" wire:click="closePaymentModal">Cancel</button>
+                <button type="button" class="btn-pink" wire:click="savePayment" wire:loading.attr="disabled">
+                    <span wire:loading wire:target="savePayment" class="spinner-border spinner-border-sm me-1"></span>
+                    Confirm Payment
+                </button>
+            </div>
+
+        </div>
+    </div>
+    @endif
+
 </div>
 
 @push('styles')
@@ -206,6 +379,11 @@
         color: #888;
         background: transparent;
         border-bottom: none !important;
+    }
+    .invoice-subtotal-row td {
+        background: rgba(0,0,0,.015);
+        font-weight: 600;
+        border-top: 1px dashed rgba(0,0,0,.08);
     }
     .row-selected {
         background: rgba(224, 82, 82, .08) !important;
@@ -249,36 +427,165 @@
         justify-content: flex-end;
         padding: 16px 0 8px;
     }
+
+    /* ---- Session Accordion (Image-এর মতো) ---- */
+    .session-accordion-item {
+        border: 1px solid rgba(0,0,0,.08);
+        border-radius: 10px;
+        margin-bottom: 12px;
+        overflow: hidden;
+    }
+    .session-accordion-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 14px 16px;
+        background: rgba(224,82,82,.05);
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+        user-select: none;
+    }
+    .session-accordion-header .chevron {
+        transition: transform .2s;
+    }
+    .session-accordion-header.open .chevron {
+        transform: rotate(180deg);
+    }
+    .session-accordion-header .session-count {
+        color: #999;
+        font-weight: 400;
+        font-size: 12px;
+        margin-left: 4px;
+    }
+    .session-accordion-body {
+        padding: 12px 16px 16px;
+    }
+
+    /* ---- Payment Modal ---- */
+    .pay-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.5);
+        z-index: 1055;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+    .pay-modal-box {
+        background: #fff;
+        width: 100%;
+        max-width: 640px;
+        max-height: 90vh;
+        overflow-y: auto;
+        border-radius: 10px;
+        box-shadow: 0 10px 40px rgba(0,0,0,.25);
+    }
+    .pay-modal-body {
+        padding: 18px;
+    }
+    .pay-total-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 14px;
+        padding: 10px;
+        background: rgba(224,82,82,.06);
+        border-radius: 6px;
+    }
+    .pay-modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 14px 18px;
+        border-top: 1px solid rgba(0,0,0,.06);
+    }
 </style>
 
 <style>
     @media print {
-        /* sidebar, navbar, header সব hide */
         .no-print, .sidenav, .navbar,
         .student-navbar,
         nav, header, aside, footer { display: none !important; }
 
-        /* card এর padding/shadow সরাও */
         .card {background: none !important; border: none !important; box-shadow: none !important; padding: 0 !important; }
 
-        /* container full width */
         .container-xl { max-width: 100% !important; padding: 0 !important; }
 
-        /* section card border রাখো কিন্তু shadow সরাও */
         .section-card { box-shadow: none !important; break-inside: avoid; }
-
-        /* page break যাতে section মাঝখানে না ভাঙে */
         .section-card { page-break-inside: avoid; }
 
         body { background: white !important; }
 
-        .profile-card > .d-flex {
-            display: flex !important;
-        }
+        .session-accordion-body { display: block !important; }
 
-        .profile-card .flex-grow-1 {
-            width: 50% !important;
-        }
+        #invoicePrintable { display: none !important; }
     }
 </style>
+@endpush
+
+@push('scripts')
+<script>
+    function toggleSessionPanel(headerEl) {
+        headerEl.classList.toggle('open');
+        const body = headerEl.nextElementSibling;
+        if (!body) return;
+        body.style.display = (body.style.display === 'none' || !body.style.display) ? 'block' : 'none';
+    }
+
+    function toggleSessionSelectAll(checkboxEl, groupIndex) {
+        const checked = checkboxEl.checked;
+        document.querySelectorAll('.session-' + groupIndex + '-checkbox').forEach(function (cb) {
+            if (cb.checked !== checked) {
+                cb.checked = checked;
+                cb.dispatchEvent(new Event('change'));
+            }
+        });
+    }
+
+    function printSelectedInvoices() {
+        const printableEl = document.getElementById('invoicePrintable');
+
+        if (!printableEl) {
+            return;
+        }
+
+        const printContent = printableEl.innerHTML;
+        const printWindow = window.open('', '_blank', 'width=900,height=650');
+
+        if (!printWindow) {
+            alert('Print window block hoye গেছে। Browser-er popup blocker check korun.');
+            return;
+        }
+
+        printWindow.document.write(`
+            <html>
+                <head>
+                    <title>Fee Invoice</title>
+                    <style>
+                        * { box-sizing: border-box; }
+                        body { font-family: Arial, Helvetica, sans-serif; padding: 28px; color: #222; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                        th, td { border: 1px solid #ddd; padding: 8px 10px; text-align: left; font-size: 13px; }
+                        thead th { background: #f5f5f5; }
+                        h6 { margin: 0 0 2px 0; font-size: 16px; }
+                        p { margin: 0; color: #555; font-size: 13px; }
+                        .text-muted { color: #777 !important; text-transform: uppercase; font-size: 11px; }
+                    </style>
+                </head>
+                <body>
+                    ${printContent}
+                </body>
+            </html>
+        `);
+
+        printWindow.document.close();
+        printWindow.focus();
+
+        setTimeout(() => {
+            printWindow.print();
+            printWindow.close();
+        }, 250);
+    }
+</script>
 @endpush

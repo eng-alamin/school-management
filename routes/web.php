@@ -57,8 +57,8 @@ Route::middleware(['auth', 'role:admin', 'billing.check'])->group(function () {
     Route::get('/student/list', \App\Livewire\Admin\Student\StudentListComponent::class)->name('admin.student.list');
     Route::get('/student/{id}/edit', \App\Livewire\Admin\Student\StudentEditComponent::class)->name('admin.student.edit');
     Route::get('/student/{id}/overview', \App\Livewire\Admin\Student\StudentOverviewComponent::class)->name('admin.student.overview');
-    Route::get('student/{id}/invoice', \App\Livewire\Admin\Student\StudentInvoiceComponent::class)->name('admin.student.invoice');
-    Route::get('student/{id}/payment/add', \App\Livewire\Admin\Student\PaymentAddComponent::class)->name('admin.student.payment.add');
+    Route::get('/student/{id}/invoice', \App\Livewire\Admin\Student\StudentInvoiceComponent::class)->name('admin.student.invoice');
+    Route::get('/student/{id}/payment', \App\Livewire\Admin\Student\StudentPaymentComponent::class)->name('admin.student.payment');
 
     // Academic
     Route::get('/academic/sessions', \App\Livewire\Admin\Academic\SessionComponent::class)->name('admin.academic.sessions');
@@ -144,9 +144,8 @@ Route::middleware(['auth', 'role:admin', 'billing.check'])->group(function () {
     Route::get('office-accounting/transactions', \App\Livewire\Admin\OfficeAccounting\TransactionComponent::class)->name('admin.office-accounting.transactions');
 
     Route::get('student-accounting/fee-types', \App\Livewire\Admin\StudentAccounting\FeeTypeComponent::class)->name('admin.student-accounting.fee.types');
-    Route::get('student-accounting/fee-groups', \App\Livewire\Admin\StudentAccounting\FeeGroupComponent::class)->name('admin.student-accounting.fee.groups');
+    Route::get('student-accounting/fee-setups', \App\Livewire\Admin\StudentAccounting\FeeSetupComponent::class)->name('admin.student-accounting.fee.setups');
     Route::get('student-accounting/fee-fines', \App\Livewire\Admin\StudentAccounting\FeeFineComponent::class)->name('admin.student-accounting.fee.fines');
-    Route::get('student-accounting/fee-allocations', \App\Livewire\Admin\StudentAccounting\FeeAllocationComponent::class)->name('admin.student-accounting.fee.allocations');
     Route::get('student-accounting/fee-invoices', \App\Livewire\Admin\StudentAccounting\FeeInvoiceComponent::class)->name('admin.student-accounting.fee.invoices');
 
     Route::get('mailbox/compose', \App\Livewire\Admin\Mailbox\ComposeComponent::class)->name('admin.mailbox.compose');
@@ -225,7 +224,7 @@ Route::middleware(['auth', 'role:accountant', 'billing.check'])->group(function 
     Route::get('accountant/student/{id}/edit', \App\Livewire\Accountant\Student\StudentEditComponent::class)->name('accountant.student.edit');
     Route::get('accountant/student/{id}/overview', \App\Livewire\Accountant\Student\StudentOverviewComponent::class)->name('accountant.student.overview');
     Route::get('accountant/student/{id}/invoice', \App\Livewire\Accountant\Student\StudentInvoiceComponent::class)->name('accountant.student.invoice');
-    Route::get('accountant/student/{id}/payment/add', \App\Livewire\Accountant\Student\PaymentAddComponent::class)->name('accountant.student.payment.add');
+    Route::get('accountant/student/{id}/payment', \App\Livewire\Accountant\Student\StudentPaymentComponent::class)->name('accountant.student.payment');
 
     // Parent
     Route::get('accountant/parent/list', \App\Livewire\Accountant\Parent\ParentListComponent::class)->name('accountant.parent.list');
@@ -299,7 +298,7 @@ Route::middleware(['auth', 'role:accountant', 'billing.check'])->group(function 
     Route::get('accountant/mailbox/important', \App\Livewire\Accountant\Mailbox\ImportantComponent::class)->name('accountant.mailbox.important');
     Route::get('accountant/mailbox/trash', \App\Livewire\Accountant\Mailbox\TrashComponent::class)->name('accountant.mailbox.trash');
 
-    Route::get('accountant/notice-board', \App\Livewire\Accountant\Notice\NoticeComponent::class)->name('accountant.notice');
+    Route::get('accountant/notices', \App\Livewire\Accountant\Notice\NoticeComponent::class)->name('accountant.notices');
     Route::get('accountant/notifications', \App\Livewire\Accountant\Notifications\Index::class)->name('accountant.notifications.index');
 
     // Profile 

@@ -10,6 +10,7 @@ class DashboardComponent extends Component
 {
     // ── Stats ──────────────────────────────────────────────────────────────
     public int   $totalStudents        = 0;
+    public int   $totalTeachers        = 0;
     public int   $totalEmployees       = 0;
     public int   $totalClasses         = 0;
     public int   $activeNotices        = 0;
@@ -38,8 +39,10 @@ class DashboardComponent extends Component
     // ── Pending Homework ───────────────────────────────────────────────────
     public int   $pendingHomework        = 0;
 
-    // ── Upcoming Exams ─────────────────────────────────────────────────────
+    // ── Exams ─────────────────────────────────────────────────────
     public int   $upcomingExams          = 0;
+    public int   $todayExams             = 0;
+    public int   $completedExams         = 0;
 
     // ── Attendance % ───────────────────────────────────────────────────────
     public float $attendancePercent      = 0;
@@ -59,11 +62,24 @@ class DashboardComponent extends Component
     // ── Filters ────────────────────────────────────────────────────────────
     public ?int $currentSessionId = null;
 
+    // ── Dynamic Trend (% Change) — প্রতিটার সাথে ['percent'=>, 'direction'=>'up'/'down'] থাকবে ──
+    public array $trendStudents    = ['percent' => 0, 'direction' => 'up'];
+    public array $trendStaffs      = ['percent' => 0, 'direction' => 'up'];
+    public array $trendTeachers    = ['percent' => 0, 'direction' => 'up'];
+    public array $trendAttendance  = ['percent' => 0, 'direction' => 'up'];
+    public array $trendAdmissions  = ['percent' => 0, 'direction' => 'up'];
+    public array $trendHomework    = ['percent' => 0, 'direction' => 'up'];
+    public array $trendFeeCollected = ['percent' => 0, 'direction' => 'up'];
+    public array $trendFeeToday = ['percent' => 0, 'direction' => 'up'];
+    public array $trendFeeDue      = ['percent' => 0, 'direction' => 'up'];
+
     public function mount(): void
     {
         $institutionId = auth()->user()->institution_id;
         $today    = Carbon::today();
+        $yesterday = Carbon::yesterday();
         $month    = Carbon::now()->format('Y-m');
+        $lastMonth = Carbon::now()->subMonthNoOverflow()->format('Y-m');
 
         // ── Current Session ────────────────────────────────────────────────
         $this->currentSessionId = DB::table('academic_sessions')
@@ -74,40 +90,98 @@ class DashboardComponent extends Component
         // ── Students & Employees ───────────────────────────────────────────
         $this->totalStudents = DB::table('students')
             ->where('institution_id', $institutionId)
+            ->where('session_id', $this->currentSessionId)
             ->count();
 
         $this->totalEmployees = DB::table('employees')
             ->where('institution_id', $institutionId)
             ->count();
 
+        $this->totalTeachers = DB::table('employees')
+            ->join('users', 'employees.user_id', '=', 'users.id')
+            ->where('employees.institution_id', $institutionId)
+            ->where('users.role', 'teacher')
+            ->count();
+
         $this->totalClasses = DB::table('academic_classes')
             ->where('institution_id', $institutionId)
             ->count();
 
-        // ── New Admissions this month ──────────────────────────────────────
+        // ── New Admissions this month / last month ─────────────────────────
         $this->newAdmissionsThisMonth = DB::table('students')
             ->where('institution_id', $institutionId)
             ->whereRaw("DATE_FORMAT(created_at, '%Y-%m') = ?", [$month])
             ->count();
 
+        $admissionsLastMonth = DB::table('students')
+            ->where('institution_id', $institutionId)
+            ->whereRaw("DATE_FORMAT(created_at, '%Y-%m') = ?", [$lastMonth])
+            ->count();
+
+        $this->trendAdmissions = $this->percentChange($this->newAdmissionsThisMonth, $admissionsLastMonth);
+
+        // ── Total Students Growth (এই মাসের Admission / আগের Total) ─────────
+        $studentsBeforeThisMonth = max(0, $this->totalStudents - $this->newAdmissionsThisMonth);
+        $this->trendStudents = $this->percentChange($this->totalStudents, $studentsBeforeThisMonth);
+
+        // ── Total Staffs Growth ─────────────────────────────────────────────
+        $employeesThisMonth = DB::table('employees')
+            ->where('institution_id', $institutionId)
+            ->whereRaw("DATE_FORMAT(created_at, '%Y-%m') = ?", [$month])
+            ->count();
+        $employeesBeforeThisMonth = max(0, $this->totalEmployees - $employeesThisMonth);
+        $this->trendStaffs = $this->percentChange($this->totalEmployees, $employeesBeforeThisMonth);
+
+        // ── Total Teachers Growth ────────────────────────────────────────────
+        $teachersThisMonth = DB::table('employees')
+            ->join('users', 'employees.user_id', '=', 'users.id')
+            ->where('employees.institution_id', $institutionId)
+            ->where('users.role', 'teacher')
+            ->whereRaw("DATE_FORMAT(employees.created_at, '%Y-%m') = ?", [$month])
+            ->count();
+        $teachersBeforeThisMonth = max(0, $this->totalTeachers - $teachersThisMonth);
+        $this->trendTeachers = $this->percentChange($this->totalTeachers, $teachersBeforeThisMonth);
+
         // ── Pending Homework ───────────────────────────────────────────────
-        // $this->pendingHomework = DB::table('homeworks')
-        //     ->where('institution_id', $institutionId)
-        //     ->where('status', 'published')      
-        //     ->whereDate('submission_date', '>=', $today)
-        //     ->count();
-            // ->where('institution_id', $institutionId)
-            // ->where('status', 'pending')
-            // ->whereDate('due_date', '>=', $today)
-            // ->count();
+        $this->pendingHomework = DB::table('homeworks')
+            ->where('institution_id', $institutionId)
+            ->where('status', 'published')
+            ->whereDate('submission_date', '>=', $today)
+            ->count();
 
-        // ── Upcoming Exams ─────────────────────────────────────────────────
-        // $this->upcomingExams = DB::table('exams')
-        //     ->where('institution_id', $institutionId)
-        //     ->whereDate('start_date', '>=', $today)
-        //     ->count();
+        // Homework Trend — এই সপ্তাহে তৈরি vs গত সপ্তাহে তৈরি Homework সংখ্যা
+        $homeworkThisWeek = DB::table('homeworks')
+            ->where('institution_id', $institutionId)
+            ->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])
+            ->count();
+        $homeworkLastWeek = DB::table('homeworks')
+            ->where('institution_id', $institutionId)
+            ->whereBetween('created_at', [now()->subWeek()->startOfWeek(), now()->subWeek()->endOfWeek()])
+            ->count();
+        $this->trendHomework = $this->percentChange($homeworkThisWeek, $homeworkLastWeek);
 
-        // ── Attendance % (today) ───────────────────────────────────────────
+        // Upcoming Exams
+        $this->upcomingExams = DB::table('exam_schedules')
+            ->where('institution_id', $institutionId)
+            ->where('is_published', true)
+            ->whereDate('exam_date', '>=', today())
+            ->count();
+
+        // Today's Exams
+        $this->todayExams = DB::table('exam_schedules')
+            ->where('institution_id', $institutionId)
+            ->where('is_published', true)
+            ->whereDate('exam_date', today())
+            ->count();
+
+        // Completed Exams
+        $this->completedExams = DB::table('exam_schedules')
+            ->where('institution_id', $institutionId)
+            ->where('is_published', true)
+            ->whereDate('exam_date', '<', today())
+            ->count();
+
+        // ── Attendance % (today vs yesterday) ───────────────────────────────
         $totalMarked = DB::table('attendances')
             ->where('institution_id', $institutionId)
             ->where('type', 'student')
@@ -131,6 +205,31 @@ class DashboardComponent extends Component
         $this->attendancePercent = $totalMarked > 0
             ? round(($this->studentsPresentToday / $totalMarked) * 100, 1)
             : 0;
+
+        // গতকালের Attendance %
+        $totalMarkedYesterday = DB::table('attendances')
+            ->where('institution_id', $institutionId)
+            ->where('type', 'student')
+            ->whereDate('date', $yesterday)
+            ->count();
+
+        $presentYesterday = DB::table('attendances')
+            ->where('institution_id', $institutionId)
+            ->where('type', 'student')
+            ->whereDate('date', $yesterday)
+            ->where('status', 'present')
+            ->count();
+
+        $attendancePercentYesterday = $totalMarkedYesterday > 0
+            ? round(($presentYesterday / $totalMarkedYesterday) * 100, 1)
+            : 0;
+
+        // Attendance-এর জন্য Point Difference (আজ - গতকাল), % Growth না
+        $attendanceDiff = round($this->attendancePercent - $attendancePercentYesterday, 1);
+        $this->trendAttendance = [
+            'percent'   => abs($attendanceDiff),
+            'direction' => $attendanceDiff >= 0 ? 'up' : 'down',
+        ];
 
         $this->employeesPresentToday = DB::table('attendances')
             ->where('institution_id', $institutionId)
@@ -171,7 +270,53 @@ class DashboardComponent extends Component
         $this->totalFeeToday = (float) DB::table('fee_payments')
             ->where('institution_id', $institutionId)
             ->whereDate('payment_date', $today)
-            ->sum('paid_amount');
+            ->sum('amount');
+
+        // Fee Collected Trend — এই মাস vs গত মাস (fee_payments থেকে)
+        $feeCollectedThisMonth = (float) DB::table('fee_payments')
+            ->where('institution_id', $institutionId)
+            ->whereRaw("DATE_FORMAT(payment_date, '%Y-%m') = ?", [$month])
+            ->sum('amount');
+
+        $feeCollectedLastMonth = (float) DB::table('fee_payments')
+            ->where('institution_id', $institutionId)
+            ->whereRaw("DATE_FORMAT(payment_date, '%Y-%m') = ?", [$lastMonth])
+            ->sum('amount');
+
+        $this->trendFeeCollected = $this->percentChange($feeCollectedThisMonth, $feeCollectedLastMonth);
+
+        // Fee Collected Trend — এই Day vs গত Day (fee_payments থেকে)
+        $feeCollectedThisDay = (float) DB::table('fee_payments')
+            ->where('institution_id', $institutionId)
+            ->whereDate('payment_date', $today)
+            ->sum('amount');
+
+        $feeCollectedLastDay = (float) DB::table('fee_payments')
+            ->where('institution_id', $institutionId)
+            ->whereDate('payment_date', $yesterday)
+            ->sum('amount');
+
+        $this->trendFeeToday = $this->percentChange($feeCollectedThisDay, $feeCollectedLastDay);
+
+        $feeCollectedLastMonth = (float) DB::table('fee_payments')
+            ->where('institution_id', $institutionId)
+            ->whereRaw("DATE_FORMAT(payment_date, '%Y-%m') = ?", [$lastMonth])
+            ->sum('amount');
+
+        $this->trendFeeCollected = $this->percentChange($feeCollectedThisMonth, $feeCollectedLastMonth);
+
+        // Due Fees Trend — এই মাসের Invoice-এ তৈরি হওয়া Due vs গত মাসের
+        $feeDueThisMonth = (float) DB::table('fee_invoices')
+            ->where('institution_id', $institutionId)
+            ->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$month])
+            ->sum('due_amount');
+
+        $feeDueLastMonth = (float) DB::table('fee_invoices')
+            ->where('institution_id', $institutionId)
+            ->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$lastMonth])
+            ->sum('due_amount');
+
+        $this->trendFeeDue = $this->percentChange($feeDueThisMonth, $feeDueLastMonth);
 
         // ── Office Accounts ────────────────────────────────────────────────
         $openingBalance       = (float) DB::table('office_accounts')
@@ -224,10 +369,11 @@ class DashboardComponent extends Component
         // ── Recent Fee Payments ────────────────────────────────────────────
         $this->recentPayments = DB::table('fee_payments as fp')
             ->join('students as s', 's.id', '=', 'fp.student_id')
+            ->leftJoin('fee_invoices as fi', 'fi.id', '=', 'fp.fee_invoice_id')
             ->where('fp.institution_id', $institutionId)
             ->select(
-                'fp.id', 's.name as student_name', 'fp.paid_amount',
-                'fp.payment_method', 'fp.payment_date', 'fp.payment_status'
+                'fp.id', 's.name as student_name', 'fp.amount',
+                'fp.payment_method', 'fp.payment_date', 'fi.payment_status'
             )
             ->orderByDesc('fp.created_at')
             ->limit(5)
@@ -253,8 +399,8 @@ class DashboardComponent extends Component
             ->get();
 
         // ── Recent Activities ──────────────────────────────────────────────
-        // Assumes an `activity_logs` table with: institution_id, description, icon, created_at
         $this->recentActivities = DB::table('activity_log')
+            ->where('institution_id', $institutionId)
             ->orderByDesc('created_at')
             ->limit(5)
             ->select('id', 'description', 'properties', 'created_at')
@@ -293,7 +439,7 @@ class DashboardComponent extends Component
         $this->monthlyFeeChart = DB::table('fee_payments')
             ->where('institution_id', $institutionId)
             ->where('payment_date', '>=', Carbon::now()->subMonths(5)->startOfMonth())
-            ->selectRaw("DATE_FORMAT(payment_date, '%Y-%m') as month, COALESCE(SUM(paid_amount), 0) as total")
+            ->selectRaw("DATE_FORMAT(payment_date, '%Y-%m') as month, COALESCE(SUM(amount), 0) as total")
             ->groupBy('month')
             ->orderBy('month')
             ->get()
@@ -302,6 +448,24 @@ class DashboardComponent extends Component
                 'total' => (float) $row->total,
             ])
             ->toArray();
+    }
+
+    /**
+     * দুইটা সংখ্যা থেকে % Change আর Direction (up/down) বের করে।
+     * $previous = 0 হলে current > 0 হলে 100% up ধরা হয়, দুইটাই 0 হলে 0%।
+     */
+    private function percentChange(float $current, float $previous): array
+    {
+        if ($previous == 0) {
+            $percent = $current > 0 ? 100 : 0;
+        } else {
+            $percent = (($current - $previous) / $previous) * 100;
+        }
+
+        return [
+            'percent'   => round(abs($percent), 1),
+            'direction' => $percent >= 0 ? 'up' : 'down',
+        ];
     }
 
     public function render()

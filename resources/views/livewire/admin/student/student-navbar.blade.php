@@ -74,9 +74,9 @@
     </div>
 
     <!-- Profile Tabs -->
-    <ul class="nav profile-tabs border-bottom mt-4 flex-nowrap overflow-auto no-print">
+    <ul class="nav profile-tabs border-bottom mt-4 flex-nowrap overflow-auto no-print" wire:ignore>
         <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.student.overview') ? 'active' : '' }}" href="{{ route('admin.student.overview', ['id' => $student->id]) }}">Overview</a></li>
+        <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.student.payment') ? 'active' : '' }}" href="{{ route('admin.student.payment', ['id' => $student->id]) }}">Payment</a></li>
         <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.student.invoice') ? 'active' : '' }}" href="{{ route('admin.student.invoice', ['id' => $student->id]) }}">Invoice</a></li>
-        <li wire:ignore class="nav-item"><a class="nav-link {{ request()->routeIs('admin.student.payment.add') ? 'active' : '' }}" href="{{ route('admin.student.payment.add', ['id' => $student->id]) }}">Payment</a></li>
     </ul>
 </div>

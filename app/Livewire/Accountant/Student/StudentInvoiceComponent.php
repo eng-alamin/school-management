@@ -4,18 +4,28 @@ namespace App\Livewire\Accountant\Student;
 
 use Livewire\Component;
 use App\Models\Student;
-use App\Models\FeeAllocation;
 use App\Models\FeeInvoice;
-use App\Models\FeeInvoiceItem;
+use App\Models\FeePayment;
+use App\Models\OfficeAccount;
+use Illuminate\Support\Facades\DB;
 
 class StudentInvoiceComponent extends Component
 {
     public $student;
-    public $feeAllocations;
-    public $invoiceItemsMap = []; // fee_group_item_id => FeeInvoiceItem
+    public $invoices; // Collection of FeeInvoice with items.feeGroupItem.feeGroup / feeType
 
-    public array $selectedIds = [];
+    public array $selectedIds = []; // Selected Invoice IDs
     public bool  $selectAll   = false;
+
+    // ---- Payment Modal ----
+    public bool   $showPaymentModal = false;
+    public array  $paymentRows      = []; // [invoice_id => ['invoice_no'=>, 'due'=>, 'pay_amount'=>]]
+    public string $paymentMethod    = 'cash';
+    public string $paymentDate;
+    public ?int    $officeAccountId = null;
+    public ?string $remarks         = null;
+
+    public $officeAccounts = [];
 
     public function mount(int $id)
     {
@@ -28,65 +38,157 @@ class StudentInvoiceComponent extends Component
             'user',
         ])->findOrFail($id);
 
-        $this->loadAllocations();
+        $this->paymentDate    = now()->format('Y-m-d');
+        $this->officeAccounts = OfficeAccount::orderBy('name')->get();
+
+        $this->loadInvoices();
     }
 
-    private function loadAllocations(): void
+    private function loadInvoices(): void
     {
-        $this->feeAllocations = FeeAllocation::with([
-                'feeGroup.items.feeType',
+        $this->invoices = FeeInvoice::with([
+                'items.feeGroupItem.feeGroup',
+                'items.feeGroupItem.feeType',
             ])
             ->where('student_id', $this->student->id)
+            ->orderBy('invoice_date')
+            ->latest()
             ->get();
-
-        // FeeInvoiceItem গুলো fee_group_item_id দিয়ে map করো
-        $allGroupItemIds = $this->feeAllocations
-            ->flatMap(fn($a) => $a->feeGroup->items->pluck('id'))
-            ->toArray();
-
-        $invoiceItems = FeeInvoiceItem::with('itemPayments')
-            ->whereIn('fee_group_item_id', $allGroupItemIds)
-            ->whereHas('invoice', fn($q) =>
-                $q->where('student_id', $this->student->id)
-            )
-            ->get()
-            ->keyBy('fee_group_item_id');
-
-        $this->invoiceItemsMap = $invoiceItems;
     }
 
     public function updatedSelectAll(bool $value): void
     {
-        if ($value) {
-            $ids = [];
-            foreach ($this->feeAllocations as $allocation) {
-                foreach ($allocation->feeGroup->items as $item) {
-                    $ids[] = $item->id;
-                }
-            }
-            $this->selectedIds = $ids;
-        } else {
-            $this->selectedIds = [];
-        }
+        $this->selectedIds = $value
+            ? $this->invoices->pluck('id')->toArray()
+            : [];
     }
 
     public function updatedSelectedIds(): void
     {
-        $total = $this->feeAllocations->sum(
-            fn($a) => $a->feeGroup->items->count()
-        );
-        $this->selectAll = count($this->selectedIds) === $total && $total > 0;
+        $this->selectAll = $this->invoices->count() > 0
+            && count($this->selectedIds) === $this->invoices->count();
     }
 
+    // ---------------------------------------------------------------
+    // Modal Open — সিলেক্ট করা Invoice গুলো থেকে Payment Row তৈরি হয়
+    // ---------------------------------------------------------------
     public function collectSelected(): void
     {
         if (empty($this->selectedIds)) {
-            $this->dispatch('toast', type: 'error', message: 'No fee selected.');
+            $this->dispatch('toast', type: 'error', message: 'কোনো Invoice সিলেক্ট করা হয়নি।');
             return;
         }
 
-        // Payment page এ redirect
-        $this->redirect(route('accountant.student.payment.add', $this->student->id));
+        $this->paymentRows = [];
+
+        foreach ($this->invoices as $invoice) {
+            if (!in_array($invoice->id, $this->selectedIds)) {
+                continue;
+            }
+
+            $due = (float) $invoice->due_amount;
+
+            if ($due <= 0) {
+                continue; // যেই Invoice-এ Due নেই সেটা বাদ
+            }
+
+            $this->paymentRows[$invoice->id] = [
+                'invoice_no' => $invoice->invoice_no,
+                'due'        => $due,
+                'pay_amount' => $due, // ডিফল্ট ফুল Due Amount, চাইলে কমানো যাবে (Partial)
+            ];
+        }
+
+        if (empty($this->paymentRows)) {
+            $this->dispatch('toast', type: 'error', message: 'সিলেক্ট করা Invoice গুলোর কোনো Due নেই।');
+            return;
+        }
+
+        $this->paymentMethod    = 'cash';
+        $this->paymentDate      = now()->format('Y-m-d');
+        $this->officeAccountId  = null;
+        $this->remarks          = null;
+
+        $this->showPaymentModal = true;
+    }
+
+    public function closePaymentModal(): void
+    {
+        $this->showPaymentModal = false;
+        $this->paymentRows      = [];
+        $this->resetErrorBag();
+    }
+
+    // Modal-এ Total দেখানোর জন্য Computed Property
+    public function getTotalPayAmountProperty(): float
+    {
+        return collect($this->paymentRows)->sum(fn ($row) => (float) $row['pay_amount']);
+    }
+
+    // ---------------------------------------------------------------
+    // Payment Save — DB::transaction() এর মধ্যে সব Invoice এ Payment বসবে
+    // ---------------------------------------------------------------
+    public function savePayment(): void
+    {
+        $this->validate([
+            'paymentMethod'             => 'required|string|max:50',
+            'paymentDate'               => 'required|date',
+            'officeAccountId'           => 'nullable|exists:office_accounts,id',
+            'remarks'                   => 'nullable|string|max:255',
+            'paymentRows.*.pay_amount'  => 'required|numeric|min:0',
+        ]);
+
+        foreach ($this->paymentRows as $invoiceId => $row) {
+            if ((float) $row['pay_amount'] > (float) $row['due']) {
+                $this->addError("paymentRows.$invoiceId.pay_amount", 'Pay Amount, Due Amount এর চেয়ে বেশি হতে পারবে না।');
+                return;
+            }
+        }
+
+        if ($this->totalPayAmount <= 0) {
+            $this->dispatch('toast', type: 'error', message: 'অন্তত একটা Invoice-এ Payment Amount দিন।');
+            return;
+        }
+
+        DB::transaction(function () {
+            foreach ($this->paymentRows as $invoiceId => $row) {
+                $payAmount = (float) $row['pay_amount'];
+
+                if ($payAmount <= 0) {
+                    continue;
+                }
+
+                $invoice = FeeInvoice::lockForUpdate()->findOrFail($invoiceId);
+
+                // Payment Record তৈরি (fee_payments schema অনুযায়ী)
+                $payment = FeePayment::create([
+                    'student_id'        => $this->student->id,
+                    'fee_invoice_id'    => $invoice->id,
+                    'office_account_id' => $this->officeAccountId,
+                    'payment_date'      => $this->paymentDate,
+                    'amount'            => $payAmount,
+                    'payment_method'    => $this->paymentMethod,
+                    'remarks'           => $this->remarks,
+                ]);
+
+                // Invoice এর paid/due/status — FeeInvoice::recalculate() নিজেই করে দেয়
+                $invoice->recalculate();
+
+                // Activity Log
+                activity()
+                    ->causedBy(auth()->user())
+                    ->performedOn($invoice)
+                    ->withProperties(['icon' => 'payments', 'type' => 'payment'])
+                    ->log("Invoice #{$invoice->invoice_no} এ {$payAmount} টাকা Payment Collect করা হয়েছে।");
+            }
+        });
+
+        $this->dispatch('toast', type: 'success', message: 'Payment সফলভাবে Collect হয়েছে।');
+
+        $this->closePaymentModal();
+        $this->selectedIds = [];
+        $this->selectAll   = false;
+        $this->loadInvoices();
     }
 
     public function render()

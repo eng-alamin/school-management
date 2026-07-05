@@ -42,7 +42,7 @@ class InstitutionDefaultsService
         self::createExamMarks($institution);
         self::createExamHalls($institution);
         self::createExamGrades($institution);
-        // self::createFeeTypes($institution);
+        self::createFeeTypes($institution);
         self::createLeaveCategories($institution);
         self::createOfficeHeads($institution);
         self::createOfficeAccounts($institution);
@@ -343,30 +343,29 @@ class InstitutionDefaultsService
     private static function createFeeTypes(Institution $institution): void
     {
         $feeTypes = [
-            ['name' => 'January Month Fees',   'fee_code' => 'january-month-fees'],
-            ['name' => 'February Month Fees',  'fee_code' => 'february-month-fees'],
-            ['name' => 'March Month Fees',     'fee_code' => 'march-month-fees'],
-            ['name' => 'April Month Fees',     'fee_code' => 'april-month-fees'],
-            ['name' => 'May Month Fees',       'fee_code' => 'may-month-fees'],
-            ['name' => 'June Month Fees',      'fee_code' => 'june-month-fees'],
-            ['name' => 'July Month Fees',      'fee_code' => 'july-month-fees'],
-            ['name' => 'August Month Fees',    'fee_code' => 'august-month-fees'],
-            ['name' => 'September Month Fees', 'fee_code' => 'september-month-fees'],
-            ['name' => 'October Month Fees',   'fee_code' => 'october-month-fees'],
-            ['name' => 'November Month Fees',  'fee_code' => 'november-month-fees'],
-            ['name' => 'December Month Fees',  'fee_code' => 'december-month-fees'],
 
-            ['name' => 'Admission Fees', 'fee_code' => 'admission-fees'],
-            ['name' => 'Exam Fees',      'fee_code' => 'exam-fees'],
-            ['name' => 'Sports Fees',    'fee_code' => 'sports-fees'],
-            ['name' => 'Transport Fees', 'fee_code' => 'transport-fees'],
+            ['name' => 'Monthly Fee',        'code' => 'monthly_fee'],
+            ['name' => 'Admission Fee',      'code' => 'admission_fee'],
+            ['name' => 'Registration Fee',   'code' => 'registration_fee'],
+            ['name' => 'Exam Fee',           'code' => 'exam_fee'],
+            ['name' => 'Library Fee',        'code' => 'library_fee'],
+            ['name' => 'Computer Lab Fee',   'code' => 'computer-lab_fee'],
+            ['name' => 'Science Lab Fee',    'code' => 'science-lab_fee'],
+            ['name' => 'Sports & Games Fee', 'code' => 'sports-games_fee'],
+            ['name' => 'Transport Fee',      'code' => 'transport_fee'],
+            ['name' => 'Hostel Fee',         'code' => 'hostel_fee'],
+            ['name' => 'Medical Fee',        'code' => 'medical_fee'],
+            ['name' => 'Development Fee',    'code' => 'development_fee'],
+            ['name' => 'Annual Charges',     'code' => 'annual-charges'],
+            ['name' => 'Sports Fees',    'code' => 'sports_fees'],
+            ['name' => 'Transport Fees', 'code' => 'transport_fees'],
         ];
 
         foreach ($feeTypes as $feeType) {
-            FeeType::updateOrCreate(
+            FeeType::firstOrCreate(
                 [
                     'institution_id' => $institution->id,
-                    'fee_code'       => $feeType['fee_code'],
+                    'code'       => $feeType['code'],
                 ],
                 [
                     'name'           => $feeType['name'],

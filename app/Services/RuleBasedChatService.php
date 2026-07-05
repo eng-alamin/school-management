@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\User;
 use App\Models\Student;
 use App\Models\FeeInvoice;
 use Illuminate\Support\Facades\Auth;
@@ -14,6 +15,7 @@ class RuleBasedChatService
     public function __construct()
     {
         $this->faqs = include base_path('resources/data/chatbot_faq.php');
+        $this->institutionId = auth()->user()->institution_id;
     }
 
     /**
@@ -113,13 +115,9 @@ class RuleBasedChatService
 
         return "মোট ছাত্র সংখ্যা: {$count} জন।";
     }
-
-    /**
-     * TODO: তোমার User model-এ role column অনুযায়ী শিক্ষক গণনা ঠিক করে নাও।
-     */
     protected function handleTotalTeacherIntent(): string
     {
-        $count = \App\Models\User::where('role', 'teacher')->count();
+        $count = User::where('institution_id', $this->institutionId)->where('role', 'teacher')->count();
 
         return "মোট শিক্ষক সংখ্যা: {$count} জন।";
     }

@@ -21,15 +21,10 @@ class FeeInvoice extends Model
         'due_amount'      => 'decimal:2',
         'status'          => 'boolean',
     ];
-    
+
     public function student()
     {
         return $this->belongsTo(Student::class);
-    }
-
-    public function allocation()
-    {
-        return $this->belongsTo(FeeAllocation::class, 'fee_allocation_id');
     }
 
     public function class()
@@ -49,8 +44,7 @@ class FeeInvoice extends Model
 
     public function payments()
     {
-        return $this->hasMany(FeePayment::class, 'fee_allocation_id', 'fee_allocation_id')
-            ->where('student_id', $this->student_id);
+        return $this->hasMany(FeePayment::class, 'fee_invoice_id');
     }
 
     // Recalculate and update invoice totals
@@ -58,21 +52,22 @@ class FeeInvoice extends Model
     {
         $items = $this->items()->get();
 
-        $subtotal        = $items->sum('amount');
+        // ⚠️ কলামের নাম মিলিয়ে নাও: fee_invoice_items-এ 'base_amount' না 'amount'?
+        $subtotal        = $items->sum('base_amount');
         $discountAmount  = $items->sum('discount_amount');
         $fineAmount      = $items->sum('fine_amount');
         $totalAmount     = $subtotal - $discountAmount + $fineAmount;
 
-        $paidAmount = FeePayment::where('student_id', $this->student_id)
-            ->where('fee_allocation_id', $this->fee_allocation_id)
-            ->sum('paid_amount');
+        // fee_payments schema-তে এখন শুধু fee_invoice_id + amount আছে
+        // (fee_allocation_id বা paid_amount কলাম নেই)
+        $paidAmount = (float) $this->payments()->sum('amount');
 
         $dueAmount = max(0, $totalAmount - $paidAmount);
 
-        $status = match(true) {
-            $paidAmount <= 0             => 'unpaid',
-            $paidAmount >= $totalAmount  => 'paid',
-            default                      => 'partial',
+        $status = match (true) {
+            $paidAmount <= 0            => 'unpaid',
+            $paidAmount >= $totalAmount => 'paid',
+            default                     => 'partial',
         };
 
         $this->update([
@@ -96,4 +91,14 @@ class FeeInvoice extends Model
         return (float) $this->due_amount;
     }
 
+    // এখনো কত টাকা বাকি (payment page-এ default amount বসানোর জন্য)
+    public function getRemainingAttribute(): float
+    {
+        return max(0, (float) $this->total_amount - (float) $this->paid_amount);
+    }
+
+    public function getIsPaidAttribute(): bool
+    {
+        return $this->remaining <= 0;
+    }
 }

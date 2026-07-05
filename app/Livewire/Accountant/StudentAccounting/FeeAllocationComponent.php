@@ -11,6 +11,7 @@ use App\Models\AcademicClassAssign;
 use App\Models\Student;
 use App\Models\FeeInvoice;
 use App\Models\FeeInvoiceItem;
+use Illuminate\Support\Facades\DB;
 
 class FeeAllocationComponent extends Component
 {
@@ -36,7 +37,7 @@ class FeeAllocationComponent extends Component
         ];
     }
 
-    // ── Available Classes (StudentComponent pattern) ──
+    // ── Available Classes (established pattern) ──
     public function getAvailableClasses()
     {
         return AcademicClass::whereIn('id', AcademicClassAssign::distinct()->pluck('class_id'))
@@ -44,7 +45,7 @@ class FeeAllocationComponent extends Component
             ->get();
     }
 
-    // ── Available Sections (StudentComponent pattern) ──
+    // ── Available Sections (established pattern) ──
     public function getAvailableSections()
     {
         if (!$this->filterClass) return [];
@@ -54,26 +55,23 @@ class FeeAllocationComponent extends Component
         )->orderBy('name')->get();
     }
 
-    // ── Class changed ──
     public function updatedFilterClass()
     {
-        $this->filterSection   = '';
-        $this->students        = [];
+        $this->filterSection    = '';
+        $this->students         = [];
         $this->selectedStudents = [];
-        $this->selectAll       = false;
-        $this->hasFiltered     = false;
+        $this->selectAll        = false;
+        $this->hasFiltered      = false;
     }
 
-    // ── Section changed ──
     public function updatedFilterSection()
     {
-        $this->students        = [];
+        $this->students         = [];
         $this->selectedStudents = [];
-        $this->selectAll       = false;
-        $this->hasFiltered     = false;
+        $this->selectAll        = false;
+        $this->hasFiltered      = false;
     }
 
-    // ── Select All toggle ──
     public function updatedSelectAll(bool $value): void
     {
         $this->selectedStudents = $value
@@ -81,14 +79,12 @@ class FeeAllocationComponent extends Component
             : [];
     }
 
-    // ── Individual checkbox changed ──
     public function updatedSelectedStudents(): void
     {
         $this->selectAll = count($this->students) > 0
             && count($this->selectedStudents) === count($this->students);
     }
 
-    // ── Filter students ──
     public function filter(): void
     {
         $this->validate([
@@ -108,18 +104,17 @@ class FeeAllocationComponent extends Component
         $students = $query->get();
 
         if ($students->isEmpty()) {
-            $this->dispatch('toast', type: 'error', message: 'No students found for selected class/section.');
+            $this->dispatch('toast', type: 'error', message: 'নির্বাচিত Class/Section-এ কোনো Student পাওয়া যায়নি।');
             $this->hasFiltered = false;
             return;
         }
 
-        $this->students        = $students->toArray();
-        $this->selectedStudents = [];
-        $this->selectAll       = false;
-        $this->hasFiltered     = true;
+        $this->students          = $students->toArray();
+        $this->selectedStudents  = [];
+        $this->selectAll         = false;
+        $this->hasFiltered       = true;
     }
 
-    // ── Resolve section id ──
     private function resolvedSectionId(): ?int
     {
         if (!$this->filterSection || $this->filterSection === 'all') {
@@ -128,121 +123,122 @@ class FeeAllocationComponent extends Component
         return (int) $this->filterSection;
     }
 
-    // ── Save allocation + invoice ──
+    // ── Save allocation (class/section-level) + invoice (student-level) ──
     public function save(): void
     {
         if (empty($this->selectedStudents)) {
-            $this->dispatch('toast', type: 'error', message: 'Please select at least one student.');
+            $this->dispatch('toast', type: 'error', message: 'অন্তত একজন Student সিলেক্ট করুন।');
             return;
         }
 
         $this->validate();
 
         $resolvedSection = $this->resolvedSectionId();
-        $feeGroup        = FeeGroup::with('items.feeType')->findOrFail($this->fee_group_id);
+        $feeGroup = FeeGroup::with('items.feeType')->findOrFail($this->fee_group_id);
 
-        $count   = 0;
-        $skipped = 0;
-
-        foreach ($this->selectedStudents as $studentId) {
-
-            // ── FeeAllocation — find or create ──
-            $allocation = FeeAllocation::firstOrCreate(
-                [
-                    'student_id'   => $studentId,
-                    'fee_group_id' => $this->fee_group_id,
-                    'class_id'     => $this->filterClass,
-                    'section_id'   => $resolvedSection,
-                ],
-                [
-                    'student_id'   => $studentId,
-                    'fee_group_id' => $this->fee_group_id,
-                    'class_id'     => $this->filterClass,
-                    'section_id'   => $resolvedSection,
-                    'status'       => true,
-                ]
-            );
-
-            // ── FeeInvoice already exists? Skip ──
-            $invoiceExists = FeeInvoice::where('student_id', $studentId)
-                ->where('fee_allocation_id', $allocation->id)
-                ->exists();
-
-            if ($invoiceExists) {
-                $skipped++;
-                continue;
-            }
-
-            // ── Calculate subtotal ──
-            $subtotal = $feeGroup->items->sum('amount');
-
-            // ── Create Invoice ──
-            $invoice = FeeInvoice::create([
-                'invoice_no'        => $this->generateInvoiceNo(),
-                'student_id'        => $studentId,
-                'fee_allocation_id' => $allocation->id,
-                'class_id'          => $this->filterClass,
-                'section_id'        => $resolvedSection,
-                'subtotal'          => $subtotal,
-                'discount_amount'   => 0,
-                'fine_amount'       => 0,
-                'total_amount'      => $subtotal,
-                'paid_amount'       => 0,
-                'due_amount'        => $subtotal,
-                'invoice_date'      => now()->toDateString(),
-                'due_date'          => null,
-                'payment_status'    => 'unpaid',
-                'status'            => true,
-            ]);
-
-            // ── Create Invoice Items ──
-            foreach ($feeGroup->items as $item) {
-                FeeInvoiceItem::create([
-                    'fee_invoice_id'    => $invoice->id,
-                    'fee_group_item_id' => $item->id,
-                    'fee_type_name'     => $item->feeType->name ?? $item->fee_type_name ?? 'N/A',
-                    'amount'            => $item->amount,
-                    'fine_amount'       => 0,
-                    'discount_amount'   => 0,
-                    'total_amount'      => $item->amount,
-                ]);
-            }
-
-            $count++;
+        if ($feeGroup->items->isEmpty()) {
+            $this->dispatch('toast', type: 'error', message: 'এই Fee Group-এ কোনো Fee Item যোগ করা নেই।');
+            return;
         }
 
-        // ── Toast message ──
+        [$count, $skipped] = DB::transaction(function () use ($feeGroup, $resolvedSection) {
+
+            // ── ধাপ ১: Class/Section-level Allocation — প্রতিটা Item-এর জন্য একবারই বসবে ──
+            foreach ($feeGroup->items as $item) {
+                FeeAllocation::firstOrCreate(
+                    [
+                        'academic_class_id'   => $this->filterClass,
+                        'academic_section_id' => $resolvedSection,
+                        'fee_group_item_id'   => $item->id,
+                    ],
+                    ['status' => true]
+                );
+            }
+
+            $itemIds  = $feeGroup->items->pluck('id')->toArray();
+            $subtotal = $feeGroup->items->sum('amount');
+            $count    = 0;
+            $skipped  = 0;
+
+            // ── ধাপ ২: প্রতি Student-এর জন্য Invoice তৈরি ──
+            foreach ($this->selectedStudents as $studentId) {
+
+                // এই Fee Group-এর Item দিয়ে আগে Invoice হয়েছে কিনা চেক
+                $alreadyInvoiced = FeeInvoiceItem::whereIn('fee_group_item_id', $itemIds)
+                    ->whereHas('feeInvoice', fn($q) => $q->where('student_id', $studentId))
+                    ->exists();
+
+                if ($alreadyInvoiced) {
+                    $skipped++;
+                    continue;
+                }
+
+                $invoice = FeeInvoice::create([
+                    'invoice_no'      => $this->generateInvoiceNo(),
+                    'student_id'      => $studentId,
+                    'subtotal'        => $subtotal,
+                    'discount_amount' => 0,
+                    'fine_amount'     => 0,
+                    'total_amount'    => $subtotal,
+                    'paid_amount'     => 0,
+                    'due_amount'      => $subtotal,
+                    'invoice_date'    => now()->toDateString(),
+                    'due_date'        => null,
+                    'payment_status'  => 'unpaid',
+                    'status'          => true,
+                ]);
+
+                foreach ($feeGroup->items as $item) {
+                    FeeInvoiceItem::create([
+                        'fee_invoice_id'    => $invoice->id,
+                        'fee_group_item_id' => $item->id,
+                        'base_amount'       => $item->amount,
+                        'fine_amount'       => 0,
+                        'discount_amount'   => 0,
+                        'total_amount'      => $item->amount,
+                    ]);
+                }
+
+                $count++;
+            }
+
+            return [$count, $skipped];
+        });
+
         if ($count > 0 && $skipped > 0) {
-            $this->dispatch('toast', type: 'success', message: "{$count} invoice(s) created. {$skipped} already existed (skipped).");
+            $this->dispatch('toast', type: 'success', message: "{$count} টি Invoice তৈরি হয়েছে। {$skipped} জনের আগে থেকেই Invoice ছিল (Skip হয়েছে)।");
         } elseif ($count > 0) {
-            $this->dispatch('toast', type: 'success', message: "{$count} allocation(s) & invoice(s) created successfully!");
+            $this->dispatch('toast', type: 'success', message: "{$count} টি Invoice সফলভাবে তৈরি হয়েছে!");
         } else {
-            $this->dispatch('toast', type: 'warning', message: "All selected students already have invoices for this fee group.");
+            $this->dispatch('toast', type: 'warning', message: 'নির্বাচিত সব Student-এর আগে থেকেই এই Fee Group-এর Invoice আছে।');
         }
 
         $this->selectedStudents = [];
         $this->selectAll        = false;
     }
 
-    // ── Invoice number generator ──
+    // ── Invoice number generator — Institution scoped ──
     private function generateInvoiceNo(): string
     {
-        $last = FeeInvoice::lockForUpdate()->latest('id')->first();
+        $last = FeeInvoice::where('institution_id', institution()->id)
+            ->lockForUpdate()
+            ->latest('id')
+            ->first();
+
         $next = $last ? ((int) ltrim(substr($last->invoice_no, 4), '0') + 1) : 1;
 
         return 'INV-' . str_pad($next, 6, '0', STR_PAD_LEFT);
     }
 
-    // ── Reset ──
     public function resetForm(): void
     {
-        $this->filterClass     = '';
-        $this->filterSection   = '';
-        $this->fee_group_id    = null;
-        $this->students        = [];
+        $this->filterClass      = '';
+        $this->filterSection    = '';
+        $this->fee_group_id     = null;
+        $this->students         = [];
         $this->selectedStudents = [];
-        $this->selectAll       = false;
-        $this->hasFiltered     = false;
+        $this->selectAll        = false;
+        $this->hasFiltered      = false;
         $this->resetValidation();
     }
 

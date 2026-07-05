@@ -37,29 +37,22 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>SL</th>
-                            <th wire:click="sortBy('fee_group_id')" style="cursor:pointer">
-                                Fee Group @if($sortField === 'fee_group_id') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
-                            </th>
-                            <th>Fee Item</th>
-                            <th>Fine Type</th>
-                            <th>Fine Value</th>
-                            <th>Frequency</th>
-                            <th>Actions</th>
+                            <th id="th-sl">SL</th>
+                            <th id="th-fee-group">Fee Group</th>
+                            <th id="th-fee-item">Fee Item</th>
+                            <th id="th-fine-type">Fine Type</th>
+                            <th id="th-fine-value">Fine Value</th>
+                            <th id="th-frequency">Frequency</th>
+                            <th id="th-status">Status</th>
+                            <th id="th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($feeFines as $i => $fine)
-                        <tr>
+                        <tr wire:key="fee-fine-{{ $fine->id }}">
                             <td class="text-muted">{{ $feeFines->firstItem() + $i }}</td>
-                            <td>{{ $fine->feeGroup->name ?? '—' }}</td>
-                            <td>
-                                @if($fine->feeGroupItem?->feeType?->name)
-                                    {{ $fine->feeGroupItem->feeType->name }}
-                                @else
-                                    <span class="badge badge-inactive">All Items</span>
-                                @endif
-                            </td>
+                            <td>{{ $fine->feeGroupItem->feeGroup->name ?? '—' }}</td>
+                            <td>{{ $fine->feeGroupItem->feeType->name ?? '—' }}</td>
                             <td>
                                 <span class="badge {{ $fine->fine_type === 'fixed' ? 'badge-used' : 'badge-active' }}">
                                     {{ ucfirst($fine->fine_type) }}
@@ -78,7 +71,25 @@
                                 </span>
                             </td>
                             <td>
+                                <div class="form-check form-switch m-0">
+                                    <input
+                                        class="form-check-input"
+                                        type="checkbox"
+                                        role="switch"
+                                        style="cursor:pointer"
+                                        wire:click="toggleStatus({{ $fine->id }})"
+                                        wire:loading.attr="disabled"
+                                        wire:target="toggleStatus({{ $fine->id }})"
+                                        @checked($fine->status)
+                                        title="{{ $fine->status ? 'Active' : 'Inactive' }}"
+                                    >
+                                </div>
+                            </td>
+                            <td>
                                 <div class="d-flex gap-1">
+                                    <button class="act-btn view" title="View" wire:click="openView({{ $fine->id }})">
+                                        <span class="material-icons-round">visibility</span>
+                                    </button>
                                     <button class="act-btn edit" title="Edit" wire:click="openEdit({{ $fine->id }})">
                                         <span class="material-icons-round">drive_file_rename_outline</span>
                                     </button>
@@ -134,13 +145,13 @@
                                     @error('fee_group_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
-                                {{-- Fee Item (optional) --}}
+                                {{-- Fee Item --}}
                                 <div class="col-md-12">
-                                    <label class="form-label">Fee Item <span class="text-muted">(optional — leave blank to apply to all)</span></label>
+                                    <label class="form-label">Fee Item <span class="text-danger">*</span></label>
                                     <select class="form-select @error('fee_group_item_id') is-invalid @enderror"
-                                            wire:model.defer="fee_group_item_id"
+                                            wire:model.live="fee_group_item_id"
                                             @if(!$fee_group_id) disabled @endif>
-                                        <option value="">— All Items —</option>
+                                        <option value="">— Select Fee Item —</option>
                                         @foreach($groupItems as $gItem)
                                             <option value="{{ $gItem['id'] }}">{{ $gItem['fee_type']['name'] ?? '—' }}</option>
                                         @endforeach
@@ -152,7 +163,7 @@
                                 <div class="col-md-6">
                                     <label class="form-label">Fine Type <span class="text-danger">*</span></label>
                                     <select class="form-select @error('fine_type') is-invalid @enderror"
-                                            wire:model.defer="fine_type">
+                                            wire:model.live="fine_type">
                                         <option value="fixed">Fixed (৳)</option>
                                         <option value="percentage">Percentage (%)</option>
                                     </select>
@@ -162,7 +173,7 @@
                                 {{-- Fine Value --}}
                                 <div class="col-md-6">
                                     <label class="form-label">Fine Value <span class="text-danger">*</span></label>
-                                    <input type="number" step="0.01" min="0"
+                                    <input type="number" step="0.01" min="0" @if($fine_type === 'percentage') max="100" @endif
                                            class="form-control @error('fine_value') is-invalid @enderror"
                                            wire:model.defer="fine_value"
                                            placeholder="{{ $fine_type === 'percentage' ? 'e.g. 5' : 'e.g. 50.00' }}">
@@ -191,6 +202,81 @@
                         <button type="button" class="btn bg-dark text-white" wire:click="save" wire:loading.attr="disabled">
                             <span wire:loading wire:target="save" class="spinner-border spinner-border-sm me-1"></span>
                             {{ $editId ? 'Update' : 'Create' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- ===== VIEW MODAL (redesigned) ===== --}}
+    @if($showViewModal && $viewFine)
+        <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.5);">
+            <div class="modal-dialog modal-dialog-scrollable">
+                <div class="modal-content fine-view-modal">
+                    <div class="modal-header border-0 pb-0">
+                        <div class="fine-view-header">
+                            <h5 class="modal-title mb-1">{{ $viewFine->feeGroupItem->feeType->name ?? '—' }}</h5>
+                            <span class="text-muted small">{{ $viewFine->feeGroupItem->feeGroup->name ?? '—' }}</span>
+                        </div>
+                        <button type="button" class="btn-close" wire:click="$set('showViewModal',false)"></button>
+                    </div>
+                    <div class="modal-body pt-2">
+                        <div class="fine-amount-highlight">
+                            <span class="fine-amount-label">Fine Amount</span>
+                            <span class="fine-amount-value">
+                                @if($viewFine->fine_type === 'percentage')
+                                    {{ $viewFine->fine_value }}%
+                                @else
+                                    ৳{{ number_format($viewFine->fine_value, 2) }}
+                                @endif
+                            </span>
+                        </div>
+
+                        <div class="fine-detail-grid">
+                            <div class="fine-detail-item">
+                                <span class="fine-detail-label">
+                                    <span class="material-icons-round">sell</span> Fine Type
+                                </span>
+                                <span class="badge {{ $viewFine->fine_type === 'fixed' ? 'badge-used' : 'badge-active' }}">
+                                    {{ ucfirst($viewFine->fine_type) }}
+                                </span>
+                            </div>
+
+                            <div class="fine-detail-item">
+                                <span class="fine-detail-label">
+                                    <span class="material-icons-round">event_repeat</span> Frequency
+                                </span>
+                                <span class="badge bg-secondary text-capitalize">
+                                    {{ str_replace('_', ' ', $viewFine->late_fee_frequency) }}
+                                </span>
+                            </div>
+
+                            <div class="fine-detail-item">
+                                <span class="fine-detail-label">
+                                    <span class="material-icons-round">toggle_on</span> Status
+                                </span>
+                                @if($viewFine->status)
+                                    <span class="badge badge-active">Active</span>
+                                @else
+                                    <span class="badge badge-inactive">Inactive</span>
+                                @endif
+                            </div>
+
+                            <div class="fine-detail-item">
+                                <span class="fine-detail-label">
+                                    <span class="material-icons-round">calendar_today</span> Created
+                                </span>
+                                <span class="small">{{ $viewFine->created_at?->format('d M, Y') }}</span>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="button" class="btn btn-light" wire:click="$set('showViewModal',false)">Close</button>
+                        <button type="button" class="btn bg-dark text-white"
+                                wire:click="$set('showViewModal', false); openEdit({{ $viewFine->id }})">
+                            <span class="material-icons-round" style="font-size:16px;vertical-align:-3px">edit</span> Edit
                         </button>
                     </div>
                 </div>
@@ -268,5 +354,42 @@
             color: #fff; border: none; box-shadow: 0 4px 12px rgba(216,27,96,.4);
         }
         .custom-pagination button:disabled { opacity: .5; cursor: not-allowed; }
+
+        /* ── Fee Fine View Modal ── */
+        .fine-view-icon {
+            width: 44px; height: 44px; border-radius: 10px;
+            background: rgba(239,84,84,.12); color: #d63e3e;
+            display: inline-flex; align-items: center; justify-content: center;
+        }
+        .fine-view-header { margin-bottom: 16px; }
+        .fine-amount-highlight {
+            background: linear-gradient(135deg, #fafafa, #f2f2f2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 18px;
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .fine-amount-label { font-size: .78rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; }
+        .fine-amount-value { font-size: 1.4rem; font-weight: 700; color: var(--dark); }
+
+        .fine-detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .fine-detail-item {
+            display: flex; flex-direction: column; gap: 6px;
+            background: #fafafa;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 12px;
+        }
+        .fine-detail-label {
+            font-size: .72rem; font-weight: 600; color: var(--text-muted);
+            display: flex; align-items: center; gap: 4px;
+            text-transform: uppercase; letter-spacing: .03em;
+        }
+        .fine-detail-label .material-icons-round { font-size: 14px; }
     </style>
 @endpush

@@ -9,53 +9,29 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class FeePayment extends Model
 {
     use BelongsToInstitution;
+
     protected $guarded = [];
 
     protected $casts = [
         'payment_date' => 'date',
         'amount'       => 'decimal:2',
-        'discount'     => 'decimal:2',
-        'fine'         => 'decimal:2',
-        'paid_amount'  => 'decimal:2',
     ];
-
-    public function student(): BelongsTo
+ 
+    /* ---------- Relations ---------- */
+ 
+    public function student()
     {
         return $this->belongsTo(Student::class);
     }
-
-    public function feeAllocation(): BelongsTo
+ 
+    public function invoice()
     {
-        return $this->belongsTo(FeeAllocation::class);
+        return $this->belongsTo(FeeInvoice::class, 'fee_invoice_id');
     }
-
-    public function feeGroupItem(): BelongsTo
-    {
-        return $this->belongsTo(FeeGroupItem::class);
-    }
-
-    public function feeInvoiceItem(): BelongsTo
-    {
-        return $this->belongsTo(FeeInvoiceItem::class);
-    }
-
-    public function officeAccount(): BelongsTo
+ 
+    public function officeAccount()
     {
         return $this->belongsTo(OfficeAccount::class);
     }
 
-    // Balance = amount - paid_amount (database value)
-    public function getBalanceAttribute(): float
-    {
-        return max(0, (float) $this->amount - (float) $this->paid_amount);
-    }
-
-    public function getStatusLabelAttribute(): string
-    {
-        return match($this->payment_status) {
-            'paid'    => 'Total Paid',
-            'partial' => 'Partial',
-            default   => 'Unpaid',
-        };
-    }
 }

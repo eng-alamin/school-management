@@ -94,18 +94,6 @@ class StudentListComponent extends Component
         }
     }
 
-    public function resetForm(): void
-    {
-        $this->filterClass       = '';
-        $this->filterSection     = '';
-        $this->availableSections = [];
-        $this->search            = '';
-        $this->confirmDelete     = false;
-        $this->deleteId          = null;
-        $this->resetPage();
-        $this->resetValidation();
-    }
-
     public function render()
     {
         $classes = AcademicClass::whereIn('id', AcademicClassAssign::distinct()->pluck('class_id'))

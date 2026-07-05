@@ -11,19 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('fee_invoice_items', function (Blueprint $table) {
+        Schema::create('fee_payments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('student_id')->constrained()->cascadeOnDelete();
             $table->foreignId('fee_invoice_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('fee_setup_id')->nullable()->constrained()->nullOnDelete();
-            $table->decimal('base_amount', 15, 2);
-            $table->decimal('fine_amount', 15, 2)->default(0);
-            $table->decimal('discount_amount', 15, 2)->default(0);
-            $table->decimal('total_amount', 15, 2);
+            $table->foreignId('office_account_id')->nullable()->constrained()->nullOnDelete();
+            $table->date('payment_date');
+            $table->decimal('amount', 15, 2)->default(0);
+            $table->string('payment_method')->default('cash');
+            $table->text('remarks')->nullable();
             $table->timestamps();
-
-            $table->index(['fee_invoice_id']);
-            $table->index(['fee_setup_id']);
         });
     }
 
@@ -32,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('fee_invoice_items');
+        Schema::dropIfExists('fee_payments');
     }
 };

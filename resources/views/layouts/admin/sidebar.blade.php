@@ -181,12 +181,9 @@
         <div class="nav2-collapse {{ str_contains(request()->url(), 'student-accounting') == true ? 'show' : '' }}">
           <ul>
             <li class="nav2-item"><a href="{{route('admin.student-accounting.fee.types') }}" class="nav2-link {{ str_contains(request()->url(), 'student-accounting/fee-types') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-fees-type">Fees Type</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.student-accounting.fee.groups') }}" class="nav2-link {{ str_contains(request()->url(), 'student-accounting/fee-groups') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-fees-group">Fees Group</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.student-accounting.fee.setups') }}" class="nav2-link {{ str_contains(request()->url(), 'student-accounting/fee-setups') == true ? 'active' : '' }}"><span class="nav2-icon">S</span><span class="nav2-label" id="nav-fees-setup">Fees Setup</span></a></li>
             <li class="nav2-item"><a href="{{route('admin.student-accounting.fee.fines') }}" class="nav2-link {{ str_contains(request()->url(), 'student-accounting/fee-fines') == true ? 'active' : '' }}"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-fine-setup">Fine Setup</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.student-accounting.fee.allocations') }}" class="nav2-link {{ str_contains(request()->url(), 'student-accounting/fee-allocations') == true ? 'active' : '' }}"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-fees-allocation">Fees Allocation</span></a></li>
             <li class="nav2-item"><a href="{{route('admin.student-accounting.fee.invoices') }}" class="nav2-link {{ str_contains(request()->url(), 'student-accounting/fee-invoices') == true ? 'active' : '' }}"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-fees-pay-invoice">Fees Pay / Invoice</span></a></li>
-            {{-- <li class="nav2-item"><a href="{{route('admin.student-accounting.fee.types') }}" class="nav2-link {{ str_contains(request()->url(), 'student-accounting/fee-types') == true ? 'active' : '' }}"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-due-fees-invoice">Due Fees Invoice</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.student-accounting.fee.types') }}" class="nav2-link {{ str_contains(request()->url(), 'student-accounting/fee-types') == true ? 'active' : '' }}"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-fees-reminder">Fees Reminder</span></a></li> --}}
           </ul>
         </div>
       </li>

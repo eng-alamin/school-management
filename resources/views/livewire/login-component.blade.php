@@ -327,12 +327,12 @@
 
                         {{-- IDENTIFIER (Email / Username / Phone) --}}
                         <div class="mb-4">
-                            <label class="form-label">Email / Username / Phone</label>
+                            <label class="form-label">Username</label>
                             <input
                                 type="text"
                                 class="form-control @error('identifier') is-invalid @enderror"
                                 wire:model="identifier"
-                                placeholder="admin@example.com / admin / 01700000000"
+                                placeholder="Username"
                                 autocomplete="username"
                             >
                             @error('identifier')<div class="invalid-feedback"> {{ $message }} </div>@enderror

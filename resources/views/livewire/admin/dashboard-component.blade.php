@@ -12,34 +12,6 @@
     <div class="px-3 pt-2">
         <div class="row g-3">
 
-            {{-- Total Students --}}
-            <div class="col-6 col-md-3">
-                <div class="dash-stat-card">
-                    <div class="dash-stat-icon" style="background:#eef2ff;">
-                        <span class="material-icons-round" style="color:#4f46e5;">school</span>
-                    </div>
-                    <p class="dash-stat-label">Total Students</p>
-                    <h4 class="dash-stat-value">{{ number_format($totalStudents) }}</h4>
-                    <span class="dash-stat-badge text-success">
-                        <span class="material-icons-round" style="font-size:11px;vertical-align:middle;">arrow_upward</span>+12%
-                    </span>
-                </div>
-            </div>
-
-            {{-- Total Teachers --}}
-            <div class="col-6 col-md-3">
-                <div class="dash-stat-card">
-                    <div class="dash-stat-icon" style="background:#fef3c7;">
-                        <span class="material-icons-round" style="color:#d97706;">badge</span>
-                    </div>
-                    <p class="dash-stat-label">Total Teachers</p>
-                    <h4 class="dash-stat-value">{{ number_format($totalEmployees) }}</h4>
-                    <span class="dash-stat-badge text-success">
-                        <span class="material-icons-round" style="font-size:11px;vertical-align:middle;">arrow_upward</span>+3%
-                    </span>
-                </div>
-            </div>
-
             {{-- Fee Collected --}}
             <div class="col-6 col-md-3">
                 <div class="dash-stat-card">
@@ -53,63 +25,24 @@
                             echo $fc >= 100000 ? '৳'.number_format($fc/100000, 1).'L' : '৳'.number_format($fc);
                         @endphp
                     </h4>
-                    <span class="dash-stat-badge text-success">
-                        <span class="material-icons-round" style="font-size:11px;vertical-align:middle;">arrow_upward</span>+8%
-                    </span>
+                    @include('livewire.admin.dashboard-trend-badge', ['trend' => $trendFeeCollected])
                 </div>
             </div>
 
-            {{-- Attendance --}}
+            {{-- Fee Collected Today --}}
             <div class="col-6 col-md-3">
                 <div class="dash-stat-card">
-                    <div class="dash-stat-icon" style="background:#ede9fe;">
-                        <span class="material-icons-round" style="color:#7c3aed;">how_to_reg</span>
+                    <div class="dash-stat-icon" style="background:#eef2ff;">
+                        <span class="material-icons-round" style="color:#4f46e5;">today</span>
                     </div>
-                    <p class="dash-stat-label">Attendance</p>
-                    <h4 class="dash-stat-value">{{ $attendancePercent }}%</h4>
-                    <span class="dash-stat-badge text-danger">
-                        <span class="material-icons-round" style="font-size:11px;vertical-align:middle;">arrow_downward</span>-2%
-                    </span>
-                </div>
-            </div>
-
-            {{-- New Admissions --}}
-            <div class="col-6 col-md-3">
-                <div class="dash-stat-card">
-                    <div class="dash-stat-icon" style="background:#fce7f3;">
-                        <span class="material-icons-round" style="color:#db2777;">person_add</span>
-                    </div>
-                    <p class="dash-stat-label">New Admissions</p>
-                    <h4 class="dash-stat-value">{{ $newAdmissionsThisMonth }}</h4>
-                    <span class="dash-stat-badge text-success">
-                        <span class="material-icons-round" style="font-size:11px;vertical-align:middle;">arrow_upward</span>+5%
-                    </span>
-                </div>
-            </div>
-
-            {{-- Pending Homework --}}
-            <div class="col-6 col-md-3">
-                <div class="dash-stat-card">
-                    <div class="dash-stat-icon" style="background:#fff7ed;">
-                        <span class="material-icons-round" style="color:#ea580c;">assignment</span>
-                    </div>
-                    <p class="dash-stat-label">Pending Homework</p>
-                    <h4 class="dash-stat-value">{{ $pendingHomework }}</h4>
-                    <span class="dash-stat-badge text-danger">
-                        <span class="material-icons-round" style="font-size:11px;vertical-align:middle;">arrow_downward</span>-4%
-                    </span>
-                </div>
-            </div>
-
-            {{-- Upcoming Exams --}}
-            <div class="col-6 col-md-3">
-                <div class="dash-stat-card">
-                    <div class="dash-stat-icon" style="background:#ecfeff;">
-                        <span class="material-icons-round" style="color:#0891b2;">event_note</span>
-                    </div>
-                    <p class="dash-stat-label">Upcoming Exams</p>
-                    <h4 class="dash-stat-value">{{ $upcomingExams }}</h4>
-                    <span class="dash-stat-badge text-secondary">Scheduled</span>
+                    <p class="dash-stat-label">Collected Today</p>
+                    <h4 class="dash-stat-value">
+                        @php
+                            $ft = $totalFeeToday;
+                            echo $ft >= 100000 ? '৳'.number_format($ft/100000, 1).'L' : '৳'.number_format($ft);
+                        @endphp
+                    </h4>
+                    @include('livewire.admin.dashboard-trend-badge', ['trend' => $trendFeeToday])
                 </div>
             </div>
 
@@ -126,12 +59,232 @@
                             echo $due >= 100000 ? '৳'.number_format($due/100000, 1).'L' : '৳'.number_format($due);
                         @endphp
                     </h4>
-                    <span class="dash-stat-badge text-danger">
-                        <span class="material-icons-round" style="font-size:11px;vertical-align:middle;">arrow_upward</span>+2%
-                    </span>
+                    @include('livewire.admin.dashboard-trend-badge', ['trend' => $trendFeeDue])
                 </div>
             </div>
 
+            {{-- Account Balance --}}
+            <div class="col-6 col-md-3">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon" style="background:#fce7f3;">
+                        <span class="material-icons-round" style="color:#db2777;">account_balance_wallet</span>
+                    </div>
+                    <p class="dash-stat-label">Account Balance</p>
+                    <h4 class="dash-stat-value">
+                        @php
+                            $bal = $accountBalance;
+                            echo $bal >= 100000 ? '৳'.number_format($bal/100000, 1).'L' : '৳'.number_format($bal);
+                        @endphp
+                    </h4>
+                </div>
+            </div>
+
+            {{-- Total Deposits --}}
+            <div class="col-6 col-md-3">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon" style="background:#ecfeff;">
+                        <span class="material-icons-round" style="color:#0891b2;">north_east</span>
+                    </div>
+                    <p class="dash-stat-label">Total Deposits</p>
+                    <h4 class="dash-stat-value">
+                        @php
+                            $dep = $totalDeposits;
+                            echo $dep >= 100000 ? '৳'.number_format($dep/100000, 1).'L' : '৳'.number_format($dep);
+                        @endphp
+                    </h4>
+                </div>
+            </div>
+
+            {{-- Total Expenses --}}
+            <div class="col-6 col-md-3">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon" style="background:#fff7ed;">
+                        <span class="material-icons-round" style="color:#ea580c;">south_west</span>
+                    </div>
+                    <p class="dash-stat-label">Total Expenses</p>
+                    <h4 class="dash-stat-value">
+                        @php
+                            $exp = $totalExpenses;
+                            echo $exp >= 100000 ? '৳'.number_format($exp/100000, 1).'L' : '৳'.number_format($exp);
+                        @endphp
+                    </h4>
+                </div>
+            </div>
+
+            {{-- Salary Unpaid --}}
+            <div class="col-6 col-md-3">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon" style="background:#fef3c7;">
+                        <span class="material-icons-round" style="color:#d97706;">badge</span>
+                    </div>
+                    <p class="dash-stat-label">Salary Unpaid</p>
+                    <h4 class="dash-stat-value">
+                        @php
+                            $su = $salaryUnpaidThisMonth;
+                            echo $su >= 100000 ? '৳'.number_format($su/100000, 1).'L' : '৳'.number_format($su);
+                        @endphp
+                    </h4>
+                </div>
+            </div>
+
+            {{-- Total Students --}}
+            <div class="col-6 col-md-3">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon" style="background:#eef2ff;">
+                        <span class="material-icons-round" style="color:#4f46e5;">school</span>
+                    </div>
+                    <p class="dash-stat-label">Total Students</p>
+                    <h4 class="dash-stat-value">{{ number_format($totalStudents) }}</h4>
+                    @include('livewire.admin.dashboard-trend-badge', ['trend' => $trendStudents])
+                </div>
+            </div>
+
+            {{-- Total Employees --}}
+            <div class="col-6 col-md-3">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon" style="background:#eef2ff;">
+                        <span class="material-icons-round" style="color:#4f46e5;">people</span>
+                    </div>
+                    <p class="dash-stat-label">Total Staffs</p>
+                    <h4 class="dash-stat-value">{{ number_format($totalEmployees) }}</h4>
+                    @include('livewire.admin.dashboard-trend-badge', ['trend' => $trendStaffs])
+                </div>
+            </div>
+
+            {{-- Total Teachers --}}
+            <div class="col-6 col-md-3">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon" style="background:#fef3c7;">
+                        <span class="material-icons-round" style="color:#d97706;">badge</span>
+                    </div>
+                    <p class="dash-stat-label">Total Teachers</p>
+                    <h4 class="dash-stat-value">{{ number_format($totalTeachers) }}</h4>
+                    @include('livewire.admin.dashboard-trend-badge', ['trend' => $trendTeachers])
+                </div>
+            </div>
+
+            {{-- Attendance --}}
+            <div class="col-6 col-md-3">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon" style="background:#ede9fe;">
+                        <span class="material-icons-round" style="color:#7c3aed;">how_to_reg</span>
+                    </div>
+                    <p class="dash-stat-label">Attendance</p>
+                    <h4 class="dash-stat-value">{{ $attendancePercent }}%</h4>
+                    @include('livewire.admin.dashboard-trend-badge', ['trend' => $trendAttendance, 'suffix' => ' pts'])
+                </div>
+            </div>
+
+            {{-- New Admissions --}}
+            <div class="col-6 col-md-3">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon" style="background:#fce7f3;">
+                        <span class="material-icons-round" style="color:#db2777;">person_add</span>
+                    </div>
+                    <p class="dash-stat-label">New Admissions</p>
+                    <h4 class="dash-stat-value">{{ $newAdmissionsThisMonth }}</h4>
+                    @include('livewire.admin.dashboard-trend-badge', ['trend' => $trendAdmissions])
+                </div>
+            </div>
+
+            {{-- Pending Homework --}}
+            <div class="col-6 col-md-3">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon" style="background:#fff7ed;">
+                        <span class="material-icons-round" style="color:#ea580c;">assignment</span>
+                    </div>
+                    <p class="dash-stat-label">Pending Homework</p>
+                    <h4 class="dash-stat-value">{{ $pendingHomework }}</h4>
+                    @include('livewire.admin.dashboard-trend-badge', ['trend' => $trendHomework])
+                </div>
+            </div>
+
+            {{-- Upcoming Exams --}}
+            <div class="col-6 col-md-3">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon" style="background:#ecfeff;">
+                        <span class="material-icons-round" style="color:#0891b2;">event_note</span>
+                    </div>
+                    <p class="dash-stat-label">Upcoming Exams</p>
+                    <h4 class="dash-stat-value">{{ $upcomingExams }}</h4>
+                    <span class="dash-stat-badge text-secondary">Scheduled</span>
+                </div>
+            </div>
+
+            
+
+            
+
+        </div>
+    </div>
+
+    {{-- ══ Recent Fee Payments ═════════════════════════════════════════════ --}}
+    <div class="px-3 mt-4">
+        <div class="dash-section-card">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="dash-section-title mb-0">
+                    <span class="material-icons-round text-success" style="font-size:18px;">payments</span>
+                    Recent Fee Payments
+                </div>
+                <a href="#" class="dash-view-all">View all</a>
+            </div>
+
+            @forelse($recentPayments as $payment)
+                <div class="dash-notice-row">
+                    <div class="flex-grow-1 min-w-0">
+                        <p class="mb-0 text-dark text-truncate" style="font-size:13px;font-weight:500;">
+                            {{ $payment->student_name }}
+                        </p>
+                        <small class="text-secondary" style="font-size:11px;">
+                            {{ ucfirst($payment->payment_method) }} • {{ \Carbon\Carbon::parse($payment->payment_date)->format('d M Y') }}
+                        </small>
+                    </div>
+                    <span class="fw-semibold text-success" style="font-size:13px;">
+                        ৳{{ number_format($payment->amount, 0) }}
+                    </span>
+                </div>
+            @empty
+                <p class="text-center text-secondary py-2 mb-0" style="font-size:13px;">
+                    আজ কোনো Payment Collect হয়নি
+                </p>
+            @endforelse
+        </div>
+    </div>
+
+    {{-- ══ Recent Invoices ═════════════════════════════════════════════════ --}}
+    <div class="px-3 mt-4">
+        <div class="dash-section-card">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="dash-section-title mb-0">
+                    <span class="material-icons-round text-warning" style="font-size:18px;">receipt_long</span>
+                    Recent Invoices
+                </div>
+                <a href="#" class="dash-view-all">View all</a>
+            </div>
+
+            @forelse($recentInvoices as $invoice)
+                <div class="dash-notice-row">
+                    <div class="flex-grow-1 min-w-0">
+                        <p class="mb-0 text-dark text-truncate" style="font-size:13px;font-weight:500;">
+                            {{ $invoice->student_name }} — #{{ $invoice->invoice_no }}
+                        </p>
+                        <small class="text-secondary" style="font-size:11px;">
+                            Due: ৳{{ number_format($invoice->due_amount, 0) }}
+                        </small>
+                    </div>
+                    @if($invoice->payment_status === 'paid')
+                        <span class="inv-badge paid">Paid</span>
+                    @elseif($invoice->payment_status === 'partial')
+                        <span class="inv-badge partial">Partial</span>
+                    @else
+                        <span class="inv-badge unpaid">Unpaid</span>
+                    @endif
+                </div>
+            @empty
+                <p class="text-center text-secondary py-2 mb-0" style="font-size:13px;">
+                    কোনো Invoice নেই
+                </p>
+            @endforelse
         </div>
     </div>
 
@@ -220,19 +373,7 @@
                     <span class="material-icons-round text-secondary" style="font-size:18px;">chevron_right</span>
                 </a>
             @empty
-                @foreach([
-                    'Annual Sports Day - May 10',
-                    'Exam Schedule Published',
-                    'Fee Deadline - May 15',
-                    'Parent-Teacher Meeting - May 8',
-                ] as $n)
-                    <div class="dash-notice-row">
-                        <div class="flex-grow-1 min-w-0">
-                            <p class="mb-0 text-dark text-truncate" style="font-size:13px;font-weight:500;">{{ $n }}</p>
-                        </div>
-                        <span class="material-icons-round text-secondary" style="font-size:18px;">chevron_right</span>
-                    </div>
-                @endforeach
+                <p class="text-secondary text-center py-2 mb-0" style="font-size:13px;">No recent notices</p>
             @endforelse
         </div>
     </div>
@@ -416,6 +557,19 @@
     .dash-notice-row:last-child {
         margin-bottom: 0;
     }
+
+    .inv-badge {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        border: 1px solid transparent;
+        flex-shrink: 0;
+    }
+    .inv-badge.paid    { background: transparent; border-color: #22c55e; color: #22c55e; }
+    .inv-badge.partial { background: transparent; border-color: #f59e0b; color: #f59e0b; }
+    .inv-badge.unpaid  { background: transparent; border-color: #ef4444; color: #ef4444; }
 
     /* ── Birthdays ───────────────────────────────────────────────── */
     .dash-birthday-row {

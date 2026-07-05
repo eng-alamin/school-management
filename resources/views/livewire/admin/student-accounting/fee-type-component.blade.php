@@ -41,28 +41,52 @@
                             <th id="th-fee-name" wire:click="sortBy('name')" style="cursor:pointer">
                                 Fee Name @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th id="th-fee-code" wire:click="sortBy('fee_code')" style="cursor:pointer">
-                                Fee Code @if($sortField === 'fee_code') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
+                            <th id="th-fee-code" wire:click="sortBy('code')" style="cursor:pointer">
+                                Fee Code @if($sortField === 'code') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
                             <th id="th-description">Description</th>
+                            <th id="th-status" wire:click="sortBy('status')" style="cursor:pointer">
+                                Status @if($sortField === 'status') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
+                            </th>
                             <th id="th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($feeTypes as $i => $feeType)
-                        <tr>
+                        <tr wire:key="fee-type-{{ $feeType->id }}">
                             <td class="text-muted">{{ $feeTypes->firstItem() + $i }}</td>
                             <td>{{ $feeType->name }}</td>
-                            <td><span class="badge bg-secondary">{{ $feeType->fee_code }}</span></td>
+                            <td><span class="badge bg-light text-dark">{{ $feeType->code }}</span></td>
                             <td>{{ $feeType->description ?? '—' }}</td>
+                            <td>
+                                <div class="form-check form-switch m-0">
+                                    <input
+                                        class="form-check-input"
+                                        type="checkbox"
+                                        role="switch"
+                                        style="cursor:pointer"
+                                        wire:click="toggleStatus({{ $feeType->id }})"
+                                        wire:loading.attr="disabled"
+                                        wire:target="toggleStatus({{ $feeType->id }})"
+                                        @checked($feeType->status)
+                                        title="{{ $feeType->status ? 'Active' : 'Inactive' }}"
+                                    >
+                                </div>
+                            </td>
                             <td>
                                 <div class="d-flex gap-1">
                                     <button class="act-btn edit" title="Edit" wire:click="openEdit({{ $feeType->id }})">
                                         <span class="material-icons-round">drive_file_rename_outline</span>
                                     </button>
-                                    <button class="act-btn delete" title="Delete" wire:click="confirmDeleteRecord({{ $feeType->id }})">
-                                        <span class="material-icons-round">delete</span>
-                                    </button>
+                                    @if(!in_array($feeType->code, ['monthly_fee', 'admission_fee', 'registration_fee']))
+                                        <button class="act-btn delete" title="Delete" wire:click="confirmDeleteRecord({{ $feeType->id }})">
+                                            <span class="material-icons-round">delete</span>
+                                        </button>
+                                    @else
+                                        <button class="act-btn delete" title="System Default - Delete করা যাবে না" disabled style="opacity:.35;cursor:not-allowed">
+                                            <span class="material-icons-round">lock</span>
+                                        </button>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
@@ -83,7 +107,7 @@
             <small class="text-muted">Showing {{ $feeTypes->firstItem() ?? 0 }}–{{ $feeTypes->lastItem() ?? 0 }} of {{ $feeTypes->total() }}</small>
             {{ $feeTypes->links('vendor.pagination.custom') }}
         </div>
-        
+
     </div>
 
     {{-- ===== CREATE/EDIT MODAL ===== --}}
@@ -104,15 +128,15 @@
                                 <div class="col-md-12">
                                     <label class="form-label">Fee Name <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control @error('name') is-invalid @enderror"
-                                           wire:model.defer="name" placeholder="e.g. Tuition Fee">
+                                           wire:model.live="name" placeholder="e.g. Tuition Fee">
                                     @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-12">
                                     <label class="form-label">Fee Code</label>
-                                    <input type="text" disabled class="form-control @error('fee_code') is-invalid @enderror"
-                                           wire:model.defer="fee_code">
-                                    @error('fee_code') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    <input type="text" disabled class="form-control @error('code') is-invalid @enderror"
+                                           wire:model.defer="code">
+                                    @error('code') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-12">

@@ -1,46 +1,18 @@
-{{-- resources/views/livewire/admin/dashboard-component.blade.php --}}
+{{-- resources/views/livewire/accountant/dashboard-component.blade.php --}}
 
 <div class="dash-wrap">
 
     {{-- ══ Welcome Header ══════════════════════════════════════════════════ --}}
     <div class="dash-header px-3 pt-3 pb-2">
-        <h5 class="fw-bold mb-0 text-dark">Welcome back, Admin! 👋</h5>
-        <p class="text-secondary mb-0" style="font-size:12px;">Here's what's happening at your school today</p>
+        <h5 class="fw-bold mb-0 text-dark">Welcome back, Accountant! 👋</h5>
+        <p class="text-secondary mb-0" style="font-size:12px;">Here's your financial overview for today</p>
     </div>
 
-    {{-- ══ Stat Cards — 2 columns (mobile) / 4 columns (md+) ══════════════ --}}
+    {{-- ══ Stat Cards ══════════════════════════════════════════════════════ --}}
     <div class="px-3 pt-2">
         <div class="row g-3">
 
-            {{-- Total Students --}}
-            <div class="col-6 col-md-3">
-                <div class="dash-stat-card">
-                    <div class="dash-stat-icon" style="background:#eef2ff;">
-                        <span class="material-icons-round" style="color:#4f46e5;">school</span>
-                    </div>
-                    <p class="dash-stat-label">Total Students</p>
-                    <h4 class="dash-stat-value">{{ number_format($totalStudents) }}</h4>
-                    <span class="dash-stat-badge text-success">
-                        <span class="material-icons-round" style="font-size:11px;vertical-align:middle;">arrow_upward</span>+12%
-                    </span>
-                </div>
-            </div>
-
-            {{-- Total Teachers --}}
-            <div class="col-6 col-md-3">
-                <div class="dash-stat-card">
-                    <div class="dash-stat-icon" style="background:#fef3c7;">
-                        <span class="material-icons-round" style="color:#d97706;">badge</span>
-                    </div>
-                    <p class="dash-stat-label">Total Teachers</p>
-                    <h4 class="dash-stat-value">{{ number_format($totalEmployees) }}</h4>
-                    <span class="dash-stat-badge text-success">
-                        <span class="material-icons-round" style="font-size:11px;vertical-align:middle;">arrow_upward</span>+3%
-                    </span>
-                </div>
-            </div>
-
-            {{-- Fee Collected --}}
+            {{-- Fee Collected (Total) --}}
             <div class="col-6 col-md-3">
                 <div class="dash-stat-card">
                     <div class="dash-stat-icon" style="background:#d1fae5;">
@@ -53,63 +25,22 @@
                             echo $fc >= 100000 ? '৳'.number_format($fc/100000, 1).'L' : '৳'.number_format($fc);
                         @endphp
                     </h4>
-                    <span class="dash-stat-badge text-success">
-                        <span class="material-icons-round" style="font-size:11px;vertical-align:middle;">arrow_upward</span>+8%
-                    </span>
                 </div>
             </div>
 
-            {{-- Attendance --}}
+            {{-- Fee Collected Today --}}
             <div class="col-6 col-md-3">
                 <div class="dash-stat-card">
-                    <div class="dash-stat-icon" style="background:#ede9fe;">
-                        <span class="material-icons-round" style="color:#7c3aed;">how_to_reg</span>
+                    <div class="dash-stat-icon" style="background:#eef2ff;">
+                        <span class="material-icons-round" style="color:#4f46e5;">today</span>
                     </div>
-                    <p class="dash-stat-label">Attendance</p>
-                    <h4 class="dash-stat-value">{{ $attendancePercent }}%</h4>
-                    <span class="dash-stat-badge text-danger">
-                        <span class="material-icons-round" style="font-size:11px;vertical-align:middle;">arrow_downward</span>-2%
-                    </span>
-                </div>
-            </div>
-
-            {{-- New Admissions --}}
-            <div class="col-6 col-md-3">
-                <div class="dash-stat-card">
-                    <div class="dash-stat-icon" style="background:#fce7f3;">
-                        <span class="material-icons-round" style="color:#db2777;">person_add</span>
-                    </div>
-                    <p class="dash-stat-label">New Admissions</p>
-                    <h4 class="dash-stat-value">{{ $newAdmissionsThisMonth }}</h4>
-                    <span class="dash-stat-badge text-success">
-                        <span class="material-icons-round" style="font-size:11px;vertical-align:middle;">arrow_upward</span>+5%
-                    </span>
-                </div>
-            </div>
-
-            {{-- Pending Homework --}}
-            <div class="col-6 col-md-3">
-                <div class="dash-stat-card">
-                    <div class="dash-stat-icon" style="background:#fff7ed;">
-                        <span class="material-icons-round" style="color:#ea580c;">assignment</span>
-                    </div>
-                    <p class="dash-stat-label">Pending Homework</p>
-                    <h4 class="dash-stat-value">{{ $pendingHomework }}</h4>
-                    <span class="dash-stat-badge text-danger">
-                        <span class="material-icons-round" style="font-size:11px;vertical-align:middle;">arrow_downward</span>-4%
-                    </span>
-                </div>
-            </div>
-
-            {{-- Upcoming Exams --}}
-            <div class="col-6 col-md-3">
-                <div class="dash-stat-card">
-                    <div class="dash-stat-icon" style="background:#ecfeff;">
-                        <span class="material-icons-round" style="color:#0891b2;">event_note</span>
-                    </div>
-                    <p class="dash-stat-label">Upcoming Exams</p>
-                    <h4 class="dash-stat-value">{{ $upcomingExams }}</h4>
-                    <span class="dash-stat-badge text-secondary">Scheduled</span>
+                    <p class="dash-stat-label">Collected Today</p>
+                    <h4 class="dash-stat-value">
+                        @php
+                            $ft = $totalFeeToday;
+                            echo $ft >= 100000 ? '৳'.number_format($ft/100000, 1).'L' : '৳'.number_format($ft);
+                        @endphp
+                    </h4>
                 </div>
             </div>
 
@@ -126,17 +57,218 @@
                             echo $due >= 100000 ? '৳'.number_format($due/100000, 1).'L' : '৳'.number_format($due);
                         @endphp
                     </h4>
-                    <span class="dash-stat-badge text-danger">
-                        <span class="material-icons-round" style="font-size:11px;vertical-align:middle;">arrow_upward</span>+2%
-                    </span>
+                </div>
+            </div>
+
+            {{-- Total Students (Read-only) --}}
+            <div class="col-6 col-md-3">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon" style="background:#ede9fe;">
+                        <span class="material-icons-round" style="color:#7c3aed;">school</span>
+                    </div>
+                    <p class="dash-stat-label">Total Students</p>
+                    <h4 class="dash-stat-value">{{ number_format($totalStudents) }}</h4>
+                </div>
+            </div>
+
+            {{-- Account Balance --}}
+            <div class="col-6 col-md-3">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon" style="background:#fce7f3;">
+                        <span class="material-icons-round" style="color:#db2777;">account_balance_wallet</span>
+                    </div>
+                    <p class="dash-stat-label">Account Balance</p>
+                    <h4 class="dash-stat-value">
+                        @php
+                            $bal = $accountBalance;
+                            echo $bal >= 100000 ? '৳'.number_format($bal/100000, 1).'L' : '৳'.number_format($bal);
+                        @endphp
+                    </h4>
+                </div>
+            </div>
+
+            {{-- Total Deposits --}}
+            <div class="col-6 col-md-3">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon" style="background:#ecfeff;">
+                        <span class="material-icons-round" style="color:#0891b2;">north_east</span>
+                    </div>
+                    <p class="dash-stat-label">Total Deposits</p>
+                    <h4 class="dash-stat-value">
+                        @php
+                            $dep = $totalDeposits;
+                            echo $dep >= 100000 ? '৳'.number_format($dep/100000, 1).'L' : '৳'.number_format($dep);
+                        @endphp
+                    </h4>
+                </div>
+            </div>
+
+            {{-- Total Expenses --}}
+            <div class="col-6 col-md-3">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon" style="background:#fff7ed;">
+                        <span class="material-icons-round" style="color:#ea580c;">south_west</span>
+                    </div>
+                    <p class="dash-stat-label">Total Expenses</p>
+                    <h4 class="dash-stat-value">
+                        @php
+                            $exp = $totalExpenses;
+                            echo $exp >= 100000 ? '৳'.number_format($exp/100000, 1).'L' : '৳'.number_format($exp);
+                        @endphp
+                    </h4>
+                </div>
+            </div>
+
+            {{-- Salary Unpaid --}}
+            <div class="col-6 col-md-3">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-icon" style="background:#fef3c7;">
+                        <span class="material-icons-round" style="color:#d97706;">badge</span>
+                    </div>
+                    <p class="dash-stat-label">Salary Unpaid</p>
+                    <h4 class="dash-stat-value">
+                        @php
+                            $su = $salaryUnpaidThisMonth;
+                            echo $su >= 100000 ? '৳'.number_format($su/100000, 1).'L' : '৳'.number_format($su);
+                        @endphp
+                    </h4>
                 </div>
             </div>
 
         </div>
     </div>
 
-    {{-- ══ Recent Activity ══════════════════════════════════════════════════ --}}
+    {{-- ══ Recent Fee Payments ═════════════════════════════════════════════ --}}
     <div class="px-3 mt-4">
+        <div class="dash-section-card">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="dash-section-title mb-0">
+                    <span class="material-icons-round text-success" style="font-size:18px;">payments</span>
+                    Recent Fee Payments
+                </div>
+                <a href="{{ route('accountant.student-accounting.fee.invoices') ?? '#' }}" class="dash-view-all">View all</a>
+            </div>
+
+            @forelse($recentPayments as $payment)
+                <div class="dash-notice-row">
+                    <div class="flex-grow-1 min-w-0">
+                        <p class="mb-0 text-dark text-truncate" style="font-size:13px;font-weight:500;">
+                            {{ $payment->student_name }}
+                        </p>
+                        <small class="text-secondary" style="font-size:11px;">
+                            {{ ucfirst($payment->payment_method) }} • {{ \Carbon\Carbon::parse($payment->payment_date)->format('d M Y') }}
+                        </small>
+                    </div>
+                    <span class="fw-semibold text-success" style="font-size:13px;">
+                        ৳{{ number_format($payment->amount, 0) }}
+                    </span>
+                </div>
+            @empty
+                <p class="text-center text-secondary py-2 mb-0" style="font-size:13px;">
+                    আজ কোনো Payment Collect হয়নি
+                </p>
+            @endforelse
+        </div>
+    </div>
+
+    {{-- ══ Recent Invoices ═════════════════════════════════════════════════ --}}
+    <div class="px-3 mt-4">
+        <div class="dash-section-card">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="dash-section-title mb-0">
+                    <span class="material-icons-round text-warning" style="font-size:18px;">receipt_long</span>
+                    Recent Invoices
+                </div>
+                <a href="{{ route('accountant.student-accounting.fee.invoices') ?? '#' }}" class="dash-view-all">View all</a>
+            </div>
+
+            @forelse($recentInvoices as $invoice)
+                <div class="dash-notice-row">
+                    <div class="flex-grow-1 min-w-0">
+                        <p class="mb-0 text-dark text-truncate" style="font-size:13px;font-weight:500;">
+                            {{ $invoice->student_name }} — #{{ $invoice->invoice_no }}
+                        </p>
+                        <small class="text-secondary" style="font-size:11px;">
+                            Due: ৳{{ number_format($invoice->due_amount, 0) }}
+                        </small>
+                    </div>
+                    @if($invoice->payment_status === 'paid')
+                        <span class="inv-badge paid">Paid</span>
+                    @elseif($invoice->payment_status === 'partial')
+                        <span class="inv-badge partial">Partial</span>
+                    @else
+                        <span class="inv-badge unpaid">Unpaid</span>
+                    @endif
+                </div>
+            @empty
+                <p class="text-center text-secondary py-2 mb-0" style="font-size:13px;">
+                    কোনো Invoice নেই
+                </p>
+            @endforelse
+        </div>
+    </div>
+
+    {{-- ══ Quick Actions (Accountant relevant only) ═══════════════════════════ --}}
+    <div class="px-3 mt-4">
+        <div class="dash-section-card">
+            <div class="dash-section-title">
+                <span class="material-icons-round text-primary" style="font-size:18px;">flash_on</span>
+                Quick Actions
+            </div>
+            <div class="row g-2 mt-1">
+                @foreach([
+                    ['icon'=>'receipt',              'label'=>'Fee Invoice',   'color'=>'#d97706', 'bg'=>'#fef3c7', 'href'=>route('accountant.student-accounting.fee.invoices') ?? '#'],
+                    ['icon'=>'payments',             'label'=>'Fee Payment',   'color'=>'#059669', 'bg'=>'#d1fae5', 'href'=>route('accountant.student-accounting.fee.invoices') ?? '#'],
+                    ['icon'=>'north_east',           'label'=>'Office Deposit','color'=>'#0891b2', 'bg'=>'#ecfeff', 'href'=>route('accountant.office-accounting.deposit.list') ?? '#'],
+                    ['icon'=>'south_west',            'label'=>'Office Expense','color'=>'#ea580c', 'bg'=>'#fff7ed', 'href'=>route('accountant.office-accounting.expense.list') ?? '#'],
+                    ['icon'=>'badge',                 'label'=>'Salary',        'color'=>'#7c3aed', 'bg'=>'#ede9fe', 'href'=>route('accountant.salary.payment') ?? '#'],
+                    ['icon'=>'campaign',              'label'=>'Notices',  'color'=>'#db2777', 'bg'=>'#fce7f3', 'href'=>route('accountant.notices') ?? '#'],
+                ] as $action)
+                    <div class="col-4">
+                        <a href="{{ $action['href'] }}" class="text-decoration-none">
+                            <div class="dash-quick-action">
+                                <div class="dash-quick-icon" style="background:{{ $action['bg'] }};">
+                                    <span class="material-icons-round" style="color:{{ $action['color'] }};font-size:22px;">{{ $action['icon'] }}</span>
+                                </div>
+                                <span class="dash-quick-label">{{ $action['label'] }}</span>
+                            </div>
+                        </a>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+
+    {{-- ══ Recent Notices (Read-only) ══════════════════════════════════════ --}}
+    <div class="px-3 mt-4">
+        <div class="dash-section-card">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="dash-section-title mb-0">
+                    <span class="material-icons-round text-danger" style="font-size:18px;">campaign</span>
+                    Recent Notices
+                </div>
+                <a href="{{ route('accountant.notices') ?? '#' }}" class="dash-view-all">View all</a>
+            </div>
+
+            @forelse($recentNotices as $notice)
+                <div class="dash-notice-row">
+                    <div class="flex-grow-1 min-w-0">
+                        <p class="mb-0 text-dark text-truncate" style="font-size:13px;font-weight:500;">
+                            {{ $notice->title }}
+                        </p>
+                    </div>
+                    <span class="material-icons-round text-secondary" style="font-size:18px;">chevron_right</span>
+                </div>
+            @empty
+                <p class="text-center text-secondary py-2 mb-0" style="font-size:13px;">
+                    কোনো Notice নেই
+                </p>
+            @endforelse
+        </div>
+    </div>
+
+    {{-- ══ Recent Activity ══════════════════════════════════════════════════ --}}
+    <div class="px-3 mt-4 mb-4">
         <div class="dash-section-card">
             <div class="dash-section-title">
                 <span class="material-icons-round text-warning" style="font-size:18px;">bolt</span>
@@ -164,101 +296,6 @@
                     কোনো activity নেই এখনো
                 </p>
             @endforelse
-
-        </div>
-    </div>
-
-    {{-- ══ Quick Actions ════════════════════════════════════════════════════ --}}
-    <div class="px-3 mt-4">
-        <div class="dash-section-card">
-            <div class="dash-section-title">
-                <span class="material-icons-round text-primary" style="font-size:18px;">flash_on</span>
-                Quick Actions
-            </div>
-            <div class="row g-2 mt-1">
-                @foreach([
-                    ['icon'=>'person_add',  'label'=>'Add Student',  'color'=>'#4f46e5', 'bg'=>'#eef2ff', 'href'=>route('admin.student.add')],
-                    ['icon'=>'how_to_reg',  'label'=>'Attendance',   'color'=>'#059669', 'bg'=>'#d1fae5', 'href'=>route('admin.attendance.students')],
-                    ['icon'=>'receipt',     'label'=>'Fee Invoice',  'color'=>'#d97706', 'bg'=>'#fef3c7', 'href'=>route('admin.student-accounting.fee.invoices')],
-                    ['icon'=>'campaign',    'label'=>'Notice',       'color'=>'#db2777', 'bg'=>'#fce7f3', 'href'=>route('admin.notices')],
-                    ['icon'=>'event_note',  'label'=>'Add Exam',     'color'=>'#0891b2', 'bg'=>'#ecfeff', 'href'=>route('admin.exam.setups')],
-                    ['icon'=>'sms',         'label'=>'Send SMS',     'color'=>'#7c3aed', 'bg'=>'#ede9fe', 'href'=>'#'],
-                ] as $action)
-                    <div class="col-4">
-                        <a href="{{ $action['href'] }}" class="text-decoration-none">
-                            <div class="dash-quick-action">
-                                <div class="dash-quick-icon" style="background:{{ $action['bg'] }};">
-                                    <span class="material-icons-round" style="color:{{ $action['color'] }};font-size:22px;">{{ $action['icon'] }}</span>
-                                </div>
-                                <span class="dash-quick-label">{{ $action['label'] }}</span>
-                            </div>
-                        </a>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-    </div>
-
-    {{-- ══ Recent Notices ═══════════════════════════════════════════════════ --}}
-    <div class="px-3 mt-4">
-        <div class="dash-section-card">
-            <div class="d-flex align-items-center justify-content-between mb-3">
-                <div class="dash-section-title mb-0">
-                    <span class="material-icons-round text-danger" style="font-size:18px;">campaign</span>
-                    Recent Notices
-                </div>
-                <a href="#" class="dash-view-all">View all</a>
-            </div>
-
-            @forelse($recentNotices as $notice)
-                <a href="#" class="dash-notice-row text-decoration-none">
-                    <div class="flex-grow-1 min-w-0">
-                        <p class="mb-0 text-dark text-truncate" style="font-size:13px;font-weight:500;">
-                            {{ $notice->title }}
-                        </p>
-                    </div>
-                    <span class="material-icons-round text-secondary" style="font-size:18px;">chevron_right</span>
-                </a>
-            @empty
-                @foreach([
-                    'Annual Sports Day - May 10',
-                    'Exam Schedule Published',
-                    'Fee Deadline - May 15',
-                    'Parent-Teacher Meeting - May 8',
-                ] as $n)
-                    <div class="dash-notice-row">
-                        <div class="flex-grow-1 min-w-0">
-                            <p class="mb-0 text-dark text-truncate" style="font-size:13px;font-weight:500;">{{ $n }}</p>
-                        </div>
-                        <span class="material-icons-round text-secondary" style="font-size:18px;">chevron_right</span>
-                    </div>
-                @endforeach
-            @endforelse
-        </div>
-    </div>
-
-    {{-- ══ Today's Birthdays ════════════════════════════════════════════════ --}}
-    <div class="px-3 mt-4 mb-4">
-        <div class="dash-section-card">
-            <div class="dash-section-title">
-                <span class="material-icons-round" style="font-size:18px;color:#f59e0b;">cake</span>
-                Today's Birthdays 🎂
-            </div>
-
-            @forelse($todayBirthdays as $person)
-                <div class="dash-birthday-row">
-                    <div class="dash-birthday-avatar">
-                        {{ strtoupper(substr($person->name, 0, 1)) }}
-                    </div>
-                    <div class="flex-grow-1 min-w-0">
-                        <p class="mb-0 fw-semibold text-truncate" style="font-size:13px;">{{ $person->name }}</p>
-                        <small class="text-secondary" style="font-size:11px;">{{ $person->role }}</small>
-                    </div>
-                    <span class="material-icons-round" style="font-size:20px;color:#f59e0b;">cake</span>
-                </div>
-            @empty
-                <p class="text-secondary text-center py-2 mb-0" style="font-size:13px;">No birthdays today 🎈</p>
-            @endforelse
         </div>
     </div>
 
@@ -267,7 +304,6 @@
 {{-- ══ Scoped CSS ══════════════════════════════════════════════════════════ --}}
 @push('styles')
 <style>
-    /* ── Wrapper ─────────────────────────────────────────────────── */
     .dash-wrap {
         background: #f5f6fa;
         min-height: 100vh;
@@ -278,7 +314,6 @@
         padding-top: 16px;
     }
 
-    /* ── Stat Cards ──────────────────────────────────────────────── */
     .dash-stat-card {
         background: #ffffff;
         border-radius: 16px;
@@ -314,12 +349,6 @@
         margin-bottom: 4px;
     }
 
-    .dash-stat-badge {
-        font-size: 11px;
-        font-weight: 500;
-    }
-
-    /* ── Section Cards ───────────────────────────────────────────── */
     .dash-section-card {
         background: #ffffff;
         border-radius: 16px;
@@ -344,7 +373,6 @@
         text-decoration: none;
     }
 
-    /* ── Activity ────────────────────────────────────────────────── */
     .dash-activity-item {
         display: flex;
         align-items: center;
@@ -369,7 +397,6 @@
         flex-shrink: 0;
     }
 
-    /* ── Quick Actions ───────────────────────────────────────────── */
     .dash-quick-action {
         display: flex;
         flex-direction: column;
@@ -402,7 +429,6 @@
         line-height: 1.3;
     }
 
-    /* ── Notices ─────────────────────────────────────────────────── */
     .dash-notice-row {
         display: flex;
         align-items: center;
@@ -417,35 +443,19 @@
         margin-bottom: 0;
     }
 
-    /* ── Birthdays ───────────────────────────────────────────────── */
-    .dash-birthday-row {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 8px 0;
-        border-bottom: 1px solid #f3f4f6;
-    }
-
-    .dash-birthday-row:last-child {
-        border-bottom: none;
-        padding-bottom: 0;
-    }
-
-    .dash-birthday-avatar {
-        width: 38px;
-        height: 38px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #e94d82, #f4a8c5);
-        color: #fff;
-        font-size: 15px;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    .inv-badge {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        border: 1px solid transparent;
         flex-shrink: 0;
     }
+    .inv-badge.paid    { background: transparent; border-color: #22c55e; color: #22c55e; }
+    .inv-badge.partial { background: transparent; border-color: #f59e0b; color: #f59e0b; }
+    .inv-badge.unpaid  { background: transparent; border-color: #ef4444; color: #ef4444; }
 
-    /* ── Responsive tweaks ───────────────────────────────────────── */
     @media (min-width: 768px) {
         .dash-stat-value {
             font-size: 22px;

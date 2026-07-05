@@ -3,158 +3,148 @@
 namespace App\Livewire\Admin\StudentAccounting;
 
 use Livewire\Component;
-use App\Models\FeeAllocation;
-use App\Models\FeeGroup;
+use Livewire\WithPagination;
+use App\Models\FeeInvoice;
 use App\Models\AcademicClass;
-use App\Models\AcademicSection;
 use App\Models\AcademicClassAssign;
 use App\Models\Student;
-use App\Models\FeeInvoice;
+use Illuminate\Support\Facades\DB;
 
 class FeeInvoiceComponent extends Component
 {
-    // ── Filter ──
+    use WithPagination;
+
+    protected string $paginationTheme = 'bootstrap';
+
+    // ── List / Filter (Homework pattern) ──
+    public string $search        = '';
+    public int    $perPage       = 10;
+    public string $sortField     = 'roll_no';
+    public string $sortDir       = 'asc';
+
     public $filterClass   = '';
     public $filterSection = '';
 
-    // ── State ──
-    public $students         = null;
-    public array $selectedStudents = [];
-    public bool  $selectAll        = false;
-    public bool  $hasFiltered      = false;
+    public array $availableSections = [];
 
     // ── Delete Confirm ──
     public bool $confirmDelete = false;
     public ?int $deleteId      = null;
 
-    // ── Available Classes (StudentComponent pattern) ──
-    public function getAvailableClasses()
+    public function updatingSearch(): void
     {
-        return AcademicClass::whereIn('id', AcademicClassAssign::distinct()->pluck('class_id'))
-            ->orderBy('name')
+        $this->resetPage();
+    }
+
+    public function updatedFilterClass($value): void
+    {
+        $this->filterSection     = '';
+        $this->availableSections = [];
+        $this->resetPage();
+
+        if (! $value) return;
+
+        $assigns = AcademicClassAssign::with('section')
+            ->where('class_id', $value)
+            ->whereNotNull('section_id')
             ->get();
+
+        $this->availableSections = $assigns
+            ->filter(fn ($a) => $a->section)
+            ->map(fn ($a) => ['id' => $a->section->id, 'name' => $a->section->name])
+            ->unique('id')
+            ->values()
+            ->toArray();
     }
 
-    // ── Available Sections (StudentComponent pattern) ──
-    public function getAvailableSections()
+    public function updatedFilterSection(): void
     {
-        if (!$this->filterClass) return [];
-
-        return AcademicSection::whereIn('id',
-            AcademicClassAssign::where('class_id', $this->filterClass)->pluck('section_id')
-        )->orderBy('name')->get();
+        $this->resetPage();
     }
 
-    // ── Class changed ──
-    public function updatedFilterClass()
+    public function sortBy(string $field): void
     {
-        $this->filterSection   = '';
-        $this->students        = null;
-        $this->selectedStudents = [];
-        $this->selectAll       = false;
-        $this->hasFiltered     = false;
-    }
-
-    // ── Section changed ──
-    public function updatedFilterSection()
-    {
-        $this->students        = null;
-        $this->selectedStudents = [];
-        $this->selectAll       = false;
-        $this->hasFiltered     = false;
-    }
-
-    // ── Select All toggle ──
-    public function updatedSelectAll(bool $value): void
-    {
-        $this->selectedStudents = $value
-            ? $this->students->pluck('id')->toArray()
-            : [];
-    }
-
-    // ── Individual checkbox ──
-    public function updatedSelectedStudents(): void
-    {
-        $this->selectAll = $this->students && $this->students->count() > 0
-            && count($this->selectedStudents) === $this->students->count();
-    }
-
-    // ── Filter ──
-    public function filter(): void
-    {
-        if (!$this->filterClass) {
-            $this->dispatch('toast', type: 'error', message: 'Please select a class.');
-            return;
+        if ($this->sortField === $field) {
+            $this->sortDir = $this->sortDir === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortField = $field;
+            $this->sortDir   = 'asc';
         }
-
-        $query = Student::with([
-                'class',
-                'section',
-                'feeAllocations.feeGroup',
-                'feeInvoices.items',
-            ])
-            ->where('class_id', $this->filterClass)
-            ->whereHas('feeAllocations')
-            ->orderBy('section_id')
-            ->orderBy('roll_no');
-
-        if ($this->filterSection && $this->filterSection !== 'all') {
-            $query->where('section_id', $this->filterSection);
-        }
-
-        $students = $query->get();
-
-        if ($students->isEmpty()) {
-            $this->dispatch('toast', type: 'error', message: 'No students with fee allocations found.');
-            $this->hasFiltered = false;
-            return;
-        }
-
-        $this->students        = $students;
-        $this->selectedStudents = [];
-        $this->selectAll       = false;
-        $this->hasFiltered     = true;
     }
 
-    // ── Delete confirm ──
     public function confirmDeleteRecord(int $id): void
     {
         $this->deleteId      = $id;
         $this->confirmDelete = true;
     }
 
-    // ── Delete student's allocations + invoices ──
+    // ── শুধু Invoice ডিলিট হবে — Items cascadeOnDelete দিয়ে অটো মুছবে ──
     public function deleteRecord(): void
     {
-        FeeAllocation::where('student_id', $this->deleteId)->delete();
-        FeeInvoice::where('student_id', $this->deleteId)->delete();
+        DB::beginTransaction();
 
-        $this->confirmDelete = false;
-        $this->deleteId      = null;
+        try {
+            $invoices = FeeInvoice::where('student_id', $this->deleteId)->get();
 
-        // Reload list
-        $this->filter();
+            if ($invoices->isEmpty()) {
+                DB::rollBack();
+                $this->confirmDelete = false;
+                $this->deleteId = null;
+                $this->dispatch('toast', type: 'warning', message: 'No invoice found.');
+                return;
+            }
 
-        $this->dispatch('toast', type: 'success', message: 'All invoices deleted successfully!');
-    }
+            $student = Student::find($this->deleteId);
 
-    // ── Reset ──
-    public function resetForm(): void
-    {
-        $this->filterClass     = '';
-        $this->filterSection   = '';
-        $this->students        = null;
-        $this->selectedStudents = [];
-        $this->selectAll       = false;
-        $this->hasFiltered     = false;
+            FeeInvoice::where('student_id', $this->deleteId)->delete();
+
+            activity()
+                ->withProperties([
+                    'icon'           => 'delete',
+                    'type'           => 'delete',
+                    'institution_id' => institution()->id,
+                ])
+                ->log('Deleted ' . $invoices->count() . ' Fee Invoice(s) for Student: ' . ($student->name ?? $this->deleteId));
+
+            DB::commit();
+
+            $this->confirmDelete = false;
+            $this->deleteId      = null;
+
+            $this->dispatch('toast', type: 'success', message: 'All invoices deleted successfully!');
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            $this->dispatch('toast', type: 'error', message: 'Something went wrong!');
+        }
     }
 
     public function render()
     {
+        $classes = AcademicClass::whereIn('id', AcademicClassAssign::distinct()->pluck('class_id'))
+            ->orderBy('name')
+            ->get();
+
+        $students = Student::with(['class', 'section', 'feeInvoices.items.feeSetup.feeType'])
+            ->whereHas('feeInvoices')
+            ->when($this->search, fn ($q) => $q->where(function ($q2) {
+                $q2->where('name', 'like', '%' . $this->search . '%')
+                   ->orWhere('student_id', 'like', '%' . $this->search . '%')
+                   ->orWhere('roll_no', 'like', '%' . $this->search . '%');
+            }))
+            ->when($this->filterClass, fn ($q) =>
+                $q->where('class_id', $this->filterClass)
+            )
+            ->when($this->filterSection && $this->filterSection !== 'all', fn ($q) =>
+                $q->where('section_id', $this->filterSection)
+            )
+            ->orderBy($this->sortField, $this->sortDir)
+            ->paginate($this->perPage);
+
         return view('livewire.admin.student-accounting.fee-invoice-component')
             ->with([
-                'classes'  => $this->getAvailableClasses(),
-                'sections' => $this->getAvailableSections(),
+                'classes'  => $classes,
+                'students' => $students,
             ])
             ->layout('layouts.admin.app', [
                 'title' => 'Fee Invoices | ' . institution()->name,
