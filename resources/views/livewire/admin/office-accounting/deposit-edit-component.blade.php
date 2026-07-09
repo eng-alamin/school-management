@@ -124,9 +124,22 @@
                 <label style="font-size:.73rem;font-weight:600;color:var(--muted);display:block;margin-bottom:8px">
                     Attachment
                 </label>
+
+                @if($existing_attachment && !$remove_attachment)
+                    <div class="d-flex align-items-center gap-2 mb-2 p-2" style="border:1px solid var(--border);border-radius:8px;">
+                        <span class="material-icons-round">attach_file</span>
+                        <a href="{{ Storage::url($existing_attachment) }}" target="_blank" class="flex-grow-1 text-truncate">
+                            View current attachment
+                        </a>
+                        <button type="button" class="btn btn-sm btn-outline-danger" wire:click="removeAttachment">
+                            <span class="material-icons-round" style="font-size:16px">delete</span>
+                        </button>
+                    </div>
+                @endif
+
                 <div class="photo-upload-box">
                     <span class="material-icons-round">attach_file</span>
-                    <span class="lbl">Click to upload attachment</span>
+                    <span class="lbl">Click to upload new attachment</span>
                     <small style="color:#bbb;font-size:.7rem">PDF, JPG, PNG up to 2MB</small>
                     <input type="file" wire:model="attachment" accept=".pdf,image/*">
                 </div>

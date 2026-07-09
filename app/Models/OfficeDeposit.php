@@ -2,16 +2,20 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use App\Traits\BelongsToInstitution;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 
 class OfficeDeposit extends Model
 {
-    use BelongsToInstitution;
+    use BelongsToInstitution, SoftDeletes;
+
     protected $guarded = [];
 
     protected $casts = [
         'date' => 'date',
+        'amount' => 'decimal:2',
     ];
 
     public function account()
@@ -22,5 +26,35 @@ class OfficeDeposit extends Model
     public function head()
     {
         return $this->belongsTo(OfficeHead::class, 'head_id');
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'created_by');
+    }
+
+    /**
+     * Generate a unique voucher number per institution, per year.
+     * Format: DEP-2026-0001
+     */
+    public static function generateVoucherNo(int $institutionId): string
+    {
+        $year = now()->format('Y');
+        $prefix = "DEP-{$year}-";
+
+        return DB::transaction(function () use ($institutionId, $prefix) {
+            $last = static::withTrashed()
+                ->where('institution_id', $institutionId)
+                ->where('voucher_no', 'like', $prefix . '%')
+                ->lockForUpdate()
+                ->orderByDesc('id')
+                ->first();
+
+            $nextNumber = $last
+                ? ((int) substr($last->voucher_no, -4)) + 1
+                : 1;
+
+            return $prefix . str_pad((string) $nextNumber, 4, '0', STR_PAD_LEFT);
+        });
     }
 }

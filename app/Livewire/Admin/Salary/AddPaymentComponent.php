@@ -6,6 +6,8 @@ use Livewire\Component;
 use App\Models\Employee;
 use App\Models\SalaryAssign;
 use App\Models\SalaryPayment;
+use App\Models\SalaryAdvance;
+use App\Models\SalaryAdvanceRepayment;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -29,9 +31,12 @@ class AddPaymentComponent extends Component
     public float  $grossSalary    = 0;
     public float  $overtimeRate   = 0;
 
-    // FIX 3: salary_grade is a string ('Grade A', 'Grade B'), not a float.
-    //         Declaring it as float caused (float)'Grade A' = 0 — always blank.
     public string $salaryGrade = '';
+
+    // ── Salary Advance (auto-deduction) ────────────────────────────
+    public ?int  $activeAdvanceId  = null;
+    public float $advanceDeduction = 0;
+    public float $advanceRemaining = 0;
 
     // ── Editable payment fields ───────────────────────────────────
     public float  $overtimeHour   = 0;
@@ -51,8 +56,6 @@ class AddPaymentComponent extends Component
 
     public function mount(int $id, string $month): void
     {
-        // FIX 6: Validate month format on mount so a malformed URL param
-        //         does not cause a silent Carbon exception later in the page.
         if (!preg_match('/^\d{4}-\d{2}$/', $month)) {
             abort(400, 'Invalid month format. Expected YYYY-MM.');
         }
@@ -63,20 +66,16 @@ class AddPaymentComponent extends Component
 
         $this->loadEmployee();
         $this->loadSalaryAssign();
+        $this->loadActiveAdvance();
         $this->checkExistingPayment();
         $this->recalculate();
     }
 
-    // ── Load employee ─────────────────────────────────────────────
     private function loadEmployee(): void
     {
         $emp = Employee::with(['designation', 'department'])
             ->findOrFail($this->employeeId);
 
-        // Employee model has no date cast on joining_date — it comes from
-        // the DB as a raw string, not a Carbon object. Using ?->format() on
-        // a string causes "Call to a member function format() on string".
-        // Use Carbon::parse() instead, which accepts both strings and objects.
         $data = $emp->toArray();
         $data['joining_date'] = $emp->joining_date
             ? \Carbon\Carbon::parse($emp->joining_date)->format('Y-m-d')
@@ -85,7 +84,6 @@ class AddPaymentComponent extends Component
         $this->employee = $data;
     }
 
-    // ── Load salary assign + template allowances/deductions ────────
     private function loadSalaryAssign(): void
     {
         $assign = SalaryAssign::with([
@@ -101,24 +99,38 @@ class AddPaymentComponent extends Component
         $this->totalDeduction = (float) ($assign->total_deduction ?? 0);
         $this->grossSalary    = (float) ($assign->gross_salary    ?? ($this->basicSalary + $this->totalAllowance));
         $this->overtimeRate   = (float) ($assign->overtime_rate   ?? 0);
-
-        // FIX 3: salary_grade is a string — cast to string, not float.
-        $this->salaryGrade = (string) ($assign->salary_grade ?? '');
+        $this->salaryGrade    = (string) ($assign->salary_grade ?? '');
 
         if ($assign->salaryTemplate?->allowances) {
             $this->allowances = $assign->salaryTemplate->allowances
-                ->map(fn($a) => ['name' => $a->name, 'amount' => (float) $a->amount])
+                ->map(fn ($a) => ['name' => $a->name, 'amount' => (float) $a->amount])
                 ->toArray();
         }
 
         if ($assign->salaryTemplate?->deductions) {
             $this->deductions = $assign->salaryTemplate->deductions
-                ->map(fn($d) => ['name' => $d->name, 'amount' => (float) $d->amount])
+                ->map(fn ($d) => ['name' => $d->name, 'amount' => (float) $d->amount])
                 ->toArray();
         }
     }
 
-    // ── Check if already paid this month ──────────────────────────
+    /**
+     * Finds the employee's single active (unsettled) advance, if any, and
+     * works out how much should be auto-deducted from THIS payment.
+     */
+    private function loadActiveAdvance(): void
+    {
+        $advance = SalaryAdvance::where('employee_id', $this->employeeId)
+            ->active()
+            ->first();
+
+        if (!$advance) return;
+
+        $this->activeAdvanceId  = $advance->id;
+        $this->advanceDeduction = $advance->nextDeductionAmount();
+        $this->advanceRemaining = (float) $advance->remaining_amount;
+    }
+
     private function checkExistingPayment(): void
     {
         $monthDate = Carbon::createFromFormat('Y-m', $this->month)->startOfMonth()->toDateString();
@@ -130,49 +142,48 @@ class AddPaymentComponent extends Component
         if ($payment) {
             $this->alreadyPaid = ($payment->status === 'paid');
 
-            // FIX 4: toArray() on a model with date casts returns Carbon objects.
-            //         Serialize date fields to strings so existingPayment is
-            //         safe to use in Blade or pass around as plain array data.
             $data = $payment->toArray();
             $data['month']        = $payment->month?->format('Y-m-d');
             $data['payment_date'] = $payment->payment_date?->format('Y-m-d');
 
             $this->existingPayment = $data;
+
+            // If already paid, show the advance amount that WAS deducted
+            // (snapshot), not a freshly recalculated one.
+            if ($this->alreadyPaid) {
+                $this->advanceDeduction = (float) ($payment->advance_deduction ?? 0);
+            }
         }
     }
 
-    // ── Recalculate net salary ─────────────────────────────────────
     private function recalculate(): void
     {
         $this->overtimeAmount = $this->overtimeHour * $this->overtimeRate;
-        $this->netSalary      = $this->grossSalary + $this->overtimeAmount - $this->totalDeduction;
+        $this->netSalary      = $this->grossSalary + $this->overtimeAmount
+                                 - $this->totalDeduction - $this->advanceDeduction;
     }
 
-    // ── Livewire: overtime hour changed ───────────────────────────
     public function updatedOvertimeHour(): void
     {
         $this->overtimeHour = max(0, (float) $this->overtimeHour);
         $this->recalculate();
     }
 
-    // ── Process payment ───────────────────────────────────────────
-    // FIX 7: Return type changed from void to mixed.
-    //         void functions cannot return a value — PHP throws a TypeError.
-    //         This method returns redirect() on success and null on early exit.
     public function processPayment(): mixed
     {
         $this->validate([
-            'paymentDate' => 'required|date',
-            'payVia'      => 'required|in:cash,bank,cheque,mobile_banking',
+            'paymentDate'  => 'required|date',
+            'payVia'       => 'required|in:cash,bank,cheque,mobile_banking',
+            'accountId'    => 'required_if:payVia,bank,cheque,mobile_banking|nullable|exists:office_accounts,id',
+            'overtimeHour' => 'nullable|numeric|min:0',
         ], [
-            'payVia.required' => 'Please select a payment method.',
-            'payVia.in'       => 'Invalid payment method selected.',
+            'payVia.required'       => 'Please select a payment method.',
+            'payVia.in'             => 'Invalid payment method selected.',
+            'accountId.required_if' => 'Please select an account for this payment method.',
         ]);
 
         $monthDate = Carbon::createFromFormat('Y-m', $this->month)->startOfMonth()->toDateString();
 
-        // FIX 2: Server-side already-paid guard was missing.
-        //         Anyone can POST to this action on a paid employee via direct URL.
         $isPaid = SalaryPayment::where('employee_id', $this->employeeId)
             ->where('month', $monthDate)
             ->where('status', 'paid')
@@ -187,38 +198,54 @@ class AddPaymentComponent extends Component
         $assign = SalaryAssign::where('employee_id', $this->employeeId)->first();
 
         DB::transaction(function () use ($monthDate, $assign) {
-            SalaryPayment::updateOrCreate(
+            $payment = SalaryPayment::updateOrCreate(
                 [
-                    'employee_id' => $this->employeeId,
-                    'month'       => $monthDate,
+                    'institution_id' => institution()->id,
+                    'employee_id'    => $this->employeeId,
+                    'month'          => $monthDate,
                 ],
                 [
-                    'salary_assign_id' => $assign?->id,
-                    'basic_salary'     => $this->basicSalary,
-                    'total_allowance'  => $this->totalAllowance,
-                    'total_deduction'  => $this->totalDeduction,
-                    'gross_salary'     => $this->grossSalary,
-                    'overtime_hour'    => $this->overtimeHour,
-                    'overtime_rate'    => $this->overtimeRate,
-                    'overtime_amount'  => $this->overtimeAmount,
-                    'net_salary'       => $this->netSalary,
-                    'payment_date'     => $this->paymentDate,
-                    'payment_method'   => $this->payVia,
-                    'account_id'       => $this->accountId ?: null,
-                    'note'             => $this->remarks    ?: null,
-                    'status'           => 'paid',
-                    'paid_by'          => Auth::id(),
+                    'salary_assign_id'  => $assign?->id,
+                    'basic_salary'      => $this->basicSalary,
+                    'total_allowance'   => $this->totalAllowance,
+                    'total_deduction'   => $this->totalDeduction,
+                    'advance_deduction' => $this->advanceDeduction,
+                    'gross_salary'      => $this->grossSalary,
+                    'overtime_hour'     => $this->overtimeHour,
+                    'overtime_rate'     => $this->overtimeRate,
+                    'overtime_amount'   => $this->overtimeAmount,
+                    'net_salary'        => $this->netSalary,
+                    'payment_date'      => $this->paymentDate,
+                    'payment_method'    => $this->payVia,
+                    'account_id'        => $this->accountId ?: null,
+                    'note'              => $this->remarks    ?: null,
+                    'status'            => 'paid',
+                    'paid_by'           => Auth::id(),
                 ]
             );
+
+            // FIX: record the advance repayment (if any) so SalaryAdvance's
+            // remaining_amount auto-syncs via SalaryAdvanceRepaymentObserver.
+            if ($this->activeAdvanceId && $this->advanceDeduction > 0) {
+                SalaryAdvanceRepayment::create([
+                    'institution_id'    => institution()->id,
+                    'salary_advance_id' => $this->activeAdvanceId,
+                    'salary_payment_id' => $payment->id,
+                    'amount'            => $this->advanceDeduction,
+                    'deducted_date'     => $this->paymentDate,
+                ]);
+            }
         });
 
         $this->alreadyPaid = true;
         $this->dispatch('notify', type: 'success', message: 'Salary paid successfully.');
 
-        return redirect()->route('admin.salary.payment');
+        return redirect()->route('admin.salary.invoice-payment', [
+            'id'    => $this->employeeId,
+            'month' => $this->month,
+        ]);
     }
 
-    // ── Render ────────────────────────────────────────────────────
     public function render()
     {
         $officeAccounts = DB::table('office_accounts')->get(['id', 'name']);

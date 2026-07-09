@@ -7,10 +7,12 @@ use App\Models\AdmitCardTemplate;
 use App\Models\AdmitCard;
 
 use App\Models\Student;
-use App\Models\AcademicClass;
-use App\Models\AcademicSection;
+use App\Models\AcademicClassAssign;
 use App\Models\ExamSetup;
-use App\Models\ExamSchedule;
+use App\Models\ExamSetupDetail;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Carbon;
+use Throwable;
 
 class GenerateAdmitCardComponent extends Component
 {
@@ -36,7 +38,7 @@ class GenerateAdmitCardComponent extends Component
     public function mount(): void
     {
         $this->print_date  = now()->format('Y-m-d');
-        $this->expiry_date = now()->format('Y-m-d');
+        $this->expiry_date = now()->addYear()->format('Y-m-d');
     }
 
     public function applyFilter(): void
@@ -44,11 +46,12 @@ class GenerateAdmitCardComponent extends Component
         $this->validate([
             'filterClass'    => 'required|string',
             'filterExam'     => 'required',
-            'filterTemplate' => 'required|exists:id_card_templates,id',
+            'filterTemplate' => 'required|exists:admit_card_templates,id',
         ], [
             'filterClass.required'    => 'Class is required.',
             'filterExam.required'     => 'Exam is required.',
             'filterTemplate.required' => 'Template is required.',
+            'filterTemplate.exists'   => 'Selected template is invalid.',
         ]);
 
         $this->filtered    = true;
@@ -58,13 +61,13 @@ class GenerateAdmitCardComponent extends Component
 
     public function resetFilter(): void
     {
-        $this->filtered      = false;
-        $this->filterClass   = '';
-        $this->filterSection = '';
-        $this->filterExam    = null;
+        $this->filtered       = false;
+        $this->filterClass    = '';
+        $this->filterSection  = '';
+        $this->filterExam     = null;
         $this->filterTemplate = null;
-        $this->selectedIds   = [];
-        $this->selectAll     = false;
+        $this->selectedIds    = [];
+        $this->selectAll      = false;
         $this->resetValidation();
     }
 
@@ -80,7 +83,7 @@ class GenerateAdmitCardComponent extends Component
         if ($value) {
             $this->selectedIds = $this->getStudents()
                 ->pluck('id')
-                ->map(fn($id) => (string) $id)
+                ->map(fn ($id) => (string) $id)
                 ->toArray();
         } else {
             $this->selectedIds = [];
@@ -96,132 +99,228 @@ class GenerateAdmitCardComponent extends Component
     public function generateCards(): void
     {
         if (empty($this->selectedIds)) {
-            session()->flash('error', 'Please select at least one student.');
+            $this->dispatch('toast', type: 'error', message: 'Please select at least one student.');
+            return;
+        }
+
+        if (!$this->filterExam || !$this->filterTemplate) {
+            $this->dispatch('toast', type: 'error', message: 'Please select an exam and a template.');
             return;
         }
 
         $this->validate([
             'print_date'  => 'required|date',
-            'expiry_date' => 'required|date',
+            'expiry_date' => 'required|date|after_or_equal:print_date',
         ]);
 
         $students = Student::with(['class', 'section', 'group'])
             ->whereIn('id', $this->selectedIds)
             ->get();
 
-        $examScheduleRow = ExamSchedule::where('exam_id', $this->filterExam)
-            ->when($this->filterClass, fn($q) => $q->where('class_id', $this->filterClass))
-            ->when(
-                $this->filterSection && $this->filterSection !== 'all',
-                fn($q) => $q->where('section_id', $this->filterSection)
-            )
-            ->first();
+        if ($students->isEmpty()) {
+            $this->dispatch('toast', type: 'error', message: 'Selected students could not be found.');
+            return;
+        }
 
-        $scheduleData = $examScheduleRow?->data ?? [];
-        $institutionId = auth()->user()->institution_id;
+        $scheduleData  = $this->buildExamScheduleData();
+        $institutionId = institution()->id;
         $data = [];
 
         foreach ($students as $student) {
             $data[] = [
-                'institution_id'   => $institutionId,
+                'institution_id' => $institutionId,
                 'student_id'     => $student->id,
 
-                'issue_date'     => $this->print_date,
-                'expiry_date'    => $this->expiry_date,
-                'template_id'    => $this->filterTemplate,
+                'issue_date'  => $this->print_date,
+                'expiry_date' => $this->expiry_date,
+                'template_id' => $this->filterTemplate,
 
-                'name'           => $student->name,
-                'gender'         => $student->gender,
-                'blood_group'    => $student->full_blood_group,
-                'dob'            => $student->dob,
-                'religion'       => $student->religion,
-                'mobile'         => $student->mobile,
-                'address'        => $student->present_address,
-                'photo'          => $student->photo,
-                'session'        => $student->academic_year,
-                'register_no'    => $student->register_no,
-                'roll_no'        => $student->roll_no,
+                'name'        => $student->name,
+                'gender'      => $student->gender,
+                'blood_group' => $student->full_blood_group,
+                'dob'         => $student->dob,
+                'religion'    => $student->religion,
+                'mobile'      => $student->mobile,
+                'address'     => $student->present_address,
+                'photo'       => $student->photo,
+                'session'     => $student->academic_year,
+                'register_no' => $student->register_no,
+                'roll_no'     => $student->roll_no,
 
-                'class'          => $student->class?->name,
-                'section'        => $student->section?->name,
+                'class'       => $student->class?->name,
+                'section'     => $student->section?->name,
                 'group'       => $student->group?->name,
 
                 'exam_schedules' => json_encode($scheduleData),
 
-                'updated_at'     => now(),
-                'created_at'     => now(),
+                'updated_at'  => now(),
+                'created_at'  => now(),
             ];
         }
 
-        AdmitCard::upsert(
-            $data,
-            ['student_id'],   
-            [
-                'institution_id',
-                'issue_date',
-                'expiry_date',
-                'template_id',
-                'name',
-                'gender',
-                'blood_group',
-                'dob',
-                'religion',
-                'mobile',
-                'address',
-                'photo',
-                'session',
-                'register_no',
-                'roll_no',
-                'class',
-                'section',
-                'exam_schedules',    // ← included in update list
-                'group',
-                'updated_at',
-            ]
-        );
+        DB::beginTransaction();
+        try {
+            AdmitCard::upsert(
+                $data,
+                ['student_id'],
+                [
+                    'institution_id',
+                    'issue_date',
+                    'expiry_date',
+                    'template_id',
+                    'name',
+                    'gender',
+                    'blood_group',
+                    'dob',
+                    'religion',
+                    'mobile',
+                    'address',
+                    'photo',
+                    'session',
+                    'register_no',
+                    'roll_no',
+                    'class',
+                    'section',
+                    'exam_schedules',
+                    'group',
+                    'updated_at',
+                ]
+            );
 
-        $this->printCards = AdmitCard::with('template')
-            ->whereIn('student_id', $this->selectedIds)
-            ->get()
-            ->toArray();
+            $cards = AdmitCard::with('template')
+                ->where('institution_id', $institutionId)
+                ->whereIn('student_id', $this->selectedIds)
+                ->get();
 
+            activity()->log('Generated '.$cards->count().' admit card(s)');
+
+            DB::commit();
+        } catch (Throwable $e) {
+            DB::rollBack();
+            $this->dispatch('toast', type: 'error', message: 'Admit cards could not be generated. Please try again.');
+            return;
+        }
+
+        $this->printCards       = $cards->toArray();
         $this->showPrintPreview = true;
+
+        $this->dispatch('toast', type: 'success', message: count($this->printCards).' admit card(s) generated successfully!');
     }
 
+    /**
+     * Build exam schedule rows (subject-wise) for the selected exam + class + section.
+     *
+     * Chain: ExamSetupDetail -> AcademicClassAssignDetail -> AcademicClassAssign (class_id/section_id)
+     *                        -> AcademicClassAssignDetail -> subject (subject name)
+     *                        -> hasOne ExamSchedule (date/start_time/end_time)
+     *
+     * NOTE: exam_schedules table has NO class_id/section_id/data columns,
+     * so filtering must happen through the classAssignDetail.classAssign relation.
+     */
+    private function buildExamScheduleData(): array
+    {
+        if (!$this->filterExam) {
+            return [];
+        }
+
+        $details = ExamSetupDetail::with(['classAssignDetail.subject', 'schedule'])
+            ->where('exam_setup_id', $this->filterExam)
+            ->whereHas('classAssignDetail.classAssign', function ($query) {
+                $query
+                    ->when($this->filterClass, fn ($q) => $q->where('class_id', $this->filterClass))
+                    ->when(
+                        $this->filterSection && $this->filterSection !== 'all',
+                        fn ($q) => $q->where('section_id', $this->filterSection)
+                    );
+            })
+            ->orderBy('serial')
+            ->get();
+
+        return $details->map(function (ExamSetupDetail $detail) {
+            $start = $detail->schedule?->start_time;
+            $end   = $detail->schedule?->end_time;
+
+            $duration = null;
+            if ($start && $end) {
+                $duration = Carbon::parse($start)->diff(Carbon::parse($end))->format('%H:%I').' hrs';
+            }
+
+            return [
+                'subject'    => $detail->classAssignDetail?->subject?->name,
+                'exam_date'  => $detail->schedule?->exam_date?->format('Y-m-d'),
+                'start_time' => $start ? Carbon::parse($start)->format('h:i A') : null,
+                'duration'   => $duration,
+                'full_marks' => $detail->full_mark,
+            ];
+        })->toArray();
+    }
+
+    /**
+     * Student list based on the selected class/section.
+     * Student table already has normalized class_id/section_id FKs,
+     * so filtering directly on Student is correct.
+     */
     private function getStudents()
     {
-        if (!$this->filtered) return collect();
+        if (!$this->filtered) {
+            return collect();
+        }
 
         return Student::query()
-            ->when($this->filterClass, fn($q) => $q->where('class_id', $this->filterClass))
+            ->with(['class', 'section', 'group'])
+            ->when($this->filterClass, fn ($q) => $q->where('class_id', $this->filterClass))
             ->when(
                 $this->filterSection && $this->filterSection !== 'all',
-                fn($q) => $q->where('section_id', $this->filterSection)
+                fn ($q) => $q->where('section_id', $this->filterSection)
             )
             ->orderBy('roll_no')
             ->get();
     }
 
+    /**
+     * Class dropdown source = AcademicClassAssign (single source of truth
+     * for "which classes are assigned in this school"), NOT Student table.
+     */
     public function getAvailableClasses(): array
     {
-        return AcademicClass::whereIn('id', Student::distinct()->pluck('class_id'))
-            ->orderBy('name')
+        return AcademicClassAssign::with('class')
+            ->whereHas('class')
             ->get()
+            ->unique('class_id')
+            ->pluck('class')
+            ->filter()
+            ->sortBy('name')
+            ->values()
+            ->map(fn ($class) => [
+                'id'   => $class->id,
+                'name' => $class->name,
+            ])
             ->toArray();
     }
 
+    /**
+     * Section dropdown source = AcademicClassAssign, scoped to the
+     * currently selected class.
+     */
     public function getAvailableSections(): array
     {
-        if (!$this->filterClass) return [];
+        if (!$this->filterClass) {
+            return [];
+        }
 
-        $sectionIds = Student::where('class_id', $this->filterClass)
-            ->whereNotNull('section_id')
-            ->distinct()
-            ->pluck('section_id');
-
-        return AcademicSection::whereIn('id', $sectionIds)
-            ->orderBy('name')
+        return AcademicClassAssign::with('section')
+            ->where('class_id', $this->filterClass)
+            ->whereHas('section')
             ->get()
+            ->unique('section_id')
+            ->pluck('section')
+            ->filter()
+            ->sortBy('name')
+            ->values()
+            ->map(fn ($section) => [
+                'id'   => $section->id,
+                'name' => $section->name,
+            ])
             ->toArray();
     }
 

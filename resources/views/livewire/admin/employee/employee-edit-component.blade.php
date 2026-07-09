@@ -1,4 +1,4 @@
-{{-- livewire/tenant/theme/employee-edit-component.blade.php --}}
+{{-- livewire/admin/employee-edit-component.blade.php --}}
 
 <div>
 

@@ -29,6 +29,9 @@ return new class extends Migration
             $table->decimal('gross_salary',    12, 2)->default(0); // basic + allowance
             $table->decimal('net_salary',      12, 2)->default(0); // gross - deduction
             $table->timestamps();
+
+            $table->unique('employee_id', 'unique_salary_assigns');
+            $table->index(['institution_id', 'role'], 'index_salary_assigns');
         });
     }
 

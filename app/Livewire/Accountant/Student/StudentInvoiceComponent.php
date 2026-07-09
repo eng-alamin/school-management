@@ -12,7 +12,8 @@ use Illuminate\Support\Facades\DB;
 class StudentInvoiceComponent extends Component
 {
     public $student;
-    public $invoices; // Collection of FeeInvoice with items.feeGroupItem.feeGroup / feeType
+    public $invoices;         // Flat collection of FeeInvoice with items.feeSetup.feeType
+    public $invoicesBySession; // Session-wise grouped view data: [['session' => .., 'invoices' => ..], ...]
 
     public array $selectedIds = []; // Selected Invoice IDs
     public bool  $selectAll   = false;
@@ -47,13 +48,23 @@ class StudentInvoiceComponent extends Component
     private function loadInvoices(): void
     {
         $this->invoices = FeeInvoice::with([
-                'items.feeGroupItem.feeGroup',
-                'items.feeGroupItem.feeType',
+                'items.feeSetup.feeType',
             ])
             ->where('student_id', $this->student->id)
             ->orderBy('invoice_date')
             ->latest()
             ->get();
+
+        // fee_invoices টেবিলে নিজস্ব session_id নেই, তাই Student-এর বর্তমান
+        // Session দিয়েই সব Invoice-কে একটা গ্রুপে দেখানো হচ্ছে। ভবিষ্যতে
+        // fee_invoices-এ session_id যোগ হলে এই লজিক groupBy('session_id') দিয়ে
+        // সহজেই multi-session-এ upgrade করা যাবে।
+        $this->invoicesBySession = collect([
+            [
+                'session'  => $this->student->session,
+                'invoices' => $this->invoices,
+            ],
+        ]);
     }
 
     public function updatedSelectAll(bool $value): void

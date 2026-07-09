@@ -4,7 +4,7 @@
 
         <div class="mat-card-header header-pink-gradient">
             <h5 id="cardHeaderTitleAllsections">Fee Fine</h5>
-            <p id="cardHeaderSubtitle">Manage late fee fines for fee groups and fee items easily.</p>
+            <p id="cardHeaderSubtitle">Manage late fee fines for class fee setups easily.</p>
         </div>
 
         <div class="card-header border-0">
@@ -38,8 +38,8 @@
                     <thead>
                         <tr>
                             <th id="th-sl">SL</th>
-                            <th id="th-fee-group">Fee Group</th>
-                            <th id="th-fee-item">Fee Item</th>
+                            <th id="th-class">Class</th>
+                            <th id="th-fee-type">Fee Type</th>
                             <th id="th-fine-type">Fine Type</th>
                             <th id="th-fine-value">Fine Value</th>
                             <th id="th-frequency">Frequency</th>
@@ -51,8 +51,8 @@
                         @forelse($feeFines as $i => $fine)
                         <tr wire:key="fee-fine-{{ $fine->id }}">
                             <td class="text-muted">{{ $feeFines->firstItem() + $i }}</td>
-                            <td>{{ $fine->feeGroupItem->feeGroup->name ?? '—' }}</td>
-                            <td>{{ $fine->feeGroupItem->feeType->name ?? '—' }}</td>
+                            <td>{{ $fine->feeSetup->academicClass->name ?? '—' }}</td>
+                            <td>{{ $fine->feeSetup->feeType->name ?? '—' }}</td>
                             <td>
                                 <span class="badge {{ $fine->fine_type === 'fixed' ? 'badge-used' : 'badge-active' }}">
                                     {{ ucfirst($fine->fine_type) }}
@@ -132,31 +132,34 @@
                         <form wire:submit.prevent="save">
                             <div class="row g-3">
 
-                                {{-- Fee Group --}}
+                                {{-- Class --}}
                                 <div class="col-md-12">
-                                    <label class="form-label">Fee Group <span class="text-danger">*</span></label>
-                                    <select class="form-select @error('fee_group_id') is-invalid @enderror"
-                                            wire:model.live="fee_group_id">
-                                        <option value="">— Select Fee Group —</option>
-                                        @foreach($feeGroups as $group)
-                                            <option value="{{ $group->id }}">{{ $group->name }}</option>
+                                    <label class="form-label">Class <span class="text-danger">*</span></label>
+                                    <select class="form-select @error('class_id') is-invalid @enderror"
+                                            wire:model.live="class_id">
+                                        <option value="">— Select Class —</option>
+                                        @foreach($classes as $class)
+                                            <option value="{{ $class->id }}">{{ $class->name }}</option>
                                         @endforeach
                                     </select>
-                                    @error('fee_group_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    @error('class_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
-                                {{-- Fee Item --}}
+                                {{-- Fee Setup --}}
                                 <div class="col-md-12">
-                                    <label class="form-label">Fee Item <span class="text-danger">*</span></label>
-                                    <select class="form-select @error('fee_group_item_id') is-invalid @enderror"
-                                            wire:model.live="fee_group_item_id"
-                                            @if(!$fee_group_id) disabled @endif>
-                                        <option value="">— Select Fee Item —</option>
-                                        @foreach($groupItems as $gItem)
-                                            <option value="{{ $gItem['id'] }}">{{ $gItem['fee_type']['name'] ?? '—' }}</option>
+                                    <label class="form-label">Fee Setup <span class="text-danger">*</span></label>
+                                    <select class="form-select @error('fee_setup_id') is-invalid @enderror"
+                                            wire:model.live="fee_setup_id"
+                                            @if(!$class_id) disabled @endif>
+                                        <option value="">— Select Fee Setup —</option>
+                                        @foreach($feeSetups as $setup)
+                                            <option value="{{ $setup['id'] }}">
+                                                {{ $setup['fee_type']['name'] ?? '—' }}
+                                                (৳{{ number_format($setup['amount'], 0) }} / {{ ucfirst($setup['frequency']) }})
+                                            </option>
                                         @endforeach
                                     </select>
-                                    @error('fee_group_item_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    @error('fee_setup_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 {{-- Fine Type --}}
@@ -209,15 +212,15 @@
         </div>
     @endif
 
-    {{-- ===== VIEW MODAL (redesigned) ===== --}}
+    {{-- ===== VIEW MODAL ===== --}}
     @if($showViewModal && $viewFine)
         <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.5);">
             <div class="modal-dialog modal-dialog-scrollable">
                 <div class="modal-content fine-view-modal">
                     <div class="modal-header border-0 pb-0">
                         <div class="fine-view-header">
-                            <h5 class="modal-title mb-1">{{ $viewFine->feeGroupItem->feeType->name ?? '—' }}</h5>
-                            <span class="text-muted small">{{ $viewFine->feeGroupItem->feeGroup->name ?? '—' }}</span>
+                            <h5 class="modal-title mb-1">{{ $viewFine->feeSetup->feeType->name ?? '—' }}</h5>
+                            <span class="text-muted small">{{ $viewFine->feeSetup->academicClass->name ?? '—' }}</span>
                         </div>
                         <button type="button" class="btn-close" wire:click="$set('showViewModal',false)"></button>
                     </div>

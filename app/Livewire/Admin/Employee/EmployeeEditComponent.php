@@ -96,7 +96,7 @@ class EmployeeEditComponent extends Component
     {
         return [
             'role' => 'required',
-            // 'joining_date' => 'required|date',
+            'joining_date' => 'required|date',
             'designation_id' => 'required|exists:employee_designations,id',
             'department_id' => 'required|exists:employee_departments,id',
 

@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('events', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
+            $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
             $table->string('title');
             $table->boolean('is_holiday')->default(false);
-            $table->string('type')->nullable(); //exam, notice, event etc.
+            $table->foreignId('event_type_id')->nullable()->constrained()->nullOnDelete();
             $table->enum('audience', ['everyone', 'class', 'section'])->default('everyone');
             $table->date('date_from');
             $table->date('date_to')->nullable();

@@ -5,11 +5,14 @@ namespace App\Livewire\Admin\Homework;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use App\Models\Homework;
 use App\Models\AcademicClass;
 use App\Models\AcademicSection;
 use App\Models\AcademicSubject;
 use App\Models\AcademicClassAssign;
+use App\Models\Employee;
 
 class HomeworkAddComponent extends Component
 {
@@ -18,6 +21,7 @@ class HomeworkAddComponent extends Component
     public $class_id;
     public $section_id;
     public $subject_id;
+    public $teacher_id;
 
     public $title;
     public $description;
@@ -80,7 +84,7 @@ class HomeworkAddComponent extends Component
         $this->loadSubjects($this->class_id, $sectionId);
     }
 
-   protected function loadSubjects($class_id, $section_id = null): void
+    protected function loadSubjects($class_id, $section_id = null): void
     {
         $query = AcademicClassAssign::where('class_id', $class_id);
 
@@ -90,7 +94,6 @@ class HomeworkAddComponent extends Component
             $query->whereNull('section_id');
         }
 
-        // ✅ Ekhon subjects asbe details -> subject relation theke
         $assign = $query->with('details.subject')->first();
 
         if ($assign && $assign->details->isNotEmpty()) {
@@ -109,10 +112,35 @@ class HomeworkAddComponent extends Component
         }
     }
 
+    /**
+     * Resolve the currently valid subject_id list for the selected class/section.
+     * Used both for rendering and for tamper-proof server-side validation.
+     */
+    protected function validSubjectIdsForSelection(): array
+    {
+        if (!$this->class_id) {
+            return [];
+        }
+
+        $sectionId = ($this->section_id && $this->section_id !== 'all') ? $this->section_id : null;
+
+        $query = AcademicClassAssign::where('class_id', $this->class_id);
+
+        if ($sectionId) {
+            $query->where('section_id', $sectionId);
+        } else {
+            $query->whereNull('section_id');
+        }
+
+        $assign = $query->with('details')->first();
+
+        return $assign ? $assign->details->pluck('subject_id')->toArray() : [];
+    }
+
     public function resetForm(): void
     {
         $this->reset([
-            'class_id', 'section_id', 'subject_id',
+            'class_id', 'section_id', 'subject_id', 'teacher_id',
             'title', 'description',
             'homework_date', 'submission_date',
             'published_later', 'schedule_date',
@@ -128,7 +156,16 @@ class HomeworkAddComponent extends Component
         $this->validate([
             'class_id'        => 'required|exists:academic_classes,id',
             'section_id'      => 'nullable',
-            'subject_id'      => 'required|exists:academic_subjects,id',
+            'subject_id'      => [
+                'required',
+                'exists:academic_subjects,id',
+                function ($attribute, $value, $fail) {
+                    if (!in_array($value, $this->validSubjectIdsForSelection())) {
+                        $fail('Selected subject is not assigned to the selected class/section.');
+                    }
+                },
+            ],
+            'teacher_id'      => 'nullable|exists:employees,id',
             'title'           => 'required|string|max:255',
             'description'     => 'required|string',
             'homework_date'   => 'required|date',
@@ -140,7 +177,10 @@ class HomeworkAddComponent extends Component
             'status'          => ['required', Rule::in(['draft', 'published', 'closed'])],
         ]);
 
+        $attachmentPath = null;
+
         try {
+            // File upload happens outside the DB transaction (storage isn't transactional).
             $attachmentPath = $this->attachment
                 ? $this->attachment->store('homeworks', 'public')
                 : null;
@@ -149,25 +189,39 @@ class HomeworkAddComponent extends Component
                 ? $this->section_id
                 : null;
 
-            Homework::create([
-                'class_id'        => $this->class_id,
-                'section_id'      => $sectionId,
-                'subject_id'      => $this->subject_id,
-                'title'           => $this->title,
-                'description'     => $this->description,
-                'homework_date'   => $this->homework_date,
-                'submission_date' => $this->submission_date,
-                'published_later' => $this->published_later,
-                'schedule_date'   => $this->schedule_date,
-                'attachment'      => $attachmentPath,
-                'send_sms'        => $this->send_sms,
-                'status'          => $this->status,
-            ]);
+            $homework = DB::transaction(function () use ($sectionId, $attachmentPath) {
+                $homework = Homework::create([
+                    'class_id'        => $this->class_id,
+                    'section_id'      => $sectionId,
+                    'subject_id'      => $this->subject_id,
+                    'teacher_id'      => $this->teacher_id,
+                    'title'           => $this->title,
+                    'description'     => $this->description,
+                    'homework_date'   => $this->homework_date,
+                    'submission_date' => $this->submission_date,
+                    'published_later' => $this->published_later,
+                    'schedule_date'   => $this->schedule_date,
+                    'attachment'      => $attachmentPath,
+                    'send_sms'        => $this->send_sms,
+                    'status'          => $this->status,
+                ]);
+
+                activity()
+                    ->performedOn($homework)
+                    ->log('Homework "' . $homework->title . '" created');
+
+                return $homework;
+            });
 
             $this->dispatch('toast', type: 'success', message: 'Homework created successfully!');
             $this->resetForm();
 
         } catch (\Exception $e) {
+            // Roll back the uploaded file if DB insert failed, to avoid orphan files.
+            if ($attachmentPath) {
+                Storage::disk('public')->delete($attachmentPath);
+            }
+
             $this->dispatch('toast', type: 'error', message: 'Creation failed: ' . $e->getMessage());
         }
     }
@@ -178,8 +232,11 @@ class HomeworkAddComponent extends Component
             ->orderBy('name')
             ->get();
 
+        $teachers = Employee::orderBy('name')->get(['id', 'name']);
+
         return view('livewire.admin.homework.homework-add-component')
             ->with('classes', $classes)
+            ->with('teachers', $teachers)
             ->layout('layouts.admin.app', [
                 'title' => 'Create Homework | ' . institution()->name,
             ]);

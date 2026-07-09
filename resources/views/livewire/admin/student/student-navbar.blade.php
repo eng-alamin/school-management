@@ -19,7 +19,7 @@
                     </div>
                     <div class="d-flex flex-wrap gap-3" style="font-size:.88rem;">
                         <a href="#" class="text-muted text-decoration-none d-flex align-items-center gap-1">
-                            <span class="material-icons-round fs-6">dashboard</span>{{ $student->register_no }}</a>
+                            <span class="material-icons-round fs-6">dashboard</span>{{ $student->registration_no }}</a>
                         <a href="#" class="text-muted text-decoration-none d-flex align-items-center gap-1">
                             <span class="material-icons-round fs-6">calendar_today</span>Admitted: {{ \Carbon\Carbon::parse($student->admission_date)->format('d M Y') }}</a>
                         <a href="#" class="text-muted text-decoration-none d-flex align-items-center gap-1">

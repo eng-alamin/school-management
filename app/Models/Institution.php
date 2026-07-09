@@ -52,4 +52,10 @@ class Institution extends Model
     {
         return $this->hasOne(User::class, 'institution_id')->where('role', 'admin');
     }
+
+   public function currentSession()
+    {
+        return $this->hasOne(AcademicSession::class)->where('is_current', true);
+    }
+
 }

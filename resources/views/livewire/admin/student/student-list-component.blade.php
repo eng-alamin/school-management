@@ -103,13 +103,13 @@
                                 <div class="d-flex align-items-center gap-2">
                                     <img src="{{ $student->photo ? asset('storage/' . $student->photo) : asset('assets/img/boy.jpg') }}"
                                         style="width:36px;height:36px;border-radius:8px;object-fit:cover;" alt="">
-                                    <span class="fw-500">{{ $student->name }}</span>
+                                    <span class="fw-500">{{ $student->name }} <br> {{ $student->student_id }}</span>
                                 </div>
                             </td>
                             <td>{{ $student->class?->name ?? '—' }}</td>
                             <td>{{ $student->section?->name ?? '—' }}</td>
                             <td>{{ $student->gender ?? '—' }}</td>
-                            <td>{{ $student->register_no }}</td>
+                            <td>{{ $student->registration_no }}</td>
                             <td>{{ $student->roll_no ?? '—' }}</td>
                             <td>{{ $student->guardians->first()?->name ?? '—' }}</td>
                             <td class="no-print">
@@ -211,14 +211,7 @@
 
 @push('styles')
 <style>
-    :root { --primary: rgba(33,37,41); --primary-light: rgba(239,84,84,.12); }
-    .card { border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
-    .card-header { background: #fff; border-bottom: 1px solid var(--border); border-radius: 12px 12px 0 0 !important; padding: 16px 20px; }
-    .form-select { border-radius: 8px; border: 1px solid var(--border); font-size: .875rem; }
-    .table th { font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); }
-    .table td { vertical-align: middle; font-size: .875rem; }
-
-    @@media print {
+    @media print {
         .no-print, .card-header, .card-footer { display: none !important; }
         .card { box-shadow: none; border: none; }
     }

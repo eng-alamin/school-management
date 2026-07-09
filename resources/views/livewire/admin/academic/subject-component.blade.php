@@ -26,6 +26,19 @@
                     </div>
                 @endif
 
+                <a href="{{ route('admin.academic.classes') }}" class="btn-outline">
+                    <span class="material-icons-round" style="font-size:16px">flight_class</span><span>Class</span>
+                </a>
+                <a href="{{ route('admin.academic.sections') }}" class="btn-outline">
+                    <span class="material-icons-round" style="font-size:16px">border_inner</span><span>Section</span>
+                </a>
+                <a href="{{ route('admin.academic.subjects') }}" class="btn-outline bg-dark text-white">
+                    <span class="material-icons-round" style="font-size:16px">subject</span><span>Subjects</span>
+                </a>
+                <a href="{{ route('admin.academic.groups') }}" class="btn-outline">
+                    <span class="material-icons-round" style="font-size:16px">group</span><span>Group</span>
+                </a>
+
                 <button class="btn-outline bg-dark text-white" wire:click="openCreate">
                     <span class="material-icons-round">add</span> <span id="newSubjectBtn">New Subject</span>
                 </button>

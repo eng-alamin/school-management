@@ -27,17 +27,14 @@
                 <div class="col-md-6">
                     <div class="input-group input-group-outline" wire:ignore>
                         <label class="form-label">Type <span class="req">*</span></label>
-                        <select wire:model="type" class="form-select">
+                        <select wire:model="event_type_id" class="form-select">
                             <option value="">Select</option>
-                            <option value="Independent Day">Independent Day</option>
-                            <option value="Sports Day">Sports Day</option>
-                            <option value="Cultural Program">Cultural Program</option>
-                            <option value="Exam">Exam</option>
-                            <option value="Holiday">Holiday</option>
-                            <option value="Other">Other</option>
+                            @foreach($eventTypes as $eventType)
+                                <option value="{{ $eventType->id }}">{{ $eventType->name }}</option>
+                            @endforeach
                         </select>
                     </div>
-                    @error('type') <span class="text-danger">{{ $message }}</span> @enderror
+                    @error('event_type_id') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
 
                 <!-- Audience -->
@@ -46,16 +43,16 @@
                         <label class="form-label">Audience <span class="req">*</span></label>
                         <select wire:model.live="audience" class="form-select">
                             <option value="">Select</option>
-                            <option value="Everybody">Everybody</option>
-                            <option value="Selected Class">Selected Class</option>
-                            <option value="Selected Section">Selected Section</option>
+                            <option value="everyone">Everybody</option>
+                            <option value="class">Selected Class</option>
+                            <option value="section">Selected Section</option>
                         </select>
                     </div>
                     @error('audience') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
 
                 <!-- Selected Class -->
-                @if($audience === 'Selected Class')
+                @if($audience === 'class')
                     <div class="col-md-12">
                         <div class="input-group input-group-outline" wire:ignore>
                             <label class="form-label">Class <span class="req">*</span></label>
@@ -73,13 +70,17 @@
                     </div>
                 @endif
 
-                <!-- Selected Section -->
-                @if($audience === 'Selected Section')
+                <!--
+                    BUG FIX: uses $classesWithSections (built from
+                    academic_class_assigns, institution-scoped) instead of
+                    $classes->sections.
+                -->
+                @if($audience === 'section')
                     <div class="col-md-12">
                         <div class="input-group input-group-outline" wire:ignore>
                             <label class="form-label">Section <span class="req">*</span></label>
                             <select class="form-select" id="sectionMultiSelect" multiple>
-                                @foreach($classes as $class)
+                                @foreach($classesWithSections as $class)
                                     <optgroup label="{{ $class->name }}">
                                         @foreach($class->sections as $section)
                                             <option value="{{ $class->id }}_{{ $section->id }}"
@@ -104,7 +105,8 @@
                     <div class="input-group input-group-outline" wire:ignore>
                         <label class="form-label">Date From <span class="req">*</span></label>
                         <input type="date"
-                            wire:model.live="date_from"
+                            wire:model="date_from"
+                            data-dp-value="{{ $date_from }}"
                             class="form-control">
                     </div>
                     @error('date_from') <span class="text-danger">{{ $message }}</span> @enderror
@@ -115,7 +117,8 @@
                     <div class="input-group input-group-outline" wire:ignore>
                         <label class="form-label">Date To</label>
                         <input type="date"
-                            wire:model.live="date_to"
+                            wire:model="date_to"
+                            data-dp-value="{{ $date_to }}"
                             class="form-control">
                     </div>
                     @error('date_to') <span class="text-danger">{{ $message }}</span> @enderror
@@ -191,7 +194,7 @@
                     wire:loading.attr="disabled"
                     wire:target="update">
 
-                <span wire:loading.remove wire:target="update">
+                <span wire:loading.remove wire:target="update" style="display: inline-flex;align-items: center;gap: 6px">
                     <span class="material-icons-round">save</span>
                     Update
                 </span>
@@ -211,21 +214,18 @@
 
 
 @push('scripts')
-    <script src="/assets/js/datepicker.js"></script>
-
     <script>
         document.addEventListener('livewire:initialized', () => {
 
             setTimeout(() => initAllFields(), 100);
 
             Livewire.hook('morph.updated', ({ el }) => {
-                setTimeout(() => initAllFields(), 50);
-                initMultiSelects();
+                setTimeout(() => initAllFields(), 0);
             });
 
             function initAllFields() {
 
-                // ── 1. Text/Textarea is-filled ──
+                // ── 1. Text/Textarea/Number is-filled ──
                 document.querySelectorAll('.input-group-outline input, .input-group-outline textarea').forEach(function(input) {
                     var group = input.closest('.input-group');
                     if (!group) return;
@@ -275,21 +275,27 @@
                 });
 
                 // ── 4. Datepicker ──
-                document.querySelectorAll('.input-group-outline input[type="date"]').forEach(function(input) {
-                    if (input.dataset.dpInit === '1') return;
-                    input.dataset.dpInit = '1';
-                    input.addEventListener('change', function() {
-                        input.dispatchEvent(new Event('input', { bubbles: true }));
-                    });
-                    if (typeof buildDatepicker === 'function') {
-                        buildDatepicker(input);
+                Livewire.on('date-updated', function (event) {
+                    var input = document.querySelector('.input-group-outline input[type="date"]');
+                    if (!input) return;
+                    var newDate = event.date || '';
+                    if (newDate) {
+                        input.value = newDate;
+                        input.dataset.dpValue = newDate;
+                        if (input._dpTriggerSync) {
+                            input._dpTriggerSync(newDate);
+                        }
                     }
                 });
 
+                // ── 5. Multi-select -> Livewire sync ──
+                // BUG FIX (critical): this whole block was missing, so
+                // selecting classes/sections never reached the Livewire
+                // component, causing "selected classes/sections field is
+                // required" validation errors and no data being updated.
                 initMultiSelects();
             }
 
-            // ── 5. Multi-select → Livewire sync ──
             function initMultiSelects() {
 
                 // Selected Class

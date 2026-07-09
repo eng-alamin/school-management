@@ -1,16 +1,15 @@
-{{-- resources/views/livewire/admin/mailbox/important.blade.php --}}
+{{-- resources/views/livewire/admin/mailbox/important-component.blade.php --}}
 <div class="mailbox-wrapper">
     @include('livewire.admin.mailbox.partials.sidebar')
 
     <div class="mailbox-content">
         @if($viewing)
-            {{-- ══ MESSAGE VIEW ══════════════════════════════════════════════ --}}
             <div class="message-view">
                 <div class="message-view-header">
-                    <button wire:click="backToList" class="btn btn-light btn-sm">
+                    <button wire:click="backToList" class="btn btn-light btn-sm rounded-pill">
                         <i class="fas fa-arrow-left me-1"></i> Back
                     </button>
-                    <button wire:click="unmarkImportant({{ $viewing->id }})" class="btn btn-sm btn-warning">
+                    <button wire:click="unmarkImportant({{ $viewing->id }})" class="btn btn-sm btn-warning rounded-pill">
                         <i class="fas fa-star me-1"></i> Remove from Important
                     </button>
                 </div>
@@ -44,7 +43,6 @@
             </div>
 
         @else
-            {{-- ══ MESSAGE LIST ══════════════════════════════════════════════ --}}
             <div class="mailbox-header">
                 <h4><i class="fas fa-star me-2 text-warning"></i>Important</h4>
                 <div class="search-box">
@@ -86,9 +84,12 @@
                                 <div class="msg-excerpt">{{ $message->excerpt }}</div>
                             </div>
                             <div class="msg-actions">
-                                <i class="fas fa-star text-warning"
-                                   wire:click.stop="unmarkImportant({{ $message->id }})"
-                                   title="Remove from important"></i>
+                                <button type="button"
+                                        class="msg-icon-btn text-warning"
+                                        wire:click.stop="unmarkImportant({{ $message->id }})"
+                                        title="Remove from important">
+                                    <i class="fas fa-star"></i>
+                                </button>
                             </div>
                         </div>
                     @endforeach
@@ -101,12 +102,3 @@
 </div>
 
 @include('livewire.admin.mailbox.partials.styles')
-@push('styles')
-    <style>
-        body.dark-mode .form-control{
-   background: #ffffff !important;
-    border-color: rgb(30 30 30 / 12%) !important;
-    color: #e2e8f0 !important;
-}
-    </style>
-@endpush

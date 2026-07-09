@@ -1,21 +1,20 @@
-{{-- resources/views/livewire/admin/mailbox/trash.blade.php --}}
+{{-- resources/views/livewire/admin/mailbox/trash-component.blade.php --}}
 <div class="mailbox-wrapper">
     @include('livewire.admin.mailbox.partials.sidebar')
 
     <div class="mailbox-content">
         @if($viewing)
-            {{-- ══ MESSAGE VIEW ══════════════════════════════════════════════ --}}
             <div class="message-view">
                 <div class="message-view-header">
-                    <button wire:click="backToList" class="btn btn-light btn-sm">
+                    <button wire:click="backToList" class="btn btn-light btn-sm rounded-pill">
                         <i class="fas fa-arrow-left me-1"></i> Back
                     </button>
                     <div class="message-view-actions">
-                        <button wire:click="restoreMessage({{ $viewing->id }})" class="btn btn-sm btn-success">
+                        <button wire:click="restoreMessage({{ $viewing->id }})" class="btn btn-sm btn-success rounded-pill">
                             <i class="fas fa-undo me-1"></i> Restore
                         </button>
                         <button wire:click="permanentDelete({{ $viewing->id }})"
-                                class="btn btn-sm btn-danger"
+                                class="btn btn-sm btn-danger rounded-pill"
                                 onclick="return confirm('This will permanently delete the message. Are you sure?')">
                             <i class="fas fa-times-circle me-1"></i> Delete Forever
                         </button>
@@ -23,7 +22,7 @@
                 </div>
 
                 <div class="message-view-body">
-                    <div class="trash-notice">
+                    <div class="trash-notice mb-3">
                         <i class="fas fa-exclamation-triangle me-2"></i>
                         This message is in the trash. Restore it or permanently delete it.
                     </div>
@@ -53,7 +52,6 @@
             </div>
 
         @else
-            {{-- ══ MESSAGE LIST ══════════════════════════════════════════════ --}}
             <div class="mailbox-header">
                 <h4><i class="fas fa-trash me-2 text-danger"></i>Trash</h4>
                 <div class="d-flex align-items-center gap-3">
@@ -65,11 +63,11 @@
                         @if($confirmEmpty)
                             <div class="d-flex align-items-center gap-2">
                                 <span class="text-danger small fw-semibold">Sure?</span>
-                                <button wire:click="emptyTrash" class="btn btn-danger btn-sm">Yes, Empty</button>
-                                <button wire:click="$set('confirmEmpty', false)" class="btn btn-light btn-sm">Cancel</button>
+                                <button wire:click="emptyTrash" class="btn btn-danger btn-sm rounded-pill">Yes, Empty</button>
+                                <button wire:click="$set('confirmEmpty', false)" class="btn btn-light btn-sm rounded-pill">Cancel</button>
                             </div>
                         @else
-                            <button wire:click="$set('confirmEmpty', true)" class="btn btn-outline-danger btn-sm">
+                            <button wire:click="$set('confirmEmpty', true)" class="btn btn-outline-danger btn-sm rounded-pill">
                                 <i class="fas fa-trash me-1"></i> Empty Trash
                             </button>
                         @endif
@@ -113,14 +111,20 @@
                                 <div class="msg-subject">{{ $message->subject }}</div>
                                 <div class="msg-excerpt">{{ $message->excerpt }}</div>
                             </div>
-                            <div class="msg-actions" onclick.stop>
-                                <i class="fas fa-undo text-success me-2"
-                                   wire:click.stop="restoreMessage({{ $message->id }})"
-                                   title="Restore"></i>
-                                <i class="fas fa-times-circle text-danger"
-                                   wire:click.stop="permanentDelete({{ $message->id }})"
-                                   onclick="return confirm('Permanently delete?')"
-                                   title="Delete forever"></i>
+                            <div class="msg-actions">
+                                <button type="button"
+                                        class="msg-icon-btn text-success"
+                                        wire:click.stop="restoreMessage({{ $message->id }})"
+                                        title="Restore">
+                                    <i class="fas fa-undo"></i>
+                                </button>
+                                <button type="button"
+                                        class="msg-icon-btn text-danger"
+                                        wire:click.stop="permanentDelete({{ $message->id }})"
+                                        onclick="return confirm('Permanently delete?')"
+                                        title="Delete forever">
+                                    <i class="fas fa-times-circle"></i>
+                                </button>
                             </div>
                         </div>
                     @endforeach
@@ -133,12 +137,3 @@
 </div>
 
 @include('livewire.admin.mailbox.partials.styles')
-@push('styles')
-    <style>
-        body.dark-mode .form-control{
-   background: #ffffff !important;
-    border-color: rgb(30 30 30 / 12%) !important;
-    color: #e2e8f0 !important;
-}
-    </style>
-@endpush

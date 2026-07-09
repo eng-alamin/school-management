@@ -8,9 +8,10 @@ use App\Traits\BelongsToInstitution;
 class Event extends Model
 {
     use BelongsToInstitution;
+
     protected $guarded = [];
 
-    public function type()
+    public function eventType()
     {
         return $this->belongsTo(EventType::class);
     }

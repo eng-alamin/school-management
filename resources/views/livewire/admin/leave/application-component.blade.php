@@ -43,9 +43,11 @@
                     </div>
                 @endif
 
-                
-                <a href="{{ route('admin.leave.categories') }}" target="_blank" class="btn-sm btn-outline" wire:click="openCreate">
-                    <span class="material-icons-round">category</span>
+                {{-- এই বাটনটা শুধু নতুন ট্যাবে Category ম্যানেজমেন্ট পেজে নিয়ে যাবে —
+                     আগে এর সাথে wire:click="openCreate" থাকায় একই সাথে এই পেজের
+                     Leave Application Create modal-ও খুলে যেত, যা ভুল ছিল। --}}
+                <a href="{{ route('admin.leave.categories') }}" target="_blank" class="btn-md btn-outline">
+                    <span class="material-icons-round fs-5 text-muted">assignment</span>
                     <span>Add Category</span>
                 </a>
 
@@ -99,7 +101,7 @@
                             ];
                             $s = $statusMap[$app->status] ?? ['label' => ucfirst($app->status), 'color' => '#6c757d'];
                         @endphp
-                        <tr>
+                        <tr wire:key="leave-application-{{ $app->id }}">
                             <td class="text-muted">{{ $applications->firstItem() + $i }}</td>
                             <td>{{ ucfirst(optional($applicant)->role ?? $roleLabel) }}</td>
                             <td>

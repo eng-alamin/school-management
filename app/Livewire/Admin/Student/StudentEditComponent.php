@@ -26,7 +26,7 @@ class StudentEditComponent extends Component
     public $guardian;
 
     public $session_id;
-    public $register_no;
+    public $registration_no;
     public $roll_no;
     public $admission_date;
     public $class_id;
@@ -77,7 +77,7 @@ class StudentEditComponent extends Component
 
         // Academic
         $this->session_id     = $this->student->session_id;
-        $this->register_no    = $this->student->register_no;
+        $this->registration_no    = $this->student->registration_no;
         $this->roll_no        = $this->student->roll_no;
         $this->admission_date = $this->student->admission_date;
         $this->class_id       = $this->student->class_id;
@@ -113,18 +113,26 @@ class StudentEditComponent extends Component
         $this->qualification   = $this->student->qualification;
         $this->remarks         = $this->student->remarks;
 
-        $this->dispatch('date-updated', date: $this->admission_date);
-        $this->dispatch('date-updated', date: $this->dob);
+        $this->dispatch('date-updated', field: 'admission_date', date: $this->admission_date);
+        $this->dispatch('date-updated', field: 'dob', date: $this->dob);
     }
 
     public function rules()
     {
         return [
             'session_id'  => 'required',
-            'register_no' => ['nullable', Rule::unique('students', 'register_no')->ignore($this->studentId)],
+            'registration_no' => ['nullable', Rule::unique('students', 'registration_no')->ignore($this->studentId)],
             'class_id'    => 'required',
 
             'name'        => 'required',
+            'gender'      => 'nullable|in:male,female,other',
+            'blood_group' => 'nullable|in:A+,A-,B+,B-,AB+,AB-,O+,O-',
+            'dob'         => 'nullable|date|before:today',
+            'religion'    => 'nullable|in:muslim,hindu,christian,buddhist',
+            'mobile'      => 'nullable|digits_between:10,15',
+            'email'       => ['nullable', 'email', Rule::unique('users', 'email')->ignore($this->userId)],
+
+            'admission_date' => 'required|date',
 
             'student_photo_upload'       => 'nullable',
 
@@ -134,7 +142,8 @@ class StudentEditComponent extends Component
             'guardian_id'       => $this->guardian_exists ? 'required' : 'nullable',
             'guardian_name'     => !$this->guardian_exists ? 'required' : 'nullable',
             'guardian_relation' => !$this->guardian_exists ? 'required' : 'nullable',
-            'guardian_mobile'   => !$this->guardian_exists ? 'required' : 'nullable',
+            'guardian_mobile'   => !$this->guardian_exists ? 'required|digits_between:10,15' : 'nullable|digits_between:10,15',
+            'guardian_email'    => !$this->guardian_exists ? 'required|email|unique:users,email' : 'nullable|email',
 
             'guardian_username' => !$this->guardian_exists ? ['required', Rule::unique('users', 'username')->ignore($this->userId)] : 'nullable',
 
@@ -142,9 +151,16 @@ class StudentEditComponent extends Component
         ];
     }
 
+    /**
+     * BUG FIX: Age শুধু event dispatch হতো, ValidationException throw hoto na —
+     * mane validation fail hole o update() logic egiye jete parto. Ekhon parent
+     * exception properly throw kora hocche, tai validation shothikbhabe block korbe.
+     */
     protected function failedValidation($validator)
     {
         $this->dispatch('validation-failed');
+
+        throw new ValidationException($validator);
     }
 
     public function updated($propertyName)
@@ -179,7 +195,7 @@ class StudentEditComponent extends Component
                 'user_id'          => $user->id,
 
                 'session_id'       => $this->session_id,
-                'register_no'      => $this->register_no,
+                'registration_no'      => $this->registration_no,
                 'roll_no'          => $this->roll_no,
                 'admission_date'   => $this->admission_date,
                 'class_id'         => $this->class_id,
@@ -222,12 +238,17 @@ class StudentEditComponent extends Component
                     ? $this->guardian_password
                     : '1234';
 
+                // BUG FIX: age ekhane 'institution_id' pathano hocchilo na, tai
+                // notun Guardian-er User account ta kono institution er sathe
+                // link e hocchilo na (multi-tenant scoping venge jeto).
                 $userGuardian = User::create([
+                    'institution_id' => auth()->user()->institution_id,
                     'role'     => 'parent',
                     'name'     => $this->guardian_name,
                     'username' => $this->guardian_username,
                     'email'    => $this->guardian_email,
                     'password' => $guardianPassword,
+                    'is_verified' => true,
                 ]);
 
                 $guardianData = [
@@ -259,8 +280,8 @@ class StudentEditComponent extends Component
 
             DB::commit();
 
-            $this->dispatch('date-updated', date: $this->admission_date);
-            $this->dispatch('date-updated', date: $this->dob);
+            $this->dispatch('date-updated', field: 'admission_date', date: $this->admission_date);
+            $this->dispatch('date-updated', field: 'dob', date: $this->dob);
 
             $this->dispatch('toast', type: 'success', message: 'Student updated successfully!');
 
@@ -279,6 +300,7 @@ class StudentEditComponent extends Component
         $classes    = AcademicClass::orderBy('id')->get();
         $sections   = AcademicSection::orderBy('name')->get();
         $groups     = AcademicGroup::orderBy('name')->get();
+
         $guardians  = Guardian::orderBy('name')->get();
 
         return view('livewire.admin.student.student-edit-component')

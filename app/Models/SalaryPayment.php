@@ -15,16 +15,17 @@ class SalaryPayment extends Model
     protected $guarded = [];
 
     protected $casts = [
-        'month'           => 'date',
-        'payment_date'    => 'date',
-        'basic_salary'    => 'float',
-        'total_allowance' => 'float',
-        'total_deduction' => 'float',
-        'overtime_hour'   => 'float',
-        'overtime_rate'   => 'float',
-        'overtime_amount' => 'float',
-        'gross_salary'    => 'float',
-        'net_salary'      => 'float',
+        'month'             => 'date',
+        'payment_date'      => 'date',
+        'basic_salary'      => 'float',
+        'total_allowance'   => 'float',
+        'total_deduction'   => 'float',
+        'advance_deduction' => 'float',
+        'overtime_hour'     => 'float',
+        'overtime_rate'     => 'float',
+        'overtime_amount'   => 'float',
+        'gross_salary'      => 'float',
+        'net_salary'        => 'float',
     ];
 
     // ── Who this payment belongs to ───────────────────────────────
@@ -49,6 +50,12 @@ class SalaryPayment extends Model
     public function paidBy()
     {
         return $this->belongsTo(User::class, 'paid_by');
+    }
+
+    // ── Advance repayment made through this payment ────────────────
+    public function advanceRepayment()
+    {
+        return $this->hasOne(SalaryAdvanceRepayment::class);
     }
 
     // ── Scopes ────────────────────────────────────────────────────

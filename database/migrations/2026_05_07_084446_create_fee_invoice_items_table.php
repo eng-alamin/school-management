@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignId('fee_setup_id')->nullable()->constrained()->nullOnDelete();
             $table->decimal('base_amount', 15, 2);
             $table->decimal('fine_amount', 15, 2)->default(0);
+            $table->timestamp('last_fine_charged_at')->nullable();
             $table->decimal('discount_amount', 15, 2)->default(0);
             $table->decimal('total_amount', 15, 2);
             $table->timestamps();

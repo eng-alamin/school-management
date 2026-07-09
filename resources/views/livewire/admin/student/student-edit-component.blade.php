@@ -1,4 +1,5 @@
-<div class="mat-card" style="padding-top:28px">
+<div>
+    <div class="card">
 
         <!-- Floating Header -->
         <div class="mat-card-header header-pink-gradient">
@@ -25,9 +26,9 @@
             </div>
             <div class="col-md-3">
                 <div class="input-group input-group-outline">
-                    <label class="form-label">Register No</label>
-                    <input type="text" wire:model="register_no" class="form-control" value="ISC-0001" onfocus="focused(this)" onfocusout="defocused(this)">
-                     @error('register_no') <span class="text-danger">{{ $message }}</span> @enderror
+                    <label class="form-label">Registration No</label>
+                    <input type="text" wire:model="registration_no" class="form-control" onfocus="focused(this)" onfocusout="defocused(this)">
+                     @error('registration_no') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
             </div>
             <div class="col-md-3">
@@ -100,7 +101,7 @@
                     <div class="input-group input-group-outline" wire:ignore>
                         <label class="form-label">Gender</label>
                         <select wire:model="gender" class="form-select">
-                            <option value="male" selected>Male</option>
+                            <option value="male">Male</option>
                             <option value="female">Female</option>
                             <option value="other">Other</option>
                         </select>
@@ -147,12 +148,14 @@
                     <div class="input-group input-group-outline">
                         <label class="form-label">Mobile No</label>
                         <input type="tel" wire:model="mobile" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
+                        @error('mobile') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="input-group input-group-outline">
                     <label class="form-label">Email</label>
                     <input type="email" wire:model="email" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
+                    @error('email') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
                 </div>
                 <div class="col-md-12">
@@ -200,14 +203,14 @@
             <div class="col-md-6">
                 <div class="input-group input-group-outline">
                     <label class="form-label">Username <span class="req">*</span></label>
-                    <input type="text" wire:model="username" class="form-control" value="admin@ramom.com" onfocus="focused(this)" onfocusout="defocused(this)">
+                    <input type="text" wire:model="username" class="form-control" onfocus="focused(this)" onfocusout="defocused(this)">
                     @error('username') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="input-group input-group-outline">
                     <label class="form-label">Password</label>
-                    <input type="password" wire:model="password" class="form-control" value="1234" onfocus="focused(this)" onfocusout="defocused(this)">
+                    <input type="password" wire:model="password" class="form-control" placeholder="Leave blank to keep current password" onfocus="focused(this)" onfocusout="defocused(this)">
                     @error('password') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
             </div>
@@ -345,7 +348,7 @@
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
                         <label class="form-label">Password</label>
-                        <input type="password" wire:model="guardian_password" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
+                        <input type="password" wire:model="guardian_password" class="form-control" placeholder="Default: 1234" onfocus="focused(this)" onfocusout="defocused(this)">
                         @error('guardian_password') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
                 </div>
@@ -402,6 +405,7 @@
         </div>
 
     </div>
+</div>
 
 @push('scripts')
     <script>
@@ -465,10 +469,22 @@
                 });
 
                 // ── 4. Datepicker ──
+                // BUG FIX: age shudhu ".input-group-outline input[type=date]" diye query
+                // hoto, jeta shudhu PROTHOM matched date input (Admission Date) return
+                // korto. Fole "dob" er jonno dispatch kora event-o vulbhabe Admission
+                // Date input-ke target kore ditho. Ekhon PHP theke pathano "field"
+                // (wire:model attribute name) diye exact input খুঁজে বের করা হচ্ছে,
+                // tai Admission Date ar DOB dutai thikmoto আলাদাভাবে update hobe.
                 Livewire.on('date-updated', function (event) {
-                    var input = document.querySelector('.input-group-outline input[type="date"]');
+                    var data = Array.isArray(event) ? event[0] : event;
+                    if (!data || !data.field) return;
+
+                    var input = document.querySelector(
+                        '.input-group-outline input[type="date"][wire\\:model="' + data.field + '"]'
+                    );
                     if (!input) return;
-                    var newDate = event.date || '';
+
+                    var newDate = data.date || '';
                     if (newDate) {
                         input.value = newDate;
                         input.dataset.dpValue = newDate;

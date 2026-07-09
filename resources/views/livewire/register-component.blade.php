@@ -556,8 +556,8 @@
                                                     <option value="">Select Type</option>
                                                     <option value="school">School</option>
                                                     <option value="college">College</option>
+                                                    <option value="school-college">School & College</option>
                                                     <option value="madrasa">Madrasa</option>
-                                                    <option value="university">University</option>
                                                 </select>
                                                 @error('institution_type')
                                                     <div class="invalid-feedback">{{ $message }}</div>

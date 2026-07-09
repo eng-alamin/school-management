@@ -27,10 +27,6 @@ class FeeInvoiceComponent extends Component
 
     public array $availableSections = [];
 
-    // ── Delete Confirm ──
-    public bool $confirmDelete = false;
-    public ?int $deleteId      = null;
-
     public function updatingSearch(): void
     {
         $this->resetPage();
@@ -69,53 +65,6 @@ class FeeInvoiceComponent extends Component
         } else {
             $this->sortField = $field;
             $this->sortDir   = 'asc';
-        }
-    }
-
-    public function confirmDeleteRecord(int $id): void
-    {
-        $this->deleteId      = $id;
-        $this->confirmDelete = true;
-    }
-
-    // ── শুধু Invoice ডিলিট হবে — Items cascadeOnDelete দিয়ে অটো মুছবে ──
-    public function deleteRecord(): void
-    {
-        DB::beginTransaction();
-
-        try {
-            $invoices = FeeInvoice::where('student_id', $this->deleteId)->get();
-
-            if ($invoices->isEmpty()) {
-                DB::rollBack();
-                $this->confirmDelete = false;
-                $this->deleteId = null;
-                $this->dispatch('toast', type: 'warning', message: 'No invoice found.');
-                return;
-            }
-
-            $student = Student::find($this->deleteId);
-
-            FeeInvoice::where('student_id', $this->deleteId)->delete();
-
-            activity()
-                ->withProperties([
-                    'icon'           => 'delete',
-                    'type'           => 'delete',
-                    'institution_id' => institution()->id,
-                ])
-                ->log('Deleted ' . $invoices->count() . ' Fee Invoice(s) for Student: ' . ($student->name ?? $this->deleteId));
-
-            DB::commit();
-
-            $this->confirmDelete = false;
-            $this->deleteId      = null;
-
-            $this->dispatch('toast', type: 'success', message: 'All invoices deleted successfully!');
-
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            $this->dispatch('toast', type: 'error', message: 'Something went wrong!');
         }
     }
 

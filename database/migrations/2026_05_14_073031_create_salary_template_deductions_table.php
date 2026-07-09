@@ -13,11 +13,18 @@ return new class extends Migration
     {
         Schema::create('salary_template_deductions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
+ 
+            $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
             $table->foreignId('salary_template_id')->constrained()->cascadeOnDelete();
+ 
             $table->string('name');
-            $table->decimal('amount', 12, 2)->default(0);
+            $table->enum('type', ['fixed', 'percentage'])->default('fixed');
+            $table->decimal('amount', 12, 2)->default(0); // fixed amount OR percentage value
+ 
             $table->timestamps();
+ 
+            // Prevent duplicate deduction name within the same template
+            $table->unique(['salary_template_id', 'name']);
         });
     }
 

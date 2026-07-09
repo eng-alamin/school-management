@@ -1,21 +1,20 @@
-{{-- resources/views/livewire/admin/mailbox/sent.blade.php --}}
+{{-- resources/views/livewire/admin/mailbox/sent-component.blade.php --}}
 <div class="mailbox-wrapper">
     @include('livewire.admin.mailbox.partials.sidebar')
 
     <div class="mailbox-content">
         @if($viewing)
-            {{-- ══ MESSAGE VIEW ══════════════════════════════════════════════ --}}
             <div class="message-view">
                 <div class="message-view-header">
-                    <button wire:click="backToList" class="btn btn-light btn-sm">
+                    <button wire:click="backToList" class="btn btn-light btn-sm rounded-pill">
                         <i class="fas fa-arrow-left me-1"></i> Back
                     </button>
                     <div class="message-view-actions">
-                        <button wire:click="trashMessage({{ $viewing->id }})" class="btn btn-sm btn-outline-warning">
+                        <button wire:click="trashMessage({{ $viewing->id }})" class="btn btn-sm btn-outline-warning rounded-pill">
                             <i class="fas fa-trash me-1"></i> Move to Trash
                         </button>
                         <button wire:click="deleteMessage({{ $viewing->id }})"
-                                class="btn btn-sm btn-outline-danger"
+                                class="btn btn-sm btn-outline-danger rounded-pill"
                                 onclick="return confirm('Permanently delete this message?')">
                             <i class="fas fa-times-circle me-1"></i> Delete
                         </button>
@@ -45,7 +44,6 @@
             </div>
 
         @else
-            {{-- ══ MESSAGE LIST ══════════════════════════════════════════════ --}}
             <div class="mailbox-header">
                 <h4><i class="fas fa-paper-plane me-2"></i>Sent</h4>
                 <div class="search-box">
@@ -75,8 +73,13 @@
                                 <div class="msg-subject">{{ $message->subject }}</div>
                                 <div class="msg-excerpt">{{ $message->excerpt }}</div>
                             </div>
-                            <div class="msg-actions" onclick.stop>
-                                <i class="fas fa-trash text-danger" wire:click.stop="trashMessage({{ $message->id }})" title="Trash"></i>
+                            <div class="msg-actions">
+                                <button type="button"
+                                        class="msg-icon-btn text-danger"
+                                        wire:click.stop="trashMessage({{ $message->id }})"
+                                        title="Trash">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             </div>
                         </div>
                     @endforeach
@@ -89,12 +92,3 @@
 </div>
 
 @include('livewire.admin.mailbox.partials.styles')
-@push('styles')
-    <style>
-        body.dark-mode .form-control{
-   background: #ffffff !important;
-    border-color: rgb(30 30 30 / 12%) !important;
-    color: #e2e8f0 !important;
-}
-    </style>
-@endpush

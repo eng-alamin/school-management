@@ -28,6 +28,7 @@ class SystemSettingsComponent extends Component
     // Gateway
     public ?string $sms_gateway = null;
     public ?string $payment_gateway = null;
+    public bool $sms_enabled = false;
 
     // Register
     public ?string $register_type = null;
@@ -49,6 +50,7 @@ class SystemSettingsComponent extends Component
         'smtp_user'         => null,
         'smtp_pass'         => null,
         'sms_gateway'       => null,
+        'sms_enabled'       => 0,
         'payment_gateway'   => null,
         'register_type'     => 'free',
         'register_fee'      => 0,
@@ -70,6 +72,7 @@ class SystemSettingsComponent extends Component
 
         $this->sms_gateway     = setting('sms_gateway');
         $this->payment_gateway = setting('payment_gateway');
+        $this->sms_enabled = setting('sms_enabled') == '1';
 
         $this->register_type = setting('register_type');
         $this->register_fee  = setting('register_fee');
@@ -109,6 +112,7 @@ class SystemSettingsComponent extends Component
             'smtp_pass'        => $this->smtp_pass,
             'sms_gateway'      => $this->sms_gateway,
             'payment_gateway'  => $this->payment_gateway,
+            'sms_enabled'      => $this->sms_enabled,
             'register_type'    => $this->register_type,
             'register_fee'     => $this->register_fee,
             'maintenance_mode' => $this->maintenance_mode ? 1 : 0,

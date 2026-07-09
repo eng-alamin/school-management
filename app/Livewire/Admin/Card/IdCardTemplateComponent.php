@@ -6,7 +6,9 @@ use Livewire\Component;
 use App\Models\IdCardTemplate;
 use Livewire\WithPagination;
 use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Throwable;
 
 class IdCardTemplateComponent extends Component
 {
@@ -68,6 +70,7 @@ class IdCardTemplateComponent extends Component
     public function updatingSearch(): void { $this->resetPage(); }
     public function updatingFilterType(): void { $this->resetPage(); }
     public function updatingFilterStatus(): void { $this->resetPage(); }
+    public function updatingPerPage(): void { $this->resetPage(); }
 
     public function openCreate(): void
     {
@@ -79,12 +82,16 @@ class IdCardTemplateComponent extends Component
     public function openEdit(int $id): void
     {
         $record = IdCardTemplate::findOrFail($id);
+
+        $this->resetValidation();
+
         $this->editId = $id;
         $this->name = $record->name;
         $this->type = $record->type;
         $this->background_color = $record->background_color;
         $this->text_color = $record->text_color;
         $this->accent_color = $record->accent_color;
+        $this->logo = null;
         $this->existingLogo = $record->logo_path ?? '';
         $this->header_text = $record->header_text ?? '';
         $this->footer_text = $record->footer_text ?? '';
@@ -107,13 +114,14 @@ class IdCardTemplateComponent extends Component
     {
         $this->validate();
 
-        $logoPath = $this->existingLogo;
+        // Upload new logo first (outside transaction, since it's a filesystem op, not DB)
+        $newLogoPath = null;
         if ($this->logo) {
-            if ($logoPath) {
-                Storage::disk('public')->delete($logoPath);
-            }
-            $logoPath = $this->logo->store('templates/logos', 'public');
+            $newLogoPath = $this->logo->store('templates/logos', 'public');
         }
+
+        $oldLogoPath = $this->existingLogo;
+        $logoPath = $newLogoPath ?? $oldLogoPath;
 
         $data = [
             'name'             => $this->name,
@@ -132,16 +140,41 @@ class IdCardTemplateComponent extends Component
             'is_active'        => $this->is_active,
         ];
 
-        if ($this->editId) {
-            IdCardTemplate::findOrFail($this->editId)->update($data);
-            session()->flash('success', 'Template updated successfully!');
-        } else {
-            IdCardTemplate::create($data);
-            session()->flash('success', 'Template created successfully!');
+        DB::beginTransaction();
+        try {
+            if ($this->editId) {
+                $record = IdCardTemplate::findOrFail($this->editId);
+                $record->update($data);
+                activity()->performedOn($record)->log('ID card template updated');
+                $message = 'Template updated successfully!';
+            } else {
+                $record = IdCardTemplate::create($data);
+                activity()->performedOn($record)->log('ID card template created');
+                $message = 'Template created successfully!';
+            }
+
+            DB::commit();
+
+            // Only delete the old logo AFTER DB commit succeeds, and only if a new one replaced it.
+            if ($newLogoPath && $oldLogoPath) {
+                Storage::disk('public')->delete($oldLogoPath);
+            }
+        } catch (Throwable $e) {
+            DB::rollBack();
+
+            // Roll back the newly uploaded file since DB save failed.
+            if ($newLogoPath) {
+                Storage::disk('public')->delete($newLogoPath);
+            }
+
+            $this->dispatch('toast', type: 'error', message: 'Something went wrong. Template could not be saved.');
+            return;
         }
 
         $this->showModal = false;
         $this->resetForm();
+
+        $this->dispatch('toast', type: 'success', message: $message);
     }
 
     public function confirmDeleteRecord(int $id): void
@@ -153,20 +186,46 @@ class IdCardTemplateComponent extends Component
     public function deleteRecord(): void
     {
         $record = IdCardTemplate::findOrFail($this->deleteId);
-        if ($record->logo_path) {
-            Storage::disk('public')->delete($record->logo_path);
+        $logoPath = $record->logo_path;
+
+        DB::beginTransaction();
+        try {
+            activity()->performedOn($record)->log('ID card template deleted');
+            $record->delete();
+            DB::commit();
+
+            if ($logoPath) {
+                Storage::disk('public')->delete($logoPath);
+            }
+        } catch (Throwable $e) {
+            DB::rollBack();
+            $this->confirmDelete = false;
+            $this->deleteId = null;
+            $this->dispatch('toast', type: 'error', message: 'Template could not be deleted.');
+            return;
         }
-        $record->delete();
+
         $this->confirmDelete = false;
         $this->deleteId = null;
-        session()->flash('success', 'Template deleted successfully!');
+
+        $this->dispatch('toast', type: 'success', message: 'Template deleted successfully!');
     }
 
     public function toggleStatus(int $id): void
     {
-        $record = IdCardTemplate::findOrFail($id);
-        $record->update(['is_active' => !$record->is_active]);
-        session()->flash('success', 'Status updated!');
+        DB::beginTransaction();
+        try {
+            $record = IdCardTemplate::findOrFail($id);
+            $record->update(['is_active' => !$record->is_active]);
+            activity()->performedOn($record)->log('ID card template status toggled');
+            DB::commit();
+        } catch (Throwable $e) {
+            DB::rollBack();
+            $this->dispatch('toast', type: 'error', message: 'Status could not be updated.');
+            return;
+        }
+
+        $this->dispatch('toast', type: 'success', message: 'Status updated!');
     }
 
     private function resetForm(): void

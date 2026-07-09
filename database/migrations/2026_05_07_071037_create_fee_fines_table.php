@@ -14,14 +14,14 @@ return new class extends Migration
         Schema::create('fee_fines', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('fee_group_item_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('fee_setup_id')->constrained()->cascadeOnDelete();
             $table->enum('fine_type', ['fixed', 'percentage'])->default('fixed');
             $table->decimal('fine_value', 15, 2);
             $table->enum('late_fee_frequency', ['one_time','daily','weekly','monthly','yearly'])->default('one_time');
             $table->boolean('status')->default(true);
             $table->timestamps();
 
-            $table->unique(['institution_id', 'fee_group_item_id'], 'unique_fee_fine');
+            $table->unique(['institution_id', 'fee_setup_id'], 'unique_fee_fine');
         });
     }
 

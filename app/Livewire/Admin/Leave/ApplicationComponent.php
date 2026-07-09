@@ -8,7 +8,10 @@ use Livewire\WithFileUploads;
 use App\Models\LeaveApplication;
 use App\Models\LeaveCategory;
 use App\Models\User;
+use App\Services\NotificationService;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class ApplicationComponent extends Component
 {
@@ -20,7 +23,7 @@ class ApplicationComponent extends Component
     public string $search        = '';
     public int    $perPage       = 10;
     public string $sortField     = 'id';
-    public string $sortDirection = 'asc';
+    public string $sortDirection = 'desc';
     public string $filterRole    = '';
 
     // ── Modal flags ──
@@ -231,16 +234,68 @@ class ApplicationComponent extends Component
             'comments' => 'nullable|string|max:1000',
         ]);
 
-        LeaveApplication::findOrFail($this->detailId)->update([
-            'status'        => $this->status,
-            'approval_note' => $this->comments,
-            'approved_by'   => auth()->id(),
-            'approved_at'   => now(),
-        ]);
+        DB::beginTransaction();
 
-        session()->flash('success', 'Status updated successfully!');
-        $this->showDetail = false;
-        $this->reset(['detailId', 'detail', 'comments']);
+        try {
+            $application = LeaveApplication::with('applicable')->findOrFail($this->detailId);
+            $previousStatus = $application->status;
+
+            $application->update([
+                'status'        => $this->status,
+                'approval_note' => $this->comments,
+                'approved_by'   => auth()->id(),
+                'approved_at'   => now(),
+            ]);
+
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($application)
+                ->withProperties([
+                    'icon' => 'fact_check',
+                    'type' => 'leave',
+                    'from' => $previousStatus,
+                    'to'   => $this->status,
+                ])
+                ->tap(function ($activity) use ($application) {
+                    $activity->institution_id = $application->institution_id;
+                })
+                ->log('Leave application status changed to ' . ucfirst($this->status));
+
+            // শুধু Approve বা Reject হলেই আবেদনকারীকে notification পাঠানো হবে
+            if (in_array($this->status, ['approved', 'rejected']) && $application->applicable) {
+                $applicant = $application->applicable;
+
+                if ($applicant instanceof User) {
+                    $statusLabel = ucfirst($this->status);
+                    $period      = $application->start_date->format('d M Y') . ' - ' . $application->end_date->format('d M Y');
+
+                    NotificationService::send(
+                        $applicant,
+                        'leave_request',
+                        "Leave {$statusLabel}",
+                        "আপনার {$period} সময়ের Leave Application {$statusLabel} করা হয়েছে।"
+                            . ($this->comments ? " মন্তব্য: {$this->comments}" : ''),
+                        ['icon' => 'exit_to_app'],
+                        $this->status === 'rejected' ? 'high' : 'normal',
+                    );
+                } else {
+                    Log::warning('Leave notification skipped: applicant is not a User instance.', [
+                        'leave_application_id' => $application->id,
+                        'applicable_type'      => get_class($applicant),
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            $this->showDetail = false;
+            $this->reset(['detailId', 'detail', 'comments']);
+            $this->dispatch('toast', type: 'success', message: 'Status updated successfully!');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            $this->dispatch('toast', type: 'error', message: 'কিছু একটা সমস্যা হয়েছে, আবার চেষ্টা করুন।');
+            report($e);
+        }
     }
 
     // ──────────────────────────────────────────
@@ -250,34 +305,67 @@ class ApplicationComponent extends Component
     {
         $this->validate();
 
-        $filePath = $this->document_path;
-        if ($this->attachment) {
-            $filePath = $this->attachment->store('leave-attachments', 'public');
+        DB::beginTransaction();
+
+        try {
+            $filePath = $this->document_path;
+            if ($this->attachment) {
+                $filePath = $this->attachment->store('leave-attachments', 'public');
+            }
+
+            $data = [
+                'applicable_id'     => $this->applicable_id,
+                'applicable_type'   => $this->applicable_type,
+                'leave_category_id' => $this->leave_category_id,
+                'start_date'        => $this->start_date,
+                'end_date'          => $this->end_date,
+                'total_days'        => $this->getTotalDays(),
+                'reason'            => $this->reason,
+                'document_path'     => $filePath,
+                'approval_note'     => $this->comments,
+                'status'            => $this->status ?: 'pending',
+            ];
+
+            if ($this->editId) {
+                $application = LeaveApplication::with('applicable')->findOrFail($this->editId);
+                $application->update($data);
+
+                activity()
+                    ->causedBy(auth()->user())
+                    ->performedOn($application)
+                    ->withProperties(['icon' => 'edit', 'type' => 'leave'])
+                    ->tap(function ($activity) use ($application) {
+                        $activity->institution_id = $application->institution_id;
+                    })
+                    ->log('Leave application updated');
+
+                $message = 'Leave application updated successfully!';
+            } else {
+                $application = LeaveApplication::create($data);
+                $application->load('applicable');
+
+                activity()
+                    ->causedBy(auth()->user())
+                    ->performedOn($application)
+                    ->withProperties(['icon' => 'event_busy', 'type' => 'leave'])
+                    ->tap(function ($activity) use ($application) {
+                        $activity->institution_id = $application->institution_id;
+                    })
+                    ->log('New leave application created');
+
+                $message = 'Leave application created successfully!';
+            }
+
+            DB::commit();
+
+            $this->showModal = false;
+            $this->resetForm();
+            $this->dispatch('toast', type: 'success', message: $message);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            $this->dispatch('toast', type: 'error', message: 'কিছু একটা সমস্যা হয়েছে, আবার চেষ্টা করুন।');
+            report($e);
         }
-
-        $data = [
-            'applicable_id'     => $this->applicable_id,
-            'applicable_type'   => $this->applicable_type,
-            'leave_category_id' => $this->leave_category_id,
-            'start_date'        => $this->start_date,
-            'end_date'          => $this->end_date,
-            'total_days'        => $this->getTotalDays(),
-            'reason'            => $this->reason,
-            'document_path'     => $filePath,
-            'approval_note'     => $this->comments,
-            'status'            => $this->status ?: 'pending',
-        ];
-
-        if ($this->editId) {
-            LeaveApplication::findOrFail($this->editId)->update($data);
-            session()->flash('success', 'Leave application updated successfully!');
-        } else {
-            LeaveApplication::create($data);
-            session()->flash('success', 'Leave application created successfully!');
-        }
-
-        $this->showModal = false;
-        $this->resetForm();
     }
 
     // ──────────────────────────────────────────
@@ -291,10 +379,33 @@ class ApplicationComponent extends Component
 
     public function deleteRecord(): void
     {
-        LeaveApplication::findOrFail($this->deleteId)->delete();
-        $this->confirmDelete = false;
-        $this->deleteId      = null;
-        session()->flash('success', 'Leave application deleted successfully!');
+        DB::beginTransaction();
+
+        try {
+            $application = LeaveApplication::with('applicable')->findOrFail($this->deleteId);
+
+            $application->delete();
+
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($application)
+                ->withProperties(['icon' => 'delete', 'type' => 'leave'])
+                ->tap(function ($activity) use ($application) {
+                    $activity->institution_id = $application->institution_id;
+                })
+                ->log('Leave application deleted');
+
+            DB::commit();
+
+            $this->confirmDelete = false;
+            $this->deleteId      = null;
+            $this->dispatch('toast', type: 'success', message: 'Leave application deleted successfully!');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            $this->confirmDelete = false;
+            $this->dispatch('toast', type: 'error', message: 'কিছু একটা সমস্যা হয়েছে, আবার চেষ্টা করুন।');
+            report($e);
+        }
     }
 
     // ──────────────────────────────────────────

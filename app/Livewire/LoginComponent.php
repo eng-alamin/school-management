@@ -76,7 +76,7 @@ class LoginComponent extends Component
     {
         return view('livewire.login-component')
             ->layout('layouts.app', [
-                'title' => 'Login | Monarchy Institution',
+                'title' => 'Login | ' . setting('app_name', 'EMS'),
             ]);
     }
 }

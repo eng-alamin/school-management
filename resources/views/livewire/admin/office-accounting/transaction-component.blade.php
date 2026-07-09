@@ -52,17 +52,17 @@
                     <thead>
                         <tr>
                             <th style="font-size:12px">SL</th>
-                            <th wire:click="sortBy('account_id')" style="font-size:12px; cursor:pointer">
-                                Account Name @if($sortField === 'account_id') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
+                            <th wire:click="sortBy('account_name')" style="font-size:12px; cursor:pointer">
+                                Account Name @if($sortField === 'account_name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
                             <th wire:click="sortBy('type')" style="font-size:12px; cursor:pointer">
                                 Type @if($sortField === 'type') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
+                            <th style="font-size:12px">Voucher No</th>
                             <th style="font-size:12px">Voucher Head</th>
                             <th wire:click="sortBy('reference')" style="font-size:12px; cursor:pointer">
                                 Ref No @if($sortField === 'reference') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th style="font-size:12px">Description</th>
                             <th wire:click="sortBy('pay_via')" style="font-size:12px; cursor:pointer">
                                 Pay Via @if($sortField === 'pay_via') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
@@ -80,10 +80,10 @@
                     <tbody>
                         @forelse($transactions as $i => $tx)
                             @php
-                                $key     = $tx->type . '_' . $tx->id;
+                                $key = $tx->type . '_' . $tx->id;
                                 $balance = $balanceMap[$key] ?? 0;
                             @endphp
-                            <tr>
+                            <tr wire:key="tx-{{ $tx->type }}-{{ $tx->id }}">
                                 <td style="font-size:12px" class="text-muted">{{ $transactions->firstItem() + $i }}</td>
                                 <td style="font-size:12px">
                                     @if($tx->attachment)
@@ -91,18 +91,16 @@
                                             <span class="material-icons-round" style="font-size:15px;vertical-align:middle;margin-right:3px">attach_file</span>
                                         </a>
                                     @endif
-                                    {{ \App\Models\OfficeAccount::find($tx->account_id)?->name ?? '—' }}
+                                    {{ $tx->account_name ?? '—' }}
                                 </td>
                                 <td style="font-size:12px">
-                                    <span class="badge rounded-pill {{ $tx->type === 'Deposit' ? 'badge-active' : 'badge-danger' }}">
+                                    <span class="badge rounded-pill {{ $tx->type === 'Deposit' ? 'badge-active' : 'badge-expired' }}">
                                         {{ $tx->type }}
                                     </span>
                                 </td>
-                                <td style="font-size:12px">{{ \App\Models\OfficeHead::find($tx->head_id)?->name ?? '—' }}</td>
+                                <td style="font-size:12px">{{ $tx->voucher_no ?? '—' }}</td>
+                                <td style="font-size:12px">{{ $tx->head_name ?? '—' }}</td>
                                 <td style="font-size:12px">{{ $tx->reference ?? '—' }}</td>
-                                <td style="font-size:12px" style="max-width:280px;white-space:normal;font-size:.8rem">
-                                    {{ $tx->description ?? '—' }}
-                                </td>
                                 <td style="font-size:12px">{{ $tx->pay_via ?? '—' }}</td>
                                 <td style="font-size:12px">
                                     <span class="badge rounded-pill badge-used">
@@ -122,7 +120,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="12" class="text-center py-5 text-muted">
+                                <td colspan="13" class="text-center py-5 text-muted">
                                     <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
                                     No transactions found.
                                 </td>
@@ -141,37 +139,3 @@
     </div>
 
 </div>
-
-@push('styles')
-    <style>
-        :root {
-            --primary: rgba(33, 37, 41);
-            --primary-light: rgba(239,84,84,.12);
-        }
-
-        .card { border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
-        .card-header { background: #fff; border-bottom: 1px solid var(--border); border-radius: 12px 12px 0 0 !important; padding: 16px 20px; }
-
-        .table th { font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); border-bottom: 2px solid var(--border); }
-        .table td { vertical-align: middle; font-size: .875rem; }
-        .table > :not(caption) > * > * { padding: .7rem 1rem; }
-
-        .badge-active   { background: rgba(34,197,94,.12);  color: #16a34a; }
-        .badge-inactive { background: rgba(107,114,128,.12); color: #6b7280; }
-        .badge-used     { background: rgba(59,130,246,.12);  color: #2563eb; }
-        .badge-danger   { background: rgba(239,68,68,.12);   color: #dc2626; }
-
-        .form-label { font-size: .8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
-        .form-control, .form-select { border-radius: 8px; border: 1px solid var(--border); font-size: .875rem; padding: .45rem .75rem; transition: border-color .2s, box-shadow .2s; }
-        .form-control:focus, .form-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
-
-        .btn-sm { font-size: .78rem; padding: .3rem .65rem; border-radius: 6px; }
-
-        .custom-pagination { display: flex; gap: 8px; align-items: center; }
-        .custom-pagination li { list-style: none; }
-        .custom-pagination button { min-width: 38px; height: 38px; border-radius: 10px; border: 1px solid #e0e0e0; background: #f5f5f5; color: #444; font-weight: 600; cursor: pointer; transition: all .2s ease; }
-        .custom-pagination button:hover { background: #eee; }
-        .custom-pagination button.active { background: linear-gradient(195deg, #ec407a, #d81b60); color: #fff; border: none; box-shadow: 0 4px 12px rgba(216,27,96,.4); }
-        .custom-pagination button:disabled { opacity: .5; cursor: not-allowed; }
-    </style>
-@endpush

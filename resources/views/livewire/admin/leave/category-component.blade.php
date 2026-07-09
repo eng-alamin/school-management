@@ -50,10 +50,10 @@
                     </thead>
                     <tbody>
                         @forelse($categories as $i => $category)
-                        <tr>
+                        <tr wire:key="leave-category-{{ $category->id }}">
                             <td class="text-muted">{{ $categories->firstItem() + $i }}</td>
                             <td> {{ $category->name }} </td>
-                            <td> {{ $category->role }} </td>
+                            <td> {{ $roles[$category->role] ?? ucfirst($category->role) }} </td>
                             <td> {{ $category->days }} </td>
                             <td>
                                 <div class="d-flex gap-1">
@@ -68,7 +68,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="8" class="text-center py-5 text-muted">
+                            <td colspan="5" class="text-center py-5 text-muted">
                                 <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
                                 No categories found. <a href="#" wire:click.prevent="openCreate">Create one now</a>.
                             </td>
@@ -83,7 +83,7 @@
             <small class="text-muted">Showing {{ $categories->firstItem() ?? 0 }}–{{ $categories->lastItem() ?? 0 }} of {{ $categories->total() }}</small>
            {{ $categories->links('vendor.pagination.custom') }}
         </div>
-        
+
     </div>
 
     {{-- ===== CREATE/EDIT MODAL ===== --}}
@@ -106,22 +106,18 @@
                                     @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-12">
-                                    <div class="input-group input-group-outline" wire:ignore>
-                                        <label class="form-label">Role <span class="req">*</span></label>
-                                        <select wire:model="role" class="form-select">
-                                            <option value="">Select Role</option>
-                                            <option value="admin">Admin</option>
-                                            <option value="teacher">Teacher</option>
-                                            <option value="accountant">Accountant</option>
-                                            <option value="librarian">Staff</option>
-                                            <option value="student">Student</option>
-                                        </select>
-                                    </div>
-                                    @error('role') <span class="text-danger">{{ $message }}</span> @enderror
+                                    <label class="form-label">Role <span class="text-danger">*</span></label>
+                                    <select wire:model="role" class="form-select @error('role') is-invalid @enderror">
+                                        <option value="">Select Role</option>
+                                        @foreach($roles as $value => $label)
+                                            <option value="{{ $value }}">{{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                                    @error('role') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-12">
-                                    <label class="form-label">Days  <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control @error('days') is-invalid @enderror" wire:model.defer="days" placeholder="e.g. Decide The Day">
+                                    <label class="form-label">Days <span class="text-danger">*</span></label>
+                                    <input type="number" min="1" max="365" class="form-control @error('days') is-invalid @enderror" wire:model.defer="days" placeholder="e.g. 10">
                                     @error('days') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                             </div>
@@ -192,84 +188,4 @@
 
         .btn-sm { font-size: .78rem; padding: .3rem .65rem; border-radius: 6px; }
     </style>
-@endpush
-
-
-
-@push('scripts')
-    <script>
-        document.addEventListener('livewire:initialized', () => {
-
-            setTimeout(() => initAllFields(), 100);
-
-            Livewire.hook('morph.updated', ({ el }) => {
-                setTimeout(() => initAllFields(), 0);
-            });
-
-            function initAllFields() {
-
-                // ── 1. Text/Textarea/Number is-filled ──
-                document.querySelectorAll('.input-group-outline input, .input-group-outline textarea').forEach(function(input) {
-                    var group = input.closest('.input-group');
-                    if (!group) return;
-                    if (input.value && input.value.trim() !== '') {
-                        group.classList.add('is-filled');
-                    } else {
-                        group.classList.remove('is-filled');
-                    }
-                    if (input._materialInit) return;
-                    input._materialInit = true;
-                    input.addEventListener('focus', function() { group.classList.add('is-focused'); });
-                    input.addEventListener('blur', function() {
-                        group.classList.remove('is-focused');
-                        group.classList.toggle('is-filled', !!input.value.trim());
-                    });
-                    input.addEventListener('input', function() {
-                        group.classList.toggle('is-filled', !!input.value.trim());
-                    });
-                });
-
-                // ── 2. Select is-filled ──
-                document.querySelectorAll('.input-group-outline select').forEach(function(select) {
-                    var group = select.closest('.input-group');
-                    if (!group) return;
-                    if (select.value && select.value !== '') {
-                        group.classList.add('is-filled');
-                    } else {
-                        group.classList.remove('is-filled');
-                    }
-                    if (select._materialInit) return;
-                    select._materialInit = true;
-                    select.addEventListener('change', function() {
-                        group.classList.toggle('is-filled', !!select.value);
-                    });
-                    select.addEventListener('focus', function() { group.classList.add('is-focused'); });
-                    select.addEventListener('blur', function() { group.classList.remove('is-focused'); });
-                });
-
-                // ── 3. Custom Select rebuild ──
-                document.querySelectorAll('.input-group-outline .form-select').forEach(function(select) {
-                    var old = select.parentNode.querySelector('.custom-select-wrapper');
-                    if (old) old.remove();
-                    select.style.display = '';
-                    if (typeof buildCustomSelect === 'function') {
-                        buildCustomSelect(select);
-                    }
-                });
-
-                // ── 4. Datepicker ──
-                document.querySelectorAll('.input-group-outline input[type="date"]').forEach(function(input) {
-                    if (input.dataset.dpInit === '1') return;
-                    input.dataset.dpInit = '1';
-                    input.addEventListener('change', function() {
-                        input.dispatchEvent(new Event('input', { bubbles: true }));
-                    });
-                    if (typeof buildDatepicker === 'function') {
-                        buildDatepicker(input);
-                    }
-                });
-            }
-
-        });
-    </script>
 @endpush

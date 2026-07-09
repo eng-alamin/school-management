@@ -10,11 +10,11 @@
             <span class="online-dot"></span>
         </div>
         <div class="flex-grow-1">
-            <!-- Name + Actions row -->
+            <!-- Name row -->
             <div class="d-flex flex-wrap justify-content-between align-items-start mb-2 gap-2">
                 <div>
                     <div class="d-flex align-items-center gap-2 mb-1">
-                        <a href="#" class="text-decoration-none text-dark fw-bold fs-4">{{ $employee->name }}</a>
+                        <span class="text-dark fw-bold fs-4">{{ $employee->name }}</span>
                         <i class="bi bi-patch-check-fill badge-verified fs-5"></i>
                     </div>
                     <div class="d-flex flex-wrap gap-3" style="font-size:.88rem;">
@@ -77,8 +77,13 @@
         </div>
     </div>
 
-    <!-- Profile Tabs -->
+    <!-- Profile Tabs (hidden on print via no-print) -->
     <ul class="nav profile-tabs border-bottom mt-4 flex-nowrap overflow-auto no-print">
-        <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.employee.view') ? 'active' : '' }}" href="{{ route('admin.employee.view', ['id' => $employee->id]) }}">Overview</a></li>
+        <li class="nav-item">
+            <a class="nav-link {{ request()->routeIs('admin.employee.view') ? 'active' : '' }}"
+               href="{{ route('admin.employee.view', ['id' => $employee->id]) }}">
+                Overview
+            </a>
+        </li>
     </ul>
 </div>

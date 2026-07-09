@@ -73,6 +73,7 @@
                             <th id="th-class">Class</th>
                             <th id="th-section">Section</th>
                             <th id="th-subject">Subject</th>
+                            <th id="th-teacher">Teacher</th>
                             <th id="th-homework-date" wire:click="sortBy('homework_date')" style="cursor:pointer">
                                 Homework Date @if($sortField === 'homework_date') {!! $sortDir === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
@@ -92,6 +93,7 @@
                             <td>{{ $homework->class?->name ?? '—' }}</td>
                             <td>{{ $homework->section?->name ?? 'All' }}</td>
                             <td>{{ $homework->subject?->name ?? '—' }}</td>
+                            <td>{{ $homework->teacher?->name ?? '—' }}</td>
                             <td>{{ $homework->homework_date ? \Carbon\Carbon::parse($homework->homework_date)->format('d M Y') : '—' }}</td>
                             <td>{{ $homework->submission_date ? \Carbon\Carbon::parse($homework->submission_date)->format('d M Y') : '—' }}</td>
                             <td>
@@ -108,8 +110,8 @@
                             <td>{{ $homework->updated_at ? \Carbon\Carbon::parse($homework->updated_at)->diffForHumans() : '—' }}</td>
                             <td>
                                 <div class="d-flex gap-1">
-                                    @if ($homework['attachment'])
-                                        <a href="{{ Storage::url($homework['attachment']) }}" target="_blank" class="act-btn"><span class="material-icons-round">attachment</span></a>
+                                    @if ($homework->attachment)
+                                        <a href="{{ Storage::url($homework->attachment) }}" target="_blank" class="act-btn"><span class="material-icons-round">attachment</span></a>
                                     @endif
                                     <a href="{{ route('admin.homework.edit', ['id' => $homework->id]) }}"
                                        class="act-btn edit" title="Edit">
@@ -124,7 +126,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="9" class="text-center py-5 text-muted">
+                            <td colspan="10" class="text-center py-5 text-muted">
                                 <span class="material-icons-round d-block mb-2" style="font-size:2.5rem;opacity:.2">assignment</span>
                                 No homeworks found.
                                 <a href="{{ route('admin.homework.add') }}">Add one now</a>.

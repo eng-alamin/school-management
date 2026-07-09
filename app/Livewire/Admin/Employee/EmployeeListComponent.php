@@ -22,6 +22,12 @@ class EmployeeListComponent extends Component
     public bool $confirmDelete = false;
     public ?int $deleteId = null;
 
+    /**
+     * Only these columns are allowed to be sorted on.
+     * Prevents SQL errors / column-injection from arbitrary wire:click values.
+     */
+    protected array $sortableFields = ['id', 'name', 'email', 'mobile'];
+
     public function updatingSearch(): void
     {
         $this->resetPage();
@@ -29,6 +35,13 @@ class EmployeeListComponent extends Component
 
     public function sortBy(string $field): void
     {
+        // BUG FIX: guard against unknown/invalid columns (previously "phone" was
+        // passed here, but the actual DB column is "mobile" — sorting by it
+        // caused an "Unknown column" SQL error).
+        if (!in_array($field, $this->sortableFields, true)) {
+            return;
+        }
+
         if ($this->sortField === $field) {
             $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
         } else {
@@ -55,11 +68,13 @@ class EmployeeListComponent extends Component
 
     public function render()
     {
-        $employees = Employee::with('designation', 'department')
+        $employees = Employee::with('designation', 'department', 'user')
             ->when($this->search, fn($q) => $q
                 ->where('name', 'like', "%{$this->search}%")
                 ->orWhere('email', 'like', "%{$this->search}%")
-                ->orWhere('phone', 'like', "%{$this->search}%")
+                // BUG FIX: "employees" table has a "mobile" column, not "phone".
+                // Searching on "phone" previously threw a SQL error.
+                ->orWhere('mobile', 'like', "%{$this->search}%")
                 ->orWhereHas('designation', fn($q) => $q->where('name', 'like', "%{$this->search}%"))
                 ->orWhereHas('department', fn($q) => $q->where('name', 'like', "%{$this->search}%"))
             )

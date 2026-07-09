@@ -16,13 +16,20 @@ return new class extends Migration
             $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
             $table->foreignId('account_id')->constrained('office_accounts')->cascadeOnDelete();
             $table->foreignId('head_id')->nullable()->constrained('office_heads')->nullOnDelete();
-            $table->string('pay_via')->nullable();
+            $table->string('voucher_no')->nullable();
+            $table->enum('pay_via', ['Cash', 'Bank Transfer', 'Cheque', 'Mobile Banking', 'Card'])->nullable();
             $table->string('reference')->nullable();
             $table->decimal('amount', 15, 2);
             $table->date('date');
             $table->text('description')->nullable();
             $table->string('attachment')->nullable();
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
+            $table->softDeletes();
+
+            $table->unique(['institution_id', 'voucher_no']);
+            $table->index(['institution_id', 'date']);
+            $table->index(['institution_id', 'account_id', 'date']);
         });
     }
 

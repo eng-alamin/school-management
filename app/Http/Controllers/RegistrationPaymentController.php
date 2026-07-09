@@ -128,7 +128,7 @@ class RegistrationPaymentController extends Controller
             session()->forget(['pending_registration', 'pending_logo']);
 
             return redirect()->route('admin.dashboard')
-                ->with('success', 'Institution setup complete!');
+                ->with('success', 'Institue Registered Sucessfully!');
         }
 
         // Institution নেই — validation করে তৈরি করো
@@ -188,7 +188,7 @@ class RegistrationPaymentController extends Controller
             $request->session()->regenerate();
 
             return redirect()->route('admin.dashboard')
-                ->with('success', 'Institution setup complete!');
+                ->with('success', 'Institue Installed Sucessfully!');
 
         } catch (\Exception $e) {
             Log::error('Registration failed after payment', [

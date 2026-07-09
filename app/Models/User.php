@@ -124,10 +124,13 @@ class User extends Authenticatable
     public function profile()
     {
         return match($this->role) {
-            self::ROLE_STUDENT  => $this->student,
-            self::ROLE_PARENT   => $this->guardian,
-            self::ROLE_TEACHER => $this->teacher,
-            default             => null,
+            self::ROLE_ADMIN      => $this->employee,
+            self::ROLE_TEACHER    => $this->employee,
+            self::ROLE_STAFF      => $this->employee,
+            self::ROLE_ACCOUNTANT => $this->employee,
+            self::ROLE_STUDENT    => $this->student,
+            self::ROLE_PARENT     => $this->guardian,
+            default               => null,
         };
     }
 

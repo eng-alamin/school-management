@@ -149,17 +149,3 @@
     @endif
 
 </div>
-
-@push('styles')
-    <style>
-        .table th { font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); border-bottom: 2px solid var(--border); }
-        .table td { vertical-align: middle; font-size: .875rem; }
-        .table > :not(caption) > * > * { padding: .7rem 1rem; }
-
-        .form-label { font-size: .8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
-        .form-control, .form-select { border-radius: 8px; border: 1px solid var(--border); font-size: .875rem; padding: .45rem .75rem; transition: border-color .2s, box-shadow .2s; }
-        .form-control:focus, .form-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
-
-
-    </style>
-@endpush

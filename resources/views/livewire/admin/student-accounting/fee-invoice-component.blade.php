@@ -59,7 +59,7 @@
 
         <div class="card-body pt-0">
             <div class="table-responsive">
-                <table class="table-loader">
+                <table class="table table-hover mb-0">
                     <thead>
                         <tr>
                             <th id="th-sl">SL</th>
@@ -89,7 +89,11 @@
                         @endphp
                         <tr wire:key="student-{{ $student->id }}">
                             <td class="text-muted">{{ $students->firstItem() + $i }}</td>
-                            <td>{{ $student->name }}</td>
+                            <td>
+                                <a href="{{ route('admin.student.overview', ['id' => $student->id]) }}" class="text-decoration-none" title="View Student Overview">
+                                    {{ $student->name }}
+                                </a>
+                            </td>
                             <td>{{ $student->class->name ?? '—' }}</td>
                             <td>{{ $student->section->name ?? '—' }}</td>
                             <td>{{ $student->student_id ?? '—' }}</td>
@@ -131,11 +135,6 @@
                                        title="View Invoice">
                                         <span class="material-icons-round">open_in_new</span>
                                     </a>
-                                    <button class="act-btn delete"
-                                            title="Delete All Invoices"
-                                            wire:click="confirmDeleteRecord({{ $student->id }})">
-                                        <span class="material-icons-round">delete</span>
-                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -159,65 +158,10 @@
 
     </div>
 
-    {{-- Delete Confirm Modal --}}
-    @if ($confirmDelete)
-    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.5);">
-        <div class="modal-dialog modal-sm">
-            <div class="modal-content">
-                <div class="modal-body text-center py-4">
-                    <div style="width:56px;height:56px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
-                        <span class="material-icons-round text-danger" style="font-size:28px">warning</span>
-                    </div>
-                    <h6 class="fw-bold">Delete All Invoices?</h6>
-                    <p class="text-muted small mb-0">This will remove all fee invoices (and their items) for this student. This action cannot be undone.</p>
-                </div>
-                <div class="modal-footer justify-content-center border-0 pt-0 pb-3">
-                    <button class="btn btn-light btn-sm px-4"
-                            wire:click="$set('confirmDelete', false)">Cancel</button>
-                    <button class="btn btn-danger btn-sm px-4"
-                            wire:click="deleteRecord"
-                            wire:loading.attr="disabled"
-                            wire:target="deleteRecord">
-                        <span wire:loading wire:target="deleteRecord"
-                              class="spinner-border spinner-border-sm me-1"></span>
-                        Delete
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-    @endif
-
 </div>
 
 @push('styles')
 <style>
-    /* ── Table ── */
-    .table-loader {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 13px;
-    }
-    .table-loader thead th {
-        padding: 10px 10px;
-        text-align: left;
-        font-weight: 600;
-        font-size: 12px;
-        color: #aaa;
-        white-space: nowrap;
-    }
-    .table-loader tbody td {
-        padding: 8px 10px;
-        vertical-align: middle;
-        font-size: 13px;
-    }
-    .table-loader tbody tr {
-        transition: background .15s;
-    }
-    .table-loader tbody tr:hover {
-        background: rgba(255,255,255,.03);
-    }
-
     /* ── Fee Tag ── */
     .fee-tag {
         display: inline-block;

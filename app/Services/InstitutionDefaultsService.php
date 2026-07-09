@@ -13,6 +13,8 @@ use App\Models\AcademicSession;
 use App\Models\AcademicSection;
 use App\Models\AcademicSubject;
 use App\Models\AcademicClass;
+use App\Models\AcademicClassAssign;
+use App\Models\AcademicClassAssignDetail;
 use App\Models\ExamTerm;
 use App\Models\ExamType;
 use App\Models\ExamMark;
@@ -30,22 +32,29 @@ class InstitutionDefaultsService
     {
         self::createInventoryCategories($institution);
         self::createInventoryUnits($institution);
+
         self::createDepartments($institution);
         self::createDesignations($institution);
+
         self::createAcademicSession($institution);
         self::createAcademicGroups($institution);
         self::createAcademicSections($institution);
         self::createAcademicSubjects($institution);
         self::createAcademicClasses($institution);
+        self::createAcademicAssigns($institution);
+
         self::createExamTerms($institution);
         self::createExamTypes($institution);
         self::createExamMarks($institution);
         self::createExamHalls($institution);
         self::createExamGrades($institution);
+
         self::createFeeTypes($institution);
         self::createLeaveCategories($institution);
+
         self::createOfficeHeads($institution);
         self::createOfficeAccounts($institution);
+
         self::createEventTypes($institution);
     }
 
@@ -218,28 +227,57 @@ class InstitutionDefaultsService
     private static function createAcademicClasses(Institution $institution): void
     {
         $classes = [
-            'Play',
-            'Nursery',
-            'KG',
-            'Class 1',
-            'Class 2',
-            'Class 3',
-            'Class 4',
-            'Class 5',
-            'Class 6',
-            'Class 7',
-            'Class 8',
-            'Class 9',
-            'Class 10',
-            'Class 11',
-            'Class 12',
+            'Play' => 0,
+            'Nursery' => 1,
+            'KG' => 2,
+            'Class 1' => 3,
+            'Class 2' => 4,
+            'Class 3' => 5,
+            'Class 4' => 6,
+            'Class 5' => 7,
+            'Class 6' => 8,
+            'Class 7' => 9,
+            'Class 8' => 10,
+            'Class 9' => 11,
+            'Class 10' => 12,
+            'Class 11' => 13,
+            'Class 12' => 14,
         ];
 
+        foreach ($classes as $name => $numeric) {
+            AcademicClass::firstOrCreate(
+                [
+                    'institution_id' => $institution->id,
+                    'name' => $name,
+                ],
+                [
+                    'numeric' => $numeric,
+                ]
+            );
+        }
+    }
+    private static function createAcademicAssigns(Institution $institution): void
+    {
+        $classes = AcademicClass::where('institution_id', $institution->id)->get();
+        $sections = AcademicSection::where('institution_id', $institution->id)->take(2)->get();
+        $subjects = AcademicSubject::where('institution_id', $institution->id)->take(3)->get();
+
         foreach ($classes as $class) {
-            AcademicClass::firstOrCreate([
-                'institution_id' => $institution->id,
-                'name' => $class,
-            ]);
+            foreach ($sections as $section) {
+                $classAssign = AcademicClassAssign::firstOrCreate([
+                    'institution_id' => $institution->id,
+                    'class_id' => $class->id,
+                    'section_id' => $section->id,
+                ]);
+
+                foreach ($subjects as $subject) {
+                    AcademicClassAssignDetail::firstOrCreate([
+                        'institution_id' => $institution->id,
+                        'academic_class_assign_id' => $classAssign->id,
+                        'subject_id' => $subject->id,
+                    ]);
+                }
+            }
         }
     }
     private static function createExamTerms(Institution $institution): void
@@ -311,7 +349,6 @@ class InstitutionDefaultsService
             ]);
         }
     }
-
     private static function createExamGrades(Institution $institution): void
     {
         $grades = [
@@ -339,7 +376,6 @@ class InstitutionDefaultsService
             );
         }
     }
-
     private static function createFeeTypes(Institution $institution): void
     {
         $feeTypes = [
@@ -406,10 +442,10 @@ class InstitutionDefaultsService
     private static function createOfficeHeads(Institution $institution): void
     {
         $officeHeads = [
-            ['name' => 'Salary Payments',         'type' => 'Expense'],
-            ['name' => 'Electricity Bills',       'type' => 'Expense'],
-            ['name' => 'Office Rent',             'type' => 'Expense'],
-            ['name' => 'Student Fees Collection', 'type' => 'Income'],
+            ['name' => 'Salary Payments',         'type' => 'expense'],
+            ['name' => 'Electricity Bills',       'type' => 'expense'],
+            ['name' => 'Office Rent',             'type' => 'expense'],
+            ['name' => 'Student Fees Collection', 'type' => 'deposit'],
         ];
 
         foreach ($officeHeads as $head) {

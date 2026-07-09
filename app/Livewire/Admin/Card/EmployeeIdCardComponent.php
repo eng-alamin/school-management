@@ -6,6 +6,8 @@ use Livewire\Component;
 use App\Models\IdCardTemplate;
 use App\Models\EmployeeIdCard;
 use App\Models\Employee;
+use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class EmployeeIdCardComponent extends Component
 {
@@ -29,16 +31,17 @@ class EmployeeIdCardComponent extends Component
     public function mount(): void
     {
         $this->print_date  = now()->format('Y-m-d');
-        $this->expiry_date = now()->format('Y-m-d');
+        $this->expiry_date = now()->addYear()->format('Y-m-d');
     }
 
     public function applyFilter(): void
     {
         $this->validate([
-            'filterRole'     => 'required|string',
+            'filterRole'     => 'required|string|in:' . implode(',', $this->getAvailableRoles()),
             'filterTemplate' => 'required|exists:id_card_templates,id',
         ], [
             'filterRole.required'     => 'Role is required.',
+            'filterRole.in'           => 'Selected role is invalid.',
             'filterTemplate.required' => 'Template is required.',
         ]);
 
@@ -62,6 +65,7 @@ class EmployeeIdCardComponent extends Component
         $this->filterTemplate = null;
         $this->selectedIds    = [];
         $this->selectAll      = false;
+        $this->filtered       = false;
     }
 
     public function updatedSelectAll(bool $value): void
@@ -85,26 +89,36 @@ class EmployeeIdCardComponent extends Component
     public function generateCards(): void
     {
         if (empty($this->selectedIds)) {
-            session()->flash('error', 'Please select at least one employee.');
+            $this->dispatch('toast', type: 'error', message: 'Please select at least one employee.');
+            return;
+        }
+
+        if (!$this->filterTemplate) {
+            $this->dispatch('toast', type: 'error', message: 'Please select a template.');
             return;
         }
 
         $this->validate([
             'print_date'  => 'required|date',
-            'expiry_date' => 'required|date',
+            'expiry_date' => 'required|date|after_or_equal:print_date',
         ]);
 
         $employees = Employee::with(['department', 'designation'])
             ->whereIn('id', $this->selectedIds)
             ->get();
 
-        $institutionId = auth()->user()->institution_id;
-        $data     = [];
+        if ($employees->isEmpty()) {
+            $this->dispatch('toast', type: 'error', message: 'Selected employees could not be found.');
+            return;
+        }
+
+        $institutionId = institution()->id;
+        $data = [];
 
         foreach ($employees as $employee) {
             $data[] = [
-                'institution_id'   => $institutionId,
-                'employee_id' => $employee->id,
+                'institution_id' => $institutionId,
+                'employee_id'    => $employee->id,
 
                 'issue_date'  => $this->print_date,
                 'expiry_date' => $this->expiry_date,
@@ -128,35 +142,49 @@ class EmployeeIdCardComponent extends Component
             ];
         }
 
-        EmployeeIdCard::upsert(
-            $data,
-            ['employee_id'],
-            [
-                'institution_id',
-                'issue_date',
-                'expiry_date',
-                'template_id',
-                'name',
-                'gender',
-                'blood_group',
-                'dob',
-                'religion',
-                'mobile',
-                'email',
-                'address',
-                'photo',
-                'designation',
-                'department',
-                'updated_at',
-            ]
-        );
+        DB::beginTransaction();
+        try {
+            EmployeeIdCard::upsert(
+                $data,
+                ['employee_id'],
+                [
+                    'institution_id',
+                    'issue_date',
+                    'expiry_date',
+                    'template_id',
+                    'name',
+                    'gender',
+                    'blood_group',
+                    'dob',
+                    'religion',
+                    'mobile',
+                    'email',
+                    'address',
+                    'photo',
+                    'designation',
+                    'department',
+                    'updated_at',
+                ]
+            );
 
-        $this->printCards = EmployeeIdCard::with('template')
-            ->whereIn('employee_id', $this->selectedIds)
-            ->get()
-            ->toArray();
+            $cards = EmployeeIdCard::with('template')
+                ->where('institution_id', $institutionId)
+                ->whereIn('employee_id', $this->selectedIds)
+                ->get();
 
+            activity()->log('Generated '.$cards->count().' employee ID card(s)');
+
+            DB::commit();
+        } catch (Throwable $e) {
+            DB::rollBack();
+            $this->dispatch('toast', type: 'error', message: 'ID cards could not be generated. Please try again.');
+            return;
+        }
+
+        $this->printCards       = $cards->toArray();
         $this->showPrintPreview = true;
+
+        $this->dispatch('toast', type: 'success', message: count($this->printCards).' ID card(s) generated successfully!');
     }
 
     private function getEmployees()

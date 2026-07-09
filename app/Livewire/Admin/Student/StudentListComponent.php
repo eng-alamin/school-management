@@ -109,7 +109,7 @@ class StudentListComponent extends Component
             )
             ->when($this->search, fn($q) => $q->where(fn($q) => $q
                 ->where('name', 'like', "%{$this->search}%")
-                ->orWhere('register_no', 'like', "%{$this->search}%")
+                ->orWhere('registration_no', 'like', "%{$this->search}%")
                 ->orWhere('roll_no', 'like', "%{$this->search}%")))
             ->orderBy($this->sortField, $this->sortDir)
             ->paginate($this->perPage);

@@ -2,14 +2,6 @@
 
     <div class="card no-print">
 
-        {{-- Flash messages --}}
-        @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show mb-3">
-            <i class="bi bi-x-circle me-2"></i>{{ session('error') }}
-            <button class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-        @endif
-
         <!-- floating header -->
         <div class="mat-card-header header-pink-gradient">
             <h5 id="cardHeaderTitleAllsections">Employee Id Card Generate</h5>
@@ -23,10 +15,9 @@
                     <label class="form-label">Role</label>
                     <select wire:model.lazy="filterRole" class="form-select">
                         <option value="">Select Role</option>
-                        <option value="admin">Admin</option>
-                        <option value="teacher">Teacher</option>
-                        <option value="accountant">Accountant</option>
-                        <option value="staff">Staff</option>
+                        @foreach($roles as $role)
+                            <option value="{{ $role }}">{{ ucfirst($role) }}</option>
+                        @endforeach
                     </select>
                 </div>
                 @error('filterRole') <span class="text-danger">{{ $message }}</span> @enderror
@@ -68,12 +59,12 @@
                     <div class="date-row mb-4">
                         <div class="date-field">
                             <label class="date-label">Print Date</label>
-                            <input type="date" class="form-control" style="width:200px;" wire:model.defer="print_date">
+                            <input type="date" class="form-control" style="width:200px;" wire:model="print_date">
                             @error('print_date')<small class="text-danger">{{ $message }}</small>@enderror
                         </div>
                         <div class="date-field">
                             <label class="date-label">Expiry Date</label>
-                            <input type="date" class="form-control" style="width:200px;" wire:model.defer="expiry_date">
+                            <input type="date" class="form-control" style="width:200px;" wire:model="expiry_date">
                             @error('expiry_date')<small class="text-danger">{{ $message }}</small>@enderror
                         </div>
                     </div>
@@ -94,7 +85,7 @@
                 @if($employees->isNotEmpty())
                 <div style="font-size:.8rem;color:#282c34;margin-bottom:10px;">
                     <span style="color:var(--primary);font-weight:600;">{{ count($selectedIds) }}</span> of
-                    <span style="color:#697381;font-weight:600;">{{ $employees->count() }}</span> students selected
+                    <span style="color:#697381;font-weight:600;">{{ $employees->count() }}</span> employees selected
                 </div>
                 @endif
                 <div class="table-responsive">
@@ -111,7 +102,7 @@
                         </thead>
                         <tbody>
                             @forelse($employees as $i => $employee)
-                            <tr>
+                            <tr wire:key="employee-row-{{ $employee->id }}">
                                 <td class="check-col">
                                         <input type="checkbox"
                                             class="red-check"
@@ -121,8 +112,8 @@
                                 <td class="text-muted">{{ $i + 1 }}</td>
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
-                                        @if($employee->logo_path)
-                                            <img src="{{ asset('storage/' . $employee->logo_path) }}" class="avatar" alt="">
+                                        @if($employee->photo)
+                                            <img src="{{ asset('storage/' . $employee->photo) }}" class="avatar" alt="">
                                         @else
                                             <div class="avatar-placeholder">{{ strtoupper(substr($employee->name,0,1)) }}</div>
                                         @endif
@@ -138,9 +129,9 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="8" class="text-center py-5 text-muted">
+                                <td colspan="6" class="text-center py-5 text-muted">
                                     <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
-                                    No templates found. <a href="#" wire:click.prevent="openCreate">Create one now</a>.
+                                    No employees found for the selected role.
                                 </td>
                             </tr>
                             @endforelse
@@ -152,7 +143,7 @@
         @else
             <div class="gen-empty">
                 <i class="bi bi-funnel"></i>
-                <p>Please select Class, Section and Template, then click <strong>Filter</strong> to load students.</p>
+                <p>Please select Role and Template, then click <strong>Filter</strong> to load employees.</p>
             </div>
         @endif
     </div>
@@ -183,7 +174,7 @@
                                     <i class="bi bi-mortarboard" style="font-size:1.4rem;color:rgba(255,255,255,.8);display:block;margin-bottom:2px;"></i>
                                 @endif
                                 <div style="font-weight:700;font-size:.78rem;line-height:1.2;">
-                                    {{ $tmpl?->header_text ?: ($card['institute_name'] ?? 'Institute Name') }}
+                                    {{ $tmpl?->header_text ?: (institution()->name ?? 'Institute Name') }}
                                 </div>
                                 <div style="font-size:.62rem;margin-top:2px;letter-spacing:.05em;">EMPLOYEE ID CARD</div>
                             </div>
@@ -225,12 +216,6 @@
                                         <tr>
                                             <td style="color:rgba(0,0,0,.5);padding:1px 0;width:45%;">Department:</td>
                                             <td style="font-weight:500;">{{ $card['department'] }}</td>
-                                        </tr>
-                                        @endif
-                                        @if(!empty($card['roll_no']))
-                                        <tr>
-                                            <td style="color:rgba(0,0,0,.5);padding:1px 0;">Roll:</td>
-                                            <td style="font-weight:500;">{{ $card['roll_no'] }}</td>
                                         </tr>
                                         @endif
                                         @if(!empty($card['mobile']))
@@ -289,7 +274,7 @@
             @php $tmpl = $selectedTemplate; @endphp
             <div class="id-card-print" style="background:{{ $tmpl?->background_color ?? '#fff' }};color:{{ $tmpl?->text_color ?? '#000' }};">
                 <div style="background:{{ $tmpl?->accent_color ?? '#007bff' }};padding:12px 14px;text-align:center;">
-                    <div style="color:#fff;font-weight:700;font-size:.78rem;">{{ $tmpl?->header_text ?: ($card['institute_name'] ?? 'Institute') }}</div>
+                    <div style="color:#fff;font-weight:700;font-size:.78rem;">{{ $tmpl?->header_text ?: (institution()->name ?? 'Institute') }}</div>
                     <div style="color:rgba(255,255,255,.7);font-size:.62rem;">EMPLOYEE ID CARD</div>
                 </div>
                 <div style="padding:12px 14px;display:flex;gap:10px;">
@@ -323,28 +308,24 @@
     @endif
 
 </div>
-@push('styles')
-    <style>
-        :root {
-            --primary: rgba(33, 37, 41);
-            --primary-light: rgba(239,84,84,.12);
-        }
-
-        .card { border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
-        .card-header { background: #fff; border-bottom: 1px solid var(--border); border-radius: 12px 12px 0 0 !important; padding: 16px 20px; }
-        .card-header .card-title { font-size: .95rem; font-weight: 600; margin: 0; }
-
-        .form-control:focus, .form-select:focus {
-            border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light);
-        }
-
-        .btn-sm { font-size: .78rem; padding: .3rem .65rem; border-radius: 6px; }
-
-    </style>
-@endpush
 
 @push('styles')
 <style>
+    :root {
+        --primary: rgba(33, 37, 41);
+        --primary-light: rgba(239,84,84,.12);
+    }
+
+    .card { border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
+    .card-header { background: #fff; border-bottom: 1px solid var(--border); border-radius: 12px 12px 0 0 !important; padding: 16px 20px; }
+    .card-header .card-title { font-size: .95rem; font-weight: 600; margin: 0; }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light);
+    }
+
+    .btn-sm { font-size: .78rem; padding: .3rem .65rem; border-radius: 6px; }
+
     .gen-section {
         background: #fbfcff;
         border-radius: 10px;
@@ -439,7 +420,7 @@
     .date-field { display: flex; flex-direction: column; gap: 4px; }
     .date-label { font-size: .75rem; color: #9ca3af; }
 
-    /* Student Table */
+    /* Employee Table */
     .gen-table { width: 100%; border-collapse: collapse; }
     .gen-table thead tr { border-bottom: 1px solid #2e3a4e; }
     .gen-table th {
@@ -466,6 +447,15 @@
         accent-color: var(--primary);
         cursor: pointer;
         border-radius: 4px;
+    }
+
+    /* Avatar */
+    .avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+    .avatar-placeholder {
+        width: 32px; height: 32px; border-radius: 50%;
+        background: var(--primary-light); color: var(--primary);
+        display: inline-flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: .8rem;
     }
 
     /* Empty state */

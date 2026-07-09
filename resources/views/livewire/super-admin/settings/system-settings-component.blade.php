@@ -105,13 +105,24 @@
                     <div class="row g-4">
                         <div class="col-md-6">
                             <label class="form-label">{{ __('SMS Gateway') }}</label>
-                            <input wire:model="sms_gateway" class="form-control" placeholder="SMS Gateway">
+                            <select wire:model="sms_gateway" class="form-select">
+                                <option value="">{{ __('-- select --') }}</option>
+                                <option value="sms_net_bd">{{ __('SMS NET BD') }}</option>
+                                <option value="twilio">{{ __('Twilio') }}</option>
+                                <option value="nexmo">{{ __('Nexmo') }}</option>
+                            </select>
                             @error('sms_gateway') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">{{ __('Payment Gateway') }}</label>
                             <input wire:model="payment_gateway" class="form-control" placeholder="Payment Gateway">
                             @error('payment_gateway') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
+                        </div>
+                         <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input type="checkbox" wire:model="sms_enabled" class="form-check-input" id="smsEnabled">
+                                <label class="form-check-label" for="smsEnabled">{{ __('SMS Enabled') }}</label>
+                            </div>
                         </div>
                     </div>
                 @endif

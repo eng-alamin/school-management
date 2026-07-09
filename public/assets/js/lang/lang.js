@@ -160,7 +160,7 @@ const translations = {
         // Academic
         academic: "Academic",
         sessions: "Sessions",
-        classSection: "Class & Section",
+        classSetup: "Class Setup",
         subject: "Subject",
         classAssign: "Class Assign",
         teacherAssign: "Teacher Assign",
@@ -374,7 +374,7 @@ const translations = {
         // Academic
         academic: "একাডেমিক",
         sessions: "সেশন",
-        classSection: "শ্রেণি ও বিভাগ",
+        classSetup: "শ্রেণি সেটআপ",
         subject: "বিষয়",
         classAssign: "ক্লাস নির্ধারণ",
         teacherAssign: "শিক্ষক নির্ধারণ",
@@ -589,7 +589,7 @@ function applyLang(lang) {
     // Academic
     setText("nav-academic", t.academic);
     setText("nav-sessions", t.sessions);
-    setText("nav-class-section", t.classSection);
+    setText("nav-class-setup", t.classSetup);
     setText("nav-subject", t.subject);
     setText("nav-class-assign", t.classAssign);
     setText("nav-teacher-assign", t.teacherAssign);

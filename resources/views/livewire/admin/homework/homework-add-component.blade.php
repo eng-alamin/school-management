@@ -64,6 +64,24 @@
             </div>
 
         </div>
+
+        <div class="row g-4 mt-0">
+
+            <!-- Teacher -->
+            <div class="col-md-4">
+                <div class="input-group input-group-outline">
+                    <label class="form-label">Teacher</label>
+                    <select wire:model="teacher_id" class="form-select">
+                        <option value="">Select Teacher (Optional)</option>
+                        @foreach ($teachers as $teacher)
+                            <option value="{{ $teacher->id }}">{{ $teacher->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                @error('teacher_id') <span class="text-danger small">{{ $message }}</span> @enderror
+            </div>
+
+        </div>
     </div>
 
     <div class="form-section">

@@ -4,17 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\BelongsToInstitution;
 
 class Notice extends Model
 {
-    use BelongsToInstitution;
-    
+    use BelongsToInstitution, SoftDeletes;
+
     protected $guarded = [];
 
     protected $casts = [
         'published_at' => 'date',
-        'expires_at'   => 'date',
+        'expires_at' => 'date',
     ];
 
     /* ------------------------------------------------------------------ */
@@ -54,23 +55,23 @@ class Notice extends Model
 
     public function getPriorityColorAttribute(): string
     {
-        return match($this->priority) {
+        return match ($this->priority) {
             'urgent' => 'danger',
-            'high'   => 'warning',
+            'high' => 'warning',
             'medium' => 'primary',
-            'low'    => 'secondary',
-            default  => 'primary',
+            'low' => 'secondary',
+            default => 'primary',
         };
     }
 
     public function getPriorityIconAttribute(): string
     {
-        return match($this->priority) {
+        return match ($this->priority) {
             'urgent' => 'fas fa-exclamation-circle',
-            'high'   => 'fas fa-arrow-up',
+            'high' => 'fas fa-arrow-up',
             'medium' => 'fas fa-minus',
-            'low'    => 'fas fa-arrow-down',
-            default  => 'fas fa-minus',
+            'low' => 'fas fa-arrow-down',
+            default => 'fas fa-minus',
         };
     }
 

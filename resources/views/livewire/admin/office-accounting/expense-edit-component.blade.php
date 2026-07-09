@@ -1,163 +1,176 @@
-<div class="mat-card" style="padding-top:28px">
+<div>
+    <div class="card">
+        <!-- Floating Header -->
+        <div class="mat-card-header header-pink-gradient">
+            <h5>
+                <span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">
+                    account_balance_wallet
+                </span>
+                Edit Expense
+            </h5>
+            <p>Update existing expense record</p>
+        </div>
 
-    <!-- Floating Header -->
-    <div class="mat-card-header header-pink-gradient">
-        <h5>
-            <span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">
-                account_balance_wallet
-            </span>
-            Edit Expense
-        </h5>
-        <p>Update existing expense record</p>
-    </div>
+        <!-- ══ EXPENSE DETAILS ══ -->
+        <div class="form-section">
+            <div class="row g-4">
 
-    <!-- ══ EXPENSE DETAILS ══ -->
-    <div class="form-section">
-        <div class="row g-4">
-
-            <!-- Account -->
-            <div class="col-md-12">
-                <div class="input-group input-group-outline" wire:ignore>
-                    <label class="form-label">Account <span class="req">*</span></label>
-                    <select wire:model="account_id" class="form-select" id="accountSelect">
-                        <option value="">Select</option>
-                        @foreach($accounts as $account)
-                            <option value="{{ $account->id }}" @selected($account_id == $account->id)>
-                                {{ $account->name }}
-                            </option>
-                        @endforeach
-                    </select>
+                <!-- Account -->
+                <div class="col-md-12">
+                    <div class="input-group input-group-outline" wire:ignore>
+                        <label class="form-label">Account <span class="req">*</span></label>
+                        <select wire:model="account_id" class="form-select" id="accountSelect">
+                            <option value="">Select</option>
+                            @foreach($accounts as $account)
+                                <option value="{{ $account->id }}" @selected($account_id == $account->id)>
+                                    {{ $account->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @error('account_id') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
-                @error('account_id') <span class="text-danger">{{ $message }}</span> @enderror
-            </div>
 
-            <!-- Head -->
-            <div class="col-md-12">
-                <div class="input-group input-group-outline" wire:ignore>
-                    <label class="form-label">Head</label>
-                    <select wire:model="head_id" class="form-select" id="headSelect">
-                        <option value="">Select (Optional)</option>
-                        @foreach($heads as $head)
-                            <option value="{{ $head->id }}" @selected($head_id == $head->id)>
-                                {{ $head->name }}
-                            </option>
-                        @endforeach
-                    </select>
+                <!-- Head -->
+                <div class="col-md-12">
+                    <div class="input-group input-group-outline" wire:ignore>
+                        <label class="form-label">Head</label>
+                        <select wire:model="head_id" class="form-select" id="headSelect">
+                            <option value="">Select (Optional)</option>
+                            @foreach($heads as $head)
+                                <option value="{{ $head->id }}" @selected($head_id == $head->id)>
+                                    {{ $head->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @error('head_id') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
-                @error('head_id') <span class="text-danger">{{ $message }}</span> @enderror
-            </div>
 
-            <!-- Pay Via -->
-            <div class="col-md-6">
-                <div class="input-group input-group-outline" wire:ignore>
-                    <label class="form-label">Pay Via</label>
-                    <select wire:model="pay_via" class="form-select" id="payViaSelect">
-                        <option value="">Select</option>
-                        <option value="Cash" @selected($pay_via == 'Cash')>Cash</option>
-                        <option value="Bank Transfer" @selected($pay_via == 'Bank Transfer')>Bank Transfer</option>
-                        <option value="Cheque" @selected($pay_via == 'Cheque')>Cheque</option>
-                        <option value="Mobile Banking" @selected($pay_via == 'Mobile Banking')>Mobile Banking</option>
-                        <option value="Card" @selected($pay_via == 'Card')>Card</option>
-                    </select>
+                <!-- Pay Via -->
+                <div class="col-md-6">
+                    <div class="input-group input-group-outline" wire:ignore>
+                        <label class="form-label">Pay Via</label>
+                        <select wire:model="pay_via" class="form-select" id="payViaSelect">
+                            <option value="">Select</option>
+                            <option value="Cash" @selected($pay_via == 'Cash')>Cash</option>
+                            <option value="Bank Transfer" @selected($pay_via == 'Bank Transfer')>Bank Transfer</option>
+                            <option value="Cheque" @selected($pay_via == 'Cheque')>Cheque</option>
+                            <option value="Mobile Banking" @selected($pay_via == 'Mobile Banking')>Mobile Banking</option>
+                            <option value="Card" @selected($pay_via == 'Card')>Card</option>
+                        </select>
+                    </div>
+                    @error('pay_via') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
-                @error('pay_via') <span class="text-danger">{{ $message }}</span> @enderror
-            </div>
 
-            <!-- Reference -->
-            <div class="col-md-6">
-                <div class="input-group input-group-outline">
-                    <label class="form-label">Reference</label>
-                    <input type="text"
-                           wire:model="reference"
-                           class="form-control"
-                           placeholder=" "
-                           onfocus="focused(this)"
-                           onfocusout="defocused(this)">
+                <!-- Reference -->
+                <div class="col-md-6">
+                    <div class="input-group input-group-outline">
+                        <label class="form-label">Reference</label>
+                        <input type="text"
+                            wire:model="reference"
+                            class="form-control"
+                            placeholder=" "
+                            onfocus="focused(this)"
+                            onfocusout="defocused(this)">
+                    </div>
+                    @error('reference') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
-                @error('reference') <span class="text-danger">{{ $message }}</span> @enderror
-            </div>
 
-            <!-- Amount -->
-            <div class="col-md-6">
-                <div class="input-group input-group-outline">
-                    <label class="form-label">Amount <span class="req">*</span></label>
-                    <input type="number"
-                           wire:model="amount"
-                           class="form-control"
-                           placeholder=" "
-                           step="0.01"
-                           min="0"
-                           onfocus="focused(this)"
-                           onfocusout="defocused(this)">
+                <!-- Amount -->
+                <div class="col-md-6">
+                    <div class="input-group input-group-outline">
+                        <label class="form-label">Amount <span class="req">*</span></label>
+                        <input type="number"
+                            wire:model="amount"
+                            class="form-control"
+                            placeholder=" "
+                            step="0.01"
+                            min="0"
+                            onfocus="focused(this)"
+                            onfocusout="defocused(this)">
+                    </div>
+                    @error('amount') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
-                @error('amount') <span class="text-danger">{{ $message }}</span> @enderror
-            </div>
 
-            <!-- Date -->
-            <div class="col-md-6">
-                <div class="input-group input-group-outline" wire:ignore>
-                    <label class="form-label">Date <span class="req">*</span></label>
-                    <input type="date" wire:model="date" data-dp-value="{{ $date }}" class="form-control">
-                    @error('date') <span class="text-danger">{{ $message }}</span> @enderror
+                <!-- Date -->
+                <div class="col-md-6">
+                    <div class="input-group input-group-outline" wire:ignore>
+                        <label class="form-label">Date <span class="req">*</span></label>
+                        <input type="date" wire:model="date" data-dp-value="{{ $date }}" class="form-control">
+                        @error('date') <span class="text-danger">{{ $message }}</span> @enderror
+                    </div>
                 </div>
-            </div>
 
-            <!-- Description -->
-            <div class="col-12">
-                <div class="input-group input-group-outline">
-                    <label class="form-label">Description</label>
-                    <textarea wire:model="description"
-                              class="form-control"
-                              style="min-height:120px"
-                              placeholder=" "
-                              onfocus="focused(this)"
-                              onfocusout="defocused(this)"></textarea>
+                <!-- Description -->
+                <div class="col-12">
+                    <div class="input-group input-group-outline">
+                        <label class="form-label">Description</label>
+                        <textarea wire:model="description"
+                                class="form-control"
+                                style="min-height:120px"
+                                placeholder=" "
+                                onfocus="focused(this)"
+                                onfocusout="defocused(this)"></textarea>
+                    </div>
+                    @error('description') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
-                @error('description') <span class="text-danger">{{ $message }}</span> @enderror
-            </div>
 
-            <!-- Attachment -->
-            <div class="col-12">
-                <label style="font-size:.73rem;font-weight:600;color:var(--muted);display:block;margin-bottom:8px">
-                    Attachment
-                </label>
-                <div class="photo-upload-box">
-                    <span class="material-icons-round">attach_file</span>
-                    <span class="lbl">Click to upload attachment</span>
-                    <small style="color:#bbb;font-size:.7rem">PDF, JPG, PNG up to 2MB</small>
-                    <input type="file" wire:model="attachment" accept=".pdf,image/*">
+                <!-- Attachment -->
+                <div class="col-12">
+                    <label style="font-size:.73rem;font-weight:600;color:var(--muted);display:block;margin-bottom:8px">
+                        Attachment
+                    </label>
+
+                    @if($existing_attachment && !$remove_attachment)
+                        <div class="d-flex align-items-center gap-2 mb-2 p-2" style="border:1px solid var(--border);border-radius:8px;">
+                            <span class="material-icons-round">attach_file</span>
+                            <a href="{{ Storage::url($existing_attachment) }}" target="_blank" class="flex-grow-1 text-truncate">
+                                View current attachment
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-danger" wire:click="removeAttachment">
+                                <span class="material-icons-round" style="font-size:16px">delete</span>
+                            </button>
+                        </div>
+                    @endif
+
+                    <div class="photo-upload-box">
+                        <span class="material-icons-round">attach_file</span>
+                        <span class="lbl">Click to upload new attachment</span>
+                        <small style="color:#bbb;font-size:.7rem">PDF, JPG, PNG up to 2MB</small>
+                        <input type="file" wire:model="attachment" accept=".pdf,image/*">
+                    </div>
+                    @error('attachment') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
-                @error('attachment') <span class="text-danger">{{ $message }}</span> @enderror
-            </div>
 
+            </div>
+        </div>
+
+        <!-- FORM FOOTER -->
+        <div class="form-footer">
+
+            <button class="btn-pink"
+                    type="button"
+                    wire:click="update"
+                    wire:loading.attr="disabled"
+                    wire:target="update">
+
+                <span wire:loading.remove wire:target="update" style="display: inline-flex;align-items: center;gap: 6px">
+                    <span class="material-icons-round">update</span>
+                    Update
+                </span>
+
+                <span wire:loading wire:target="update">
+                    <span class="material-icons-round"
+                        style="font-size:16px;animation:spin .7s linear infinite">
+                        sync
+                    </span>
+                    Updating...
+                </span>
+
+            </button>
         </div>
     </div>
-
-    <!-- FORM FOOTER -->
-    <div class="form-footer">
-
-        <button class="btn-pink"
-                type="button"
-                wire:click="update"
-                wire:loading.attr="disabled"
-                wire:target="update">
-
-            <span wire:loading.remove wire:target="update">
-                <span class="material-icons-round">update</span>
-                Update
-            </span>
-
-            <span wire:loading wire:target="update">
-                <span class="material-icons-round"
-                      style="font-size:16px;animation:spin .7s linear infinite">
-                    sync
-                </span>
-                Updating...
-            </span>
-
-        </button>
-    </div>
-
 </div>
 
 

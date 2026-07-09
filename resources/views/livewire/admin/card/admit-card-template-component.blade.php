@@ -67,7 +67,7 @@
                     </thead>
                     <tbody>
                         @forelse($templates as $i => $t)
-                        <tr>
+                        <tr wire:key="admit-template-row-{{ $t->id }}">
                             <td class="text-muted">{{ $templates->firstItem() + $i }}</td>
                             <td>
                                 <div class="d-flex align-items-center gap-2">
@@ -85,15 +85,16 @@
                             <td><span class="badge bg-secondary-subtle text-secondary">{{ $examTypes[$t->exam_type] ?? ucfirst($t->exam_type) }}</span></td>
                             <td>
                                 <div class="d-flex gap-1">
-                                    <span title="BG" style="width:18px;height:18px;border-radius:4px;background:{{ $t->background_color }};border:1px solid #e5e7eb;display:inline-block;"></span>
+                                    <span title="Background" style="width:18px;height:18px;border-radius:4px;background:{{ $t->background_color }};border:1px solid #e5e7eb;display:inline-block;"></span>
+                                    <span title="Text" style="width:18px;height:18px;border-radius:4px;background:{{ $t->text_color }};border:1px solid #e5e7eb;display:inline-block;"></span>
                                     <span title="Accent" style="width:18px;height:18px;border-radius:4px;background:{{ $t->accent_color }};border:1px solid #e5e7eb;display:inline-block;"></span>
                                 </div>
                             </td>
                             <td>
-                                <div class="d-flex gap-1">
-                                    <span title="Background" style="width:18px;height:18px;border-radius:4px;background:{{ $t->background_color }};border:1px solid #e5e7eb;display:inline-block;"></span>
-                                    <span title="Text" style="width:18px;height:18px;border-radius:4px;background:{{ $t->text_color }};border:1px solid #e5e7eb;display:inline-block;"></span>
-                                    <span title="Accent" style="width:18px;height:18px;border-radius:4px;background:{{ $t->accent_color }};border:1px solid #e5e7eb;display:inline-block;"></span>
+                                <div class="d-flex gap-1 flex-wrap">
+                                    @if($t->show_photo) <span class="badge bg-info-subtle text-info" style="font-size:.65rem;">Photo</span> @endif
+                                    @if($t->show_signature) <span class="badge bg-success-subtle text-success" style="font-size:.65rem;">Signature</span> @endif
+                                    @if($t->show_barcode) <span class="badge bg-warning-subtle text-warning" style="font-size:.65rem;">Barcode</span> @endif
                                 </div>
                             </td>
                             <td>
@@ -187,6 +188,7 @@
                         <div class="col-12">
                             <label class="form-label">Logo</label>
                             <input type="file" class="form-control @error('logo') is-invalid @enderror" wire:model="logo" accept="image/*">
+                            <div wire:loading wire:target="logo" class="small text-muted mt-1">Uploading...</div>
                             @error('logo')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             @if($existingLogo)
                                 <img src="{{ asset($existingLogo) }}" height="40" class="mt-2 rounded">
@@ -637,7 +639,10 @@
                 </div>
                 <div class="modal-footer justify-content-center border-0 pt-0">
                     <button class="btn btn-light btn-sm" wire:click="$set('confirmDelete',false)">Cancel</button>
-                    <button class="btn btn-danger btn-sm" wire:click="deleteRecord">Delete</button>
+                    <button class="btn btn-danger btn-sm" wire:click="deleteRecord">
+                        <span wire:loading wire:target="deleteRecord" class="spinner-border spinner-border-sm me-1"></span>
+                        Delete
+                    </button>
                 </div>
             </div>
         </div>
@@ -648,21 +653,7 @@
 
 @push('styles')
     <style>
-        :root {
-            --primary: rgba(33, 37, 41);
-            --primary-light: rgba(239,84,84,.12);
-        }
 
-        /* ── CARD ── */
-        .card { border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
-        .card-header { background: #fff; border-bottom: 1px solid var(--border); border-radius: 12px 12px 0 0 !important; padding: 16px 20px; }
-        .card-header .card-title { font-size: .95rem; font-weight: 600; margin: 0; }
- 
-        /* ── TABLE ── */
-        .table th { font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); border-bottom: 2px solid var(--border); }
-        .table td { vertical-align: middle; font-size: .875rem; }
-        .table > :not(caption) > * > * { padding: .7rem 1rem; }
- 
         /* ── BADGES ── */
         .badge-active { background: rgba(34,197,94,.12); color: #16a34a; }
         .badge-inactive { background: rgba(107,114,128,.12); color: #6b7280; }
@@ -677,11 +668,6 @@
             display: inline-flex; align-items: center; justify-content: center;
             font-weight: 700; font-size: .875rem;
         }
- 
-        /* ── MODAL ── */
-        .modal-header { border-bottom: 1px solid var(--border); }
-        .modal-footer { border-top: 1px solid var(--border); }
-        .modal-title { font-weight: 600; font-size: 1rem; }
  
         /* ── FORM ── */
         .form-label { font-size: .8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
@@ -708,78 +694,6 @@
         .btn-sm { font-size: .78rem; padding: .3rem .65rem; border-radius: 6px; }
         .btn-icon { width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 7px; }
  
-        /* Stat cards */
-        .stat-card { border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 16px; }
-        .stat-icon { width: 48px; height: 48px; border-radius: 10px; display: grid; place-items: center; font-size: 1.4rem; }
-        .stat-label { font-size: .75rem; color: var(--text-muted); font-weight: 500; }
-        .stat-value { font-size: 1.5rem; font-weight: 700; line-height: 1; }
  
-        /* ID Card Preview */
-        .id-card-preview {
-            width: 325px; min-height: 200px; border-radius: 14px; overflow: hidden;
-            box-shadow: 0 8px 32px rgba(0,0,0,.15); margin: 0 auto;
-            position: relative; font-family: 'Inter', sans-serif;
-        }
-        .id-card-preview .card-header-band { padding: 16px; text-align: center; }
-        .id-card-preview .card-body-area { padding: 14px 16px; display: flex; gap: 14px; }
-        .id-card-preview .card-photo {
-            width: 80px; height: 95px; border-radius: 8px;
-            object-fit: cover; border: 3px solid rgba(255,255,255,.5);
-        }
- 
-        /* Print */
-        @media print {
-            .sidebar, .topbar, .no-print { display: none !important; }
-            .main-content { margin: 0; padding: 0; }
-            .print-area { display: block !important; }
-        }
- 
-        .alert { border-radius: 10px; font-size: .875rem; }
- 
-        /* Subject rows */
-        .subject-row { background: var(--bg); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
- 
-
-        /* Pagination */
-        .custom-pagination {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-
-        .custom-pagination li {
-            list-style: none;
-        }
-
-        .custom-pagination button {
-            min-width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            border: 1px solid #e0e0e0;
-            background: #f5f5f5;
-            color: #444;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all .2s ease;
-        }
-
-        /* Hover */
-        .custom-pagination button:hover {
-            background: #eee;
-        }
-
-        /* Active (Pink) */
-        .custom-pagination button.active {
-            background: linear-gradient(195deg, #ec407a, #d81b60);
-            color: #fff;
-            border: none;
-            box-shadow: 0 4px 12px rgba(216,27,96,.4);
-        }
-
-        /* Disabled */
-        .custom-pagination button:disabled {
-            opacity: .5;
-            cursor: not-allowed;
-        }
     </style>
 @endpush

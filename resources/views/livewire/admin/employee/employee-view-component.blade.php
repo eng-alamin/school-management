@@ -1,6 +1,6 @@
 <div>
 
-    <div class="card">
+    <div class="card border-0 bg-transparent">
 
         <div class="mat-card-header header-pink-gradient no-print">
             <h5 id="emp-view-header-title">Employee Overview</h5>
@@ -8,100 +8,145 @@
 
         <div class="container-xl mt-4">
 
-            @include('livewire.admin.employee.employee-navbar', ['employee' => $employee])
+            <div id="employeeDetailsPrintable">
 
-            <!-- START CONTENT -->
+                @include('livewire.admin.employee.employee-navbar', ['employee' => $employee])
 
-            <!-- Job Details -->
-            <div class="section-card">
-                <div class="section-head">
-                    <div class="section-icon"><span class="material-icons-round">work</span></div>
-                    <span class="section-title">Job Details</span>
-                </div>
-                <div class="fgrid fgrid-3">
-                    <div class="f"><div class="f-lbl">Employee ID</div><div class="f-val">{{ $employee->employee_id }}</div></div>
-                    <div class="f"><div class="f-lbl">Role</div><div class="f-val">{{ ucfirst($employee->user->role ?? '—') }}</div></div>
-                    <div class="f no-br"><div class="f-lbl">Joining Date</div><div class="f-val">{{ $employee->joining_date ? \Carbon\Carbon::parse($employee->joining_date)->format('d M Y') : '—' }}</div></div>
-                    <div class="f no-bb"><div class="f-lbl">Designation</div><div class="f-val">{{ $employee->designation->name ?? '—' }}</div></div>
-                    <div class="f no-bb"><div class="f-lbl">Department</div><div class="f-val">{{ $employee->department->name ?? '—' }}</div></div>
-                    <div class="f no-bb no-br"><div class="f-lbl">Total Experience</div><div class="f-val">{{ $employee->total_experience ?? '—' }}</div></div>
-                </div>
-            </div>
-
-            <!-- Employee Details -->
-            <div class="section-card">
-                <div class="section-head">
-                    <div class="section-icon"><span class="material-icons-round">person</span></div>
-                    <span class="section-title">Employee Details</span>
-                </div>
-                <div class="fgrid fgrid-3">
-                    <div class="f span2"><div class="f-lbl">Full Name</div><div class="f-val">{{ $employee->name }}</div></div>
-                    <div class="f no-br"><div class="f-lbl">Date of Birth</div><div class="f-val">{{ $employee->dob ? \Carbon\Carbon::parse($employee->dob)->format('d M Y') : '—' }}</div></div>
-                    <div class="f"><div class="f-lbl">Religion</div><div class="f-val">{{ $employee->religion ? ucfirst($employee->religion) : '—' }}</div></div>
-                    <div class="f"><div class="f-lbl">Mobile No</div><div class="f-val">{{ $employee->mobile ?? '—' }}</div></div>
-                    <div class="f span2 no-br"><div class="f-lbl">Email</div><div class="f-val">{{ $employee->email ?? '—' }}</div></div>
-                    <div class="f span3"><div class="f-lbl">Qualification</div><div class="f-val">{{ $employee->qualification ?? '—' }}</div></div>
-                    <div class="f span3"><div class="f-lbl">Experience Detail</div><div class="f-val">{{ $employee->experience_detail ?? '—' }}</div></div>
-                    <div class="f span3"><div class="f-lbl">Present Address</div><div class="f-val">{{ $employee->present_address ?? '—' }}</div></div>
-                    <div class="f span3 no-bb"><div class="f-lbl">Permanent Address</div><div class="f-val">{{ $employee->permanent_address ?? '—' }}</div></div>
-                    <div class="photo-row no-bb no-print">
-                        <div class="photo-thumb">
-                            @if($employee->photo)
-                                <img src="{{ asset('storage/' . $employee->photo) }}" alt="{{ $employee->name }}" style="width:100%;height:100%;object-fit:cover;border-radius:8px">
-                            @else
-                                <span class="material-icons-round">person</span>
-                                <span>No photo</span>
-                            @endif
-                        </div>
-                        <div>
-                            <div class="f-lbl" style="margin-bottom:4px">Profile Picture</div>
-                            <div style="color:var(--muted);font-size:.8rem;font-style:italic">
-                                {{ $employee->photo ? 'Photo uploaded' : 'No photo uploaded' }}
+                <!-- Job Details -->
+                <div class="card shadow-sm mb-4 avoid-break">
+                    <div class="card-header bg-white d-flex align-items-center gap-2">
+                        <span class="material-icons-round text-primary">work</span>
+                        <span class="fw-semibold">Job Details</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-6 col-md-4">
+                                <div class="text-muted small">Employee ID</div>
+                                <div class="fw-medium">{{ $employee->employee_id }}</div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="text-muted small">Joining Date</div>
+                                <div class="fw-medium">{{ $employee->joining_date ? \Carbon\Carbon::parse($employee->joining_date)->format('d M Y') : '—' }}</div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="text-muted small">Total Experience</div>
+                                <div class="fw-medium">{{ $employee->total_experience ?? '—' }}</div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="text-muted small">Designation</div>
+                                <div class="fw-medium">{{ $employee->designation->name ?? '—' }}</div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="text-muted small">Department</div>
+                                <div class="fw-medium">{{ $employee->department->name ?? '—' }}</div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="text-muted small">Role</div>
+                                <div class="fw-medium">{{ ucfirst($employee->user->role ?? '—') }}</div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Login Details -->
-            <div class="section-card no-print">
-                <div class="section-head">
-                    <div class="section-icon"><span class="material-icons-round">lock</span></div>
-                    <span class="section-title">Login Details</span>
+                <!-- Employee Details -->
+                <div class="card shadow-sm mb-4 avoid-break">
+                    <div class="card-header bg-white d-flex align-items-center gap-2">
+                        <span class="material-icons-round text-primary">person</span>
+                        <span class="fw-semibold">Employee Details</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="text-muted small">Full Name</div>
+                                <div class="fw-medium">{{ $employee->name }}</div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="text-muted small">Date of Birth</div>
+                                <div class="fw-medium">{{ $employee->dob ? \Carbon\Carbon::parse($employee->dob)->format('d M Y') : '—' }}</div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="text-muted small">Religion</div>
+                                <div class="fw-medium">{{ $employee->religion ? ucfirst($employee->religion) : '—' }}</div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="text-muted small">Mobile No</div>
+                                <div class="fw-medium">{{ $employee->mobile ?? '—' }}</div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="text-muted small">Email</div>
+                                <div class="fw-medium">{{ $employee->email ?? '—' }}</div>
+                            </div>
+                            <div class="col-12">
+                                <div class="text-muted small">Qualification</div>
+                                <div class="fw-medium">{{ $employee->qualification ?? '—' }}</div>
+                            </div>
+                            <div class="col-12">
+                                <div class="text-muted small">Experience Detail</div>
+                                <div class="fw-medium">{{ $employee->experience_detail ?? '—' }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="text-muted small">Present Address</div>
+                                <div class="fw-medium">{{ $employee->present_address ?? '—' }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="text-muted small">Permanent Address</div>
+                                <div class="fw-medium">{{ $employee->permanent_address ?? '—' }}</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="fgrid fgrid-3">
-                    <div class="f no-bb"><div class="f-lbl">Username</div><div class="f-val">{{ $employee->user->username ?? '—' }}</div></div>
-                    <div class="f no-bb"><div class="f-lbl">Password</div><div class="f-val dots">••••••••</div></div>
-                    <div class="f no-bb no-br"><div class="f-lbl">Email</div><div class="f-val">{{ $employee->user->email ?? '—' }}</div></div>
-                </div>
-            </div>
 
-            <!-- Bank Info -->
-            <div class="section-card">
-                <div class="section-head">
-                    <div class="section-icon"><span class="material-icons-round">account_balance</span></div>
-                    <span class="section-title">Bank Info</span>
+                <!-- Bank Info -->
+                <div class="card shadow-sm mb-4 avoid-break">
+                    <div class="card-header bg-white d-flex align-items-center gap-2">
+                        <span class="material-icons-round text-primary">account_balance</span>
+                        <span class="fw-semibold">Bank Info</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-6 col-md-4">
+                                <div class="text-muted small">Bank Name</div>
+                                <div class="fw-medium">{{ $employee->bank_name ?? '—' }}</div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="text-muted small">Holder Name</div>
+                                <div class="fw-medium">{{ $employee->holder_name ?? '—' }}</div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="text-muted small">Bank Branch</div>
+                                <div class="fw-medium">{{ $employee->bank_branch ?? '—' }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="text-muted small">Bank Address</div>
+                                <div class="fw-medium">{{ $employee->bank_address ?? '—' }}</div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="text-muted small">IFSC Code</div>
+                                <div class="fw-medium">{{ $employee->ifsc_code ?? '—' }}</div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="text-muted small">Account No</div>
+                                <div class="fw-medium">{{ $employee->account_no ?? '—' }}</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="fgrid fgrid-3">
-                    <div class="f"><div class="f-lbl">Bank Name</div><div class="f-val">{{ $employee->bank_name ?? '—' }}</div></div>
-                    <div class="f"><div class="f-lbl">Holder Name</div><div class="f-val">{{ $employee->holder_name ?? '—' }}</div></div>
-                    <div class="f no-br"><div class="f-lbl">Bank Branch</div><div class="f-val">{{ $employee->bank_branch ?? '—' }}</div></div>
-                    <div class="f no-bb"><div class="f-lbl">Bank Address</div><div class="f-val">{{ $employee->bank_address ?? '—' }}</div></div>
-                    <div class="f no-bb"><div class="f-lbl">IFSC Code</div><div class="f-val">{{ $employee->ifsc_code ?? '—' }}</div></div>
-                    <div class="f no-bb no-br"><div class="f-lbl">Account No</div><div class="f-val">{{ $employee->account_no ?? '—' }}</div></div>
-                </div>
-            </div>
 
-            <!-- Footer -->
-            <div class="footer-actions no-print">
-                <a href="{{ route('admin.employee.edit', ['id' => $employee->id]) }}" class="btn btn-ghost">
-                    <span class="material-icons-round">edit</span> Edit
-                </a>
-                <button type="button" class="btn btn-dark" onclick="window.print()">
-                    <span class="material-icons-round">print</span> Print
-                </button>
+                <!-- Action Toolbar — hidden on print via no-print -->
+                <div class="d-flex justify-content-end gap-2 my-3 no-print">
+                    <a href="{{ route('admin.employee.edit', ['id' => $employee->id]) }}"
+                       class="btn btn-outline-secondary btn-sm">
+                        <span class="material-icons-round align-middle" style="font-size:1rem;">edit</span>
+                        Edit
+                    </a>
+                    <button type="button" class="btn btn-dark btn-sm" onclick="printEmployeeDetails()">
+                        <span class="material-icons-round align-middle" style="font-size:1rem;">print</span>
+                        Print
+                    </button>
+                </div>
+
             </div>
-            <!-- END CONTENT -->
+   
 
         </div>
 
@@ -109,36 +154,98 @@
 
 </div>
 
+@push('scripts')
+    <script>
+        function printEmployeeDetails() {
+            const printableEl = document.getElementById('employeeDetailsPrintable');
 
-@push('styles')
-<style>
-    @media print {
-        /* sidebar, navbar, header সব hide */
-        .no-print, .sidenav, .navbar,
-        .employee-navbar,
-        nav, header, aside, footer { display: none !important; }
+            if (!printableEl) {
+                return;
+            }
 
-        /* card এর padding/shadow সরাও */
-        .card {background: none !important; border: none !important; box-shadow: none !important; padding: 0 !important; }
+            const printContent = printableEl.innerHTML;
+            const printWindow = window.open('', '_blank', 'width=900,height=650');
 
-        /* container full width */
-        .container-xl { max-width: 100% !important; padding: 0 !important; }
+            if (!printWindow) {
+                alert('Print window block hoye গেছে। Browser-er popup blocker check korun.');
+                return;
+            }
 
-        /* section card border রাখো কিন্তু shadow সরাও */
-        .section-card { box-shadow: none !important; break-inside: avoid; }
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Employee Details - {{ $employee->name }}</title>
+                        <style>
+                            * { box-sizing: border-box; }
+                            body { font-family: Arial, Helvetica, sans-serif; padding: 28px; color: #222; }
+                            .no-print { display: none !important; }
 
-        /* page break যাতে section মাঝখানে না ভাঙে */
-        .section-card { page-break-inside: avoid; }
+                            .row { display: flex; flex-wrap: wrap; margin: 0 -8px; }
+                            .col-12 { width: 100%; padding: 6px 8px; }
+                            .col-6 { width: 50%; padding: 6px 8px; }
+                            .col-md-3 { width: 25%; padding: 6px 8px; }
+                            .col-md-4 { width: 33.333%; padding: 6px 8px; }
+                            .col-md-6 { width: 50%; padding: 6px 8px; }
+                            .col-md-8 { width: 66.666%; padding: 6px 8px; }
 
-        body { background: white !important; }
+                            .d-flex { display: flex; }
+                            .flex-wrap { flex-wrap: wrap; }
+                            .align-items-center { align-items: center; }
+                            .align-items-start { align-items: flex-start; }
+                            .justify-content-between { justify-content: space-between; }
+                            .gap-1 { gap: 4px; }
+                            .gap-2 { gap: 8px; }
+                            .gap-3 { gap: 12px; }
+                            .gap-4 { gap: 16px; }
+                            .flex-grow-1 { flex-grow: 1; }
+                            .mb-1 { margin-bottom: 4px; }
+                            .mb-2 { margin-bottom: 8px; }
+                            .mb-4 { margin-bottom: 16px; }
+                            .mt-3 { margin-top: 12px; }
+                            .p-4 { padding: 16px; }
 
-        .profile-card > .d-flex {
-            display: flex !important;
+                            .text-muted { color: #6c757d !important; }
+                            .text-dark { color: #212529 !important; }
+                            .text-decoration-none { text-decoration: none; }
+                            .fw-bold, .fw-semibold, .fw-medium { font-weight: 600; }
+                            .fs-4 { font-size: 1.25rem; }
+                            .fs-5, .fs-6 { font-size: .9rem; }
+                            .small { font-size: .8rem; }
+
+                            .badge { display: inline-block; padding: 3px 10px; border-radius: 12px;
+                                     background: #212529; color: #fff; font-size: 11px; margin-right: 4px; }
+                            .bg-dark { background: #212529 !important; color: #fff; }
+
+                            .card, .card-custom { border: 1px solid #ddd; border-radius: 8px;
+                                                   margin-bottom: 16px; padding: 14px; }
+                            .card-header { font-weight: 600; margin-bottom: 8px; padding-bottom: 8px;
+                                           border-bottom: 1px solid #eee; }
+
+                            .avatar-wrap { position: relative; display: inline-block; }
+                            .avatar-wrap img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; }
+                            .online-dot { display: none; }
+
+                            .stat-box { margin-right: 16px; }
+                            .stat-label { color: #777; text-transform: uppercase; font-size: 11px; }
+
+                            .material-icons-round, .bi { display: none; } /* icon fonts aren't loaded here */
+
+                            .avoid-break { break-inside: avoid; page-break-inside: avoid; }
+                        </style>
+                    </head>
+                    <body>
+                        ${printContent}
+                    </body>
+                </html>
+            `);
+
+            printWindow.document.close();
+            printWindow.focus();
+
+            setTimeout(() => {
+                printWindow.print();
+                printWindow.close();
+            }, 250);
         }
-
-        .profile-card .flex-grow-1 {
-            width: 50% !important;
-        }
-    }
-</style>
+    </script>
 @endpush

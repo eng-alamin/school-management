@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Admin\StudentAccounting;
 
-use App\Models\AcademicClass;
+use App\Models\AcademicClassAssign;
 use App\Models\FeeSetup;
 use App\Models\FeeType;
 use Illuminate\Support\Facades\DB;
@@ -29,11 +29,15 @@ class FeeSetupComponent extends Component
 
     public function loadData()
     {
-        $institutionId = institution()->id;
-
-        $this->classes = AcademicClass::query()
-            ->orderBy('numeric')
-            ->get();
+        // Only classes that are actually assigned (via AcademicClassAssign) are shown here —
+        // matches project convention: classes are sourced via AcademicClassAssign, not AcademicClass directly
+        $this->classes = AcademicClassAssign::with('class')
+            ->get()
+            ->pluck('class')
+            ->filter()
+            ->unique('id')
+            ->sortBy('numeric')
+            ->values();
 
         $this->feeTypes = FeeType::query()
             ->where('status', true)

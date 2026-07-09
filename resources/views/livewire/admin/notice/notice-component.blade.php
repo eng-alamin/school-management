@@ -79,7 +79,7 @@
                     </thead>
                     <tbody>
                         @forelse($notices as $i => $notice)
-                        <tr>
+                        <tr wire:key="notice-{{ $notice->id }}">
                             <td class="text-muted">{{ $notices->firstItem() + $i }}</td>
 
                             <td>
@@ -283,6 +283,20 @@
                                     </div>
                                 </div>
 
+                                {{-- SMS Toggle --}}
+                                <div class="col-12">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" wire:model.defer="sendSms" id="send_sms" role="switch">
+                                        <label class="form-check-label" for="send_sms" style="font-size:.8rem;font-weight:600;color:var(--text-muted);">
+                                            Send SMS to target audience
+                                        </label>
+                                    </div>
+                                    <small class="text-muted d-block mt-1" style="font-size:.72rem;">
+                                        Only applies when creating a new notice (not on edit).
+                                    </small>
+                                </div>
+
+
                             </div>
                         </form>
                     </div>
@@ -336,7 +350,7 @@
                             <div class="d-flex align-items-center gap-2 p-2 mb-3" style="background:#f0f7ff;border-radius:8px;border:1px solid #bfdbfe;">
                                 <span class="material-icons-round text-primary" style="font-size:1.1rem;">attach_file</span>
                                 <span style="font-size:.8rem;flex:1;">{{ $viewRecord->attachment_name }}</span>
-                                <a href="{{ asset('storage/' . $viewRecord->attachment) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                <a href="{{ Storage::url($viewRecord->attachment) }}" target="_blank" class="btn btn-sm btn-outline-primary">
                                     <span class="material-icons-round" style="font-size:.85rem;vertical-align:middle;">download</span> Download
                                 </a>
                             </div>

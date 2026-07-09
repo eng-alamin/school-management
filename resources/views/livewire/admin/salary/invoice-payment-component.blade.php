@@ -34,7 +34,13 @@
                 <div class="ps-meta-row">
                     <span class="ps-meta-label">Salary Month :</span>
                     <span class="ps-meta-value">
-                        {{ \Carbon\Carbon::createFromFormat('Y-m', $month)->format('F') }}
+                        {{--
+                            FIX: previously only showed month name (e.g. "May"),
+                            missing the year. An official payslip must show the
+                            year too, otherwise the same month across different
+                            years becomes indistinguishable in payment history.
+                        --}}
+                        {{ \Carbon\Carbon::createFromFormat('Y-m', $month)->format('F Y') }}
                     </span>
                 </div>
             </div>
@@ -96,7 +102,7 @@
                         @forelse($allowances as $row)
                         <tr>
                             <td>{{ $row['name'] }}</td>
-                            <td class="text-end">${{ number_format($row['amount'], 2) }}</td>
+                            <td class="text-end">৳{{ number_format($row['amount'], 2) }}</td>
                         </tr>
                         @empty
                         <tr>
@@ -121,7 +127,7 @@
                         @forelse($deductions as $row)
                         <tr>
                             <td>{{ $row['name'] }}</td>
-                            <td class="text-end">${{ number_format($row['amount'], 2) }}</td>
+                            <td class="text-end">৳{{ number_format($row['amount'], 2) }}</td>
                         </tr>
                         @empty
                         <tr>
@@ -141,25 +147,31 @@
             <div class="ps-summary">
                 <div class="ps-summary-row">
                     <span class="ps-sum-label">Basic Salary :</span>
-                    <span class="ps-sum-value">${{ number_format($payment['basic_salary'] ?? 0, 2) }}</span>
+                    <span class="ps-sum-value">৳{{ number_format($payment['basic_salary'] ?? 0, 2) }}</span>
                 </div>
                 <div class="ps-summary-row">
                     <span class="ps-sum-label">Total Allowance :</span>
-                    <span class="ps-sum-value">${{ number_format($payment['total_allowance'] ?? 0, 2) }}</span>
+                    <span class="ps-sum-value">৳{{ number_format($payment['total_allowance'] ?? 0, 2) }}</span>
                 </div>
                 @if(($payment['overtime_amount'] ?? 0) > 0)
                 <div class="ps-summary-row">
                     <span class="ps-sum-label">Overtime Amount :</span>
-                    <span class="ps-sum-value">${{ number_format($payment['overtime_amount'], 2) }}</span>
+                    <span class="ps-sum-value">৳{{ number_format($payment['overtime_amount'], 2) }}</span>
                 </div>
                 @endif
                 <div class="ps-summary-row">
                     <span class="ps-sum-label">Total Deduction :</span>
-                    <span class="ps-sum-value">${{ number_format($payment['total_deduction'] ?? 0, 2) }}</span>
+                    <span class="ps-sum-value">৳{{ number_format($payment['total_deduction'] ?? 0, 2) }}</span>
                 </div>
+                @if(($payment['advance_deduction'] ?? 0) > 0)
+                <div class="ps-summary-row">
+                    <span class="ps-sum-label">Advance Deduction :</span>
+                    <span class="ps-sum-value">৳{{ number_format($payment['advance_deduction'], 2) }}</span>
+                </div>
+                @endif
                 <div class="ps-summary-row ps-net-row">
                     <span class="ps-sum-label">Net Salary :</span>
-                    <span class="ps-sum-value ps-net-value">${{ number_format($payment['net_salary'] ?? 0, 2) }}</span>
+                    <span class="ps-sum-value ps-net-value">৳{{ number_format($payment['net_salary'] ?? 0, 2) }}</span>
                 </div>
                 <div class="ps-words">
                     {{ $this->numberToWords((float) ($payment['net_salary'] ?? 0)) }}
@@ -172,11 +184,10 @@
 
     {{-- ── Print Button (outside printable area) ── --}}
     <div class="no-print d-flex justify-content-end mt-3 gap-2">
-        <a href="{{ route('admin.salary.payment') }}"
-        class="btn-outline d-inline-flex align-items-center gap-1" style="text-decoration:none">
+        <button type="button" class="btn-outline" onclick="history.back()">
             <span class="material-icons-round" style="font-size:16px">arrow_back</span>
             Back
-        </a>
+        </button>
         <button onclick="printPayslip()" class="btn-pink d-inline-flex align-items-center gap-1">
             <span class="material-icons-round" style="font-size:16px;vertical-align:middle">print</span>
             Print Payslip

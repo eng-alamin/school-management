@@ -193,7 +193,7 @@ class RegisterComponent extends Component
     {
         return view('livewire.register-component')
             ->layout('layouts.app', [
-                'title' => 'Institution Setup',
+                'title' => 'Institution Setup | ' . setting('app_name', 'EMS'),
             ]);
     }
 }

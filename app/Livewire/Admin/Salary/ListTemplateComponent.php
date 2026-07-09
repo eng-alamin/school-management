@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Salary;
 use Livewire\Component;
 use App\Models\SalaryTemplate;
 use Livewire\WithPagination;
+use Illuminate\Support\Facades\DB;
 
 class ListTemplateComponent extends Component
 {
@@ -17,6 +18,10 @@ class ListTemplateComponent extends Component
     public int    $perPage       = 10;
     public string $sortField     = 'id';
     public string $sortDirection = 'asc';
+
+    // View modal
+    public bool       $showViewModal = false;
+    public ?SalaryTemplate $viewRecord    = null;
 
     // Delete
     public bool $confirmDelete = false;
@@ -39,6 +44,14 @@ class ListTemplateComponent extends Component
         $this->resetPage();
     }
 
+    public function openView(int $id): void
+    {
+        $this->viewRecord    = SalaryTemplate::with([
+            'allowances', 'deductions',
+        ])->findOrFail($id);
+        $this->showViewModal = true;
+    }
+
     public function confirmDeleteRecord(int $id): void
     {
         $this->deleteId      = $id;
@@ -47,19 +60,40 @@ class ListTemplateComponent extends Component
 
     public function deleteRecord(): void
     {
-        $record = SalaryTemplate::findOrFail($this->deleteId);
-        $record->delete();
+        DB::beginTransaction();
 
-        $this->confirmDelete = false;
-        $this->deleteId      = null;
+        try {
+            $record = SalaryTemplate::findOrFail($this->deleteId);
 
-        $this->dispatch('toast', type: 'success', message: 'Salary template deleted successfully!');
+            activity()
+                ->performedOn($record)
+                ->withProperties(['institution_id' => institution()->id])
+                ->log('Salary Template Deleted');
+
+            $record->delete();
+
+            DB::commit();
+
+            $this->confirmDelete = false;
+            $this->deleteId      = null;
+
+            $this->dispatch('toast', type: 'success', message: 'Salary template deleted successfully!');
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            $this->dispatch('toast', type: 'error', message: 'An error occurred while deleting the template.');
+        }
     }
 
     public function render()
     {
         $templates = SalaryTemplate::query()
-            ->when($this->search, fn($q) => $q->where('salary_grade', 'like', "%{$this->search}%"))
+            ->when($this->search, function ($q) {
+                $q->where(function ($inner) {
+                    $inner->where('name', 'like', "%{$this->search}%")
+                        ->orWhere('salary_grade', 'like', "%{$this->search}%");
+                });
+            })
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 

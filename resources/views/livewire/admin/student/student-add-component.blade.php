@@ -17,7 +17,7 @@
                     <div class="form-check form-switch">
                         <input wire:model.live="is_new_student" class="form-check-input" type="checkbox" id="isNewStudent" role="switch">
                         <label class="form-check-label" for="isNewStudent">
-                            {{ $is_new_student ? 'New Student (Fee Invoice will be generated)' : 'Existing Student (No Invoice will be generated)' }}
+                            {{ $is_new_student ? 'New Student (Fee Invoice will be generated)' : 'Existing Student (Invoice will be generated next month)' }}
                         </label>
                     </div>
                 </div>
@@ -43,9 +43,9 @@
                 </div>
                 <div class="col-md-3">
                     <div class="input-group input-group-outline">
-                        <label class="form-label">Register No </label>
-                        <input type="text" wire:model="register_no" class="form-control" onfocus="focused(this)" onfocusout="defocused(this)">
-                        @error('register_no') <span class="text-danger">{{ $message }}</span> @enderror
+                        <label class="form-label">Registration No </label>
+                        <input type="text" wire:model="registration_no" class="form-control" onfocus="focused(this)" onfocusout="defocused(this)">
+                        @error('registration_no') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -168,12 +168,14 @@
                 <div class="input-group input-group-outline">
                     <label class="form-label">Mobile No</label>
                     <input type="tel" wire:model="mobile" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
+                    @error('mobile') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="input-group input-group-outline">
                 <label class="form-label">Email</label>
                 <input type="email" wire:model="email" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
+                @error('email') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
             </div>
             <div class="col-md-12">
@@ -730,10 +732,22 @@
                     }
                 });
 
+                // BUG FIX: age ekhane shudhu ".input-group-outline input[type=date]" diye
+                // query hoto, jeta shudhu PROTHOM matched date input (Admission Date) return
+                // korto. Fole "dob" field-er jonno dispatch kora event-o vulbhabe
+                // Admission Date input-ke target kore ditho. Ekhon PHP theke pathano
+                // "field" (wire:model attribute name) diye exact input খুঁজে বের করা হচ্ছে,
+                // tai Admission Date ar DOB dutai thikmoto আলাদাভাবে update/clear hobe.
                 Livewire.on('date-updated', function (event) {
-                    var input = document.querySelector('.input-group-outline input[type="date"]');
+                    var data = Array.isArray(event) ? event[0] : event;
+                    if (!data || !data.field) return;
+
+                    var input = document.querySelector(
+                        '.input-group-outline input[type="date"][wire\\:model="' + data.field + '"]'
+                    );
                     if (!input) return;
-                    var newDate = event.date || '';
+
+                    var newDate = data.date || '';
                     if (newDate) {
                         input.value = newDate;
                         input.dataset.dpValue = newDate;

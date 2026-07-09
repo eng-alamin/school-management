@@ -5,10 +5,13 @@ namespace App\Livewire\Admin\Homework;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use App\Models\Homework;
 use App\Models\AcademicClass;
 use App\Models\AcademicSubject;
 use App\Models\AcademicClassAssign;
+use App\Models\Employee;
 
 class HomeworkEditComponent extends Component
 {
@@ -19,6 +22,7 @@ class HomeworkEditComponent extends Component
     public $class_id;
     public $section_id;
     public $subject_id;
+    public $teacher_id;
 
     public $title;
     public $description;
@@ -47,6 +51,7 @@ class HomeworkEditComponent extends Component
         $this->class_id         = $homework->class_id;
         $this->section_id       = $homework->section_id;
         $this->subject_id       = $homework->subject_id;
+        $this->teacher_id       = $homework->teacher_id;
         $this->title            = $homework->title;
         $this->description      = $homework->description;
         $this->homework_date    = $homework->homework_date;
@@ -137,12 +142,46 @@ class HomeworkEditComponent extends Component
         }
     }
 
+    /**
+     * Resolve the currently valid subject_id list for the selected class/section.
+     * Used for tamper-proof server-side validation.
+     */
+    protected function validSubjectIdsForSelection(): array
+    {
+        if (!$this->class_id) {
+            return [];
+        }
+
+        $sectionId = ($this->section_id && $this->section_id !== 'all') ? $this->section_id : null;
+
+        $query = AcademicClassAssign::where('class_id', $this->class_id);
+
+        if ($sectionId) {
+            $query->where('section_id', $sectionId);
+        } else {
+            $query->whereNull('section_id');
+        }
+
+        $assign = $query->with('details')->first();
+
+        return $assign ? $assign->details->pluck('subject_id')->toArray() : [];
+    }
+
     public function update(): void
     {
         $this->validate([
             'class_id'        => 'required|exists:academic_classes,id',
-            'section_id'      => 'nullable|exists:academic_sections,id',
-            'subject_id'      => 'required|exists:academic_subjects,id',
+            'section_id'      => 'nullable',
+            'subject_id'      => [
+                'required',
+                'exists:academic_subjects,id',
+                function ($attribute, $value, $fail) {
+                    if (!in_array($value, $this->validSubjectIdsForSelection())) {
+                        $fail('Selected subject is not assigned to the selected class/section.');
+                    }
+                },
+            ],
+            'teacher_id'      => 'nullable|exists:employees,id',
             'title'           => 'required|string|max:255',
             'description'     => 'required|string',
             'homework_date'   => 'required|date',
@@ -154,6 +193,9 @@ class HomeworkEditComponent extends Component
             'status'          => ['required', Rule::in(['draft', 'published', 'closed'])],
         ]);
 
+        $newAttachmentPath = null;
+        $oldAttachmentPath = null;
+
         try {
             $homework = Homework::findOrFail($this->homework_id);
 
@@ -161,28 +203,49 @@ class HomeworkEditComponent extends Component
                 ? $this->section_id
                 : null;
 
-            $attachmentPath = $this->attachment
-                ? $this->attachment->store('homeworks', 'public')
-                : $homework->attachment;
+            // File upload happens outside the DB transaction (storage isn't transactional).
+            if ($this->attachment) {
+                $newAttachmentPath = $this->attachment->store('homeworks', 'public');
+                $oldAttachmentPath = $homework->attachment;
+            }
 
-            $homework->update([
-                'class_id'        => $this->class_id,
-                'section_id'      => $sectionId,
-                'subject_id'      => $this->subject_id,
-                'title'           => $this->title,
-                'description'     => $this->description,
-                'homework_date'   => $this->homework_date,
-                'submission_date' => $this->submission_date,
-                'published_later' => $this->published_later,
-                'schedule_date'   => $this->schedule_date,
-                'attachment'      => $attachmentPath,
-                'send_sms'        => $this->send_sms,
-                'status'          => $this->status,
-            ]);
+            $attachmentPath = $newAttachmentPath ?: $homework->attachment;
+
+            DB::transaction(function () use ($homework, $sectionId, $attachmentPath) {
+                $homework->update([
+                    'class_id'        => $this->class_id,
+                    'section_id'      => $sectionId,
+                    'subject_id'      => $this->subject_id,
+                    'teacher_id'      => $this->teacher_id,
+                    'title'           => $this->title,
+                    'description'     => $this->description,
+                    'homework_date'   => $this->homework_date,
+                    'submission_date' => $this->submission_date,
+                    'published_later' => $this->published_later,
+                    'schedule_date'   => $this->schedule_date,
+                    'attachment'      => $attachmentPath,
+                    'send_sms'        => $this->send_sms,
+                    'status'          => $this->status,
+                ]);
+
+                activity()
+                    ->performedOn($homework)
+                    ->log('Homework "' . $homework->title . '" updated');
+            });
+
+            // ✅ Update DB commit successful → safe to delete old file now
+            if ($oldAttachmentPath) {
+                Storage::disk('public')->delete($oldAttachmentPath);
+            }
 
             $this->dispatch('toast', type: 'success', message: 'Homework updated successfully!');
 
         } catch (\Exception $e) {
+            // Roll back the newly uploaded file if DB update failed, to avoid orphan files.
+            if ($newAttachmentPath) {
+                Storage::disk('public')->delete($newAttachmentPath);
+            }
+
             $this->dispatch('toast', type: 'error', message: 'Update failed: ' . $e->getMessage());
         }
     }
@@ -193,8 +256,11 @@ class HomeworkEditComponent extends Component
             ->orderBy('name')
             ->get();
 
+        $teachers = Employee::orderBy('name')->get(['id', 'name']);
+
         return view('livewire.admin.homework.homework-edit-component')
             ->with('classes', $classes)
+            ->with('teachers', $teachers)
             ->with('availableSections', $this->availableSections)
             ->with('availableSubjects', $this->availableSubjects)
             ->layout('layouts.admin.app', [

@@ -9,6 +9,8 @@ use App\Models\Student;
 use App\Models\AcademicClass;
 use App\Models\AcademicSection;
 use App\Models\AcademicClassAssign;
+use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class StudentIdCardComponent extends Component
 {
@@ -39,7 +41,10 @@ class StudentIdCardComponent extends Component
     // ── Available Classes ──
     public function getAvailableClasses()
     {
-        return AcademicClass::whereIn('id', AcademicClassAssign::distinct()->pluck('class_id'))
+        return AcademicClass::whereIn(
+                'id',
+                AcademicClassAssign::select('class_id')->distinct()
+            )
             ->orderBy('name')
             ->get();
     }
@@ -49,9 +54,12 @@ class StudentIdCardComponent extends Component
     {
         if (!$this->filterClass) return collect();
 
-        return AcademicSection::whereIn('id',
-            AcademicClassAssign::where('class_id', $this->filterClass)->pluck('section_id')
-        )->orderBy('name')->get();
+        return AcademicSection::whereIn(
+                'id',
+                AcademicClassAssign::where('class_id', $this->filterClass)->select('section_id')
+            )
+            ->orderBy('name')
+            ->get();
     }
 
     // ── Class changed ──
@@ -134,60 +142,79 @@ class StudentIdCardComponent extends Component
 
         $this->validate([
             'print_date'  => 'required|date',
-            'expiry_date' => 'required|date',
+            'expiry_date' => 'required|date|after_or_equal:print_date',
         ]);
 
         $students = Student::with(['class', 'section', 'group'])
             ->whereIn('id', $this->selectedIds)
             ->get();
 
-        $institutionId = auth()->user()->institution_id;
-        $data     = [];
+        if ($students->isEmpty()) {
+            $this->dispatch('toast', type: 'error', message: 'Selected students could not be found.');
+            return;
+        }
+
+        $institutionId = institution()->id;
+        $data = [];
 
         foreach ($students as $student) {
             $data[] = [
-                'institution_id'   => $institutionId,
-                'student_id'  => $student->id,
-                'issue_date'  => $this->print_date,
-                'expiry_date' => $this->expiry_date,
-                'template_id' => $this->filterTemplate,
-                'name'        => $student->name,
-                'gender'      => $student->gender,
-                'blood_group' => $student->full_blood_group,
-                'dob'         => $student->dob,
-                'religion'    => $student->religion,
-                'mobile'      => $student->mobile,
-                'address'     => $student->present_address,
-                'photo'       => $student->photo,
-                'session'     => $student->academic_year,
-                'register_no' => $student->register_no,
-                'roll_no'     => $student->roll_no,
-                'class'       => $student->class?->name,
-                'section'     => $student->section?->name,
-                'group'    => $student->group?->name,
-                'created_at'  => now(),
-                'updated_at'  => now(),
+                'institution_id' => $institutionId,
+                'student_id'     => $student->id,
+                'issue_date'     => $this->print_date,
+                'expiry_date'    => $this->expiry_date,
+                'template_id'    => $this->filterTemplate,
+                'name'           => $student->name,
+                'gender'         => $student->gender,
+                'blood_group'    => $student->full_blood_group,
+                'dob'            => $student->dob,
+                'religion'       => $student->religion,
+                'mobile'         => $student->mobile,
+                'address'        => $student->present_address,
+                'photo'          => $student->photo,
+                'session'        => $student->academic_year,
+                'register_no'    => $student->register_no,
+                'roll_no'        => $student->roll_no,
+                'class'          => $student->class?->name,
+                'section'        => $student->section?->name,
+                'group'          => $student->group?->name,
+                'created_at'     => now(),
+                'updated_at'     => now(),
             ];
         }
 
-        StudentIdCard::upsert(
-            $data,
-            ['student_id'],
-            [
-                'institution_id','issue_date', 'expiry_date', 'template_id',
-                'name', 'gender', 'blood_group', 'dob', 'religion',
-                'mobile', 'address', 'photo', 'session',
-                'register_no', 'roll_no', 'class', 'section', 'group',
-                'updated_at',
-            ]
-        );
+        DB::beginTransaction();
+        try {
+            StudentIdCard::upsert(
+                $data,
+                ['student_id'],
+                [
+                    'institution_id', 'issue_date', 'expiry_date', 'template_id',
+                    'name', 'gender', 'blood_group', 'dob', 'religion',
+                    'mobile', 'address', 'photo', 'session',
+                    'register_no', 'roll_no', 'class', 'section', 'group',
+                    'updated_at',
+                ]
+            );
 
-        $this->printCards = StudentIdCard::with('template')
-            ->whereIn('student_id', $this->selectedIds)
-            ->get()
-            ->toArray();
+            $cards = StudentIdCard::with('template')
+                ->where('institution_id', $institutionId)
+                ->whereIn('student_id', $this->selectedIds)
+                ->get();
 
+            activity()->log('Generated '.$cards->count().' student ID card(s)');
+
+            DB::commit();
+        } catch (Throwable $e) {
+            DB::rollBack();
+            $this->dispatch('toast', type: 'error', message: 'ID cards could not be generated. Please try again.');
+            return;
+        }
+
+        $this->printCards       = $cards->toArray();
         $this->showPrintPreview = true;
+
+        $this->dispatch('toast', type: 'success', message: count($this->printCards).' ID card(s) generated successfully!');
     }
 
     // ── Get Students (internal) ──

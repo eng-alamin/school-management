@@ -6,7 +6,8 @@ use Livewire\Component;
 use App\Models\AdmitCardTemplate;
 use Livewire\WithPagination;
 use Livewire\WithFileUploads;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class AdmitCardTemplateComponent extends Component
 {
@@ -52,7 +53,7 @@ class AdmitCardTemplateComponent extends Component
             'background_color' => 'required|string',
             'text_color'       => 'required|string',
             'accent_color'     => 'required|string',
-            'logo'             => 'nullable',
+            'logo'             => 'nullable|image|mimes:jpg,jpeg,png,svg|max:2048',
             'header_text'      => 'nullable|string|max:500',
             'instructions'     => 'nullable|string|max:2000',
             'footer_text'      => 'nullable|string|max:500',
@@ -64,8 +65,9 @@ class AdmitCardTemplateComponent extends Component
     }
 
     public function updatingSearch(): void { $this->resetPage(); }
-    public function updatingFilterType(): void { $this->resetPage(); }
+    public function updatingFilterExamType(): void { $this->resetPage(); }
     public function updatingFilterStatus(): void { $this->resetPage(); }
+    public function updatingPerPage(): void { $this->resetPage(); }
 
     public function openCreate(): void
     {
@@ -77,20 +79,24 @@ class AdmitCardTemplateComponent extends Component
     public function openEdit(int $id): void
     {
         $record = AdmitCardTemplate::findOrFail($id);
+
+        $this->resetValidation();
+
         $this->editId           = $id;
-        $this->name             = $record->name;
-        $this->exam_type        = $record->exam_type ?? 'annual';
-        $this->background_color = $record->background_color;
-        $this->text_color       = $record->text_color;
-        $this->accent_color     = $record->accent_color;
-        $this->existingLogo     = $record->logo_path ?? '';
-        $this->header_text      = $record->header_text ?? '';
-        $this->instructions     = $record->instructions ?? '';
-        $this->footer_text      = $record->footer_text ?? '';
-        $this->show_photo       = $record->show_photo;
-        $this->show_signature   = $record->show_signature;
-        $this->show_barcode     = $record->show_barcode;
-        $this->is_active        = $record->is_active;
+        $this->name              = $record->name;
+        $this->exam_type         = $record->exam_type ?? 'annual';
+        $this->background_color  = $record->background_color;
+        $this->text_color        = $record->text_color;
+        $this->accent_color      = $record->accent_color;
+        $this->logo               = null;
+        $this->existingLogo      = $record->logo_path ?? '';
+        $this->header_text       = $record->header_text ?? '';
+        $this->instructions      = $record->instructions ?? '';
+        $this->footer_text       = $record->footer_text ?? '';
+        $this->show_photo        = $record->show_photo;
+        $this->show_signature    = $record->show_signature;
+        $this->show_barcode      = $record->show_barcode;
+        $this->is_active         = $record->is_active;
         $this->showModal = true;
     }
 
@@ -100,7 +106,12 @@ class AdmitCardTemplateComponent extends Component
         $this->showViewModal = true;
     }
 
-    private function deleteOldFile($path): void
+    /**
+     * Deletes a template file from disk. This is the single source of truth
+     * for removing admit card template logos — used both on replace and on
+     * record delete, so file location logic never diverges again.
+     */
+    private function deleteOldFile(?string $path): void
     {
         if (!$path) {
             return;
@@ -117,14 +128,14 @@ class AdmitCardTemplateComponent extends Component
     {
         $this->validate();
 
-        $logoPath = $this->existingLogo;
+        // Upload new logo first (filesystem op, outside the DB transaction).
+        $newLogoPath = null;
         if ($this->logo) {
-            if ($this->editId) {
-                $record = AdmitCardTemplate::find($this->editId);
-                if ($record?->logo_path) $this->deleteOldFile($record->logo_path);
-            }
-            $logoPath = \App\Helpers\TenantFileHelper::store($this->logo, 'cards');
+            $newLogoPath = \App\Helpers\TenantFileHelper::store($this->logo, 'cards');
         }
+
+        $oldLogoPath = $this->existingLogo;
+        $logoPath    = $newLogoPath ?? $oldLogoPath;
 
         $data = [
             'name'             => $this->name,
@@ -142,16 +153,41 @@ class AdmitCardTemplateComponent extends Component
             'is_active'        => $this->is_active,
         ];
 
-        if ($this->editId) {
-            AdmitCardTemplate::findOrFail($this->editId)->update($data);
-            session()->flash('success', 'Admit card template updated successfully!');
-        } else {
-            AdmitCardTemplate::create($data);
-            session()->flash('success', 'Admit card template created successfully!');
+        DB::beginTransaction();
+        try {
+            if ($this->editId) {
+                $record = AdmitCardTemplate::findOrFail($this->editId);
+                $record->update($data);
+                activity()->performedOn($record)->log('Admit card template updated');
+                $message = 'Admit card template updated successfully!';
+            } else {
+                $record = AdmitCardTemplate::create($data);
+                activity()->performedOn($record)->log('Admit card template created');
+                $message = 'Admit card template created successfully!';
+            }
+
+            DB::commit();
+
+            // Only remove the old logo AFTER a successful commit, and only if it was replaced.
+            if ($newLogoPath && $oldLogoPath) {
+                $this->deleteOldFile($oldLogoPath);
+            }
+        } catch (Throwable $e) {
+            DB::rollBack();
+
+            // Roll back the newly uploaded file since the DB save failed.
+            if ($newLogoPath) {
+                $this->deleteOldFile($newLogoPath);
+            }
+
+            $this->dispatch('toast', type: 'error', message: 'Something went wrong. Template could not be saved.');
+            return;
         }
 
         $this->showModal = false;
         $this->resetForm();
+
+        $this->dispatch('toast', type: 'success', message: $message);
     }
 
     public function confirmDeleteRecord(int $id): void
@@ -162,19 +198,46 @@ class AdmitCardTemplateComponent extends Component
 
     public function deleteRecord(): void
     {
-        $record = AdmitCardTemplate::findOrFail($this->deleteId);
-        if ($record->logo_path) Storage::disk('public')->delete($record->logo_path);
-        $record->delete();
+        $record   = AdmitCardTemplate::findOrFail($this->deleteId);
+        $logoPath = $record->logo_path;
+
+        DB::beginTransaction();
+        try {
+            activity()->performedOn($record)->log('Admit card template deleted');
+            $record->delete();
+            DB::commit();
+
+            // Use the same deletion helper as save() so file location logic never diverges.
+            $this->deleteOldFile($logoPath);
+        } catch (Throwable $e) {
+            DB::rollBack();
+            $this->confirmDelete = false;
+            $this->deleteId = null;
+            $this->dispatch('toast', type: 'error', message: 'Template could not be deleted.');
+            return;
+        }
+
         $this->confirmDelete = false;
         $this->deleteId = null;
-        session()->flash('success', 'Template deleted successfully!');
+
+        $this->dispatch('toast', type: 'success', message: 'Template deleted successfully!');
     }
 
     public function toggleStatus(int $id): void
     {
-        $record = AdmitCardTemplate::findOrFail($id);
-        $record->update(['is_active' => !$record->is_active]);
-        session()->flash('success', 'Status updated!');
+        DB::beginTransaction();
+        try {
+            $record = AdmitCardTemplate::findOrFail($id);
+            $record->update(['is_active' => !$record->is_active]);
+            activity()->performedOn($record)->log('Admit card template status toggled');
+            DB::commit();
+        } catch (Throwable $e) {
+            DB::rollBack();
+            $this->dispatch('toast', type: 'error', message: 'Status could not be updated.');
+            return;
+        }
+
+        $this->dispatch('toast', type: 'success', message: 'Status updated!');
     }
 
     private function resetForm(): void

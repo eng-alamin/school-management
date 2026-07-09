@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Certificate;
 
 use Livewire\Component;
+use Livewire\Attributes\Computed;
 use App\Models\CertificateTemplate;
 use App\Models\Student;
 use App\Models\AcademicClass;
@@ -51,6 +52,7 @@ class GenerateStudentComponent extends Component
         $this->filtered    = true;
         $this->selectedIds = [];
         $this->selectAll   = false;
+        unset($this->students);
     }
 
     // ── Reset Filter ──
@@ -63,6 +65,7 @@ class GenerateStudentComponent extends Component
         $this->selectedIds    = [];
         $this->selectAll      = false;
         $this->resetValidation();
+        unset($this->students);
     }
 
     public function updatedFilterClass(): void
@@ -70,22 +73,22 @@ class GenerateStudentComponent extends Component
         $this->filterSection = '';
         $this->selectedIds   = [];
         $this->selectAll     = false;
+        unset($this->students);
     }
 
-    public function updatedFilterSection()
+    public function updatedFilterSection(): void
     {
-        $this->selectedIds      = [];
-        $this->selectAll        = false;
-
-        if (!$this->filterClass) return;
+        $this->selectedIds = [];
+        $this->selectAll   = false;
+        unset($this->students);
     }
 
     public function updatedSelectAll(bool $value): void
     {
         if ($value) {
-            $this->selectedIds = $this->getStudents()
+            $this->selectedIds = $this->students
                 ->pluck('id')
-                ->map(fn($id) => (string) $id)
+                ->map(fn ($id) => (string) $id)
                 ->toArray();
         } else {
             $this->selectedIds = [];
@@ -94,7 +97,7 @@ class GenerateStudentComponent extends Component
 
     public function updatedSelectedIds(): void
     {
-        $total           = $this->getStudents()->count();
+        $total           = $this->students->count();
         $this->selectAll = count($this->selectedIds) === $total && $total > 0;
     }
 
@@ -102,7 +105,7 @@ class GenerateStudentComponent extends Component
     public function generateCertificates(): void
     {
         if (empty($this->selectedIds)) {
-            session()->flash('error', 'Please select at least one student.');
+            $this->dispatch('toast', type: 'error', message: 'Please select at least one student.');
             return;
         }
 
@@ -113,7 +116,7 @@ class GenerateStudentComponent extends Component
         $template  = CertificateTemplate::findOrFail($this->filterTemplate);
         $institute = Institution::find(auth()->user()->institution_id);
 
-        $students = Student::with(['class', 'section', 'group'])
+        $students = Student::with(['class', 'section', 'group', 'guardians'])
             ->whereIn('id', $this->selectedIds)
             ->get();
 
@@ -123,7 +126,7 @@ class GenerateStudentComponent extends Component
 
             // Student photo HTML
             $photoHtml = $student->photo
-                ? '<img src="' . asset($student->photo) . '"
+                ? '<img src="' . asset('storage/' . $student->photo) . '"
                          style="width:80px;height:80px;object-fit:cover;
                                 border-radius:6px;border:2px solid #ddd;">'
                 : '<div style="width:80px;height:80px;background:#f3f4f6;
@@ -141,14 +144,15 @@ class GenerateStudentComponent extends Component
                     '{institute_address}',
 
                     // ── Student placeholders ──
+                    '{student_id}',
                     '{name}',
-                    '{register_no}',
+                    '{registration_no}',
                     '{roll}',
                     '{class}',
                     '{section}',
                     '{group}',
                     '{mobile_no}',
-                    '{blood_group}',
+                    '{blood}',
                     '{birthday}',
                     '{gender}',
                     '{religion}',
@@ -161,24 +165,26 @@ class GenerateStudentComponent extends Component
                     '{mother_name}',
 
                     // ── Photo placeholder ──
+                    '{photo}',
                     '{student_photo}',
                 ],
                 [
                     // ── Institute values ──
-                    $institute?->name  ?? '',
-                    $institute?->email ?? '',
-                    $institute?->mobile ?? '',
+                    $institute?->name    ?? '',
+                    $institute?->email   ?? '',
+                    $institute?->phone  ?? '',
                     $institute?->address ?? '',
 
                     // ── Student values ──
+                    $student->student_id,
                     $student->name,
-                    $student->register_no   ?? '',
-                    $student->roll_no       ?? '',
-                    $student->class?->name  ?? '',
+                    $student->registration_no    ?? '',
+                    $student->roll_no        ?? '',
+                    $student->class?->name   ?? '',
                     $student->section?->name ?? '',
-                    $student->group?->name ?? '',
-                    $student->mobile_no        ?? '',
-                    $student->blood_group ?? '',
+                    $student->group?->name   ?? '',
+                    $student->mobile       ?? '',
+                    $student->blood_group     ?? '',
                     $student->dob ? Carbon::parse($student->dob)->format('d M Y') : '',
                     $student->gender        ?? '',
                     $student->religion      ?? '',
@@ -187,7 +193,7 @@ class GenerateStudentComponent extends Component
                         ? Carbon::parse($student->admission_date)->format('d M Y') : '',
                     Carbon::parse($this->issue_date)->format('d M Y'),
 
-                    // ── Guardian placeholder ──
+                    // ── Guardian placeholder (now eager-loaded, no N+1) ──
                     $student->guardians->first()?->father_name ?? '',
                     $student->guardians->first()?->mother_name ?? '',
 
@@ -200,7 +206,7 @@ class GenerateStudentComponent extends Component
             return [
                 'student_id'  => $student->id,
                 'name'        => $student->name,
-                'register_no' => $student->register_no,
+                'registration_no' => $student->registration_no,
                 'roll_no'     => $student->roll_no,
                 'class'       => $student->class?->name,
                 'section'     => $student->section?->name,
@@ -213,18 +219,35 @@ class GenerateStudentComponent extends Component
         })->toArray();
 
         $this->showPrintPreview = true;
+
+        activity()
+            ->withProperties([
+                'template'     => $template->certificate_name,
+                'student_count'=> count($this->printCards),
+                'issue_date'   => $this->issue_date,
+            ])
+            ->log('Generated ' . count($this->printCards) . ' certificate(s) using template: ' . $template->certificate_name);
     }
 
     // ── Helpers ──
-    private function getStudents()
+
+    /**
+     * Cached per-request student list. Prevents duplicate queries across
+     * render(), updatedSelectAll(), updatedSelectedIds(), and the view.
+     */
+    #[Computed]
+    public function students()
     {
-        if (!$this->filtered) return collect();
+        if (!$this->filtered) {
+            return collect();
+        }
 
         return Student::query()
-            ->when($this->filterClass, fn($q) => $q->where('class_id', $this->filterClass))
+            ->with(['class:id,name', 'section:id,name'])
+            ->when($this->filterClass, fn ($q) => $q->where('class_id', $this->filterClass))
             ->when(
                 $this->filterSection && $this->filterSection !== 'all',
-                fn($q) => $q->where('section_id', $this->filterSection)
+                fn ($q) => $q->where('section_id', $this->filterSection)
             )
             ->orderBy('roll_no')
             ->get();
@@ -239,7 +262,9 @@ class GenerateStudentComponent extends Component
 
     public function getAvailableSections()
     {
-        if (!$this->filterClass) return [];
+        if (!$this->filterClass) {
+            return [];
+        }
 
         return AcademicSection::whereIn('id',
             AcademicClassAssign::where('class_id', $this->filterClass)->pluck('section_id')
@@ -252,7 +277,6 @@ class GenerateStudentComponent extends Component
             ->where('is_active', true)
             ->get();
 
-        $students = $this->filtered ? $this->getStudents() : collect();
         $sections = $this->getAvailableSections();
         $classes  = $this->getAvailableClasses();
 
@@ -261,7 +285,13 @@ class GenerateStudentComponent extends Component
             : null;
 
         return view('livewire.admin.certificate.generate-student-component')
-            ->with(compact('templates', 'students', 'sections', 'classes', 'selectedTemplate'))
+            ->with([
+                'templates'        => $templates,
+                'students'         => $this->students,
+                'sections'         => $sections,
+                'classes'          => $classes,
+                'selectedTemplate' => $selectedTemplate,
+            ])
             ->layout('layouts.admin.app', [
                 'title' => 'Generate Student Certificates | ' . institution()->name,
             ]);

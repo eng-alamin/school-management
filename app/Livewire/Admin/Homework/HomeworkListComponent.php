@@ -4,6 +4,8 @@ namespace App\Livewire\Admin\Homework;
 
 use Livewire\Component;
 use Livewire\WithPagination;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use App\Models\Homework;
 use App\Models\AcademicClass;
 use App\Models\AcademicClassAssign;
@@ -26,6 +28,11 @@ class HomeworkListComponent extends Component
     public $deleteId;
 
     public function updatedSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedPerPage(): void
     {
         $this->resetPage();
     }
@@ -74,12 +81,40 @@ class HomeworkListComponent extends Component
 
     public function deleteRecord(): void
     {
-        Homework::find($this->deleteId)?->delete();
+        $homework = Homework::find($this->deleteId);
+
+        if (!$homework) {
+            $this->confirmDelete = false;
+            $this->deleteId      = null;
+            $this->dispatch('toast', type: 'error', message: 'Homework not found.');
+            return;
+        }
+
+        $attachmentPath = $homework->attachment;
+        $title          = $homework->title;
+
+        try {
+            DB::transaction(function () use ($homework, $title) {
+                activity()
+                    ->performedOn($homework)
+                    ->log('Homework "' . $title . '" deleted');
+
+                $homework->delete();
+            });
+
+            // ✅ DB delete committed successfully → safe to remove the attachment file
+            if ($attachmentPath) {
+                Storage::disk('public')->delete($attachmentPath);
+            }
+
+            $this->dispatch('toast', type: 'success', message: 'Homework deleted successfully.');
+
+        } catch (\Exception $e) {
+            $this->dispatch('toast', type: 'error', message: 'Delete failed: ' . $e->getMessage());
+        }
 
         $this->confirmDelete = false;
         $this->deleteId      = null;
-
-        $this->dispatch('toast', type: 'success', message: 'Homework deleted successfully.');
     }
 
     public function render()
@@ -88,7 +123,7 @@ class HomeworkListComponent extends Component
             ->orderBy('name')
             ->get();
 
-        $homeworks = Homework::with(['class', 'section', 'subject'])
+        $homeworks = Homework::with(['class', 'section', 'subject', 'teacher'])
             ->when($this->search, fn($q) =>
                 $q->where('title', 'like', '%' . $this->search . '%')
             )

@@ -21,6 +21,7 @@ return new class extends Migration
                 $table->decimal('basic_salary', 15, 2)->default(0);
                 $table->decimal('total_allowance', 15, 2)->default(0);
                 $table->decimal('total_deduction', 15, 2)->default(0);
+                $table->decimal('advance_deduction', 15, 2)->default(0);
 
                 $table->decimal('overtime_hour', 8, 2)->default(0);
                 $table->decimal('overtime_rate', 15, 2)->default(0);

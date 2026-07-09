@@ -68,7 +68,7 @@
                     </thead>
                     <tbody>
                         @forelse($templates as $i => $t)
-                        <tr>
+                        <tr wire:key="template-row-{{ $t->id }}">
                             <td class="text-muted">{{ $templates->firstItem() + $i }}</td>
                             <td>
                                 <div class="d-flex align-items-center gap-2">
@@ -204,6 +204,7 @@
                                 <div class="col-md-4">
                                     <label class="form-label">Logo</label>
                                     <input type="file" class="form-control @error('logo') is-invalid @enderror" wire:model="logo" accept="image/*">
+                                    <div wire:loading wire:target="logo" class="small text-muted mt-1">Uploading...</div>
                                     @error('logo') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                     @if($existingLogo)
                                         <img src="{{ asset('storage/'.$existingLogo) }}" height="40" class="mt-2 rounded">
@@ -341,20 +342,6 @@
 
 @push('styles')
     <style>
-        :root {
-            --primary: rgba(33, 37, 41);
-            --primary-light: rgba(239,84,84,.12);
-        }
-
-        /* ── CARD ── */
-        .card { border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
-        .card-header { background: #fff; border-bottom: 1px solid var(--border); border-radius: 12px 12px 0 0 !important; padding: 16px 20px; }
-        .card-header .card-title { font-size: .95rem; font-weight: 600; margin: 0; }
- 
-        /* ── TABLE ── */
-        .table th { font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); border-bottom: 2px solid var(--border); }
-        .table td { vertical-align: middle; font-size: .875rem; }
-        .table > :not(caption) > * > * { padding: .7rem 1rem; }
  
         /* ── BADGES ── */
         .badge-active { background: rgba(34,197,94,.12); color: #16a34a; }
@@ -425,54 +412,6 @@
             .sidebar, .topbar, .no-print { display: none !important; }
             .main-content { margin: 0; padding: 0; }
             .print-area { display: block !important; }
-        }
- 
-        .alert { border-radius: 10px; font-size: .875rem; }
- 
-        /* Subject rows */
-        .subject-row { background: var(--bg); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
- 
-
-        /* Pagination */
-        .custom-pagination {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-
-        .custom-pagination li {
-            list-style: none;
-        }
-
-        .custom-pagination button {
-            min-width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            border: 1px solid #e0e0e0;
-            background: #f5f5f5;
-            color: #444;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all .2s ease;
-        }
-
-        /* Hover */
-        .custom-pagination button:hover {
-            background: #eee;
-        }
-
-        /* Active (Pink) */
-        .custom-pagination button.active {
-            background: linear-gradient(195deg, #ec407a, #d81b60);
-            color: #fff;
-            border: none;
-            box-shadow: 0 4px 12px rgba(216,27,96,.4);
-        }
-
-        /* Disabled */
-        .custom-pagination button:disabled {
-            opacity: .5;
-            cursor: not-allowed;
         }
     </style>
 @endpush

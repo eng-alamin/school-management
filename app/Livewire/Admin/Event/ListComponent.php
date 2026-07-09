@@ -47,7 +47,9 @@ class ListComponent extends Component
 
     public function deleteRecord(): void
     {
-        $record = Event::findOrFail($this->deleteId);
+        $record = Event::where('institution_id', auth()->user()->institution_id)
+            ->findOrFail($this->deleteId);
+
         $record->delete();
         $this->confirmDelete = false;
         $this->deleteId = null;
@@ -58,8 +60,8 @@ class ListComponent extends Component
             ->performedOn($record)
             ->withProperties(['icon' => 'event', 'type' => 'event'])
             ->tap(function ($activity) use ($record) {
-                    $activity->institution_id = $record->institution_id;
-                })
+                $activity->institution_id = $record->institution_id;
+            })
             ->log('Event deleted: ' . $record->title);
 
         session()->flash('success', 'Event deleted successfully!');
@@ -68,6 +70,8 @@ class ListComponent extends Component
     public function render()
     {
         $events = Event::query()
+            ->with('eventType')
+            ->where('institution_id', auth()->user()->institution_id)
             ->when($this->search, fn($q) => $q->where('title', 'like', "%{$this->search}%"))
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);

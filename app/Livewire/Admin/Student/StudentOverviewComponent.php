@@ -16,9 +16,11 @@ class StudentOverviewComponent extends Component
             'class',
             'section',
             'group',
-            'guardians',
+            'guardians.user',
             'user',
-        ])->findOrFail($id);
+        ])
+            ->where('institution_id', auth()->user()->institution_id)
+            ->findOrFail($id);
     }
 
     public function render()

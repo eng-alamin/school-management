@@ -4,7 +4,7 @@
 
       <!-- floating header -->
       <div class="mat-card-header header-pink-gradient">
-        <h5 id="cardHeaderTitleAllsections">Office Accounting - Voucher Head</h5>
+        <h5 id="cardHeaderTitleAllsections">Office Accounting - Head</h5>
         <p id="cardHeaderSubtitle">Manage voucher heads, create, update, and organize academic heads easily.</p>
       </div>
 
@@ -21,7 +21,7 @@
                 </div>
 
                 <!-- Right Side -->
-                @if($vouchers->total() > 10)
+                @if($heads->total() > 10)
                     <div class="col-md-2">
                         <select class="form-select form-select-sm" wire:model.live="perPage">
                             <option value="10">10 / page</option>
@@ -44,20 +44,43 @@
                         <tr>
                             <th>SL</th>
                             <th wire:click="sortBy('name')" style="cursor:pointer">Name @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif </th>
+                            <th>Type</th>
+                            <th>Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($vouchers as $i => $voucher)
-                        <tr>
-                            <td class="text-muted">{{ $vouchers->firstItem() + $i }}</td>
-                            <td> {{ $voucher->name }} </td>
+                        @forelse($heads as $i => $head)
+                        <tr wire:key="head-{{ $head->id }}">
+                            <td class="text-muted">{{ $heads->firstItem() + $i }}</td>
+                            <td>{{ $head->name }}</td>
+                            <td>
+                                @if($head->type === 'deposit')
+                                    <span class="badge badge-active">Deposit</span>
+                                @else
+                                    <span class="badge badge-expired">Expense</span>
+                                @endif
+                            </td>
+                            <td>
+                                <div class="form-check form-switch m-0">
+                                    <input
+                                        class="form-check-input"
+                                        type="checkbox"
+                                        role="switch"
+                                        style="cursor:pointer"
+                                        wire:click="toggleStatus({{ $head->id }})"
+                                        wire:loading.attr="disabled"
+                                        wire:target="toggleStatus({{ $head->id }})"
+                                        @checked($head->is_active)
+                                    >
+                                </div>
+                            </td>
                             <td>
                                 <div class="d-flex gap-1">
-                                    <button class="act-btn edit" title="Edit" wire:click="openEdit({{ $voucher->id }})">
+                                    <button class="act-btn edit" title="Edit" wire:click="openEdit({{ $head->id }})">
                                         <span class="material-icons-round">drive_file_rename_outline</span>
                                     </button>
-                                    <button class="act-btn delete" title="Delete" wire:click="confirmDeleteRecord({{ $voucher->id }})">
+                                    <button class="act-btn delete" title="Delete" wire:click="confirmDeleteRecord({{ $head->id }})">
                                         <span class="material-icons-round">delete</span>
                                     </button>
                                 </div>
@@ -65,9 +88,9 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="8" class="text-center py-5 text-muted">
+                            <td colspan="5" class="text-center py-5 text-muted">
                                 <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
-                                No vouchers found. <a href="#" wire:click.prevent="openCreate">Create one now</a>.
+                                No heads found. <a href="#" wire:click.prevent="openCreate">Create one now</a>.
                             </td>
                         </tr>
                         @endforelse
@@ -77,8 +100,8 @@
         </div>
 
         <div class="card-footer border-0 bg-white d-flex align-items-center justify-content-between flex-wrap gap-2 py-2 px-3">
-            <small class="text-muted">Showing {{ $vouchers->firstItem() ?? 0 }}–{{ $vouchers->lastItem() ?? 0 }} of {{ $vouchers->total() }}</small>
-           {{ $vouchers->links('vendor.pagination.custom') }}
+            <small class="text-muted">Showing {{ $heads->firstItem() ?? 0 }}–{{ $heads->lastItem() ?? 0 }} of {{ $heads->total() }}</small>
+           {{ $heads->links('vendor.pagination.custom') }}
         </div>
         
     </div>
@@ -90,7 +113,7 @@
                 <div class="modal-content">
                     <div class="modal-header border-0">
                         <h5 class="modal-title">
-                            {{ $editId ? 'Edit' : 'Create' }} Voucher Head
+                            {{ $editId ? 'Edit' : 'Create' }} Head
                         </h5>
                         <button type="button" class="btn-close" wire:click="$set('showModal',false)"></button>
                     </div>
@@ -99,8 +122,17 @@
                             <div class="row g-3">
                                 <div class="col-md-12">
                                     <label class="form-label">Name <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model.defer="name" placeholder="e.g. Voucher One">
+                                    <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model.defer="name" placeholder="e.g. Salary, Donation">
                                     @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </div>
+
+                                <div class="col-md-12">
+                                    <label class="form-label">Type <span class="text-danger">*</span></label>
+                                    <select class="form-select @error('type') is-invalid @enderror" wire:model.defer="type">
+                                        <option value="deposit">Deposit</option>
+                                        <option value="expense">Expense</option>
+                                    </select>
+                                    @error('type') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                             </div>
                         </form>
@@ -126,7 +158,7 @@
                         <div style="width:56px;height:56px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
                             <i class="bi bi-exclamation-triangle text-danger" style="font-size:1.5rem;"></i>
                         </div>
-                        <h6 class="fw-700">Delete Voucher?</h6>
+                        <h6 class="fw-700">Delete Head?</h6>
                         <p class="text-muted small">This action cannot be undone.</p>
                     </div>
                     <div class="modal-footer justify-content-center border-0 pt-0">
@@ -141,142 +173,3 @@
         </div>
     @endif
 </div>
-
-
-@push('styles')
-    <style>
-        :root {
-            --primary: rgba(33, 37, 41);
-            --primary-light: rgba(239,84,84,.12);
-        }
-
-        /* ── CARD ── */
-        .card { border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
-        .card-header { background: #fff; border-bottom: 1px solid var(--border); border-radius: 12px 12px 0 0 !important; padding: 16px 20px; }
-        .card-header .card-title { font-size: .95rem; font-weight: 600; margin: 0; }
- 
-        /* ── TABLE ── */
-        .table th { font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); border-bottom: 2px solid var(--border); }
-        .table td { vertical-align: middle; font-size: .875rem; }
-        .table > :not(caption) > * > * { padding: .7rem 1rem; }
- 
-        /* ── BADGES ── */
-        .badge-active { background: rgba(34,197,94,.12); color: #16a34a; }
-        .badge-inactive { background: rgba(107,114,128,.12); color: #6b7280; }
-        .badge-expired, .badge-cancelled, .badge-suspended { background: rgba(239,68,68,.12); color: #dc2626; }
-        .badge-used { background: rgba(59,130,246,.12); color: #2563eb; }
- 
-        /* ── AVATAR ── */
-        .avatar { width: 38px; height: 38px; border-radius: 8px; object-fit: cover; }
-        .avatar-placeholder {
-            width: 38px; height: 38px; border-radius: 8px;
-            background: var(--primary-light); color: var(--primary);
-            display: inline-flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: .875rem;
-        }
- 
-        /* ── MODAL ── */
-        .modal-header { border-bottom: 1px solid var(--border); }
-        .modal-footer { border-top: 1px solid var(--border); }
-        .modal-title { font-weight: 600; font-size: 1rem; }
- 
-        /* ── FORM ── */
-        .form-label { font-size: .8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
-        .form-control, .form-select {
-            border-radius: 8px; border: 1px solid var(--border);
-            font-size: .875rem; padding: .45rem .75rem;
-            transition: border-color .2s, box-shadow .2s;
-        }
-        .form-control:focus, .form-select:focus {
-            border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light);
-        }
-        .form-check-input:checked { background-color: var(--primary); border-color: var(--primary); }
- 
-        /* Color picker */
-        .color-input-wrap { display: flex; align-items: center; gap: 8px; }
-        .color-input-wrap input[type="color"] {
-            width: 40px; height: 38px; padding: 2px; border-radius: 8px;
-            cursor: pointer; border: 1px solid var(--border);
-        }
- 
-        /* Buttons */
-        .btn-primary { background: var(--primary); border-color: var(--primary); }
-        .btn-primary:hover, .btn-primary:focus { background: #d63e3e; border-color: #d63e3e; }
-        .btn-sm { font-size: .78rem; padding: .3rem .65rem; border-radius: 6px; }
-        .btn-icon { width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 7px; }
- 
-        /* Stat cards */
-        .stat-card { border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 16px; }
-        .stat-icon { width: 48px; height: 48px; border-radius: 10px; display: grid; place-items: center; font-size: 1.4rem; }
-        .stat-label { font-size: .75rem; color: var(--text-muted); font-weight: 500; }
-        .stat-value { font-size: 1.5rem; font-weight: 700; line-height: 1; }
- 
-        /* ID Card Preview */
-        .id-card-preview {
-            width: 325px; min-height: 200px; border-radius: 14px; overflow: hidden;
-            box-shadow: 0 8px 32px rgba(0,0,0,.15); margin: 0 auto;
-            position: relative; font-family: 'Inter', sans-serif;
-        }
-        .id-card-preview .card-header-band { padding: 16px; text-align: center; }
-        .id-card-preview .card-body-area { padding: 14px 16px; display: flex; gap: 14px; }
-        .id-card-preview .card-photo {
-            width: 80px; height: 95px; border-radius: 8px;
-            object-fit: cover; border: 3px solid rgba(255,255,255,.5);
-        }
- 
-        /* Print */
-        @media print {
-            .sidebar, .topbar, .no-print { display: none !important; }
-            .main-content { margin: 0; padding: 0; }
-            .print-area { display: block !important; }
-        }
- 
-        .alert { border-radius: 10px; font-size: .875rem; }
- 
-        /* Subject rows */
-        .subject-row { background: var(--bg); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
- 
-
-        /* Pagination */
-        .custom-pagination {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-
-        .custom-pagination li {
-            list-style: none;
-        }
-
-        .custom-pagination button {
-            min-width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            border: 1px solid #e0e0e0;
-            background: #f5f5f5;
-            color: #444;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all .2s ease;
-        }
-
-        /* Hover */
-        .custom-pagination button:hover {
-            background: #eee;
-        }
-
-        /* Active (Pink) */
-        .custom-pagination button.active {
-            background: linear-gradient(195deg, #ec407a, #d81b60);
-            color: #fff;
-            border: none;
-            box-shadow: 0 4px 12px rgba(216,27,96,.4);
-        }
-
-        /* Disabled */
-        .custom-pagination button:disabled {
-            opacity: .5;
-            cursor: not-allowed;
-        }
-    </style>
-@endpush

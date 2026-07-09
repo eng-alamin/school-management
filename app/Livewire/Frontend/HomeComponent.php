@@ -9,8 +9,8 @@ class HomeComponent extends Component
     public function render()
     {
         return view('livewire.frontend.home-component')
-        ->layout('layouts.frontend.app', [
-            'title' => "Home | Monarchy School",
-        ]);
+            ->layout('layouts.frontend.app', [
+                'title' => "Home | Monarchy School",
+            ]);
     }
 }

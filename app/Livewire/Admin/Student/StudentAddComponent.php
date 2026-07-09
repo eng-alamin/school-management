@@ -26,7 +26,7 @@ class StudentAddComponent extends Component
     use WithFileUploads;
 
     public $session_id;
-    public $register_no;
+    public $registration_no;
     public $roll_no;
     public $admission_date;
     public $class_id;
@@ -66,7 +66,7 @@ class StudentAddComponent extends Component
 
     public bool $guardian_exists = false;
 
-    // ── Notun / Existing student flag ──
+    // ── New / Existing student flag ──
     public bool $is_new_student = true;
 
     // ── Class -> Section dependent dropdown (academic_class_assigns theke) ──
@@ -122,7 +122,7 @@ class StudentAddComponent extends Component
             ? ((int) substr($lastStudent->student_id, -6)) + 1
             : 1;
 
-        $this->register_no = $institutionCode . $year . str_pad($serial, 6, '0', STR_PAD_LEFT);
+        $this->registration_no = $institutionCode . $year . str_pad($serial, 6, '0', STR_PAD_LEFT);
     }
 
     private function generateRollNo($classId): void
@@ -173,7 +173,7 @@ class StudentAddComponent extends Component
     {
         return [
             'session_id'  => 'required',
-            'register_no' => 'nullable|unique:students,register_no',
+            'registration_no' => 'nullable|unique:students,registration_no',
             'class_id'    => 'required',
 
             'name' => 'required',
@@ -280,7 +280,7 @@ class StudentAddComponent extends Component
         $admissionFee = FeeSetup::with('feeType')
             ->where('institution_id', $institutionId)
             ->where('class_id', $this->class_id)
-            ->where('frequency', 'one_time')
+            ->where('frequency', 'yearly')
             ->where('status', true)
             ->whereHas('feeType', fn($q) => $q->where('name', 'like', '%admission%'))
             ->first();
@@ -409,7 +409,7 @@ class StudentAddComponent extends Component
 
                 'session_id'     => $this->session_id,
                 'student_id'     => $studentId,
-                'register_no'    => $this->register_no,
+                'registration_no'    => $this->registration_no,
                 'roll_no'        => $rollNo,
                 'admission_date' => $this->admission_date,
                 'class_id'       => $this->class_id,

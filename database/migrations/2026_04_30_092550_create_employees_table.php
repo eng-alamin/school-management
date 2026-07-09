@@ -13,10 +13,9 @@ return new class extends Migration
     {
         Schema::create('employees', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
-
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            
+            $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->unique()->constrained()->cascadeOnDelete();
+ 
             // Academic Details
             $table->string('employee_id')->unique();
             $table->date('joining_date')->nullable();
@@ -25,19 +24,21 @@ return new class extends Migration
             $table->string('qualification')->nullable();
             $table->text('experience_detail')->nullable();
             $table->string('total_experience')->nullable();
-
+ 
             // Employee Details
             $table->string('name');
             $table->string('gender')->nullable();
             $table->string('blood_group')->nullable();
             $table->date('dob')->nullable();
             $table->string('religion')->nullable();
-            $table->string('mobile')->nullable();
-            $table->string('email')->nullable();
+            $table->string('mobile')->nullable()->index();
+            $table->string('email')->nullable()->index();
+ 
             $table->text('present_address')->nullable();
             $table->text('permanent_address')->nullable();
             $table->string('photo')->nullable();
-
+            $table->enum('status', ['active', 'inactive', 'resigned', 'terminated'])->default('active')->index();
+ 
             // Bank Info
             $table->string('bank_name')->nullable();
             $table->string('holder_name')->nullable();
@@ -45,7 +46,7 @@ return new class extends Migration
             $table->string('bank_address')->nullable();
             $table->string('ifsc_code')->nullable();
             $table->string('account_no')->nullable();
-
+ 
             $table->timestamps();
         });
     }

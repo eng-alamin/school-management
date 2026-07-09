@@ -6,10 +6,11 @@ use Livewire\Component;
 use App\Models\OfficeAccount;
 use App\Models\OfficeHead;
 use App\Models\OfficeDeposit;
-
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Livewire\WithFileUploads;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Validation\Rule;
+use Illuminate\Contracts\Validation\Validator;
 
 class DepositEditComponent extends Component
 {
@@ -17,49 +18,51 @@ class DepositEditComponent extends Component
 
     public OfficeDeposit $deposit;
 
-    public $account_id  = '';
-    public $head_id     = '';
-    public $pay_via     = '';
-    public $reference   = '';
-    public $amount      = '';
-    public $date        = '';
+    public $account_id = '';
+    public $head_id = '';
+    public $pay_via = '';
+    public $reference = '';
+    public $amount = '';
+    public $date = '';
     public $description = '';
-    public $attachment  = null;
+    public $attachment = null;
 
     public $existing_attachment = null;
-    public $remove_attachment   = false;
+    public $remove_attachment = false;
 
     public function mount($id)
     {
         $deposit = OfficeDeposit::findOrFail($id);
 
-        $this->deposit             = $deposit;
-        $this->account_id          = $deposit->account_id;
-        $this->head_id             = $deposit->head_id ?? '';
-        $this->pay_via             = $deposit->pay_via ?? '';
-        $this->reference           = $deposit->reference ?? '';
-        $this->amount               = $deposit->amount;
-        $this->date                = $deposit->date?->format('Y-m-d');
-        $this->description         = $deposit->description ?? '';
+        $this->deposit = $deposit;
+        $this->account_id = $deposit->account_id;
+        $this->head_id = $deposit->head_id ?? '';
+        $this->pay_via = $deposit->pay_via ?? '';
+        $this->reference = $deposit->reference ?? '';
+        $this->amount = $deposit->amount;
+        $this->date = $deposit->date?->format('Y-m-d');
+        $this->description = $deposit->description ?? '';
         $this->existing_attachment = $deposit->attachment;
     }
 
-    protected function failedValidation($validator)
+    protected function failedValidation(Validator $validator)
     {
-        $this->dispatch('validation-failed');
+        $this->dispatch('toast', type: 'error', message: $validator->errors()->first());
+
+        throw new ValidationException($validator);
     }
 
     public function rules()
     {
         return [
-            'account_id'        => 'required|exists:office_accounts,id',
-            'head_id'           => 'nullable|exists:office_heads,id',
-            'pay_via'           => 'nullable|string|max:100',
-            'reference'         => 'nullable|string|max:255',
-            'amount'            => 'required|numeric|min:0',
-            'date'              => 'required|date',
-            'description'       => 'nullable|string',
-            'attachment'        => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'account_id' => 'required|exists:office_accounts,id',
+            'head_id' => 'nullable|exists:office_heads,id',
+            'pay_via' => 'nullable|string|max:100',
+            'reference' => 'nullable|string|max:255',
+            'amount' => 'required|numeric|min:0',
+            'date' => 'required|date',
+            'description' => 'nullable|string',
+            'attachment' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'remove_attachment' => 'boolean',
         ];
     }
@@ -71,58 +74,67 @@ class DepositEditComponent extends Component
 
     public function removeAttachment()
     {
-        $this->remove_attachment   = true;
+        $this->remove_attachment = true;
         $this->existing_attachment = null;
     }
 
     public function update()
     {
-        try {
-            $this->validate($this->rules());
+        $this->validate($this->rules());
 
+        DB::beginTransaction();
+
+        try {
             $attachmentPath = $this->deposit->attachment;
 
             if ($this->remove_attachment) {
-                if ($attachmentPath && \Storage::disk('public')->exists($attachmentPath)) {
-                    \Storage::disk('public')->delete($attachmentPath);
+                if ($attachmentPath && Storage::disk('public')->exists($attachmentPath)) {
+                    Storage::disk('public')->delete($attachmentPath);
                 }
                 $attachmentPath = null;
             }
 
             if ($this->attachment) {
-                if ($attachmentPath && \Storage::disk('public')->exists($attachmentPath)) {
-                    \Storage::disk('public')->delete($attachmentPath);
+                if ($attachmentPath && Storage::disk('public')->exists($attachmentPath)) {
+                    Storage::disk('public')->delete($attachmentPath);
                 }
                 $attachmentPath = $this->attachment->store('office-deposits', 'public');
             }
 
             $this->deposit->update([
-                'account_id'  => $this->account_id,
-                'head_id'     => $this->head_id ?: null,
-                'pay_via'     => $this->pay_via ?: null,
-                'reference'   => $this->reference ?: null,
-                'amount'      => $this->amount,
-                'date'        => $this->date,
+                'account_id' => $this->account_id,
+                'head_id' => $this->head_id ?: null,
+                'pay_via' => $this->pay_via ?: null,
+                'reference' => $this->reference ?: null,
+                'amount' => $this->amount,
+                'date' => $this->date,
                 'description' => $this->description ?: null,
-                'attachment'  => $attachmentPath,
+                'attachment' => $attachmentPath,
             ]);
 
+            activity()
+                ->performedOn($this->deposit)
+                ->withProperties(['institution_id' => institution()->id])
+                ->log('Office Deposit Updated');
+
+            DB::commit();
+
             $this->existing_attachment = $attachmentPath;
-            $this->attachment          = null;
-            $this->remove_attachment   = false;
+            $this->attachment = null;
+            $this->remove_attachment = false;
 
             $this->dispatch('toast', type: 'success', message: 'Deposit updated successfully!');
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            DB::rollBack();
             $this->dispatch('toast', type: 'error', message: 'An error occurred while updating the deposit.');
-            throw $e;
         }
     }
 
     public function render()
     {
-        $accounts = OfficeAccount::all();
-        $heads    = OfficeHead::all();
+        $accounts = OfficeAccount::where('is_active', true)->get();
+        $heads = OfficeHead::where('type', 'deposit')->where('is_active', true)->get();
 
         return view('livewire.admin.office-accounting.deposit-edit-component')
             ->with('accounts', $accounts)

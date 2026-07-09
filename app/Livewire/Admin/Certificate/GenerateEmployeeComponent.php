@@ -3,9 +3,10 @@
 namespace App\Livewire\Admin\Certificate;
 
 use Livewire\Component;
+use Livewire\Attributes\Computed;
 use App\Models\CertificateTemplate;
 use App\Models\Employee;
-use App\Models\Setting;
+use App\Models\Institution;
 use Carbon\Carbon;
 
 class GenerateEmployeeComponent extends Component
@@ -38,7 +39,7 @@ class GenerateEmployeeComponent extends Component
             'filterRole'     => 'required',
             'filterTemplate' => 'required|exists:certificate_templates,id',
         ], [
-            'filterRole.required'     => 'Please select a role.',          // BUG FIX: was 'class'
+            'filterRole.required'     => 'Please select a role.',
             'filterTemplate.required' => 'Please select a template.',
             'filterTemplate.exists'   => 'Selected template is invalid.',
         ]);
@@ -46,6 +47,7 @@ class GenerateEmployeeComponent extends Component
         $this->filtered    = true;
         $this->selectedIds = [];
         $this->selectAll   = false;
+        unset($this->employees);
     }
 
     // ── Reset Filter ──
@@ -57,21 +59,22 @@ class GenerateEmployeeComponent extends Component
         $this->selectedIds    = [];
         $this->selectAll      = false;
         $this->resetValidation();
+        unset($this->employees);
     }
 
-    // BUG FIX: was resetting filterTemplate instead of selectedIds only
     public function updatedFilterRole(): void
     {
         $this->selectedIds = [];
         $this->selectAll   = false;
+        unset($this->employees);
     }
 
     public function updatedSelectAll(bool $value): void
     {
         if ($value) {
-            $this->selectedIds = $this->getEmployees()
+            $this->selectedIds = $this->employees
                 ->pluck('id')
-                ->map(fn($id) => (string) $id)
+                ->map(fn ($id) => (string) $id)
                 ->toArray();
         } else {
             $this->selectedIds = [];
@@ -80,7 +83,7 @@ class GenerateEmployeeComponent extends Component
 
     public function updatedSelectedIds(): void
     {
-        $total           = $this->getEmployees()->count();
+        $total           = $this->employees->count();
         $this->selectAll = count($this->selectedIds) === $total && $total > 0;
     }
 
@@ -88,7 +91,7 @@ class GenerateEmployeeComponent extends Component
     public function generateCertificates(): void
     {
         if (empty($this->selectedIds)) {
-            session()->flash('error', 'Please select at least one employee.');
+            $this->dispatch('toast', type: 'error', message: 'Please select at least one employee.');
             return;
         }
 
@@ -97,7 +100,7 @@ class GenerateEmployeeComponent extends Component
         ]);
 
         $template  = CertificateTemplate::findOrFail($this->filterTemplate);
-        $institute = Setting::first();
+        $institute = Institution::find(auth()->user()->institution_id);
 
         $employees = Employee::with(['department', 'designation'])
             ->whereIn('id', $this->selectedIds)
@@ -117,7 +120,10 @@ class GenerateEmployeeComponent extends Component
                                justify-content:center;border-radius:6px;
                                font-size:1.5rem;color:#9ca3af;">👤</div>';
 
-            // BUG FIX: fixed all placeholder → value mismatches
+            $formattedDob = $employee->dob
+                ? Carbon::parse($employee->dob)->format('d M Y')
+                : '';
+
             $content = str_replace(
                 [
                     // ── Institute placeholders ──
@@ -126,47 +132,60 @@ class GenerateEmployeeComponent extends Component
                     '{institute_mobile}',
                     '{institute_address}',
 
-                    // ── Employee placeholders ──
-                    '{name}',
+                    // ── Employee placeholders (current) ──
+                    '{joining_date}',
                     '{employee_id}',
+                    '{name}',
+                    '{designation}',
+                    '{department}',
                     '{gender}',
+                    '{blood}',
+                    '{birthday}',
+                    '{religion}',
+                    '{qualification}',
+                    '{experience_detail}',
+                    '{total_experience}',
+
+                    // ── Employee placeholders (legacy, kept for old templates) ──
                     '{blood_group}',
                     '{dob}',
-                    '{religion}',
                     '{mobile}',
                     '{email}',
                     '{address}',
-                    '{designation}',
-                    '{department}',
-                    '{joining_date}',
                     '{issue_date}',
 
-                    // ── Photo placeholder ──
+                    // ── Photo placeholders ──
                     '{photo}',
                     '{employee_photo}',
                 ],
                 [
                     // ── Institute values ──
-                    $institute?->name  ?? '',
-                    $institute?->email ?? '',
-                    $institute?->mobile          ?? '',
-                    $institute?->address         ?? '',
+                    $institute?->name    ?? '',
+                    $institute?->email   ?? '',
+                    $institute?->phone  ?? '',
+                    $institute?->address ?? '',
 
-                    // ── Employee values ──
-                    $employee->name                 ?? '',
-                    $employee->employee_id          ?? '',   // staff ID / emp code
-                    $employee->gender               ?? '',
-                    $employee->blood_group          ?? '',   // BUG FIX: was merged with dob
-                    $employee->dob
-                        ? Carbon::parse($employee->dob)->format('d M Y') : '',
-                    $employee->religion             ?? '',
-                    $employee->mobile               ?? '',
-                    $employee->email                ?? '',
-                    $employee->present_address      ?? '',
-                    $employee->designation?->name   ?? '',
-                    $employee->department?->name    ?? '',
+                    // ── Employee values (current) ──
                     $employee->joining_date
                         ? Carbon::parse($employee->joining_date)->format('d M Y') : '',
+                    $employee->employee_id       ?? '',
+                    $employee->name              ?? '',
+                    $employee->designation?->name ?? '',
+                    $employee->department?->name  ?? '',
+                    $employee->gender             ?? '',
+                    $employee->blood_group        ?? '',
+                    $formattedDob,
+                    $employee->religion           ?? '',
+                    $employee->qualification      ?? '',
+                    $employee->experience_detail  ?? '',
+                    $employee->total_experience   ?? '',
+
+                    // ── Employee values (legacy) ──
+                    $employee->blood_group     ?? '',
+                    $formattedDob,
+                    $employee->mobile          ?? '',
+                    $employee->email           ?? '',
+                    $employee->present_address ?? '',
                     Carbon::parse($this->issue_date)->format('d M Y'),
 
                     // ── Photo as inline img ──
@@ -179,28 +198,42 @@ class GenerateEmployeeComponent extends Component
             return [
                 'employee_id' => $employee->id,
                 'name'        => $employee->name,
-                'gender'      => $employee->gender        ?? '',
-                'blood_group' => $employee->blood_group   ?? '',
-                'dob'         => $employee->dob           ?? '',
-                'religion'    => $employee->religion      ?? '',
-                'mobile'      => $employee->mobile        ?? '',
-                'email'       => $employee->email         ?? '',
-                'address'     => $employee->present_address ?? '',
-                'photo'       => $employee->photo         ?? '',
+                'gender'      => $employee->gender           ?? '',
+                'blood_group' => $employee->blood_group      ?? '',
+                'dob'         => $employee->dob               ?? '',
+                'religion'    => $employee->religion          ?? '',
+                'mobile'      => $employee->mobile            ?? '',
+                'email'       => $employee->email             ?? '',
+                'address'     => $employee->present_address   ?? '',
+                'photo'       => $employee->photo             ?? '',
                 'designation' => $employee->designation?->name ?? '',
                 'department'  => $employee->department?->name  ?? '',
                 'issue_date'  => $this->issue_date,
-                'content'     => $content,   // fully parsed HTML
+                'content'     => $content,
                 'template'    => $template,
             ];
 
         })->toArray();
 
         $this->showPrintPreview = true;
+
+        activity()
+            ->withProperties([
+                'template'      => $template->certificate_name,
+                'employee_count'=> count($this->printCards),
+                'issue_date'    => $this->issue_date,
+            ])
+            ->log('Generated ' . count($this->printCards) . ' employee certificate(s) using template: ' . $template->certificate_name);
     }
 
     // ── Helpers ──
-    private function getEmployees()
+
+    /**
+     * Cached per-request employee list. Prevents duplicate queries across
+     * render(), updatedSelectAll(), updatedSelectedIds(), and the view.
+     */
+    #[Computed]
+    public function employees()
     {
         if (!$this->filtered) {
             return collect();
@@ -219,10 +252,10 @@ class GenerateEmployeeComponent extends Component
     public function getAvailableRoles(): array
     {
         return [
-            'admin'        => 'Admin',
-            'teacher'      => 'Teacher',
-            'accountant'   => 'Accountant',
-            'staff'        => 'Staff',
+            'admin'      => 'Admin',
+            'teacher'    => 'Teacher',
+            'accountant' => 'Accountant',
+            'staff'      => 'Staff',
         ];
     }
 
@@ -232,15 +265,19 @@ class GenerateEmployeeComponent extends Component
             ->where('is_active', true)
             ->get();
 
-        $employees = $this->filtered ? $this->getEmployees() : collect();
-        $roles     = $this->getAvailableRoles();
+        $roles = $this->getAvailableRoles();
 
         $selectedTemplate = $this->filterTemplate
             ? CertificateTemplate::find($this->filterTemplate)
             : null;
 
         return view('livewire.admin.certificate.generate-employee-component')
-            ->with(compact('templates', 'employees', 'roles', 'selectedTemplate'))
+            ->with([
+                'templates'        => $templates,
+                'employees'        => $this->employees,
+                'roles'            => $roles,
+                'selectedTemplate' => $selectedTemplate,
+            ])
             ->layout('layouts.admin.app', [
                 'title' => 'Generate Employee Certificates | ' . institution()->name,
             ]);

@@ -7,7 +7,7 @@
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>{{ $title ?? config('app.name') }}</title>
 
-  <link rel="shortcut icon" href="{{ institution()->system_logo ? asset('storage/' . institution()->system_logo) : asset('assets/img/default-logo.png') }}">
+  {{-- <link rel="shortcut icon" href="{{ institution()->system_logo ? asset('storage/' . institution()->system_logo) : asset('assets/img/default-logo.png') }}"> --}}
 
   <!-- Bootstrap 5.3 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>

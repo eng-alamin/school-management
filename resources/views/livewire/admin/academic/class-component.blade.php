@@ -32,6 +32,9 @@
                 <a href="{{ route('admin.academic.sections') }}" class="btn-outline">
                     <span class="material-icons-round" style="font-size:16px">border_inner</span><span>Section</span>
                 </a>
+                <a href="{{ route('admin.academic.subjects') }}" class="btn-outline">
+                    <span class="material-icons-round" style="font-size:16px">subject</span><span>Subjects</span>
+                </a>
                 <a href="{{ route('admin.academic.groups') }}" class="btn-outline">
                     <span class="material-icons-round" style="font-size:16px">group</span><span>Groups</span>
                 </a>

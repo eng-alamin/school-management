@@ -1,4 +1,4 @@
-{{-- livewire/theme/employee-list-component.blade.php --}}
+{{-- livewire/admin/employee/employee-list-component.blade.php --}}
 
 <div>
 
@@ -50,8 +50,10 @@
                             <th wire:click="sortBy('email')" style="cursor:pointer">
                                 <span id="th-email">Email</span> @if($sortField === 'email') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th wire:click="sortBy('phone')" style="cursor:pointer">
-                                <span id="th-phone">Phone</span> @if($sortField === 'phone') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
+                            {{-- BUG FIX: table column is "mobile", not "phone". Sorting by "phone"
+                                 previously threw an "Unknown column" SQL error. --}}
+                            <th wire:click="sortBy('mobile')" style="cursor:pointer">
+                                <span id="th-phone">Phone</span> @if($sortField === 'mobile') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
                             <th id="th-actions">Actions</th>
                         </tr>
@@ -72,7 +74,9 @@
                             <td>{{ $employee->designation?->name ?? '—' }}</td>
                             <td>{{ $employee->department?->name ?? '—' }}</td>
                             <td>{{ $employee->email ?? '—' }}</td>
-                            <td>{{ $employee->phone ?? '—' }}</td>
+                            {{-- BUG FIX: $employee->phone doesn't exist on the model/table,
+                                 it always rendered "—". Correct column is "mobile". --}}
+                            <td>{{ $employee->mobile ?? '—' }}</td>
                             <td>
                                 <div class="d-flex gap-1">
                                     <a href="{{ route('admin.employee.view', ['id' => $employee->id]) }}" target="_blank"
@@ -92,7 +96,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="7" class="text-center py-5 text-muted">
+                            <td colspan="8" class="text-center py-5 text-muted">
                                 <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
                                 No employees found.
                                 <a href="{{ route('admin.employee.add') }}">Add one now</a>.

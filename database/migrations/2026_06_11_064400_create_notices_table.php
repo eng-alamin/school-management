@@ -25,6 +25,7 @@ return new class extends Migration
             $table->date('published_at');
             $table->date('expires_at')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

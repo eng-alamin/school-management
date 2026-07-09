@@ -8,7 +8,7 @@
         <div class="card-body">
 
             @if ($classes->isEmpty())
-                <div class="alert alert-warning">কোনো Class পাওয়া যায়নি। আগে Academic Class Setup করুন।</div>
+                <div class="alert alert-warning">কোনো Class পাওয়া যায়নি। আগে Academic Class Assign করুন।</div>
             @elseif ($feeTypes->isEmpty())
                 <div class="alert alert-warning">কোনো Fee Type পাওয়া যায়নি। আগে Fee Type যোগ করুন।</div>
             @else
@@ -18,7 +18,7 @@
                             <tr>
                                 <th style="min-width:150px;">Class</th>
                                 @foreach ($feeTypes as $feeType)
-                                    <th wire:key="fee-type-head-{{ $feeType->id }}" style="min-width:220px;">
+                                    <th wire:key="fee-type-head-{{ $feeType->id }}" style="min-width:190px;">
                                         {{ $feeType->name }}
                                     </th>
                                 @endforeach
@@ -79,7 +79,7 @@
                                                     wire:model.defer="grid.{{ $class->id }}.{{ $feeType->id }}.billing_month"
                                                 >
                                                     <option value="">-- Billing Month --</option>
-                                                    @foreach (\Carbon\Carbon::getDays() ? range(1, 12) : [] as $m)
+                                                    @foreach (range(1, 12) as $m)
                                                         <option value="{{ $m }}">
                                                             {{ \Carbon\Carbon::create()->month($m)->format('F') }}
                                                         </option>

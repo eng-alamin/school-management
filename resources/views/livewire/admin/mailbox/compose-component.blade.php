@@ -1,4 +1,4 @@
-{{-- resources/views/livewire/admin/mailbox/compose.blade.php --}}
+{{-- resources/views/livewire/admin/mailbox/compose-component.blade.php --}}
 <div class="mailbox-wrapper">
     @include('livewire.admin.mailbox.partials.sidebar')
 
@@ -23,7 +23,7 @@
 
                 @if($receiver_id)
                     <div class="selected-user-badge">
-                        <i class="fas fa-user me-1"></i>
+                        <i class="fas fa-user"></i>
                         {{ $receiverName }}
                         <button wire:click="clearReceiver" type="button" class="btn-clear-user">
                             <i class="fas fa-times"></i>
@@ -90,7 +90,7 @@
 
             {{-- Actions --}}
             <div class="compose-actions">
-                <button wire:click="send" wire:loading.attr="disabled" class="btn bg-dark text-white btn-send">
+                <button wire:click="send" wire:loading.attr="disabled" class="btn btn-send">
                     <span wire:loading.remove wire:target="send">
                         <i class="fas fa-paper-plane me-1"></i> Send Message
                     </span>
@@ -99,7 +99,7 @@
                     </span>
                 </button>
 
-                <a href="{{ route('admin.mailbox.inbox') }}" class="btn btn-light ms-2">
+                <a href="{{ route('admin.mailbox.inbox') }}" class="btn btn-light rounded-pill ms-2">
                     <i class="fas fa-times me-1"></i> Discard
                 </a>
             </div>
@@ -107,13 +107,3 @@
     </div>
 </div>
 @include('livewire.admin.mailbox.partials.styles')
-
-@push('styles')
-    <style>
-        body.dark-mode .form-control{
-   background: #ffffff !important;
-    border-color: rgb(30 30 30 / 12%) !important;
-    color: #e2e8f0 !important;
-}
-    </style>
-@endpush

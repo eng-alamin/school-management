@@ -4,11 +4,16 @@ namespace App\Livewire\Admin\Salary;
 
 use Livewire\Component;
 use App\Models\SalaryTemplate;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Contracts\Validation\Validator;
 
 class EditTemplateComponent extends Component
 {
     public SalaryTemplate $template;
 
+    public string $name          = '';
     public string $salary_grade  = '';
     public string $basic_salary  = '';
     public string $overtime_rate = '';
@@ -22,9 +27,9 @@ class EditTemplateComponent extends Component
     {
         $template = SalaryTemplate::findOrFail($id);
 
-        $this->template_id  = $template->id;
-        $this->template     = $template;
+        $this->template = $template;
 
+        $this->name          = $template->name;
         $this->salary_grade  = $template->salary_grade;
         $this->basic_salary  = (string) $template->basic_salary;
         $this->overtime_rate = (string) ($template->overtime_rate ?? '');
@@ -89,14 +94,24 @@ class EditTemplateComponent extends Component
 
     // ─── Rules ────────────────────────────────────────────────────────────────
 
-    protected function failedValidation($validator)
+    protected function failedValidation(Validator $validator)
     {
-        $this->dispatch('validation-failed');
+        $this->dispatch('toast', type: 'error', message: $validator->errors()->first());
+
+        throw new ValidationException($validator);
     }
 
     public function rules(): array
     {
         return [
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('salary_templates', 'name')
+                    ->where(fn ($query) => $query->where('institution_id', institution()->id))
+                    ->ignore($this->template->id),
+            ],
             'salary_grade'          => 'required|string|max:255',
             'basic_salary'          => 'required|numeric|min:0',
             'overtime_rate'         => 'nullable|numeric|min:0',
@@ -116,10 +131,13 @@ class EditTemplateComponent extends Component
 
     public function update(): void
     {
-        try {
-            $this->validate($this->rules());
+        $this->validate($this->rules());
 
+        DB::beginTransaction();
+
+        try {
             $this->template->update([
+                'name'            => $this->name,
                 'salary_grade'    => $this->salary_grade,
                 'basic_salary'    => $this->basic_salary,
                 'overtime_rate'   => $this->overtime_rate ?: null,
@@ -141,8 +159,9 @@ class EditTemplateComponent extends Component
                     $keepAllowanceIds[] = $allowance['id'];
                 } else {
                     $new = $this->template->allowances()->create([
-                        'name'   => $allowance['name'],
-                        'amount' => $allowance['amount'] ?? 0,
+                        'institution_id' => institution()->id,
+                        'name'           => $allowance['name'],
+                        'amount'         => $allowance['amount'] ?? 0,
                     ]);
                     $keepAllowanceIds[] = $new->id;
                 }
@@ -162,19 +181,27 @@ class EditTemplateComponent extends Component
                     $keepDeductionIds[] = $deduction['id'];
                 } else {
                     $new = $this->template->deductions()->create([
-                        'name'   => $deduction['name'],
-                        'amount' => $deduction['amount'] ?? 0,
+                        'institution_id' => institution()->id,
+                        'name'           => $deduction['name'],
+                        'amount'         => $deduction['amount'] ?? 0,
                     ]);
                     $keepDeductionIds[] = $new->id;
                 }
             }
             $this->template->deductions()->whereNotIn('id', $keepDeductionIds)->delete();
 
+            activity()
+                ->performedOn($this->template)
+                ->withProperties(['institution_id' => institution()->id])
+                ->log('Salary Template Updated');
+
+            DB::commit();
+
             $this->dispatch('toast', type: 'success', message: 'Salary template updated successfully!');
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            DB::rollBack();
             $this->dispatch('toast', type: 'error', message: 'An error occurred while updating the template.');
-            throw $e;
         }
     }
 

@@ -2,21 +2,22 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use App\Traits\BelongsToInstitution;
+use Illuminate\Database\Eloquent\Model;
 
 class FeeFine extends Model
 {
     use BelongsToInstitution;
-    protected $guarded = [];
-    
-    public function feeGroup()
-    {
-        return $this->belongsTo(FeeGroup::class);
-    }
 
-    public function feeGroupItem()
+    protected $guarded = [];
+
+    protected $casts = [
+        'fine_value' => 'decimal:2',
+        'status'     => 'boolean',
+    ];
+
+    public function feeSetup()
     {
-        return $this->belongsTo(FeeGroupItem::class);
+        return $this->belongsTo(FeeSetup::class);
     }
 }

@@ -2,14 +2,6 @@
 
     <div class="card no-print">
 
-        {{-- Flash messages --}}
-        @if(session('error'))
-            <div class="alert alert-danger alert-dismissible fade show mb-3 mx-4 mt-3">
-                <i class="bi bi-x-circle me-2"></i>{{ session('error') }}
-                <button class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
-
         <!-- floating header -->
         <div class="mat-card-header header-pink-gradient">
             <h5>Employee Certificate Generate</h5>
@@ -18,8 +10,6 @@
 
         {{-- ── FILTER SECTION ── --}}
         <div class="row g-4 p-5">
-
-            {{-- BUG FIX: wire:ignore removed from both selects --}}
 
             <div class="col-md-6">
                 <div class="input-group input-group-outline" wire:ignore>
@@ -137,7 +127,6 @@
                                     <td class="text-muted">{{ $i + 1 }}</td>
                                     <td>
                                         <div class="d-flex align-items-center gap-2">
-                                            {{-- BUG FIX: was $employee->logo_path, should be photo --}}
                                             @if($employee->photo)
                                                 <img src="{{ asset('storage/' . $employee->photo) }}"
                                                      class="avatar" alt="">
@@ -227,9 +216,9 @@
                                         padding:{{ $mt }}px {{ $mr }}px {{ $mb }}px {{ $ml }}px;
                                         position:relative;overflow:hidden;">
 
-                                {{-- Background image --}}
+                                {{-- Bug fix: templates store paths relative to public/ directly (not the storage disk) --}}
                                 @if($tmpl->background_image)
-                                    <img src="{{ asset('storage/' . $tmpl->background_image) }}"
+                                    <img src="{{ asset($tmpl->background_image) }}"
                                          style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;opacity:.18;">
                                 @endif
 
@@ -239,7 +228,7 @@
                                     {{-- Logo --}}
                                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
                                         @if($tmpl->logo_image)
-                                            <img src="{{ asset('storage/' . $tmpl->logo_image) }}"
+                                            <img src="{{ asset($tmpl->logo_image) }}"
                                                  style="height:64px;object-fit:contain;">
                                         @else
                                             <div style="width:64px;"></div>
@@ -254,7 +243,7 @@
                                     {{-- Signature --}}
                                     @if($tmpl->signature_image)
                                         <div style="margin-top:40px;text-align:right;">
-                                            <img src="{{ asset('storage/' . $tmpl->signature_image) }}"
+                                            <img src="{{ asset($tmpl->signature_image) }}"
                                                  style="height:48px;object-fit:contain;">
                                             <div style="font-size:.72rem;color:#888;margin-top:4px;border-top:1px solid #ddd;padding-top:4px;">
                                                 Authorized Signature
@@ -318,15 +307,16 @@
                     padding:{{ $mt }}px {{ $mr }}px {{ $mb }}px {{ $ml }}px;
                     position:relative;overflow:hidden;page-break-after:always;">
 
+            {{-- Bug fix: same path correction as the modal preview above --}}
             @if($tmpl->background_image)
-                <img src="{{ asset('storage/' . $tmpl->background_image) }}"
+                <img src="{{ asset($tmpl->background_image) }}"
                      style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;opacity:.18;">
             @endif
 
             <div style="position:relative;z-index:1;">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
                     @if($tmpl->logo_image)
-                        <img src="{{ asset('storage/' . $tmpl->logo_image) }}" style="height:64px;object-fit:contain;">
+                        <img src="{{ asset($tmpl->logo_image) }}" style="height:64px;object-fit:contain;">
                     @else
                         <div style="width:64px;"></div>
                     @endif
@@ -336,7 +326,7 @@
 
                 @if($tmpl->signature_image)
                     <div style="margin-top:40px;text-align:right;">
-                        <img src="{{ asset('storage/' . $tmpl->signature_image) }}" style="height:48px;object-fit:contain;">
+                        <img src="{{ asset($tmpl->signature_image) }}" style="height:48px;object-fit:contain;">
                         <div style="font-size:.72rem;color:#888;margin-top:4px;border-top:1px solid #ddd;padding-top:4px;">
                             Authorized Signature
                         </div>

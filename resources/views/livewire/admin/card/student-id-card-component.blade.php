@@ -2,14 +2,6 @@
 
     <div class="card no-print">
 
-        {{-- Flash messages --}}
-        @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show mb-3">
-            <i class="bi bi-x-circle me-2"></i>{{ session('error') }}
-            <button class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-        @endif
-
         <!-- floating header -->
         <div class="mat-card-header header-pink-gradient">
             <h5 id="cardHeaderTitleAllsections">Student Id Card Generate</h5>
@@ -94,12 +86,12 @@
                     <div class="date-row mb-4">
                         <div class="date-field">
                             <label class="date-label">Print Date</label>
-                            <input type="date" class="form-control" style="width:200px;" wire:model.defer="print_date">
+                            <input type="date" class="form-control" style="width:200px;" wire:model="print_date">
                             @error('print_date')<small class="text-danger">{{ $message }}</small>@enderror
                         </div>
                         <div class="date-field">
                             <label class="date-label">Expiry Date</label>
-                            <input type="date" class="form-control" style="width:200px;" wire:model.defer="expiry_date">
+                            <input type="date" class="form-control" style="width:200px;" wire:model="expiry_date">
                             @error('expiry_date')<small class="text-danger">{{ $message }}</small>@enderror
                         </div>
                     </div>
@@ -140,7 +132,7 @@
                         </thead>
                         <tbody>
                             @forelse($students as $i => $student)
-                            <tr>
+                            <tr wire:key="student-row-{{ $student->id }}">
                                 <td class="check-col">
                                         <input type="checkbox"
                                             class="red-check"
@@ -166,9 +158,9 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="8" class="text-center py-5 text-muted">
+                                <td colspan="9" class="text-center py-5 text-muted">
                                     <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
-                                    No templates found. <a href="#" wire:click.prevent="openCreate">Create one now</a>.
+                                    No students found for the selected class/section.
                                 </td>
                             </tr>
                             @endforelse
@@ -211,7 +203,7 @@
                                     <i class="bi bi-mortarboard" style="font-size:1.4rem;color:rgba(255,255,255,.8);display:block;margin-bottom:2px;"></i>
                                 @endif
                                 <div style="font-weight:700;font-size:.78rem;line-height:1.2;">
-                                    {{ $tmpl?->header_text ?: ($card['institute_name'] ?? 'Institute Name') }}
+                                    {{ $tmpl?->header_text ?: (institution()->name ?? 'Institute Name') }}
                                 </div>
                                 <div style="font-size:.62rem;margin-top:2px;letter-spacing:.05em;">STUDENT ID CARD</div>
                             </div>
@@ -240,7 +232,7 @@
                                         {{ $card['name'] }}
                                     </div>
                                     <div style="font-size:.68rem;color:{{ $tmpl?->accent_color ?? '#007bff' }};font-weight:600;margin-bottom:6px;background:rgba(0,0,0,.05);display:inline-block;padding:1px 6px;border-radius:3px;">
-                                        {{ $card['student_id'] }}
+                                        {{ $card['register_no'] ?? $card['student_id'] }}
                                     </div>
                                     <table style="font-size:.68rem;width:100%;border-collapse:collapse;color:{{ $tmpl?->text_color ?? '#000' }};">
                                         @if(!empty($card['class']))
@@ -311,7 +303,7 @@
             @php $tmpl = $selectedTemplate; @endphp
             <div class="id-card-print" style="background:{{ $tmpl?->background_color ?? '#fff' }};color:{{ $tmpl?->text_color ?? '#000' }};">
                 <div style="background:{{ $tmpl?->accent_color ?? '#007bff' }};padding:12px 14px;text-align:center;">
-                    <div style="color:#fff;font-weight:700;font-size:.78rem;">{{ $tmpl?->header_text ?: ($card['institute_name'] ?? 'Institute') }}</div>
+                    <div style="color:#fff;font-weight:700;font-size:.78rem;">{{ $tmpl?->header_text ?: (institution()->name ?? 'Institute') }}</div>
                     <div style="color:rgba(255,255,255,.7);font-size:.62rem;">STUDENT ID CARD</div>
                 </div>
                 <div style="padding:12px 14px;display:flex;gap:10px;">
@@ -327,7 +319,7 @@
                     @endif
                     <div style="flex:1;">
                         <div style="font-weight:700;font-size:.85rem;">{{ $card['name'] }}</div>
-                        <div style="font-size:.7rem;margin-bottom:4px;">{{ $card['student_id'] }}</div>
+                        <div style="font-size:.7rem;margin-bottom:4px;">{{ $card['register_no'] ?? $card['student_id'] }}</div>
                         <div style="font-size:.68rem;">Class: {{ $card['class'] }}</div>
                         <div style="font-size:.68rem;">Roll: {{ $card['roll_no'] }}</div>
                         <div style="font-size:.68rem;">Mobile: {{ $card['mobile'] }}</div>
@@ -345,26 +337,6 @@
     @endif
 
 </div>
-
-@push('styles')
-    <style>
-        :root {
-            --primary: rgba(33, 37, 41);
-            --primary-light: rgba(239,84,84,.12);
-        }
-
-        .card { border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
-        .card-header { background: #fff; border-bottom: 1px solid var(--border); border-radius: 12px 12px 0 0 !important; padding: 16px 20px; }
-        .card-header .card-title { font-size: .95rem; font-weight: 600; margin: 0; }
-
-        .form-control:focus, .form-select:focus {
-            border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light);
-        }
-
-        .btn-sm { font-size: .78rem; padding: .3rem .65rem; border-radius: 6px; }
-
-    </style>
-@endpush
 
 @push('styles')
 <style>

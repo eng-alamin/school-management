@@ -3,13 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\BelongsToInstitution;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
+use App\Traits\BelongsToInstitution;
 
 class Notification extends Model
 {
     use BelongsToInstitution;
-    
+
     protected $guarded = [];
 
     protected $casts = [
@@ -19,7 +21,7 @@ class Notification extends Model
 
     // ─── Relationships ────────────────────────────────────────────────────────
 
-    public function Institution(): BelongsTo
+    public function institution(): BelongsTo
     {
         return $this->belongsTo(Institution::class);
     }
@@ -105,4 +107,3 @@ class Notification extends Model
         ];
     }
 }
-

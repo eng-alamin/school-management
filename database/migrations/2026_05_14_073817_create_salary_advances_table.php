@@ -14,7 +14,28 @@ return new class extends Migration
         Schema::create('salary_advances', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
+            $table->foreignId('employee_id')->constrained()->cascadeOnDelete();
+ 
+            // ── Advance amount details ─────────────────────────────
+            $table->decimal('amount', 12, 2);              // total advance given
+            $table->decimal('remaining_amount', 12, 2);     // auto-synced via Observer from repayments
+            $table->decimal('installment_amount', 12, 2)->nullable();
+            // ↑ null = deduct full remaining_amount in the very next payment (lump sum)
+            //   set  = deduct this fixed amount each month until remaining_amount hits 0
+ 
+            $table->date('advance_date');
+            $table->text('reason')->nullable();
+ 
+            // active   = still has remaining_amount > 0, will be auto-deducted from future payments
+            // settled  = remaining_amount reached 0, fully repaid
+            $table->enum('status', ['active', 'settled'])->default('active');
+ 
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+ 
             $table->timestamps();
+            $table->softDeletes();
+ 
+            $table->index(['institution_id', 'employee_id', 'status'], 'index_salary_advances_lookup');
         });
     }
 

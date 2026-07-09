@@ -26,4 +26,9 @@ class Homework extends Model
     {
         return $this->belongsTo(AcademicSubject::class, 'subject_id');
     }
+
+    public function teacher()
+    {
+        return $this->belongsTo(Employee::class, 'teacher_id');
+    }
 }
