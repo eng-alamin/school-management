@@ -214,22 +214,89 @@ class AdmissionService
     }
 
     /**
-     * একই email/mobile দিয়ে guardian আগে থেকে থাকলে reuse করে (2nd child scenario)
-     * — সেক্ষেত্রে password `null` return হয় (পুরনো password আমরা জানি না, তাই
-     * mail-এ নতুন password দেখানো হবে না, শুধু username/email দেখানো হবে)।
+     * Guardian resolve korar priority — EKJON Guardian-er sontan ALADA
+     * ALADA Institution-e porte pare, tai login (User) GLOBAL rakha hoy,
+     * kintu prottek Institution-e Guardian-er NIJER ekta row lagbe
+     * (InstitutionScope + students relation-er jonno). Priority:
      *
-     * না থাকলে নতুন User(role=parent) + Guardian তৈরি করে এবং plain password
-     * return করে (mail-এ দেখানোর জন্য — এখানেই Guardian-এর password toiri
-     * hoy o $plainPassword variable-e stored thake, tarpor return kore
-     * uporer level porjonto propagate hoy).
-     * username হিসেবে guardian_email ব্যবহার করা হয়েছে, কারণ guardian_email
-     * সবসময় বাধ্যতামূলক (নিচে exception দ্রষ্টব্য) এবং Online Admission form-এ
-     * guardian-এর জন্য আলাদা username input নেই।
+     * 1) Online Admission form-e "Guardian Already Exist" diye parent
+     *    jodi kono guardian select kore thake ($admission->guardian_user_id
+     *    set thakle — eta ekta GLOBAL users.id, kono nirdishto Institution-e
+     *    bound na):
+     *      (a) current Institution-e shei user_id diye Guardian row AGE
+     *          THEKEI thakle → shudhu shei row-ta reuse kora hoy.
+     *      (b) na thakle → NOTUN User na baniye, SHUDHU notun ekta Guardian
+     *          row toiri kora hoy ei Institution-er jonno, kintu same
+     *          user_id link kore — fole guardian ekই username/password
+     *          diye ei notun school-eo dhukte parbe.
+     *
+     * 2) guardian_user_id na thakle purono behavior: একই email/mobile
+     *    দিয়ে guardian (এই Institution-এ) আগে থেকে থাকলে reuse করে —
+     *    password `null` return হয়।
+     *
+     * 3) কোনোটাই না মিললে নতুন User(role=parent) + Guardian তৈরি করে এবং
+     *    plain password return করে (mail-এ দেখানোর জন্য)।
      *
      * @return array{guardian: Guardian, username: string, email: string, password: ?string, is_new: bool}
      */
     private function findOrCreateGuardian(Admission $admission): array
     {
+        // ── (1) Global guardian identity select kora hoyeche (cross-institution) ──
+        if ($admission->guardian_user_id) {
+            $guardianUser = User::find($admission->guardian_user_id);
+
+            if ($guardianUser) {
+                // (1a) Ei Institution-e already ei user-er Guardian row ache ki na check
+                $existingGuardianHere = Guardian::withoutGlobalScopes()
+                    ->where('institution_id', $admission->institution_id)
+                    ->where('user_id', $guardianUser->id)
+                    ->first();
+
+                if ($existingGuardianHere) {
+                    return [
+                        'guardian' => $existingGuardianHere,
+                        'username' => $guardianUser->username,
+                        'email'    => $guardianUser->email ?? ($existingGuardianHere->email ?? ''),
+                        'password' => null,
+                        'is_new'   => false,
+                    ];
+                }
+
+                // (1b) User globally ache, kintu EI Institution-e Guardian row
+                // nai — tai notun User na baniye SHUDHU notun Guardian row
+                // toiri kore same user_id link kora hocche. Source data
+                // hisebe onno kono Institution-er guardian row (jodi thake)
+                // ba admission form-e dewa guardian_* fields use kora hocche.
+                $anyGuardianProfile = Guardian::withoutGlobalScopes()
+                    ->where('user_id', $guardianUser->id)
+                    ->first();
+
+                $newGuardianForThisInstitution = Guardian::create([
+                    'institution_id' => $admission->institution_id,
+                    'user_id'        => $guardianUser->id,
+                    'name'           => $anyGuardianProfile->name ?? $admission->guardian_name ?? $guardianUser->name,
+                    'relation'       => $anyGuardianProfile->relation ?? $admission->guardian_relation,
+                    'father_name'    => $anyGuardianProfile->father_name ?? $admission->father_name,
+                    'mother_name'    => $anyGuardianProfile->mother_name ?? $admission->mother_name,
+                    'occupation'     => $anyGuardianProfile->occupation ?? $admission->guardian_occupation,
+                    'mobile'         => $anyGuardianProfile->mobile ?? $admission->guardian_mobile,
+                    'email'          => $anyGuardianProfile->email ?? $admission->guardian_email ?? $guardianUser->email,
+                    'address'        => $anyGuardianProfile->address ?? $admission->guardian_address,
+                ]);
+
+                return [
+                    'guardian' => $newGuardianForThisInstitution,
+                    'username' => $guardianUser->username,
+                    'email'    => $guardianUser->email ?? '',
+                    'password' => null, // ── Login already exists, notun password lagbe na ──
+                    'is_new'   => false,
+                ];
+            }
+            // ── User delete hoye thakle (edge case) — normal email/mobile
+            // fallback-e proceed korbe ──
+        }
+
+        // ── (2) email/mobile match fallback (shudhu ei Institution-er moddhe) ──
         $guardian = null;
 
         if ($admission->guardian_email || $admission->guardian_mobile) {
@@ -261,7 +328,7 @@ class AdmissionService
             throw new RuntimeException('Guardian email is required to create a new guardian account.');
         }
 
-        // ── Guardian-er PLAIN PASSWORD ekhane generate hocche ──
+        // ── (3) Guardian-er PLAIN PASSWORD ekhane generate hocche ──
         $plainPassword = Str::random(10);
         $username      = $admission->guardian_email;
 

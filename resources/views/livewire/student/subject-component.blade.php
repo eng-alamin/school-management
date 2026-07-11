@@ -17,7 +17,7 @@
                     </div>
                 </div>
 
-                @if(isset($subjects) && $subjects instanceof \Illuminate\Pagination\LengthAwarePaginator && $subjects->total() > 10)
+                @if(isset($details) && $details instanceof \Illuminate\Pagination\LengthAwarePaginator && $details->total() > 10)
                     <div class="col-md-2">
                         <select class="form-select form-select-sm" wire:model.live="perPage">
                             <option value="10">10 / page</option>
@@ -37,7 +37,7 @@
                             <th>SL</th>
                             <th>Subject Name</th>
                             <th>Class Name</th>
-                            <th>Class Teacher</th>
+                            <th>Subject Teacher</th>
                             <th>Subject Code</th>
                             <th>Subject Type</th>
                             <th>Subject Author</th>
@@ -52,15 +52,15 @@
                             </td>
                         </tr>
                         @else
-                            @forelse($subjects as $i => $subject)
+                            @forelse($details as $i => $detail)
                             <tr>
-                                <td class="text-muted">{{ $subjects->firstItem() + $i }}</td>
-                                <td>{{ $subject->name }}</td>
+                                <td class="text-muted">{{ $details->firstItem() + $i }}</td>
+                                <td>{{ $detail->subject?->name ?? '—' }}</td>
                                 <td>{{ $assign->class?->name ?? '—' }} / {{ $assign->section?->name ?? '—' }}</td>
-                                <td>{{ $teacher?->name ?? '—' }}</td>
-                                <td>{{ $subject->code ?? '—' }}</td>
-                                <td>{{ $subject->type ?? '—' }}</td>
-                                <td>{{ $subject->author ?? '—' }}</td>
+                                <td>{{ $detail->teacher?->name ?? '—' }}</td>
+                                <td>{{ $detail->subject?->code ?? '—' }}</td>
+                                <td>{{ $detail->subject?->type ?? '—' }}</td>
+                                <td>{{ $detail->subject?->author ?? '—' }}</td>
                             </tr>
                             @empty
                             <tr>
@@ -76,10 +76,10 @@
             </div>
         </div>
 
-        @if($assign && $subjects instanceof \Illuminate\Pagination\LengthAwarePaginator)
+        @if($assign && $details instanceof \Illuminate\Pagination\LengthAwarePaginator)
         <div class="card-footer border-0 bg-white d-flex align-items-center justify-content-between flex-wrap gap-2 py-2 px-3">
-            <small class="text-muted">Showing {{ $subjects->firstItem() ?? 0 }}–{{ $subjects->lastItem() ?? 0 }} of {{ $subjects->total() }}</small>
-            {{ $subjects->links('vendor.pagination.custom') }}
+            <small class="text-muted">Showing {{ $details->firstItem() ?? 0 }}–{{ $details->lastItem() ?? 0 }} of {{ $details->total() }}</small>
+            {{ $details->links('vendor.pagination.custom') }}
         </div>
         @endif
 

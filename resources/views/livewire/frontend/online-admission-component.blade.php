@@ -288,6 +288,25 @@
             color:#16a34a;
         }
 
+        .guardian-toggle-box{
+            border-radius:16px;
+            background:#f8fafc;
+            border:1px solid #eef2f7;
+            padding:16px 18px;
+            margin-bottom:20px;
+        }
+
+        .guardian-school-badge{
+            display:inline-block;
+            font-size:11px;
+            font-weight:700;
+            padding:2px 8px;
+            border-radius:20px;
+            background:#fee2e2;
+            color:var(--primary-dark);
+            margin-top:4px;
+        }
+
         @media(max-width:991px){
             .wizard-content{padding:35px 25px;}
             .wizard-sidebar{padding:35px 25px;}
@@ -633,44 +652,132 @@
                                             <h2 class="wizard-heading">Guardian Details</h2>
                                             <p class="wizard-text">Guardian / Parent er information din.</p>
 
-                                            <div class="row g-3">
-                                                <div class="col-md-6">
-                                                    <label class="form-label">Guardian Name <span class="text-danger">*</span></label>
-                                                    <input type="text" wire:model="guardian_name" class="form-control @error('guardian_name') is-invalid @enderror">
-                                                    @error('guardian_name') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                            {{-- ── "Guardian Already Exist" toggle ── --}}
+                                            <div class="guardian-toggle-box">
+                                                <div class="form-check form-switch mb-0">
+                                                    <input wire:model.live="guardian_exists" class="form-check-input" type="checkbox" id="guardianExist" role="switch">
+                                                    <label class="form-check-label fw-semibold" for="guardianExist">
+                                                        Guardian Already Exist
+                                                    </label>
                                                 </div>
-                                                <div class="col-md-6">
-                                                    <label class="form-label">Relation <span class="text-danger">*</span></label>
-                                                    <input type="text" wire:model="guardian_relation" class="form-control @error('guardian_relation') is-invalid @enderror" placeholder="e.g. Father, Mother">
-                                                    @error('guardian_relation') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <label class="form-label">Father's Name</label>
-                                                    <input type="text" wire:model="guardian_father_name" class="form-control">
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <label class="form-label">Mother's Name</label>
-                                                    <input type="text" wire:model="guardian_mother_name" class="form-control">
-                                                </div>
-                                                <div class="col-md-4">
-                                                    <label class="form-label">Occupation</label>
-                                                    <input type="text" wire:model="guardian_occupation" class="form-control">
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <label class="form-label">Guardian Mobile <span class="text-danger">*</span></label>
-                                                    <input type="tel" wire:model="guardian_mobile" class="form-control @error('guardian_mobile') is-invalid @enderror" placeholder="01XXXXXXXXX">
-                                                    @error('guardian_mobile') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <label class="form-label">Guardian Email <span class="text-danger">*</span></label>
-                                                    <input type="email" wire:model="guardian_email" class="form-control @error('guardian_email') is-invalid @enderror">
-                                                    @error('guardian_email') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <label class="form-label">Address</label>
-                                                    <textarea wire:model="guardian_address" class="form-control"></textarea>
+                                                <div class="text-muted small mt-1">
+                                                    Jodi ei guardian er onno kono sontan AAGE THEKEI YE KONO school-e admission newa thake
+                                                    (chai eikhane ba onno kono institution-e), toggle on kore search korun.
                                                 </div>
                                             </div>
+
+                                            @if($guardian_exists)
+
+                                                {{-- ══ EXISTING GUARDIAN — GLOBAL SEARCH & SELECT ══ --}}
+                                                <div wire:key="guardian-existing">
+
+                                                    @if(!$guardian_user_id)
+
+                                                        <div class="mb-2">
+                                                            <label class="form-label">Search Guardian (All Schools) <span class="text-danger">*</span></label>
+                                                            <input type="text"
+                                                                   wire:model.live.debounce.300ms="guardianSearch"
+                                                                   class="form-control @error('guardian_user_id') is-invalid @enderror"
+                                                                   placeholder="Search by name or email...">
+                                                            @error('guardian_user_id')
+                                                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                            @enderror
+                                                        </div>
+
+                                                        @if($guardianResults->count())
+                                                            <div class="list-group institution-search-list">
+                                                                @foreach($guardianResults as $g)
+                                                                    <button type="button"
+                                                                            wire:click="selectGuardian({{ $g->user_id }})"
+                                                                            class="list-group-item list-group-item-action d-flex align-items-center gap-2">
+                                                                        <i class="bi bi-person-fill text-danger"></i>
+                                                                        <span>
+                                                                            <span class="fw-semibold d-block">{{ $g->name }}</span>
+                                                                            <span class="text-muted small">{{ $g->email ?? 'Unknown' }}</span>
+                                                                            @if($g->institution)
+                                                                                <span class="guardian-school-badge">
+                                                                                    <i class="bi bi-building"></i> {{ $g->institution->name }}
+                                                                                </span>
+                                                                            @endif
+                                                                        </span>
+                                                                    </button>
+                                                                @endforeach
+                                                            </div>
+                                                        @else
+                                                            <div class="text-muted small mt-2">
+                                                                @if(strlen($guardianSearch) > 0)
+                                                                    No guardian found matching "{{ $guardianSearch }}".
+                                                                @else
+                                                                    Type guardian's name or email to search across all schools.
+                                                                @endif
+                                                            </div>
+                                                        @endif
+
+                                                    @else
+
+                                                        <div class="summary-box d-flex justify-content-between align-items-center">
+                                                            <div class="d-flex align-items-center gap-3">
+                                                                <div class="brand-logo mb-0" style="background:#fee2e2;color:var(--primary);width:50px;height:50px;font-size:20px;">
+                                                                    <i class="bi bi-person-fill"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <div class="text-muted small">Selected Guardian</div>
+                                                                    <div class="fw-bold">{{ $guardianSearch }}</div>
+                                                                    <div class="text-muted small">This login will be reused for this school too.</div>
+                                                                </div>
+                                                            </div>
+                                                            <button type="button" wire:click="changeGuardian" class="btn btn-light-custom btn-sm">
+                                                                <i class="bi bi-arrow-repeat me-1"></i> Change
+                                                            </button>
+                                                        </div>
+
+                                                    @endif
+
+                                                </div>
+
+                                            @else
+
+                                                {{-- ══ NEW GUARDIAN — FULL FORM ══ --}}
+                                                <div class="row g-3" wire:key="guardian-new">
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Guardian Name <span class="text-danger">*</span></label>
+                                                        <input type="text" wire:model="guardian_name" class="form-control @error('guardian_name') is-invalid @enderror">
+                                                        @error('guardian_name') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Relation <span class="text-danger">*</span></label>
+                                                        <input type="text" wire:model="guardian_relation" class="form-control @error('guardian_relation') is-invalid @enderror" placeholder="e.g. Father, Mother">
+                                                        @error('guardian_relation') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Father's Name</label>
+                                                        <input type="text" wire:model="guardian_father_name" class="form-control">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Mother's Name</label>
+                                                        <input type="text" wire:model="guardian_mother_name" class="form-control">
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">Occupation</label>
+                                                        <input type="text" wire:model="guardian_occupation" class="form-control">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Guardian Mobile <span class="text-danger">*</span></label>
+                                                        <input type="tel" wire:model="guardian_mobile" class="form-control @error('guardian_mobile') is-invalid @enderror" placeholder="01XXXXXXXXX">
+                                                        @error('guardian_mobile') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Guardian Email <span class="text-danger">*</span></label>
+                                                        <input type="email" wire:model="guardian_email" class="form-control @error('guardian_email') is-invalid @enderror">
+                                                        @error('guardian_email') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Address</label>
+                                                        <textarea wire:model="guardian_address" class="form-control"></textarea>
+                                                    </div>
+                                                </div>
+
+                                            @endif
 
                                         </div>
 

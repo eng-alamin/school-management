@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('admissions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
- 
+            $table->foreignId('guardian_user_id')->nullable()->constrained('users')->nullOnDelete();
+
             $table->boolean('is_new')->default(false);
             // ── Applicant (student) info — mirrors students table fields ──
             $table->string('application_no')->nullable();

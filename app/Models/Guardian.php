@@ -2,13 +2,19 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use App\Traits\BelongsToInstitution;
+use Illuminate\Database\Eloquent\Model;
 
 class Guardian extends Model
 {
     use BelongsToInstitution;
+
     protected $guarded = [];
+
+    public function institution()
+    {
+        return $this->belongsTo(Institution::class);
+    }
 
     public function user()
     {
@@ -18,19 +24,9 @@ class Guardian extends Model
     public function students()
     {
         return $this->belongsToMany(Student::class, 'guardian_student')
-                    ->withPivot('Institution_id')
-                    ->withTimestamps();
+            ->withPivot('institution_id')
+            ->withTimestamps();
     }
-
-    // public function students()
-    // {
-    //     return $this->belongsToMany(
-    //         Student::class,
-    //         'guardian_student',
-    //         'guardian_id',
-    //         'student_id'
-    //     );
-    // }
 
     public function sales()
     {

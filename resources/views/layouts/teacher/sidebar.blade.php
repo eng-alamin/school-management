@@ -90,6 +90,20 @@
       </li>
 
       <li class="nav1-item">
+        <div class="nav1-link {{ str_contains(request()->url(), 'teacher/salary') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
+          <span class="material-icons-round nav-icon">event_available</span>
+          <span class="nav-label" id="nav-salary">Salary</span>
+          <span class="material-icons-round nav-arrow">expand_more</span>
+        </div>
+        <div class="nav2-collapse {{ str_contains(request()->url(), 'teacher/salary') == true ? 'show' : '' }}">
+          <ul>
+            <li class="nav2-item"><a href="{{route('teacher.salary.history') }}" class="nav2-link {{ str_contains(request()->url(), 'teacher/salary/history') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-history">History</span></a></li>
+            <li class="nav2-item"><a href="{{route('teacher.salary.advance') }}" class="nav2-link {{ str_contains(request()->url(), 'teacher/salary/advance') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-advance">Advance</span></a></li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="nav1-item">
         <a href="{{route('teacher.leave.apply') }}" class="nav1-link {{ str_contains(request()->url(), 'teacher/leave') == true ? 'active' : '' }}">
           <span class="material-icons-round nav-icon">event</span>
           <span class="nav-label" id="nav-leaves">Leaves</span>

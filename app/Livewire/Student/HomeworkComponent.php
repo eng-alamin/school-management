@@ -4,6 +4,7 @@ namespace App\Livewire\Student;
 
 use Livewire\Component;
 use App\Models\Homework;
+use App\Models\Student;
 
 class HomeworkComponent extends Component
 {
@@ -16,20 +17,41 @@ class HomeworkComponent extends Component
 
     public function mount(): void
     {
-        $student = auth()->user()->student;
+        $student = $this->currentStudent();
 
-        if (!$student || !$student->class_id || !$student->section_id) {
+        if (!$student || !$student->class_id) {
             return;
         }
 
         $this->homeworks = Homework::with('subject', 'class', 'section')
             ->where('class_id', $student->class_id)
-            ->where('section_id', $student->section_id)
+            ->where(function ($query) use ($student) {
+                $query->whereNull('section_id')
+                      ->orWhere('section_id', $student->section_id);
+            })
             ->orderByDesc('homework_date')
             ->get()
             ->toArray();
 
         $this->filteredHomeworks = $this->homeworks;
+    }
+
+    /**
+     * Resolve the logged-in student.
+     *
+     * Default 'web' guard is used. Auth::user() returns a User model,
+     * and Student::user_id links back to that User, so we resolve the
+     * Student record via that foreign key.
+     */
+    protected function currentStudent(): ?Student
+    {
+        $userId = auth()->id();
+
+        if (!$userId) {
+            return null;
+        }
+
+        return Student::where('user_id', $userId)->first();
     }
 
     public function updatedSearch(string $value): void
@@ -49,9 +71,13 @@ class HomeworkComponent extends Component
     {
         $hw = collect($this->homeworks)->firstWhere('id', $id);
 
-        if (!$hw) return;
+        if (!$hw) {
+            return;
+        }
 
-        $this->detail    = $hw;
+        // Defense-in-depth: ensure the homework actually belongs to this student's class,
+        // even though $this->homeworks was already scoped in mount().
+        $this->detail     = $hw;
         $this->showDetail = true;
     }
 
@@ -59,7 +85,7 @@ class HomeworkComponent extends Component
     {
         return view('livewire.student.homework-component')
             ->layout('layouts.student.app', [
-                'title' => "Homeworks | Monarchy School",
+                'title' => 'Homeworks | ' . institution()->name,
             ]);
     }
 }

@@ -2,15 +2,20 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use App\Traits\BelongsToInstitution;
+use Illuminate\Database\Eloquent\Model;
 
 class Student extends Model
 {
     use BelongsToInstitution;
 
     protected $guarded = [];
-    
+
+    public function institution()
+    {
+        return $this->belongsTo(Institution::class);
+    }
+
     public function session()
     {
         return $this->belongsTo(AcademicSession::class, 'session_id');
@@ -24,19 +29,9 @@ class Student extends Model
     public function guardians()
     {
         return $this->belongsToMany(Guardian::class, 'guardian_student')
-                    ->withPivot('institution_id')
-                    ->withTimestamps();
+            ->withPivot('institution_id')
+            ->withTimestamps();
     }
-
-    // public function guardians()
-    // {
-    //     return $this->belongsToMany(
-    //         Guardian::class,
-    //         'guardian_student',
-    //         'student_id',
-    //         'guardian_id'
-    //     );
-    // }
 
     public function class()
     {
@@ -67,7 +62,7 @@ class Student extends Model
     {
         return $this->hasMany(FeeInvoice::class);
     }
-    
+
     public function sales()
     {
         return $this->morphMany(Sale::class, 'saleable');
@@ -75,6 +70,6 @@ class Student extends Model
 
     public function leaveApplications()
     {
-        return $this->morphMany(LeaveApplication::class,'applicable');
+        return $this->morphMany(LeaveApplication::class, 'applicable');
     }
 }

@@ -14,15 +14,21 @@ class ClassComponent extends Component
 
     public function mount(): void
     {
-        $student = auth()->user()->student;
+        $student = $this->currentStudent();
 
-        if (!$student || !$student->class_id || !$student->section_id) {
+        if (!$student || !$student->class_id) {
             return;
         }
 
         $schedules = AcademicClassSchedule::where('class_id', $student->class_id)
-            ->where('section_id', $student->section_id)
+            ->where(function ($query) use ($student) {
+                $query->whereNull('section_id')
+                      ->orWhere('section_id', $student->section_id);
+            })
             ->get()
+            // If both a section-specific row and a null-section (common) row exist
+            // for the same day, prefer the section-specific one.
+            ->sortByDesc(fn ($s) => $s->section_id !== null)
             ->keyBy('day');
 
         $maxPeriods = $schedules->max(fn($s) => count($s->data ?? [])) ?? 0;
@@ -40,11 +46,29 @@ class ClassComponent extends Component
         $this->hasSchedule  = !empty($grid);
     }
 
+    /**
+     * Resolve the logged-in student.
+     *
+     * Default 'web' guard is used. Auth::user() returns a User model,
+     * and Student::user_id links back to that User, so we resolve the
+     * Student record via that foreign key.
+     */
+    protected function currentStudent(): ?Student
+    {
+        $userId = auth()->id();
+
+        if (!$userId) {
+            return null;
+        }
+
+        return Student::where('user_id', $userId)->first();
+    }
+
     public function render()
     {
         return view('livewire.student.class-component')
             ->layout('layouts.student.app', [
-                'title' => "Class Schedule | Monarchy School",
+                'title' => 'Class Schedule | ' . institution()->name,
             ]);
     }
 }

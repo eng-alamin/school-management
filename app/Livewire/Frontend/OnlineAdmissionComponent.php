@@ -12,6 +12,7 @@ use App\Models\AcademicClass;
 use App\Models\AcademicClassAssign;
 use App\Models\AcademicGroup;
 use App\Models\Admission;
+use App\Models\Guardian;
 
 class OnlineAdmissionComponent extends Component
 {
@@ -48,6 +49,15 @@ class OnlineAdmissionComponent extends Component
     public $student_photo_upload;
 
     // ── Step 4: Guardian Details ──
+    // "Guardian Already Exist" — ekjon Guardian-er sontanra ALADA ALADA
+    // Institution-e porte pare, tai eta GLOBAL search (kono institution_id
+    // filter chara). guardian_user_id holo shei guardian-er GLOBAL login
+    // identity (users.id), Guardian::id na — karon Guardian row prottek
+    // Institution-e alada thakte pare (multi-tenant scoping).
+    public bool $guardian_exists = false;
+    public $guardian_user_id;
+    public string $guardianSearch = '';
+
     public $guardian_name;
     public $guardian_relation;
     public $guardian_father_name;
@@ -89,6 +99,11 @@ class OnlineAdmissionComponent extends Component
                 ->first();
             $this->session_id = $currentSession?->id;
         }
+
+        // NOTE: Guardian selection INTENTIONALLY reset kora hocche na —
+        // karon guardian search GLOBAL (Institution-independent), tai
+        // Institution change korleo age select kora guardian thik thakbe
+        // (shei guardian-er onno sontan hoyto eikhaneo porbe).
     }
 
     /**
@@ -113,6 +128,61 @@ class OnlineAdmissionComponent extends Component
     {
         $this->institution_id = null;
         $this->institutionSearch = '';
+    }
+
+    /**
+     * "Guardian Already Exist" toggle off korle search state o clear kore dey,
+     * jate purono selection thake na jay.
+     */
+    public function updatedGuardianExists(): void
+    {
+        $this->guardian_user_id = null;
+        $this->guardianSearch = '';
+    }
+
+    /**
+     * Guardian search result theke user ekta guardian click korle eta call hobe.
+     * $userId holo shei guardian-er GLOBAL login identity (users.id) — eta
+     * diye AdmissionService approve-er shomoy current Institution-e
+     * proyojon mote notun Guardian row toiri/reuse korbe, kintu login
+     * account notun banabe na.
+     */
+    public function selectGuardian($userId): void
+    {
+        // withoutGlobalScopes() — cross-institution search, tai
+        // InstitutionScope bypass kora hocche.
+        $guardian = Guardian::withoutGlobalScopes()
+            ->where('user_id', $userId)
+            ->with('institution')
+            ->first();
+
+        if (!$guardian) {
+            return;
+        }
+
+        $this->guardian_user_id = $userId;
+        $this->guardianSearch = $guardian->name . ' (' . ($guardian->mobile ?? $guardian->email ?? '') . ')';
+
+        // ── Display/summary-er jonno guardian-er details form field-eo
+        // bhorat kore rakhi, jate Step 5 review ebong Admission row-e
+        // (readable snapshot) guardian info save thake ──
+        $this->guardian_name = $guardian->name;
+        $this->guardian_relation = $guardian->relation;
+        $this->guardian_father_name = $guardian->father_name;
+        $this->guardian_mother_name = $guardian->mother_name;
+        $this->guardian_occupation = $guardian->occupation;
+        $this->guardian_mobile = $guardian->mobile;
+        $this->guardian_email = $guardian->email;
+        $this->guardian_address = $guardian->address;
+    }
+
+    /**
+     * "Change" button click korle abar guardian search box dekhabe.
+     */
+    public function changeGuardian(): void
+    {
+        $this->guardian_user_id = null;
+        $this->guardianSearch = '';
     }
 
     /**
@@ -169,16 +239,28 @@ class OnlineAdmissionComponent extends Component
 
     protected function stepFourValidation(): void
     {
-        $this->validate([
-            'guardian_name'        => 'required|string|max:255',
-            'guardian_relation'    => 'required|string|max:100',
+        $this->validate($this->guardianRules());
+    }
+
+    /**
+     * Guardian_exists flag onujayi rules dynamically toggle hoy — existing
+     * (global) guardian select korle shudhu guardian_user_id lagbe, notun
+     * guardian dile age-er moto shob field required thakbe.
+     */
+    private function guardianRules(): array
+    {
+        return [
+            'guardian_user_id' => $this->guardian_exists ? 'required|exists:users,id' : 'nullable',
+
+            'guardian_name'        => !$this->guardian_exists ? 'required|string|max:255' : 'nullable',
+            'guardian_relation'    => !$this->guardian_exists ? 'required|string|max:100' : 'nullable',
             'guardian_father_name' => 'nullable|string|max:255',
             'guardian_mother_name' => 'nullable|string|max:255',
             'guardian_occupation'  => 'nullable|string|max:255',
-            'guardian_mobile'      => 'required|regex:/^01[3-9][0-9]{8}$/',
-            'guardian_email'       => 'required|email',
+            'guardian_mobile'      => !$this->guardian_exists ? 'required|regex:/^01[3-9][0-9]{8}$/' : 'nullable',
+            'guardian_email'       => !$this->guardian_exists ? 'required|email' : 'nullable|email',
             'guardian_address'     => 'nullable|string',
-        ]);
+        ];
     }
 
     public function nextStep(): void
@@ -220,7 +302,7 @@ class OnlineAdmissionComponent extends Component
      */
     public function rules(): array
     {
-        return [
+        return array_merge([
             'institution_id' => 'required|exists:institutions,id',
             'is_new'    => 'required|boolean',
             'session_id' => 'required|exists:academic_sessions,id',
@@ -240,21 +322,9 @@ class OnlineAdmissionComponent extends Component
             'permanent_address'  => 'nullable|string',
             'student_photo_upload' => 'nullable|image|max:2048',
 
-            'guardian_name'     => 'required|string|max:255',
-            'guardian_relation' => 'required|string|max:100',
-            'guardian_father_name' => 'nullable|string|max:255',
-            'guardian_mother_name' => 'nullable|string|max:255',
-            'guardian_occupation'  => 'nullable|string|max:255',
-            // Note: Guardian একই mobile/email দিয়ে ২য়/৩য় সন্তানের জন্য আবার আবেদন
-            // করবে (AdmissionService::findOrCreateGuardian() এটাই reuse করে) —
-            // তাই এখানে unique constraint রাখা হয়নি।
-            'guardian_mobile'      => 'required|regex:/^01[3-9][0-9]{8}$/',
-            'guardian_email'       => 'required|email',
-            'guardian_address'     => 'nullable|string',
-
             'previous_institution' => 'nullable|string',
             'qualification'        => 'nullable|string',
-        ];
+        ], $this->guardianRules());
     }
 
     protected function failedValidation($validator)
@@ -264,7 +334,7 @@ class OnlineAdmissionComponent extends Component
 
     public function updated($propertyName)
     {
-        if ($propertyName === 'website' || $propertyName === 'institutionSearch') {
+        if (in_array($propertyName, ['website', 'institutionSearch', 'guardianSearch'], true)) {
             return;
         }
 
@@ -308,6 +378,10 @@ class OnlineAdmissionComponent extends Component
 
             $admission = Admission::create([
                 'institution_id' => $this->institution_id,
+                // ── Global guardian identity (users.id) — Institution-independent.
+                // Approve howar shomoy AdmissionService ei id diye current
+                // Institution-e Guardian row reuse/create korbe. ──
+                'guardian_user_id' => $this->guardian_exists ? $this->guardian_user_id : null,
                 'is_new'    => $this->is_new,
 
                 'applicant_name' => $this->name,
@@ -385,6 +459,7 @@ class OnlineAdmissionComponent extends Component
             'session_id', 'class_id', 'group_id',
             'name', 'gender', 'blood_group', 'dob', 'religion', 'mobile', 'email',
             'present_address', 'permanent_address', 'student_photo_upload',
+            'guardian_exists', 'guardian_user_id', 'guardianSearch',
             'guardian_name', 'guardian_relation', 'guardian_father_name', 'guardian_mother_name',
             'guardian_occupation', 'guardian_mobile',
             'guardian_email', 'guardian_address',
@@ -434,11 +509,36 @@ class OnlineAdmissionComponent extends Component
                 ->get();
         }
 
+        $guardianResults = collect();
+
+        // ── Guardian search — GLOBAL (kono institution filter na), karon
+        // ekjon Guardian-er sontanra ALADA ALADA school-e porte pare.
+        // withoutGlobalScopes() diye InstitutionScope bypass kora hocche,
+        // tarpor Institution-shohokare (with('institution')) dekhano hocche
+        // jate user bujhte pare guardian ta age kon school-e chilo.
+        // unique('user_id') diye ekই guardian-er multiple Institution row
+        // thakle o list-e ekbar-i dekhabe. ──
+        if ($this->guardian_exists && !$this->guardian_user_id && strlen($this->guardianSearch) > 0) {
+            $guardianResults = Guardian::withoutGlobalScopes()
+                ->with('institution')
+                ->where(function ($q) {
+                    $q->where('name', 'like', '%' . $this->guardianSearch . '%')
+                        ->orWhere('email', 'like', '%' . $this->guardianSearch . '%');
+                })
+                ->orderBy('name')
+                ->limit(30)
+                ->get()
+                ->unique('user_id')
+                ->take(10)
+                ->values();
+        }
+
         return view('livewire.frontend.online-admission-component')
             ->with('institutionResults', $institutionResults)
             ->with('classes', $classes)
             ->with('groups', $groups)
             ->with('sessions', $sessions)
+            ->with('guardianResults', $guardianResults)
             ->layout('layouts.frontend.app', [
                 'title' => 'Online Admission',
             ]);

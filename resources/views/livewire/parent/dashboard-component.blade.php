@@ -63,6 +63,31 @@
         margin: 2px 0 0;
     }
 
+    .child-institution-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: #eff6ff;
+        color: #2563eb;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 3px 10px;
+        border-radius: 999px;
+        margin-top: 6px;
+        max-width: 100%;
+    }
+
+    .child-institution-badge .material-icons {
+        font-size: 13px;
+    }
+
+    .child-institution-badge span.institution-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 160px;
+    }
+
     .child-divider {
         width: 100%;
         border: none;
@@ -149,13 +174,22 @@
                         </div>
 
                         {{-- Name & Class --}}
-                        <div>
+                        <div class="text-center">
                             <p class="child-label">My child</p>
                             <p class="child-name">{{ $child->name }}</p>
                             <p class="child-class">
                                 {{ optional($child->class)->name }}
                                 @if($child->section)({{ $child->section->name }})@endif
                             </p>
+
+                            {{-- School / Institution name — important since a
+                                 guardian's children may study at different schools --}}
+                            @if($child->institution)
+                                <span class="child-institution-badge" title="{{ $child->institution->name }}">
+                                    <span class="material-icons">school</span>
+                                    <span class="institution-name">{{ $child->institution->name }}</span>
+                                </span>
+                            @endif
                         </div>
 
                         <hr class="child-divider">
@@ -168,7 +202,7 @@
                             </div>
                             <div class="child-info-row">
                                 <span class="info-key">Reg no</span>
-                                <span class="info-val">{{ $child->register_no }}</span>
+                                <span class="info-val">{{ $child->registration_no ?? '—' }}</span>
                             </div>
                             <div class="child-info-row">
                                 <span class="info-key">DOB</span>

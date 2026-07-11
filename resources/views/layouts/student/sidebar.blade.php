@@ -40,6 +40,13 @@
       </li>
 
       <li class="nav1-item">
+        <a href="{{route('student.attendances') }}" class="nav1-link {{ Route::is('student.attendances') == true ? 'active' : '' }}">
+          <span class="material-icons-round nav-icon">school</span>
+          <span class="nav-label" id="nav-attendances">Attendances</span>
+        </a>
+      </li>
+
+      <li class="nav1-item">
         <a href="{{route('student.teachers') }}" class="nav1-link {{ Route::is('student.teachers') == true ? 'active' : '' }}">
           <span class="material-icons-round nav-icon">school</span>
           <span class="nav-label" id="nav-teachers">Teachers</span>

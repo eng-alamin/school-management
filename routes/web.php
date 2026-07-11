@@ -85,6 +85,7 @@ Route::middleware(['auth', 'role:parent'])->group(function () {
 // Student
 Route::middleware(['auth', 'role:student'])->group(function () {
     Route::get('student/dashboard', \App\Livewire\Student\DashboardComponent::class)->name('student.dashboard');
+    Route::get('student/attendances', \App\Livewire\Student\AttendanceComponent::class)->name('student.attendances');
     Route::get('student/teachers', \App\Livewire\Student\TeacherComponent::class)->name('student.teachers');
     Route::get('student/subjects', \App\Livewire\Student\SubjectComponent::class)->name('student.subjects');
     Route::get('student/classes', \App\Livewire\Student\ClassComponent::class)->name('student.classes');
@@ -138,6 +139,11 @@ Route::middleware(['auth', 'role:teacher', 'billing.check'])->group(function () 
     // Attendance
     Route::get('teacher/attendance/students', \App\Livewire\Teacher\Attendance\StudentComponent::class)->name('teacher.attendance.students');
     Route::get('teacher/attendance/exams', \App\Livewire\Teacher\Attendance\ExamComponent::class)->name('teacher.attendance.exams');
+
+    //Salary
+    Route::get('teacher/salary/history', \App\Livewire\Teacher\Salary\HistoryComponent::class)->name('teacher.salary.history');
+    Route::get('teacher/salary/advance', \App\Livewire\Teacher\Salary\AdvanceComponent::class)->name('teacher.salary.advance');
+    Route::get('teacher/salary/{id}/{month}/payslip', \App\Livewire\Teacher\Salary\PayslipComponent::class)->name('teacher.salary.payslip');
 
     // Event
     Route::get('teacher/event/add', \App\Livewire\Teacher\Event\AddComponent::class)->name('teacher.event.add');

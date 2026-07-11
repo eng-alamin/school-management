@@ -35,14 +35,17 @@
                     <thead>
                         <tr>
                             <th>SL</th>
-                            <th wire:click="sortBy('exam_id')" style="cursor:pointer">
-                                Exam Name @if($sortField === 'exam_id') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
+                            <th>Exam Name</th>
+                            <th>Subject</th>
+                            <th>Class</th>
+                            <th wire:click="sortBy('exam_date')" style="cursor:pointer">
+                                Date @if($sortField === 'exam_date') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th wire:click="sortBy('class_id')" style="cursor:pointer">
-                                Class @if($sortField === 'class_id') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
+                            <th wire:click="sortBy('start_time')" style="cursor:pointer">
+                                Time @if($sortField === 'start_time') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th wire:click="sortBy('section_id')" style="cursor:pointer">
-                                Section @if($sortField === 'section_id') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
+                            <th wire:click="sortBy('class_room')" style="cursor:pointer">
+                                Room @if($sortField === 'class_room') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
                             <th>Action</th>
                         </tr>
@@ -51,9 +54,20 @@
                         @forelse($schedules as $i => $schedule)
                         <tr>
                             <td class="text-muted">{{ $schedules->firstItem() + $i }}</td>
-                            <td>{{ $schedule->exam->name ?? '—' }}</td>
-                            <td>{{ $schedule->class->name ?? '—' }}</td>
-                            <td>{{ $schedule->section->name ?? '—' }}</td>
+                            <td>{{ $schedule->examSetup?->name ?? '—' }}</td>
+                            <td>{{ $schedule->examSetupDetail?->classAssignDetail?->subject?->name ?? '—' }}</td>
+                            <td>
+                                {{ $schedule->examSetup?->classAssign?->class?->name ?? '—' }}
+                                @if($schedule->examSetup?->classAssign?->section)
+                                    ({{ $schedule->examSetup->classAssign->section->name }})
+                                @endif
+                            </td>
+                            <td>{{ $schedule->exam_date?->format('d M Y') ?? '—' }}</td>
+                            <td>
+                                {{ \Carbon\Carbon::parse($schedule->start_time)->format('h:i A') }}
+                                - {{ \Carbon\Carbon::parse($schedule->end_time)->format('h:i A') }}
+                            </td>
+                            <td>{{ $schedule->class_room ?? '—' }}</td>
                             <td>
                                 <button class="act-btn edit" title="View" wire:click="openView({{ $schedule->id }})">
                                     <span class="material-icons-round">visibility</span>
@@ -62,7 +76,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="5" class="text-center py-5 text-muted">
+                            <td colspan="8" class="text-center py-5 text-muted">
                                 <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
                                 No exam schedule found for your class.
                             </td>
@@ -87,36 +101,71 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Schedule Details</h5>
+                    <h5 class="modal-title">Exam Schedule Details</h5>
                     <button class="btn-close" wire:click="$set('showViewModal', false)"></button>
                 </div>
                 <div class="modal-body">
                     <table class="table table-sm">
                         <thead>
                             <tr>
-                                <th colspan="5" class="text-center">
-                                    <h6 class="mb-0">Exam : {{ $viewRecord->exam->name }}</h6>
-                                    <p class="mb-0">{{ $viewRecord->class->name }} ({{ $viewRecord->section->name }})</p>
+                                <th colspan="2" class="text-center">
+                                    <h6 class="mb-0">{{ $viewRecord->examSetup?->name ?? '—' }}</h6>
+                                    <p class="mb-0 text-muted">
+                                        {{ $viewRecord->examSetup?->term?->name ?? '—' }}
+                                        @if($viewRecord->examSetup?->type)
+                                            / {{ $viewRecord->examSetup->type->name }}
+                                        @endif
+                                    </p>
                                 </th>
-                            </tr>
-                            <tr>
-                                <th class="text-muted">Subject</th>
-                                <th class="text-muted">Date</th>
-                                <th class="text-muted">Starting Time</th>
-                                <th class="text-muted">Ending Time</th>
-                                <th class="text-muted">Hall Room</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($viewRecord->data ?? [] as $detail)
                             <tr>
-                                <td>{{ $detail['subject'] ?? '—' }}</td>
-                                <td>{{ \Carbon\Carbon::parse($detail['exam_date'])->format('d M Y') }}</td>
-                                <td>{{ \Carbon\Carbon::parse($detail['start_time'])->format('h:i A') }}</td>
-                                <td>{{ \Carbon\Carbon::parse($detail['end_time'])->format('h:i A') }}</td>
-                                <td>{{ $detail['hall_room'] ?? '—' }}</td>
+                                <th class="text-muted" style="width:35%">Class</th>
+                                <td>
+                                    {{ $viewRecord->examSetup?->classAssign?->class?->name ?? '—' }}
+                                    @if($viewRecord->examSetup?->classAssign?->section)
+                                        ({{ $viewRecord->examSetup->classAssign->section->name }})
+                                    @endif
+                                </td>
                             </tr>
-                            @endforeach
+                            <tr>
+                                <th class="text-muted">Subject</th>
+                                <td>{{ $viewRecord->examSetupDetail?->classAssignDetail?->subject?->name ?? '—' }}</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Teacher</th>
+                                <td>{{ $viewRecord->examSetupDetail?->classAssignDetail?->teacher?->name ?? '—' }}</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Date</th>
+                                <td>{{ $viewRecord->exam_date?->format('d M Y') ?? '—' }}</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Time</th>
+                                <td>
+                                    {{ \Carbon\Carbon::parse($viewRecord->start_time)->format('h:i A') }}
+                                    - {{ \Carbon\Carbon::parse($viewRecord->end_time)->format('h:i A') }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Room</th>
+                                <td>{{ $viewRecord->class_room ?? '—' }}</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Full Mark</th>
+                                <td>{{ $viewRecord->examSetupDetail?->full_mark ?? '—' }}</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Pass Mark</th>
+                                <td>{{ $viewRecord->examSetupDetail?->pass_mark ?? '—' }}</td>
+                            </tr>
+                            @if($viewRecord->remarks)
+                            <tr>
+                                <th class="text-muted">Remarks</th>
+                                <td>{{ $viewRecord->remarks }}</td>
+                            </tr>
+                            @endif
                         </tbody>
                     </table>
                 </div>
@@ -129,19 +178,3 @@
     @endif
 
 </div>
-
-@push('styles')
-<style>
-    :root {
-        --primary: rgba(33, 37, 41);
-        --primary-light: rgba(239,84,84,.12);
-    }
-    .card { border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
-    .card-header { background: #fff; border-bottom: 1px solid var(--border); border-radius: 12px 12px 0 0 !important; padding: 16px 20px; }
-    .table th { font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); border-bottom: 2px solid var(--border); }
-    .table td { vertical-align: middle; font-size: .875rem; }
-    .table > :not(caption) > * > * { padding: .7rem 1rem; }
-    .modal-title { font-weight: 600; font-size: 1rem; }
-    .btn-sm { font-size: .78rem; padding: .3rem .65rem; border-radius: 6px; }
-</style>
-@endpush
