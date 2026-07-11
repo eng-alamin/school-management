@@ -32,7 +32,7 @@ class LoginLogComponent extends Component
     protected function getOnlineSessions(): \Illuminate\Support\Collection
     {
         $schoolUserIds = DB::table('users')
-            ->where('school_id', Auth::user()->school_id)
+            ->where('institution_id', Auth::user()->institution_id)
             ->pluck('id');
 
         return DB::table('sessions')
@@ -63,7 +63,7 @@ class LoginLogComponent extends Component
     protected function getAllUsers()
     {
         return User::withoutGlobalScope(SchoolScope::class)
-            ->where('school_id', Auth::user()->school_id)
+            ->where('institution_id', Auth::user()->institution_id)
             ->when($this->search, fn($q) => $q->where(function ($q) {
                 $q->where('name', 'like', "%{$this->search}%")
                   ->orWhere('email', 'like', "%{$this->search}%")
@@ -82,7 +82,7 @@ class LoginLogComponent extends Component
             ->where('id', $sessionId)
             ->whereIn('user_id', function ($q) {
                 $q->select('id')->from('users')
-                  ->where('school_id', Auth::user()->school_id);
+                  ->where('institution_id', Auth::user()->institution_id);
             })
             ->delete();
     }
@@ -92,7 +92,7 @@ class LoginLogComponent extends Component
         DB::table('sessions')
             ->whereIn('user_id', function ($q) {
                 $q->select('id')->from('users')
-                  ->where('school_id', Auth::user()->school_id);
+                  ->where('institution_id', Auth::user()->institution_id);
             })
             ->where('id', '!=', $this->currentSessionId)
             ->delete();

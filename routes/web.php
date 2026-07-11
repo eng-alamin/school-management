@@ -79,6 +79,7 @@ Route::middleware(['auth', 'role:parent'])->group(function () {
     Route::get('parent/profile/setting', \App\Livewire\Parent\Profile\SettingComponent::class)->name('parent.profile.setting');
     Route::get('parent/profile/activitylog', \App\Livewire\Parent\Profile\ActivityLogComponent::class)->name('parent.profile.activitylog');
     Route::get('parent/profile/loginlog', \App\Livewire\Parent\Profile\LoginLogComponent::class)->name('parent.profile.loginlog');
+    Route::get('parent/notifications', \App\Livewire\Parent\Notifications\Index::class)->name('parent.notifications.index');
 });
 
 // Student
