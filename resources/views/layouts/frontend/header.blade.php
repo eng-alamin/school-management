@@ -18,7 +18,7 @@
     <div class="collapse navbar-collapse" id="navbarMain">
         <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-1">
         <li class="nav-item">
-            <a class="nav-link active" href="#">
+            <a class="nav-link {{ Route::is('home') == true ? 'active' : '' }}" href="{{ route('home') }}">
             <span class="lang-bn">হোম</span
             ><span class="lang-en">Home</span>
             </a>
@@ -36,7 +36,7 @@
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#faq-section">FAQ</a>
+            <a class="nav-link {{ Route::is('find.institution') == true ? 'active' : '' }}" href="{{ route('find.institution') }}">Find Institution</a>
         </li>
         <li class="nav-item dropdown">
             <a
@@ -49,7 +49,7 @@
             </a>
             <ul class="dropdown-menu">
             <li>
-                <a class="dropdown-item" href="{{ route('admission.online') }}">
+                <a class="dropdown-item {{ Route::is('admission.online') == true ? 'active' : '' }}" href="{{ route('admission.online') }}">
                 <span class="lang-bn">অনলাইন ভর্তি</span
                 ><span class="lang-en">Online Admission</span>
                 </a>
