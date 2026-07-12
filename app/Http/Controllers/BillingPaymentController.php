@@ -6,7 +6,7 @@ use App\Models\Invoice;
 use Illuminate\Http\Request;
 use App\Library\SslCommerz\SslCommerzNotification;
 
-class PaymentController extends Controller
+class BillingPaymentController extends Controller
 {
     public function pay(Invoice $invoice)
     {

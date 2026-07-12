@@ -65,7 +65,7 @@
 
                 {{-- Export CSV --}}
                 <button class="btn-outline" onclick="exportStudentCSV()">
-                    <span class="material-icons-round" style="font-size:16px">download</span> Export CSV
+                    <span class="material-icons-round" style="font-size:16px">download</span> Export
                 </button>
 
                 {{-- Print --}}
@@ -86,6 +86,7 @@
                 <table class="table table-hover mb-0" id="studentTable">
                     <thead>
                         <tr>
+                            <th id="th-sl">SL</th>
                             <th id="th-name">Name</th>
                             <th id="th-class">Class</th>
                             <th id="th-section">Section</th>
@@ -93,17 +94,22 @@
                             <th id="th-register-no">Register No</th>
                             <th id="th-roll-no">Roll No</th>
                             <th id="th-guardian">Guardian</th>
+                            <th id="th-status">Status</th>
                             <th id="th-actions" class="no-print">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($students as $student)
+                        @forelse($students as $i => $student)
                         <tr>
+                            <td class="text-muted">{{ $students->firstItem() + $i }}</td>
                             <td>
                                 <div class="d-flex align-items-center gap-2">
                                     <img src="{{ $student->photo ? asset('storage/' . $student->photo) : asset('assets/img/boy.jpg') }}"
                                         style="width:36px;height:36px;border-radius:8px;object-fit:cover;" alt="">
-                                    <span class="fw-500">{{ $student->name }} <br> {{ $student->student_id }}</span>
+                                    <span>
+                                        <span class="fw-500">{{ $student->name }}</span> <br> 
+                                        <span class="fs-8 fw-bold">{{ $student->student_id }}</span>
+                                    </span>
                                 </div>
                             </td>
                             <td>{{ $student->class?->name ?? '—' }}</td>
@@ -112,6 +118,20 @@
                             <td>{{ $student->registration_no }}</td>
                             <td>{{ $student->roll_no ?? '—' }}</td>
                             <td>{{ $student->guardians->first()?->name ?? '—' }}</td>
+                            <td>
+                                @php
+                                    $statusColors = [
+                                        'active'      => 'bg-success',
+                                        'inactive'    => 'bg-secondary',
+                                        'graduated'   => 'bg-primary',
+                                        'transferred' => 'bg-warning text-dark',
+                                        'dropped_out' => 'bg-danger',
+                                    ];
+                                @endphp
+                                <span class="badge {{ $statusColors[$student->status] ?? 'bg-secondary' }} text-capitalize">
+                                    {{ str_replace('_', ' ', $student->status) }}
+                                </span>
+                            </td>
                             <td class="no-print">
                                 <div class="d-flex gap-1">
                                     <a href="{{ route('admin.student.overview', ['id' => $student->id]) }}" target="_blank"
@@ -122,6 +142,10 @@
                                         class="act-btn edit" title="Edit">
                                         <span class="material-icons-round">drive_file_rename_outline</span>
                                     </a>
+                                    <button class="act-btn" title="Change Status"
+                                        wire:click="openStatusModal({{ $student->id }})">
+                                        <span class="material-icons-round">toggle_on</span>
+                                    </button>
                                     <button class="act-btn delete" title="Delete"
                                         wire:click="confirmDeleteRecord({{ $student->user?->id }})">
                                         <span class="material-icons-round">delete</span>
@@ -131,7 +155,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="8" class="text-center py-5 text-muted">
+                            <td colspan="10" class="text-center py-5 text-muted">
                                 <span class="material-icons-round d-block mb-2" style="font-size:2.5rem;opacity:.2">groups</span>
                                 No students found.
                                 <a href="{{ route('admin.student.add') }}">Add one now</a>.
@@ -200,6 +224,40 @@
                         <button class="btn btn-danger btn-sm" wire:click="deleteRecord">
                             <span wire:loading wire:target="deleteRecord" class="spinner-border spinner-border-sm me-1"></span>
                             Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- ===== STATUS UPDATE MODAL ===== --}}
+    @if($showStatusModal)
+        <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.5);">
+            <div class="modal-dialog modal-sm modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-body text-center py-4 px-4">
+                        <div style="width:56px;height:56px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+                            <span class="material-icons-round text-danger" style="font-size:1.5rem;">toggle_on</span>
+                        </div>
+                        <h6 class="fw-700 mb-1" id="stu-status-title">Change Student Status</h6>
+                        <p class="text-muted small mb-3" id="stu-status-msg">Select a new status for this student.</p>
+
+                        <div class="text-start">
+                            <select wire:model="newStatus" class="form-select no-custom-select @error('newStatus') is-invalid @enderror">
+                                @foreach($statusOptions as $option)
+                                    <option value="{{ $option }}">{{ ucwords(str_replace('_', ' ', $option)) }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @error('newStatus') <span class="text-danger small d-block mt-1">{{ $message }}</span> @enderror
+                        @error('statusId') <span class="text-danger small d-block mt-1">{{ $message }}</span> @enderror
+                    </div>
+                    <div class="modal-footer justify-content-center border-0 pt-0">
+                        <button class="btn btn-light btn-sm" wire:click="closeStatusModal">Cancel</button>
+                        <button class="btn btn-danger btn-sm" wire:click="updateStatus" wire:loading.attr="disabled" wire:target="updateStatus">
+                            <span wire:loading wire:target="updateStatus" class="spinner-border spinner-border-sm me-1"></span>
+                            Update
                         </button>
                     </div>
                 </div>

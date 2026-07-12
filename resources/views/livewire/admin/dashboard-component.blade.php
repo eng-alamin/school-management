@@ -4,8 +4,8 @@
 
     {{-- ══ Welcome Header ══════════════════════════════════════════════════ --}}
     <div class="dash-header px-3 pt-3 pb-2">
-        <h5 class="fw-bold mb-0 text-dark">Welcome back, Admin! 👋</h5>
-        <p class="text-secondary mb-0" style="font-size:12px;">Here's what's happening at your school today</p>
+        <h5 class="fw-bold mb-0 text-dark">Welcome, Admin! 👋</h5>
+        <p class="text-secondary mb-0" style="font-size:12px;">Here's what's happening at your <span style="color: #db2777; font-weight: bold;">{{institution()->name}}</span> today</p>
     </div>
 
     {{-- ══ Stat Cards — 2 columns (mobile) / 4 columns (md+) ══════════════ --}}

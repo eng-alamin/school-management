@@ -12,9 +12,9 @@ class FindInstitutionComponent extends Component
     use WithPagination;
 
     public string $search = '';
+    public int $perPage = 9;
 
     public string $filterType = '';
-
     public string $filterCity = '';
 
     protected $paginationTheme = 'bootstrap';
@@ -108,7 +108,7 @@ class FindInstitutionComponent extends Component
                 $query->where('city', $this->filterCity);
             })
             ->orderBy('name')
-            ->paginate(9);
+            ->paginate($this->perPage);
 
         return view('livewire.frontend.find-institution-component', [
             'institutions' => $institutions,

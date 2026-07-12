@@ -36,9 +36,21 @@
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link {{ Route::is('find.institution') == true ? 'active' : '' }}" href="{{ route('find.institution') }}">Find Institution</a>
+            <a class="nav-link {{ Route::is('find.institution') == true ? 'active' : '' }}" href="{{ route('find.institution') }}">
+                <span class="lang-bn">প্রতিষ্ঠান খুঁজুন</span><span class="lang-en">Find Institution</span>
+            </a>
         </li>
-        <li class="nav-item dropdown">
+        <li  class="nav-item">
+            <a class="nav-link {{ Route::is('admission.online') == true ? 'active' : '' }}" href="{{ route('admission.online') }}">
+                <span class="lang-bn">অনলাইন ভর্তি</span><span class="lang-en">Online Admission</span>
+            </a>
+        </li>
+        <li  class="nav-item">
+            <a class="nav-link {{ Route::is('teacher.registration') == true ? 'active' : '' }}" href="{{ route('teacher.registration') }}">
+                <span class="lang-bn">শিক্ষক নিবন্ধন</span><span class="lang-en">Teacher Registration</span>
+            </a>
+        </li>
+        {{-- <li class="nav-item dropdown">
             <a
             class="nav-link dropdown-toggle"
             href="#"
@@ -48,12 +60,6 @@
             ><span class="lang-en">Registration</span>
             </a>
             <ul class="dropdown-menu">
-            <li>
-                <a class="dropdown-item {{ Route::is('admission.online') == true ? 'active' : '' }}" href="{{ route('admission.online') }}">
-                <span class="lang-bn">অনলাইন ভর্তি</span
-                ><span class="lang-en">Online Admission</span>
-                </a>
-            </li>
             <li>
                 <a class="dropdown-item" href="#modules-section">
                 <span class="lang-bn">শিক্ষক ও কর্মচারী</span
@@ -73,7 +79,7 @@
                 </a>
             </li>
             </ul>
-        </li>
+        </li> --}}
         </ul>
         <div class="d-flex align-items-center gap-3 flex-wrap">
         <!-- Language Toggle -->

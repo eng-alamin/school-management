@@ -50,11 +50,10 @@
                             <th wire:click="sortBy('email')" style="cursor:pointer">
                                 <span id="th-email">Email</span> @if($sortField === 'email') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            {{-- BUG FIX: table column is "mobile", not "phone". Sorting by "phone"
-                                 previously threw an "Unknown column" SQL error. --}}
                             <th wire:click="sortBy('mobile')" style="cursor:pointer">
                                 <span id="th-phone">Phone</span> @if($sortField === 'mobile') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
+                            <th id="th-status">Status</th>
                             <th id="th-actions">Actions</th>
                         </tr>
                     </thead>
@@ -67,7 +66,10 @@
                                     <img src="{{ $employee->photo ? asset('storage/' . $employee->photo) : 'https://ui-avatars.com/api/?name=' . urlencode($employee->name) . '&size=64&background=random' }}"
                                         alt="{{ $employee->name }}"
                                         style="width:32px;height:32px;border-radius:50%;object-fit:cover;"/>
-                                    <span>{{ $employee->name }}</span>
+                                    <span>
+                                        <span>{{ $employee->name }}</span> <br>
+                                        <span class="fs-8 fw-bold">{{ $employee->employee_id }}</span>
+                                    </span>
                                 </div>
                             </td>
                             <td> <span class="badge bg-secondary">{{ $employee->user?->role ?? '—' }} </span></td>
@@ -78,6 +80,19 @@
                                  it always rendered "—". Correct column is "mobile". --}}
                             <td>{{ $employee->mobile ?? '—' }}</td>
                             <td>
+                                @php
+                                    $statusColors = [
+                                        'active'     => 'bg-success',
+                                        'inactive'   => 'bg-secondary',
+                                        'resigned'   => 'bg-warning text-dark',
+                                        'terminated' => 'bg-danger',
+                                    ];
+                                @endphp
+                                <span class="badge {{ $statusColors[$employee->status] ?? 'bg-secondary' }} text-capitalize">
+                                    {{ $employee->status }}
+                                </span>
+                            </td>
+                            <td>
                                 <div class="d-flex gap-1">
                                     <a href="{{ route('admin.employee.view', ['id' => $employee->id]) }}" target="_blank"
                                         class="act-btn view" title="View">
@@ -87,6 +102,10 @@
                                        class="act-btn edit" title="Edit">
                                         <span class="material-icons-round">drive_file_rename_outline</span>
                                     </a>
+                                    <button class="act-btn" title="Change Status"
+                                            wire:click="openStatusModal({{ $employee->id }})">
+                                        <span class="material-icons-round">toggle_on</span>
+                                    </button>
                                     <button class="act-btn delete" title="Delete"
                                             wire:click="confirmDeleteRecord({{ $employee->id }})">
                                         <span class="material-icons-round">delete</span>
@@ -96,7 +115,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="8" class="text-center py-5 text-muted">
+                            <td colspan="9" class="text-center py-5 text-muted">
                                 <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
                                 No employees found.
                                 <a href="{{ route('admin.employee.add') }}">Add one now</a>.
@@ -132,6 +151,40 @@
                         <button class="btn btn-danger btn-sm" wire:click="deleteRecord">
                             <span wire:loading wire:target="deleteRecord" class="spinner-border spinner-border-sm me-1"></span>
                             Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- ===== STATUS UPDATE MODAL ===== --}}
+    @if($showStatusModal)
+        <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.5);">
+            <div class="modal-dialog modal-sm modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-body text-center py-4 px-4">
+                        <div style="width:56px;height:56px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+                            <span class="material-icons-round text-danger" style="font-size:1.5rem;">toggle_on</span>
+                        </div>
+                        <h6 class="fw-700 mb-1" id="emp-status-title">Change Employee Status</h6>
+                        <p class="text-muted small mb-3" id="emp-status-msg">Select a new status for this employee.</p>
+
+                        <div class="text-start">
+                            <select wire:model="newStatus" class="form-select no-custom-select @error('newStatus') is-invalid @enderror">
+                                @foreach($statusOptions as $option)
+                                    <option value="{{ $option }}">{{ ucfirst($option) }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @error('newStatus') <span class="text-danger small d-block mt-1">{{ $message }}</span> @enderror
+                        @error('statusId') <span class="text-danger small d-block mt-1">{{ $message }}</span> @enderror
+                    </div>
+                    <div class="modal-footer justify-content-center border-0 pt-0">
+                        <button class="btn btn-light btn-sm" wire:click="closeStatusModal">Cancel</button>
+                        <button class="btn btn-danger btn-sm" wire:click="updateStatus" wire:loading.attr="disabled" wire:target="updateStatus">
+                            <span wire:loading wire:target="updateStatus" class="spinner-border spinner-border-sm me-1"></span>
+                            Update
                         </button>
                     </div>
                 </div>

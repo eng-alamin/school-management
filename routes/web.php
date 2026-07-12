@@ -1,8 +1,10 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\BillingPaymentController;
 use App\Http\Controllers\RegistrationPaymentController;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Auth;
 
 Route::middleware('guest')->group(function () {
     Route::get('register', \App\Livewire\RegisterComponent::class)->name('register');
@@ -11,21 +13,13 @@ Route::middleware('guest')->group(function () {
     Route::get('/reset-password/{token}',  \App\Livewire\Auth\ResetPasswordComponent::class)->name('password.reset');
 });
 
-Route::post('logout', function () {
-    Auth::logout();
-    request()->session()->invalidate();
-    request()->session()->regenerateToken();
-    return redirect()->route('login');
-})->name('logout');
-
-
-Route::get('/', \App\Livewire\Frontend\HomeComponent::class)->name('home');
-Route::get('/online-admission', \App\Livewire\Frontend\OnlineAdmissionComponent::class)->name('admission.online');
-// Route::get('/existing-admission', \App\Livewire\Frontend\ExistingAdmissionComponent::class)->name('admission.existing');
-Route::get('/admission/{admission}/edit', \App\Livewire\Frontend\ExistingAdmissionComponent::class)->middleware('signed')->name('admission.edit');
-Route::get('/find-institution', \App\Livewire\Frontend\FindInstitutionComponent::class)->name('find.institution');
-Route::get('/view-institution/{institution}', \App\Livewire\Frontend\ViewInstitutionComponent::class)->name('view.institution');
-
+    // Frontend
+    Route::get('/', \App\Livewire\Frontend\HomeComponent::class)->name('home');
+    Route::get('/online-admission', \App\Livewire\Frontend\OnlineAdmissionComponent::class)->name('admission.online');
+    Route::get('/admission/{admission}/edit', \App\Livewire\Frontend\ExistingAdmissionComponent::class)->middleware('signed')->name('admission.edit');
+    Route::get('/find-institution', \App\Livewire\Frontend\FindInstitutionComponent::class)->name('find.institution');
+    Route::get('/view-institution/{institution}', \App\Livewire\Frontend\ViewInstitutionComponent::class)->name('view.institution');
+    Route::get('/teacher-registration', \App\Livewire\Frontend\TeacherRegistrationComponent::class)->name('teacher.registration');
 
     Route::get('dashboard', function () {
         $role = auth()->user()->role;
@@ -56,10 +50,10 @@ Route::get('/view-institution/{institution}', \App\Livewire\Frontend\ViewInstitu
     // ════════════════════════════════════════
     Route::middleware(['auth'])->group(function () {
         Route::get('/billing', \App\Livewire\Admin\Billing\BillingShow::class)->name('billing.show');
-        Route::get('/billing/{invoice}/pay', [PaymentController::class, 'pay'])->name('billing.pay');
+        Route::get('/billing/{invoice}/pay', [BillingPaymentController::class, 'pay'])->name('billing.pay');
     });
 
-    Route::controller(PaymentController::class)->prefix('billing/payment')->name('billing.payment.')->group(function () {
+    Route::controller(BillingPaymentController::class)->prefix('billing/payment')->name('billing.payment.')->group(function () {
         Route::post('success', 'success')->name('success');
         Route::post('fail',    'fail')->name('fail');
         Route::post('cancel',  'cancel')->name('cancel');
@@ -201,27 +195,6 @@ Route::middleware(['auth', 'role:accountant', 'billing.check'])->group(function 
     Route::get('accountant/parent/{id}/overview', \App\Livewire\Accountant\Parent\ParentOverviewComponent::class)->name('accountant.parent.overview');
     Route::get('accountant/parent/{id}/child', \App\Livewire\Accountant\Parent\ParentChildComponent::class)->name('accountant.parent.child');
 
-    // Employee
-    // Route::get('accountant/employee/departments', \App\Livewire\Accountant\Employee\DepartmentComponent::class)->name('accountant.employee.departments');
-    // Route::get('accountant/employee/designations', \App\Livewire\Accountant\Employee\DesignationComponent::class)->name('accountant.employee.designations');
-    // Route::get('accountant/employee/list', \App\Livewire\Accountant\Employee\EmployeeListComponent::class)->name('accountant.employee.list');
-    // Route::get('accountant/employee/add', \App\Livewire\Accountant\Employee\EmployeeAddComponent::class)->name('accountant.employee.add');
-    // Route::get('accountant/employee/edit/{id}', \App\Livewire\Accountant\Employee\EmployeeEditComponent::class)->name('accountant.employee.edit');
-
-    // Card
-    // Route::get('accountant/card/id-card-templates', \App\Livewire\Accountant\Card\IdCardTemplateComponent::class)->name('accountant.card.id-card-templates');
-    // Route::get('accountant/card/student-id-cards', \App\Livewire\Accountant\Card\StudentIdCardComponent::class)->name('accountant.card.student-id-cards');
-    // Route::get('accountant/card/employee-id-cards', \App\Livewire\Accountant\Card\EmployeeIdCardComponent::class)->name('accountant.card.employee-id-cards');    
-    // Route::get('accountant/card/admit-card-templates', \App\Livewire\Accountant\Card\AdmitCardTemplateComponent::class)->name('accountant.card.admit-card-templates');
-    // Route::get('accountant/card/generate-admit-cards', \App\Livewire\Accountant\Card\GenerateAdmitCardComponent::class)->name('accountant.card.generate-admit-cards');
-
-    // Certificate
-    // Route::get('accountant/certificate/add-template', \App\Livewire\Accountant\Certificate\AddTemplateComponent::class)->name('accountant.certificate.add-template');
-    // Route::get('accountant/certificate/{id}/edit-template', \App\Livewire\Accountant\Certificate\EditTemplateComponent::class)->name('accountant.certificate.edit-template');
-    // Route::get('accountant/certificate/list-template', \App\Livewire\Accountant\Certificate\ListTemplateComponent::class)->name('accountant.certificate.list-template');
-    // Route::get('accountant/certificate/generate-student', \App\Livewire\Accountant\Certificate\GenerateStudentComponent::class)->name('accountant.certificate.generate-student');
-    // Route::get('accountant/certificate/generate-employee', \App\Livewire\Accountant\Certificate\GenerateEmployeeComponent::class)->name('accountant.certificate.generate-employee');
-    
     // Salary 
     Route::get('accountant/salary/add-template', \App\Livewire\Accountant\Salary\AddTemplateComponent::class)->name('accountant.salary.add-template');
     Route::get('accountant/salary/{id}/edit-template', \App\Livewire\Accountant\Salary\EditTemplateComponent::class)->name('accountant.salary.edit-template');
@@ -447,13 +420,17 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('superadmin')->name('sup
 
 
 
-
-
+    Route::post('logout', function () {
+        Auth::logout();
+        request()->session()->invalidate();
+        request()->session()->regenerateToken();
+        return redirect()->route('login');
+    })->name('logout')->middleware('auth');
 
     Route::get('schedule', function () {
         Artisan::call('schedule:run');
         return redirect()->back()->with('success','Thanks for the generate schedule!');
-    })->name('schedule');
+    })->name('schedule')->middleware(['auth', 'role:super_admin,admin']);
 
     Route::get('/run-billing/{command}', function ($command) {
         $allowed = [
@@ -465,40 +442,42 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('superadmin')->name('sup
         }
         Artisan::call($allowed[$command]);
         return response()->json(['status' => 'done', 'command' => $command]);
-    })->middleware('auth'); // শুধু logged-in user চালাতে পারবে
+    })->middleware(['auth', 'role:super_admin,admin']);
 
-
-
-    Route::get('key', function () {
-        Artisan::call('key:generate');
-        return redirect()->back()->with('success','Thanks for the generate key!');
-    })->name('key');
 
     Route::get('clear', function () {
         Artisan::call('optimize:clear');
         return redirect()->back()->with('success','Thanks for the fast site!');
     })->name('clear');
-
+    Route::get('migrate', function () {
+        Artisan::call('migrate');
+        return redirect()->back()->with('success','Thanks for the migration!');
+    })->name('migrate');
     Route::get('link', function () {
         Artisan::call('storage:link');
         return redirect()->back()->with('success','Thanks for the link storage!');
     })->name('link');
-
-    Route::get('fresh', function () {
-        Artisan::call('migrate:fresh --seed');
-    });
-    Route::get('migrate', function () {
-        Artisan::call('migrate');
-    });
-
-
-
-// Route::get('setting/backups', \App\Livewire\Admin\Setting\BackupComponent::class)->name('admin.setting.backups');
-
-    // Route::get('try', function () {
+    // Route::get('key', function () {
+    //     Artisan::call('key:generate');
+    //     return redirect()->back()->with('success','Thanks for the generate key!');
+    // })->name('key');
+    // Route::get('fresh', function () {
+    //     Artisan::call('migrate:fresh --seed');
+    // });
+    // Route::get('permissionrefresh', function () {
+    //     Artisan::call('migrate:refresh --path=/database/migrations/2024_01_15_210628_create_permission_tables.php');
+    // });
+    // Route::get('permissionreseed', function () {
+    //     Artisan::call('db:seed --class=PermissionSeeder');
+    // });
+   // Route::get('try', function () {
     //     auth()->user()->sendEmailVerificationNotification();
     //     return redirect()->back()->with('success','Thanks for the fast site!');
     // })->name('try');
+
+
+
+    // Route::get('setting/backups', \App\Livewire\Admin\Setting\BackupComponent::class)->name('admin.setting.backups');
 
     
     // Route::get('backup', function () {
@@ -507,12 +486,7 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('superadmin')->name('sup
     //     return redirect()->back()->with('success','Thanks for the backup!');
     // })->name('backup');
 
-    // Route::get('permissionrefresh', function () {
-    //     Artisan::call('migrate:refresh --path=/database/migrations/2024_01_15_210628_create_permission_tables.php');
-    // });
-    // Route::get('permissionreseed', function () {
-    //     Artisan::call('db:seed --class=PermissionSeeder');
-    // });
+
 
     
 

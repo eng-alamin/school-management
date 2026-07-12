@@ -10,7 +10,7 @@
 
         {{-- Teacher Select --}}
         <div class="col-md-8 offset-md-2">
-            <div class="input-group input-group-outline">
+            <div class="input-group input-group-outline" wire:ignore>
                 <label class="form-label">Teacher</label>
                 <select wire:model="teacher_id" class="form-select">
                     <option value="">Select Teacher</option>

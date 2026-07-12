@@ -194,6 +194,8 @@ class OnlineAdmissionComponent extends Component
         $this->is_new = $isNew;
         $this->showAdmissionTypeModal = false;
         $this->currentStep = 2;
+
+        $this->dispatch('scroll-top');
     }
 
     public function closeAdmissionTypeModal(): void
@@ -230,16 +232,18 @@ class OnlineAdmissionComponent extends Component
             'dob'                   => 'nullable|date',
             'religion'              => 'nullable|string|max:50',
             'mobile'                => ['nullable', 'regex:/^01[3-9][0-9]{8}$/'],
-            'email'                 => 'nullable|email',
+            'email'                 => 'nullable|email|unique:users,email',
             'present_address'       => 'nullable|string',
             'permanent_address'     => 'nullable|string',
             'student_photo_upload'  => 'nullable|image|max:2048',
+        ], [
+            'email.unique' => 'This email is already registered. Please use a different email.',
         ]);
     }
 
     protected function stepFourValidation(): void
     {
-        $this->validate($this->guardianRules());
+        $this->validate($this->guardianRules(), $this->guardianValidationMessages());
     }
 
     /**
@@ -258,8 +262,24 @@ class OnlineAdmissionComponent extends Component
             'guardian_mother_name' => 'nullable|string|max:255',
             'guardian_occupation'  => 'nullable|string|max:255',
             'guardian_mobile'      => !$this->guardian_exists ? 'required|regex:/^01[3-9][0-9]{8}$/' : 'nullable',
-            'guardian_email'       => !$this->guardian_exists ? 'required|email' : 'nullable|email',
+            // ── Existing guardian select korle tar email age theke i users
+            // table e ache, tai unique check dorkar nai (nijer email-eri
+            // songe conflict hobe). Notun guardian hole email required +
+            // unique — duplicate account toiri thekhano jonno. ──
+            'guardian_email'       => !$this->guardian_exists
+                ? 'required|email|unique:users,email'
+                : 'nullable|email',
             'guardian_address'     => 'nullable|string',
+        ];
+    }
+
+    /**
+     * guardianRules() e jothajotho unique error message dekhanor jonno.
+     */
+    private function guardianValidationMessages(): array
+    {
+        return [
+            'guardian_email.unique' => 'This email is already registered. Please use a different email.',
         ];
     }
 
@@ -282,6 +302,7 @@ class OnlineAdmissionComponent extends Component
 
         if ($this->currentStep < self::TOTAL_STEPS) {
             $this->currentStep++;
+            $this->dispatch('scroll-top');
         }
     }
 
@@ -289,6 +310,7 @@ class OnlineAdmissionComponent extends Component
     {
         if ($this->currentStep > 1) {
             $this->currentStep--;
+            $this->dispatch('scroll-top');
         }
     }
 
@@ -317,7 +339,7 @@ class OnlineAdmissionComponent extends Component
             // Note: এখানে আর 'unique:users,phone' চেক করা হচ্ছে না, কারণ Admission
             // পর্যায়ে এখনো কোনো User তৈরি হয় না — Approve হওয়ার পরেই হবে।
             'mobile'     => ['nullable', 'regex:/^01[3-9][0-9]{8}$/'],
-            'email'              => 'nullable|email',
+            'email'              => 'nullable|email|unique:users,email',
             'present_address'    => 'nullable|string',
             'permanent_address'  => 'nullable|string',
             'student_photo_upload' => 'nullable|image|max:2048',
@@ -325,6 +347,17 @@ class OnlineAdmissionComponent extends Component
             'previous_institution' => 'nullable|string',
             'qualification'        => 'nullable|string',
         ], $this->guardianRules());
+    }
+
+    /**
+     * rules() er shathe match kore validation messages — student o guardian
+     * duitar unique email message ekshathe merge kora hocche.
+     */
+    public function messages(): array
+    {
+        return array_merge([
+            'email.unique' => 'This email is already registered. Please use a different email.',
+        ], $this->guardianValidationMessages());
     }
 
     protected function failedValidation($validator)
@@ -338,7 +371,7 @@ class OnlineAdmissionComponent extends Component
             return;
         }
 
-        $this->validateOnly($propertyName, $this->rules());
+        $this->validateOnly($propertyName, $this->rules(), $this->messages());
     }
 
     /**
@@ -365,7 +398,7 @@ class OnlineAdmissionComponent extends Component
             return;
         }
 
-        $this->validate($this->rules());
+        $this->validate($this->rules(), $this->messages());
 
         $studentPhotoPath = null;
 
@@ -434,6 +467,7 @@ class OnlineAdmissionComponent extends Component
             $this->submitted = true;
 
             $this->dispatch('toast', type: 'success', message: 'Application submitted successfully!');
+            $this->dispatch('scroll-top');
 
         } catch (\Throwable $e) {
 
@@ -471,6 +505,7 @@ class OnlineAdmissionComponent extends Component
 
         $this->resetValidation();
         $this->dispatch('date-updated', date: $this->dob);
+        $this->dispatch('scroll-top');
     }
 
     public function render()
@@ -516,7 +551,7 @@ class OnlineAdmissionComponent extends Component
         // withoutGlobalScopes() diye InstitutionScope bypass kora hocche,
         // tarpor Institution-shohokare (with('institution')) dekhano hocche
         // jate user bujhte pare guardian ta age kon school-e chilo.
-        // unique('user_id') diye ekই guardian-er multiple Institution row
+        // unique('user_id') diye ekI guardian-er multiple Institution row
         // thakle o list-e ekbar-i dekhabe. ──
         if ($this->guardian_exists && !$this->guardian_user_id && strlen($this->guardianSearch) > 0) {
             $guardianResults = Guardian::withoutGlobalScopes()

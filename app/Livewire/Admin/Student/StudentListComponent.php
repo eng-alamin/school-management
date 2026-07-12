@@ -28,6 +28,13 @@ class StudentListComponent extends Component
     public bool $confirmDelete = false;
     public ?int $deleteId      = null;
 
+    // Status Update
+    public bool $showStatusModal = false;
+    public ?int $statusId        = null;
+    public string $newStatus     = '';
+
+    protected array $statusOptions = ['active', 'inactive', 'graduated', 'transferred', 'dropped_out'];
+
     public function updatedSearch(): void
     {
         $this->resetPage();
@@ -71,6 +78,8 @@ class StudentListComponent extends Component
             $this->sortField = $field;
             $this->sortDir   = 'asc';
         }
+
+        $this->resetPage();
     }
 
     public function confirmDeleteRecord(int $id): void
@@ -94,6 +103,54 @@ class StudentListComponent extends Component
         }
     }
 
+    /**
+     * Status icon click korle eta call hobe — modal open kore, current
+     * status ta preselect kore rakhe.
+     */
+    public function openStatusModal(int $id): void
+    {
+        $student = Student::findOrFail($id);
+
+        $this->statusId        = $student->id;
+        $this->newStatus       = $student->status;
+        $this->showStatusModal = true;
+    }
+
+    public function closeStatusModal(): void
+    {
+        $this->showStatusModal = false;
+        $this->statusId        = null;
+        $this->newStatus       = '';
+    }
+
+    public function updateStatus(): void
+    {
+        $this->validate([
+            'statusId'  => 'required|integer|exists:students,id',
+            'newStatus' => 'required|string|in:' . implode(',', $this->statusOptions),
+        ]);
+
+        $student   = Student::findOrFail($this->statusId);
+        $oldStatus = $student->status;
+
+        $student->update(['status' => $this->newStatus]);
+
+        activity()
+            ->performedOn($student)
+            ->withProperties([
+                'institution_id' => $student->institution_id,
+                'icon' => 'toggle_on',
+                'type' => 'student',
+                'old_status' => $oldStatus,
+                'new_status' => $this->newStatus,
+            ])
+            ->log('Student status changed: ' . $student->name . ' (' . $oldStatus . ' → ' . $this->newStatus . ')');
+
+        $this->dispatch('toast', type: 'success', message: 'Status updated successfully!');
+
+        $this->closeStatusModal();
+    }
+
     public function render()
     {
         $classes = AcademicClass::whereIn('id', AcademicClassAssign::distinct()->pluck('class_id'))
@@ -109,6 +166,7 @@ class StudentListComponent extends Component
             )
             ->when($this->search, fn($q) => $q->where(fn($q) => $q
                 ->where('name', 'like', "%{$this->search}%")
+                ->orWhere('student_id', 'like', "%{$this->search}%")
                 ->orWhere('registration_no', 'like', "%{$this->search}%")
                 ->orWhere('roll_no', 'like', "%{$this->search}%")))
             ->orderBy($this->sortField, $this->sortDir)
@@ -117,6 +175,7 @@ class StudentListComponent extends Component
         return view('livewire.admin.student.student-list-component')
             ->with('students', $students)
             ->with('classes', $classes)
+            ->with('statusOptions', $this->statusOptions)
             ->layout('layouts.admin.app', [
                 'title' => 'Student List | ' . institution()->name,
             ]);
