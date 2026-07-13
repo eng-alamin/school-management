@@ -8,7 +8,7 @@
 
         <div class="container-xl mt-4">
 
-            @include('livewire.admin.employee.employee-navbar', ['employee' => $employee])
+            @include('livewire.accountant.employee.employee-navbar', ['employee' => $employee])
 
             <!-- START CONTENT -->
 
@@ -94,7 +94,7 @@
 
             <!-- Footer -->
             <div class="footer-actions no-print">
-                <a href="{{ route('admin.employee.edit', ['id' => $employee->id]) }}" class="btn btn-ghost">
+                <a href="{{ route('accountant.employee.edit', ['id' => $employee->id]) }}" class="btn btn-ghost">
                     <span class="material-icons-round">edit</span> Edit
                 </a>
                 <button type="button" class="btn btn-dark" onclick="window.print()">

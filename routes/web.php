@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 
 Route::middleware('guest')->group(function () {
-    Route::get('register', \App\Livewire\RegisterComponent::class)->name('register');
     Route::get('login', \App\Livewire\LoginComponent::class)->name('login');
     Route::get('forgot-password', \App\Livewire\Auth\ForgotPasswordComponent::class)->name('forgot.password');
     Route::get('/reset-password/{token}',  \App\Livewire\Auth\ResetPasswordComponent::class)->name('password.reset');
@@ -17,6 +16,7 @@ Route::middleware('guest')->group(function () {
     Route::get('/', \App\Livewire\Frontend\HomeComponent::class)->name('home');
     Route::get('/online-admission', \App\Livewire\Frontend\OnlineAdmissionComponent::class)->name('admission.online');
     Route::get('/admission/{admission}/edit', \App\Livewire\Frontend\ExistingAdmissionComponent::class)->middleware('signed')->name('admission.edit');
+    Route::get('/institution-registration', \App\Livewire\Frontend\InstitutionRegistrationComponent::class)->name('institution.registration');
     Route::get('/find-institution', \App\Livewire\Frontend\FindInstitutionComponent::class)->name('find.institution');
     Route::get('/view-institution/{institution}', \App\Livewire\Frontend\ViewInstitutionComponent::class)->name('view.institution');
     Route::get('/teacher-registration', \App\Livewire\Frontend\TeacherRegistrationComponent::class)->name('teacher.registration');
@@ -66,6 +66,7 @@ Route::middleware('guest')->group(function () {
     
 // Parent
 Route::middleware(['auth', 'role:parent'])->group(function () {
+    // Dashboard
     Route::get('parent/dashboard', \App\Livewire\Parent\DashboardComponent::class)->name('parent.dashboard');
 
     // Profile
@@ -73,7 +74,18 @@ Route::middleware(['auth', 'role:parent'])->group(function () {
     Route::get('parent/profile/setting', \App\Livewire\Parent\Profile\SettingComponent::class)->name('parent.profile.setting');
     Route::get('parent/profile/activitylog', \App\Livewire\Parent\Profile\ActivityLogComponent::class)->name('parent.profile.activitylog');
     Route::get('parent/profile/loginlog', \App\Livewire\Parent\Profile\LoginLogComponent::class)->name('parent.profile.loginlog');
+
+    // Mailbox
+    Route::get('parent/mailbox/compose', \App\Livewire\Parent\Mailbox\ComposeComponent::class)->name('parent.mailbox.compose');
+    Route::get('parent/mailbox/inbox', \App\Livewire\Parent\Mailbox\InboxComponent::class)->name('parent.mailbox.inbox');
+    Route::get('parent/mailbox/sent', \App\Livewire\Parent\Mailbox\SentComponent::class)->name('parent.mailbox.sent');
+    Route::get('parent/mailbox/important', \App\Livewire\Parent\Mailbox\ImportantComponent::class)->name('parent.mailbox.important');
+    Route::get('parent/mailbox/trash', \App\Livewire\Parent\Mailbox\TrashComponent::class)->name('parent.mailbox.trash');
+
+    // Notification
     Route::get('parent/notifications', \App\Livewire\Parent\Notifications\Index::class)->name('parent.notifications.index');
+    // Notice 
+    Route::get('parent/notices', \App\Livewire\Parent\Notice\NoticeComponent::class)->name('parent.notices');
 });
 
 // Student
@@ -93,8 +105,16 @@ Route::middleware(['auth', 'role:student'])->group(function () {
     Route::get('student/profile/setting', \App\Livewire\Student\Profile\SettingComponent::class)->name('student.profile.setting');
     Route::get('student/profile/activitylog', \App\Livewire\Student\Profile\ActivityLogComponent::class)->name('student.profile.activitylog');
     Route::get('student/profile/loginlog', \App\Livewire\Student\Profile\LoginLogComponent::class)->name('student.profile.loginlog');
-
-    Route::get('student/notifications', \App\Livewire\Admin\Notifications\Index::class)->name('student.notifications.index');
+    // Mailbox
+    Route::get('student/mailbox/compose', \App\Livewire\Student\Mailbox\ComposeComponent::class)->name('student.mailbox.compose');
+    Route::get('student/mailbox/inbox', \App\Livewire\Student\Mailbox\InboxComponent::class)->name('student.mailbox.inbox');
+    Route::get('student/mailbox/sent', \App\Livewire\Student\Mailbox\SentComponent::class)->name('student.mailbox.sent');
+    Route::get('student/mailbox/important', \App\Livewire\Student\Mailbox\ImportantComponent::class)->name('student.mailbox.important');
+    Route::get('student/mailbox/trash', \App\Livewire\Student\Mailbox\TrashComponent::class)->name('student.mailbox.trash');
+    // Notification
+    Route::get('student/notifications', \App\Livewire\Student\Notifications\Index::class)->name('student.notifications.index');
+    // Notice
+    Route::get('student/notices', \App\Livewire\Student\Notice\NoticeComponent::class)->name('student.notices');
 });
 
 // Teacher
@@ -194,6 +214,11 @@ Route::middleware(['auth', 'role:accountant', 'billing.check'])->group(function 
     Route::get('accountant/parent/edit/{id}', \App\Livewire\Accountant\Parent\ParentEditComponent::class)->name('accountant.parent.edit');
     Route::get('accountant/parent/{id}/overview', \App\Livewire\Accountant\Parent\ParentOverviewComponent::class)->name('accountant.parent.overview');
     Route::get('accountant/parent/{id}/child', \App\Livewire\Accountant\Parent\ParentChildComponent::class)->name('accountant.parent.child');
+
+    Route::get('accountant/employee/list', \App\Livewire\Accountant\Employee\EmployeeListComponent::class)->name('accountant.employee.list');
+    Route::get('accountant/employee/add', \App\Livewire\Accountant\Employee\EmployeeAddComponent::class)->name('accountant.employee.add');
+    Route::get('accountant/employee/{id}/edit', \App\Livewire\Accountant\Employee\EmployeeEditComponent::class)->name('accountant.employee.edit');
+    Route::get('accountant/employee/{id}/view', \App\Livewire\Accountant\Employee\EmployeeViewComponent::class)->name('accountant.employee.view');
 
     // Salary 
     Route::get('accountant/salary/add-template', \App\Livewire\Accountant\Salary\AddTemplateComponent::class)->name('accountant.salary.add-template');
@@ -368,6 +393,7 @@ Route::middleware(['auth', 'role:admin', 'billing.check'])->group(function () {
     Route::get('student-accounting/student-fines', \App\Livewire\Admin\StudentAccounting\StudentFineComponent::class)->name('admin.student-accounting.student.fines');
     Route::get('student-accounting/fee-invoices', \App\Livewire\Admin\StudentAccounting\FeeInvoiceComponent::class)->name('admin.student-accounting.fee.invoices');
 
+    // Mailbox
     Route::get('mailbox/compose', \App\Livewire\Admin\Mailbox\ComposeComponent::class)->name('admin.mailbox.compose');
     Route::get('mailbox/inbox', \App\Livewire\Admin\Mailbox\InboxComponent::class)->name('admin.mailbox.inbox');
     Route::get('mailbox/sent', \App\Livewire\Admin\Mailbox\SentComponent::class)->name('admin.mailbox.sent');

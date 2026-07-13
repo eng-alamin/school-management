@@ -18,7 +18,7 @@ class RegistrationPaymentController extends Controller
         $data = session('pending_registration');
 
         if (!$data) {
-            return redirect()->route('register')
+            return redirect()->route('institution.registration')
                 ->with('error', 'Session expired. Please register again.');
         }
 
@@ -86,7 +86,7 @@ class RegistrationPaymentController extends Controller
             return redirect($payment_options['GatewayPageURL']);
         }
 
-        return redirect()->route('register')
+        return redirect()->route('institution.registration')
             ->with('error', 'Payment gateway connection failed। আবার চেষ্টা করুন।');
     }
 
@@ -102,7 +102,7 @@ class RegistrationPaymentController extends Controller
 
         if (!$record) {
             Log::error('Record not found', ['tran_id' => $tran_id]);
-            return redirect()->route('register')
+            return redirect()->route('institution.registration')
                 ->with('error', 'Invalid transaction।');
         }
 
@@ -143,7 +143,7 @@ class RegistrationPaymentController extends Controller
         Log::info('Validation result', ['result' => $validation]);
 
         if (!$validation) {
-            return redirect()->route('register')
+            return redirect()->route('institution.registration')
                 ->with('error', 'Payment যাচাই করা যায়নি।');
         }
 
@@ -196,7 +196,7 @@ class RegistrationPaymentController extends Controller
                 'error'   => $e->getMessage(),
             ]);
 
-            return redirect()->route('register')
+            return redirect()->route('institution.registration')
                 ->with('error', 'Payment হয়েছে কিন্তু setup failed। Tran ID: ' . $tran_id);
         }
     }
@@ -205,7 +205,7 @@ class RegistrationPaymentController extends Controller
     {
         $this->restoreSessionFromInvoice($request->input('tran_id'), 'failed');
 
-        return redirect()->route('register')
+        return redirect()->route('institution.registration')
             ->with('error', 'Payment ব্যর্থ হয়েছে। আবার চেষ্টা করুন।');
     }
 
@@ -213,7 +213,7 @@ class RegistrationPaymentController extends Controller
     {
         $this->restoreSessionFromInvoice($request->input('tran_id'), 'cancelled');
 
-        return redirect()->route('register')
+        return redirect()->route('institution.registration')
             ->with('error', 'Payment বাতিল করা হয়েছে।');
     }
 

@@ -544,7 +544,7 @@
 
                         <hr style="border-color: var(--border);">
 
-                        <a href="{{ route('register') }}" class="btn btn-primary w-100 rounded-pill mb-2">
+                        <a href="{{ route('institution.registration') }}" class="btn btn-primary w-100 rounded-pill mb-2">
                             <i class="bi bi-send-fill me-2"></i>
                             <span class="lang-bn">যোগাযোগ করুন</span>
                             <span class="lang-en">Get in Touch</span>

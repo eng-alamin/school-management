@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire;
+namespace App\Livewire\Frontend;
 
 use Livewire\Component;
 use App\Models\Institution;
@@ -10,7 +10,7 @@ use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
-class RegisterComponent extends Component
+class InstitutionRegistrationComponent extends Component
 {
     use WithFileUploads;
 
@@ -191,7 +191,7 @@ class RegisterComponent extends Component
 
     public function render()
     {
-        return view('livewire.register-component')
+        return view('livewire.frontend.institution-registration-component')
             ->layout('layouts.app', [
                 'title' => 'Institution Setup | ' . setting('app_name', 'EMS'),
             ]);

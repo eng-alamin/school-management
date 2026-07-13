@@ -70,7 +70,7 @@
         </a>
       </li>
 
-      {{-- <li class="nav1-item">
+      <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), 'accountant/employee/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
           <span class="material-icons-round nav-icon">badge</span>
           <span class="nav-label" id="nav-employees">Employees</span>
@@ -79,11 +79,9 @@
         <div class="nav2-collapse {{ str_contains(request()->url(), 'accountant/employee/') == true ? 'show' : '' }}">
           <ul>
             <li class="nav2-item"><a href="{{route('accountant.employee.list') }}" class="nav2-link {{ request()->is('accountant/employee/list', 'accountant/employee/add', 'accountant/employee/edit/*') ? 'active' : '' }}"><span class="nav2-icon">L</span><span class="nav2-label" id="nav-employee-list">Employee List</span></a></li>
-            <li class="nav2-item"><a href="{{route('accountant.employee.departments') }}" class="nav2-link {{ str_contains(request()->url(), 'accountant/employee/departments') == true ? 'active' : '' }}"><span class="nav2-icon">D</span><span class="nav2-label" id="nav-department">Department</span></a></li>
-            <li class="nav2-item"><a href="{{route('accountant.employee.designations') }}" class="nav2-link {{ str_contains(request()->url(), 'accountant/employee/designations') == true ? 'active' : '' }}"><span class="nav2-icon">D</span><span class="nav2-label" id="nav-designation">Designation</span></a></li>
           </ul>
         </div>
-      </li> --}}
+      </li>
 
       {{-- <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), 'accountant/card/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">

@@ -79,6 +79,6 @@
 
     <!-- Profile Tabs -->
     <ul class="nav profile-tabs border-bottom mt-4 flex-nowrap overflow-auto no-print">
-        <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.employee.view') ? 'active' : '' }}" href="{{ route('admin.employee.view', ['id' => $employee->id]) }}">Overview</a></li>
+        <li class="nav-item"><a class="nav-link {{ request()->routeIs('accountant.employee.view') ? 'active' : '' }}" href="{{ route('accountant.employee.view', ['id' => $employee->id]) }}">Overview</a></li>
     </ul>
 </div>

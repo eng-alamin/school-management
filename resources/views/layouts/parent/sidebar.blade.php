@@ -39,12 +39,19 @@
         </a>
       </li>
 
-      {{-- <li class="nav1-item">
-        <a href="{{route('parent.events')}}" class="nav1-link {{ Route::is('parent.events') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">school</span>
-          <span class="nav-label" id="nav-events">Events</span>
+      <li class="nav1-item">
+        <a href="{{route('parent.mailbox.inbox') }}" class="nav1-link {{ str_contains(request()->url(), 'mailbox/') == true ? 'active' : '' }}">
+          <span class="material-icons-round nav-icon">chat</span>
+          <span class="nav-label" id="nav-mailbox">Mailbox</span>
         </a>
-      </li> --}}
+      </li>
+
+      <li class="nav1-item">
+        <a href="{{route('parent.notices') }}" class="nav1-link {{ str_contains(request()->url(), 'notices') == true ? 'active' : '' }}">
+          <span class="material-icons-round nav-icon">chat</span>
+          <span class="nav-label" id="nav-notices">Notices</span>
+        </a>
+      </li>
 
     </ul>
 

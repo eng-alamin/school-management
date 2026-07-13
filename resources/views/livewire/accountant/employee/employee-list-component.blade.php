@@ -28,7 +28,7 @@
                     </div>
                 @endif
 
-                <a href="{{ route('admin.employee.add') }}"
+                <a href="{{ route('accountant.employee.add') }}"
                    class="btn-outline bg-dark text-white">
                     <span class="material-icons-round">add</span> New Employee
                 </a>
@@ -75,18 +75,14 @@
                             <td>{{ $employee->phone ?? '—' }}</td>
                             <td>
                                 <div class="d-flex gap-1">
-                                    <a href="{{ route('admin.employee.view', ['id' => $employee->id]) }}" target="_blank"
+                                    <a href="{{ route('accountant.employee.view', ['id' => $employee->id]) }}" target="_blank"
                                         class="act-btn view" title="View">
                                         <span class="material-icons-round">visibility</span>
                                     </a>
-                                    <a href="{{ route('admin.employee.edit', ['id' => $employee->id]) }}"
+                                    <a href="{{ route('accountant.employee.edit', ['id' => $employee->id]) }}"
                                        class="act-btn edit" title="Edit">
                                         <span class="material-icons-round">drive_file_rename_outline</span>
                                     </a>
-                                    <button class="act-btn delete" title="Delete"
-                                            wire:click="confirmDeleteRecord({{ $employee->id }})">
-                                        <span class="material-icons-round">delete</span>
-                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -95,7 +91,7 @@
                             <td colspan="7" class="text-center py-5 text-muted">
                                 <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
                                 No employees found.
-                                <a href="{{ route('admin.employee.add') }}">Add one now</a>.
+                                <a href="{{ route('accountant.employee.add') }}">Add one now</a>.
                             </td>
                         </tr>
                         @endforelse

@@ -32,18 +32,14 @@ class DashboardComponent extends Component
 
     public function goToDashboard(int $studentId)
     {
-        // Security fix: age eikhane kono ownership check chilo na — je
-        // kono studentId diye call korle sheikhane login hoye jeto. Ekhon
-        // shob Institution jure check kora hocche je ei studentId shotti-i
-        // ei logged-in Guardian-er nijer sontan kina.
-        $isOwnChild = Guardian::withoutGlobalScopes()
+        $guardianProfile = Guardian::withoutGlobalScopes()
             ->where('user_id', Auth::id())
             ->whereHas('students', function ($query) use ($studentId) {
                 $query->withoutGlobalScopes()->where('students.id', $studentId);
             })
-            ->exists();
+            ->first();
 
-        if (! $isOwnChild) {
+        if (! $guardianProfile) {
             abort(403, 'Unauthorized access to student dashboard.');
         }
 
@@ -51,15 +47,25 @@ class DashboardComponent extends Component
             ->with('user')
             ->findOrFail($studentId);
 
-        // Notun login student er nijer institution_id diye hocche, tai
-        // porer shob page-e BelongsToInstitution scope automatically
-        // shothik School er upor e apply hobe — alada session variable
-        // set korar dorkar nai.
-        Auth::login($student->user);
+        if (! $student->user) {
+            abort(403, 'Student account has no linked user.');
+        }
+
+        // ✅ FIX: session data আগে সেট করে, তারপর regenerate, তারপর login।
+        // এভাবে session fixation ঝুঁকি কমে এবং guardian_impersonation
+        // regenerate-এর পরেও (migrate destroy=false হওয়ায়) নিরাপদভাবে বজায় থাকে।
+        session([
+            'guardian_impersonation' => [
+                'guardian_user_id' => Auth::id(),
+                'guardian_id' => $guardianProfile->id,
+            ],
+        ]);
 
         request()->session()->regenerate();
 
-        return $this->redirect(route('student.dashboard'));
+        Auth::login($student->user);
+
+        return $this->redirect(route('student.dashboard'), navigate: false);
     }
 
     public function render()

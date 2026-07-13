@@ -4,6 +4,7 @@
     </button>
 
     <div class="breadcrumb-wrap">
+      @livewire('student.child-switcher-component')
       <!-- <div class="breadcrumb-title" id="pageTitleEl">Pages</div> -->
     </div>
 

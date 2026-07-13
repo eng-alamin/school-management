@@ -408,7 +408,7 @@
 
                         Don't have an account?
 
-                        <a href="{{ route('register') }}">
+                        <a href="{{ route('institution.registration') }}">
                             Create Institution
                         </a>
 

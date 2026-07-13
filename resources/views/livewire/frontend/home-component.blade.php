@@ -30,7 +30,7 @@
               >
             </p>
             <div class="mt-4 d-flex gap-3 flex-wrap fade-up delay-2">
-              <a href="{{route('register')}}" class="btn btn-primary btn-lg px-4 rounded-pill">
+              <a href="{{route('institution.registration')}}" class="btn btn-primary btn-lg px-4 rounded-pill">
                 <span class="lang-bn">বিনামূল্যে শুরু করুন</span>
                 <span class="lang-en">Get Started Free</span>
               </a>
