@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
             $table->string('name');
-            $table->string('code')->unique();
+            $table->string('code');
             $table->foreignId('category_id')->constrained('inventory_categories')->cascadeOnDelete();
             $table->foreignId('purchase_unit_id')->constrained('inventory_units')->cascadeOnDelete();
             $table->foreignId('sales_unit_id')->constrained('inventory_units')->cascadeOnDelete();
@@ -23,6 +23,8 @@ return new class extends Migration
             $table->decimal('purchase_price', 15, 2)->default(0);
             $table->decimal('sales_price', 15, 2)->default(0);
             $table->text('remarks')->nullable();
+
+            $table->unique(['institution_id', 'code']);
             $table->timestamps();
         });
     }

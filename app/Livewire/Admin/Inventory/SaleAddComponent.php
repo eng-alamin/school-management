@@ -258,9 +258,9 @@ class SaleAddComponent extends Component
                 ->orderBy('name')
                 ->get(['id', 'name']);
         } elseif ($this->role === 'teacher') {
-            $saleables = User::where('school_id', auth()->user()->school_id)->where('role', 'teacher')->orderBy('name')->get(['id', 'name']);
+            $saleables = User::where('institution_id', auth()->user()->institution_id)->where('role', 'teacher')->orderBy('name')->get(['id', 'name']);
         } elseif ($this->role === 'staff') {
-            $saleables = User::where('school_id', auth()->user()->school_id)->where('role', 'staff')->orderBy('name')->get(['id', 'name']);
+            $saleables = User::where('institution_id', auth()->user()->institution_id)->where('role', 'staff')->orderBy('name')->get(['id', 'name']);
         }
 
         return view('livewire.admin.inventory.sale-add-component', [

@@ -22,16 +22,11 @@ Route::middleware('guest')->group(function () {
     Route::get('/teacher-registration', \App\Livewire\Frontend\TeacherRegistrationComponent::class)->name('teacher.registration');
 
     Route::get('dashboard', function () {
-        $role = auth()->user()->role;
-
-        return match ($role) {
-            'admin' => redirect()->route('admin.dashboard'),
-            'teacher' => redirect()->route('teacher.dashboard'),
-            'student' => redirect()->route('student.dashboard'),
-            'parent' => redirect()->route('parent.dashboard'),
-            'super_admin' => redirect()->route('superadmin.dashboard'),
-            default => abort(403),
-        };
+        try {
+            return redirect()->route(auth()->user()->dashboardRoute());
+        } catch (\RuntimeException $e) {
+            abort(403);
+        }
     })->middleware('auth')->name('dashboard');
 
     // ════════════════════════════════════════
@@ -84,6 +79,7 @@ Route::middleware(['auth', 'role:parent'])->group(function () {
 
     // Notification
     Route::get('parent/notifications', \App\Livewire\Parent\Notifications\Index::class)->name('parent.notifications.index');
+
     // Notice 
     Route::get('parent/notices', \App\Livewire\Parent\Notice\NoticeComponent::class)->name('parent.notices');
 });
@@ -215,6 +211,7 @@ Route::middleware(['auth', 'role:accountant', 'billing.check'])->group(function 
     Route::get('accountant/parent/{id}/overview', \App\Livewire\Accountant\Parent\ParentOverviewComponent::class)->name('accountant.parent.overview');
     Route::get('accountant/parent/{id}/child', \App\Livewire\Accountant\Parent\ParentChildComponent::class)->name('accountant.parent.child');
 
+    // Employee 
     Route::get('accountant/employee/list', \App\Livewire\Accountant\Employee\EmployeeListComponent::class)->name('accountant.employee.list');
     Route::get('accountant/employee/add', \App\Livewire\Accountant\Employee\EmployeeAddComponent::class)->name('accountant.employee.add');
     Route::get('accountant/employee/{id}/edit', \App\Livewire\Accountant\Employee\EmployeeEditComponent::class)->name('accountant.employee.edit');
@@ -263,8 +260,10 @@ Route::middleware(['auth', 'role:accountant', 'billing.check'])->group(function 
     Route::get('accountant/mailbox/sent', \App\Livewire\Accountant\Mailbox\SentComponent::class)->name('accountant.mailbox.sent');
     Route::get('accountant/mailbox/important', \App\Livewire\Accountant\Mailbox\ImportantComponent::class)->name('accountant.mailbox.important');
     Route::get('accountant/mailbox/trash', \App\Livewire\Accountant\Mailbox\TrashComponent::class)->name('accountant.mailbox.trash');
-
+    // Notice
     Route::get('accountant/notices', \App\Livewire\Accountant\Notice\NoticeComponent::class)->name('accountant.notices');
+
+    // Notification
     Route::get('accountant/notifications', \App\Livewire\Accountant\Notifications\Index::class)->name('accountant.notifications.index');
 
     // Profile 
@@ -302,6 +301,7 @@ Route::middleware(['auth', 'role:admin', 'billing.check'])->group(function () {
     Route::get('/student/{id}/overview', \App\Livewire\Admin\Student\StudentOverviewComponent::class)->name('admin.student.overview');
     Route::get('/student/{id}/invoice', \App\Livewire\Admin\Student\StudentInvoiceComponent::class)->name('admin.student.invoice');
     Route::get('/student/{id}/payment', \App\Livewire\Admin\Student\StudentPaymentComponent::class)->name('admin.student.payment');
+    Route::get('/student/{id}/account', \App\Livewire\Admin\Student\StudentAccountComponent::class)->name('admin.student.account');
 
     // Academic
     Route::get('/academic/sessions', \App\Livewire\Admin\Academic\SessionComponent::class)->name('admin.academic.sessions');
@@ -315,29 +315,36 @@ Route::middleware(['auth', 'role:admin', 'billing.check'])->group(function () {
     Route::get('/academic/teacher-schedule', \App\Livewire\Admin\Academic\TeacherScheduleComponent::class)->name('admin.academic.teacher-schedule');
     Route::get('/academic/student-promotion', \App\Livewire\Admin\Academic\StudentPromotionComponent::class)->name('admin.academic.student-promotion');
 
+    // Employee
     Route::get('/employee/departments', \App\Livewire\Admin\Employee\DepartmentComponent::class)->name('admin.employee.departments');
     Route::get('/employee/designations', \App\Livewire\Admin\Employee\DesignationComponent::class)->name('admin.employee.designations');
     Route::get('/employee/list', \App\Livewire\Admin\Employee\EmployeeListComponent::class)->name('admin.employee.list');
     Route::get('/employee/add', \App\Livewire\Admin\Employee\EmployeeAddComponent::class)->name('admin.employee.add');
     Route::get('/employee/{id}/edit', \App\Livewire\Admin\Employee\EmployeeEditComponent::class)->name('admin.employee.edit');
     Route::get('/employee/{id}/view', \App\Livewire\Admin\Employee\EmployeeViewComponent::class)->name('admin.employee.view');
+    Route::get('/employee/{id}/account', \App\Livewire\Admin\Employee\EmployeeAccountComponent::class)->name('admin.employee.account');
 
-    Route::get('parent/list', \App\Livewire\Admin\Parent\ParentListComponent::class)->name('admin.parent.list');
-    Route::get('parent/add', \App\Livewire\Admin\Parent\ParentAddComponent::class)->name('admin.parent.add');
-    Route::get('parent/edit/{id}', \App\Livewire\Admin\Parent\ParentEditComponent::class)->name('admin.parent.edit');
-    Route::get('parent/{id}/overview', \App\Livewire\Admin\Parent\ParentOverviewComponent::class)->name('admin.parent.overview');
-    Route::get('parent/{id}/child', \App\Livewire\Admin\Parent\ParentChildComponent::class)->name('admin.parent.child');
+    // Parent
+    Route::get('/parent/list', \App\Livewire\Admin\Parent\ParentListComponent::class)->name('admin.parent.list');
+    Route::get('/parent/add', \App\Livewire\Admin\Parent\ParentAddComponent::class)->name('admin.parent.add');
+    Route::get('/parent/edit/{id}', \App\Livewire\Admin\Parent\ParentEditComponent::class)->name('admin.parent.edit');
+    Route::get('/parent/{id}/overview', \App\Livewire\Admin\Parent\ParentOverviewComponent::class)->name('admin.parent.overview');
+    Route::get('/parent/{id}/child', \App\Livewire\Admin\Parent\ParentChildComponent::class)->name('admin.parent.child');
+    Route::get('/parent/{id}/account', \App\Livewire\Admin\Parent\ParentAccountComponent::class)->name('admin.parent.account');
 
+    // Homework
     Route::get('/homework/add', \App\Livewire\Admin\Homework\HomeworkAddComponent::class)->name('admin.homework.add');
     Route::get('/homework/list', \App\Livewire\Admin\Homework\HomeworkListComponent::class)->name('admin.homework.list');
     Route::get('/homework/edit/{id}', \App\Livewire\Admin\Homework\HomeworkEditComponent::class)->name('admin.homework.edit');
 
+    // Card
     Route::get('/card/id-card-templates', \App\Livewire\Admin\Card\IdCardTemplateComponent::class)->name('admin.card.id-card-templates');
     Route::get('/card/student-id-cards', \App\Livewire\Admin\Card\StudentIdCardComponent::class)->name('admin.card.student-id-cards');
     Route::get('/card/employee-id-cards', \App\Livewire\Admin\Card\EmployeeIdCardComponent::class)->name('admin.card.employee-id-cards');    
     Route::get('/card/admit-card-templates', \App\Livewire\Admin\Card\AdmitCardTemplateComponent::class)->name('admin.card.admit-card-templates');
     Route::get('/card/generate-admit-cards', \App\Livewire\Admin\Card\GenerateAdmitCardComponent::class)->name('admin.card.generate-admit-cards');
 
+    // Certificate
     Route::get('certificate/add-template', \App\Livewire\Admin\Certificate\AddTemplateComponent::class)->name('admin.certificate.add-template');
     Route::get('certificate/{id}/edit-template', \App\Livewire\Admin\Certificate\EditTemplateComponent::class)->name('admin.certificate.edit-template');
     Route::get('certificate/list-template', \App\Livewire\Admin\Certificate\ListTemplateComponent::class)->name('admin.certificate.list-template');
@@ -354,9 +361,11 @@ Route::middleware(['auth', 'role:admin', 'billing.check'])->group(function () {
     Route::get('salary/payment', \App\Livewire\Admin\Salary\PaymentComponent::class)->name('admin.salary.payment');
     Route::get('salary/advance', \App\Livewire\Admin\Salary\AdvanceComponent::class)->name('admin.salary.advance');
 
+    // Leave
     Route::get('leave/categories', \App\Livewire\Admin\Leave\CategoryComponent::class)->name('admin.leave.categories');
     Route::get('leave/applications', \App\Livewire\Admin\Leave\ApplicationComponent::class)->name('admin.leave.applications');
     
+    // Exam
     Route::get('exam/terms', \App\Livewire\Admin\Exam\TermComponent::class)->name('admin.exam.terms');
     Route::get('exam/halls', \App\Livewire\Admin\Exam\HallComponent::class)->name('admin.exam.halls');
     Route::get('exam/marks', \App\Livewire\Admin\Exam\MarkComponent::class)->name('admin.exam.marks');    
@@ -368,15 +377,18 @@ Route::middleware(['auth', 'role:admin', 'billing.check'])->group(function () {
     Route::get('exam/positions', \App\Livewire\Admin\Exam\PositionComponent::class)->name('admin.exam.positions');    
     Route::get('exam/grades', \App\Livewire\Admin\Exam\GradeComponent::class)->name('admin.exam.grades');
 
+    // Attendance
     Route::get('attendance/students', \App\Livewire\Admin\Attendance\StudentComponent::class)->name('admin.attendance.students');
     Route::get('attendance/employees', \App\Livewire\Admin\Attendance\EmployeeComponent::class)->name('admin.attendance.employees');
     Route::get('attendance/exams', \App\Livewire\Admin\Attendance\ExamComponent::class)->name('admin.attendance.exams');
 
+    // Event
     Route::get('event/types', \App\Livewire\Admin\Event\TypeComponent::class)->name('admin.event.types');
     Route::get('event/add', \App\Livewire\Admin\Event\AddComponent::class)->name('admin.event.add');
     Route::get('events/{id}/edit', \App\Livewire\Admin\Event\EditComponent::class)->name('admin.event.edit');
     Route::get('event/list', \App\Livewire\Admin\Event\ListComponent::class)->name('admin.event.list');
     
+    // OfficeAccounting
     Route::get('office-accounting/accounts', \App\Livewire\Admin\OfficeAccounting\AccountComponent::class)->name('admin.office-accounting.accounts');
     Route::get('office-accounting/voucher-head', \App\Livewire\Admin\OfficeAccounting\HeadComponent::class)->name('admin.office-accounting.heads');
     Route::get('office-accounting/deposit-add', \App\Livewire\Admin\OfficeAccounting\DepositAddComponent::class)->name('admin.office-accounting.deposit.add');
@@ -387,6 +399,7 @@ Route::middleware(['auth', 'role:admin', 'billing.check'])->group(function () {
     Route::get('office-accounting/expense-list', \App\Livewire\Admin\OfficeAccounting\ExpenseListComponent::class)->name('admin.office-accounting.expense.list');
     Route::get('office-accounting/transactions', \App\Livewire\Admin\OfficeAccounting\TransactionComponent::class)->name('admin.office-accounting.transactions');
 
+    // StudentAccounting
     Route::get('student-accounting/fee-types', \App\Livewire\Admin\StudentAccounting\FeeTypeComponent::class)->name('admin.student-accounting.fee.types');
     Route::get('student-accounting/fee-setups', \App\Livewire\Admin\StudentAccounting\FeeSetupComponent::class)->name('admin.student-accounting.fee.setups');
     Route::get('student-accounting/fee-fines', \App\Livewire\Admin\StudentAccounting\FeeFineComponent::class)->name('admin.student-accounting.fee.fines');
@@ -400,13 +413,14 @@ Route::middleware(['auth', 'role:admin', 'billing.check'])->group(function () {
     Route::get('mailbox/important', \App\Livewire\Admin\Mailbox\ImportantComponent::class)->name('admin.mailbox.important');
     Route::get('mailbox/trash', \App\Livewire\Admin\Mailbox\TrashComponent::class)->name('admin.mailbox.trash');
 
+    // Other
     Route::get('notices', \App\Livewire\Admin\Notice\NoticeComponent::class)->name('admin.notices');
     Route::get('activity-logs', \App\Livewire\Admin\Log\ActivityLogComponent::class)->name('admin.activitylog');
     Route::get('login-logs', \App\Livewire\Admin\Log\LoginLogComponent::class)->name('admin.loginlog');
     Route::get('notifications', \App\Livewire\Admin\Notifications\Index::class)->name('admin.notifications.index');
-
     Route::get('setting/institution', \App\Livewire\Admin\Setting\InstitutionComponent::class)->name('admin.setting.institution');
 
+    // Profile
     Route::get('profile/overview', \App\Livewire\Admin\Profile\OverviewComponent::class)->name('admin.profile.overview');
     Route::get('profile/setting', \App\Livewire\Admin\Profile\SettingComponent::class)->name('admin.profile.setting');
     Route::get('profile/activitylog', \App\Livewire\Admin\Profile\ActivityLogComponent::class)->name('admin.profile.activitylog');
@@ -421,22 +435,24 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('superadmin')->name('sup
 
     Route::get('/billings/invoices', \App\Livewire\SuperAdmin\Billing\InvoiceIndex::class)->name('invoices.index');
 
+    // Log
     Route::get('/activity-logs', \App\Livewire\SuperAdmin\Log\ActivityLogComponent::class)->name('activitylog');
     Route::get('/session-logs', \App\Livewire\SuperAdmin\Log\SessionLogComponent::class)->name('sessionlog');
     Route::get('/login-logs', \App\Livewire\SuperAdmin\Log\LoginLogComponent::class)->name('loginlog');
 
+    // Monitoring
     Route::get('/monitoring/server', \App\Livewire\SuperAdmin\Monitoring\ServerStatusComponent::class)->name('monitoring.server');
     Route::get('/monitoring/queue', \App\Livewire\SuperAdmin\Monitoring\QueueMonitorComponent::class)->name('monitoring.queue');
     Route::get('/monitoring/logs', \App\Livewire\SuperAdmin\Monitoring\ErrorLogsComponent::class)->name('monitoring.logs');
     Route::get('/monitoring/performance', \App\Livewire\SuperAdmin\Monitoring\PerformanceMetricsComponent::class)->name('monitoring.performance');
     
+    // Other
     Route::get('/notifications', \App\Livewire\SuperAdmin\Notifications\Index::class)->name('notifications.index');
-
     Route::get('/backups', \App\Livewire\SuperAdmin\BackupComponent::class)->name('backups');
-
     Route::get('/settings', \App\Livewire\SuperAdmin\Settings\SystemSettingsComponent::class)->name('settings');
     Route::get('/pricingrates', \App\Livewire\SuperAdmin\Settings\PricingRateComponent::class)->name('pricingrates');
 
+    // Profile
     Route::get('/profile/overview', \App\Livewire\SuperAdmin\Profile\OverviewComponent::class)->name('profile.overview');
     Route::get('/profile/setting', \App\Livewire\SuperAdmin\Profile\SettingComponent::class)->name('profile.setting');
     Route::get('/profile/activitylog', \App\Livewire\SuperAdmin\Profile\ActivityLogComponent::class)->name('profile.activitylog');
@@ -456,7 +472,7 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('superadmin')->name('sup
     Route::get('schedule', function () {
         Artisan::call('schedule:run');
         return redirect()->back()->with('success','Thanks for the generate schedule!');
-    })->name('schedule')->middleware(['auth', 'role:super_admin,admin']);
+    })->name('schedule')->middleware(['auth', 'role:super_admin']);
 
     Route::get('/run-billing/{command}', function ($command) {
         $allowed = [
@@ -468,21 +484,22 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('superadmin')->name('sup
         }
         Artisan::call($allowed[$command]);
         return response()->json(['status' => 'done', 'command' => $command]);
-    })->middleware(['auth', 'role:super_admin,admin']);
+    })->middleware(['auth', 'role:super_admin']);
 
 
     Route::get('clear', function () {
         Artisan::call('optimize:clear');
         return redirect()->back()->with('success','Thanks for the fast site!');
-    })->name('clear');
+    })->name('clear')->middleware(['auth', 'role:super_admin']);
     Route::get('migrate', function () {
         Artisan::call('migrate');
         return redirect()->back()->with('success','Thanks for the migration!');
-    })->name('migrate');
+    })->name('migrate')->middleware(['auth', 'role:super_admin']);
     Route::get('link', function () {
         Artisan::call('storage:link');
         return redirect()->back()->with('success','Thanks for the link storage!');
-    })->name('link');
+    })->name('link')->middleware(['auth', 'role:super_admin']);
+
     // Route::get('key', function () {
     //     Artisan::call('key:generate');
     //     return redirect()->back()->with('success','Thanks for the generate key!');
@@ -500,17 +517,6 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('superadmin')->name('sup
     //     auth()->user()->sendEmailVerificationNotification();
     //     return redirect()->back()->with('success','Thanks for the fast site!');
     // })->name('try');
-
-
-
-    // Route::get('setting/backups', \App\Livewire\Admin\Setting\BackupComponent::class)->name('admin.setting.backups');
-
-    
-    // Route::get('backup', function () {
-    //     // Artisan::call('backup:clean');
-    //     Artisan::call('backup:run');
-    //     return redirect()->back()->with('success','Thanks for the backup!');
-    // })->name('backup');
 
 
 

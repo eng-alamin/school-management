@@ -7,19 +7,23 @@ use App\Models\Guardian;
 
 class ParentOverviewComponent extends Component
 {
-    public $parent;
+    public Guardian $guardian;
+    public $user;
 
     public function mount(int $id)
     {
-        $this->parent = Guardian::with([
-            'user',
-        ])->findOrFail($id);
+        $this->guardian = Guardian::with('user')->findOrFail($id);
+        $this->user     = $this->guardian->user;
+
+        if (! $this->user) {
+            abort(404, 'No linked user account found for this parent.');
+        }
     }
 
     public function render()
     {
         return view('livewire.admin.parent.parent-overview-component')
-            ->with('parent', $this->parent)
+            ->with('guardian', $this->guardian)
             ->layout('layouts.admin.app', [
                 'title' => 'Parent Overview | ' . institution()->name,
             ]);

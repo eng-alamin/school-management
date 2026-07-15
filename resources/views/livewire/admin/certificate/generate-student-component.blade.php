@@ -261,12 +261,7 @@
                                         @endif
 
                                     </div>
-
-                                    {{--
-                                        Parsed certificate content (HTML from Summernote).
-                                        {student_photo}, {name}, {institute_name} etc. are
-                                        already replaced in PHP — just render $card['content'].
-                                    --}}
+                                    
                                     <div class="cert-content">
                                         {!! $card['content'] !!}
                                     </div>

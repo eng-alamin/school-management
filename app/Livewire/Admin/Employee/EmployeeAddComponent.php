@@ -63,7 +63,7 @@ class EmployeeAddComponent extends Component
             'email'          => 'nullable|unique:users,email',
             'photo_upload'   => 'nullable|image|max:2048',
             'username'       => 'required|unique:users,username',
-            'password'       => 'nullable|min:4',
+            'password'       => 'nullable|min:8',
         ];
     }
 
@@ -99,7 +99,7 @@ class EmployeeAddComponent extends Component
                 'name'     => $this->name,
                 'username' => $this->username,
                 'email'    => $this->email,
-                'password' => !empty($this->password) ? $this->password : '1234',
+                'password' => !empty($this->password) ? $this->password : '12345678',
             ]);
 
             $photoPath = $this->photo_upload

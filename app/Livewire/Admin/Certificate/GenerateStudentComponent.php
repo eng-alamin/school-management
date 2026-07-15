@@ -170,33 +170,33 @@ class GenerateStudentComponent extends Component
                 ],
                 [
                     // ── Institute values ──
-                    $institute?->name    ?? '',
-                    $institute?->email   ?? '',
-                    $institute?->phone  ?? '',
-                    $institute?->address ?? '',
+                    e($institute?->name    ?? ''),
+                    e($institute?->email   ?? ''),
+                    e($institute?->phone  ?? ''),
+                    e($institute?->address ?? ''),
 
                     // ── Student values ──
-                    $student->student_id,
-                    $student->name,
-                    $student->registration_no    ?? '',
-                    $student->roll_no        ?? '',
-                    $student->class?->name   ?? '',
-                    $student->section?->name ?? '',
-                    $student->group?->name   ?? '',
-                    $student->mobile       ?? '',
-                    $student->blood_group     ?? '',
-                    $student->dob ? Carbon::parse($student->dob)->format('d M Y') : '',
-                    $student->gender        ?? '',
-                    $student->religion      ?? '',
-                    $student->academic_year ?? '',
-                    $student->admission_date
-                        ? Carbon::parse($student->admission_date)->format('d M Y') : '',
-                    Carbon::parse($this->issue_date)->format('d M Y'),
+                    e($student->student_id),
+                    e($student->name),
+                    e($student->registration_no    ?? ''),
+                    e($student->roll_no        ?? ''),
+                    e($student->class?->name   ?? ''),
+                    e($student->section?->name ?? ''),
+                    e($student->group?->name   ?? ''),
+                    e($student->mobile       ?? ''),
+                    e($student->blood_group     ?? ''),
+                    e($student->dob ? Carbon::parse($student->dob)->format('d M Y') : ''),
+                    e($student->gender        ?? ''),
+                    e($student->religion      ?? ''),
+                    e($student->academic_year ?? ''),
+                    e($student->admission_date
+                        ? Carbon::parse($student->admission_date)->format('d M Y') : ''),
+                    e(Carbon::parse($this->issue_date)->format('d M Y')),
 
                     // ── Guardian placeholder (now eager-loaded, no N+1) ──
-                    $student->guardians->first()?->father_name ?? '',
-                    $student->guardians->first()?->mother_name ?? '',
-
+                    e($student->guardians->first()?->father_name ?? ''),
+                    e($student->guardians->first()?->mother_name ?? ''),
+                    
                     // ── Photo as inline img ──
                     $photoHtml,
                 ],

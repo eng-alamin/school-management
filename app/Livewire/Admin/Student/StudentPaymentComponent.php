@@ -7,6 +7,7 @@ use App\Models\Student;
 use App\Models\FeePayment;
 use App\Models\OfficeAccount;
 use App\Models\FeeInvoice;
+use Illuminate\Validation\Rule;
 
 class StudentPaymentComponent extends Component
 {
@@ -27,7 +28,11 @@ class StudentPaymentComponent extends Component
             'payment_date'      => 'required|date',
             'amount'            => 'required|numeric|min:0.01',
             'payment_method'    => 'required|in:cash,bank,cheque,online,other',
-            'office_account_id' => 'nullable|exists:office_accounts,id',
+            'office_account_id' => [
+                'nullable',
+                Rule::exists('office_accounts', 'id')
+                    ->where('institution_id', auth()->user()->institution_id),
+            ],
             'remarks'           => 'nullable|string',
         ];
     }

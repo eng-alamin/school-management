@@ -141,9 +141,11 @@ class ClassComponent extends Component
     public function render()
     {
         $classes = AcademicClass::with('sections')
-            ->when($this->search, fn($q) => $q->where('name', 'like', "%{$this->search}%")
-                                              ->orWhere('numeric', 'like', "%{$this->search}%")
-                                              ->orWhereHas('sections', fn($q) => $q->where('name', 'like', "%{$this->search}%")))
+            ->when($this->search, fn($q) => $q->where(function ($q) {
+                $q->where('name', 'like', "%{$this->search}%")
+                  ->orWhere('numeric', 'like', "%{$this->search}%")
+                  ->orWhereHas('sections', fn($q) => $q->where('name', 'like', "%{$this->search}%"));
+            }))
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 

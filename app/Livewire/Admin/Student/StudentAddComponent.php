@@ -178,7 +178,7 @@ class StudentAddComponent extends Component
 
             'name' => 'required',
 
-            'student_photo_upload' => 'nullable',
+            'student_photo_upload' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
 
             'username' => 'required|unique:users,username',
             'password' => 'nullable',
@@ -190,7 +190,7 @@ class StudentAddComponent extends Component
 
             'guardian_username' => !$this->guardian_exists ? 'required|unique:users,username' : 'nullable',
 
-            'guardian_photo_upload' => 'nullable',
+            'guardian_photo_upload' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
 
             'is_new_student' => 'boolean',
         ];
@@ -363,7 +363,7 @@ class StudentAddComponent extends Component
 
             $institutionId = auth()->user()->institution_id;
 
-            $userPassword = $this->password ?: '1234';
+            $userPassword = $this->password ?: '12345678';
 
             $user = User::create([
                 'institution_id' => $institutionId,
@@ -442,7 +442,7 @@ class StudentAddComponent extends Component
 
             } else {
 
-                $guardianPassword = $this->guardian_password ?: '1234';
+                $guardianPassword = $this->guardian_password ?: '12345678';
 
                 $userGuardian = User::create([
                     'institution_id' => $institutionId,

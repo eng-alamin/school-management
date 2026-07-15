@@ -7,20 +7,25 @@ use App\Models\Guardian;
 
 class ParentChildComponent extends Component
 {
-    public $parent;
+    public Guardian $guardian;
+    public $user;
 
+    
     public function mount(int $id)
     {
-        $this->parent = Guardian::with([
-            'user', 'students'
-        ])->findOrFail($id);
+        $this->guardian = Guardian::with(['user', 'students'])->findOrFail($id);
+        $this->user     = $this->guardian->user;
+
+        if (! $this->user) {
+            abort(404, 'No linked user account found for this parent.');
+        }
 
     }
 
     public function render()
     {
         return view('livewire.admin.parent.parent-child-component')
-            ->with('parent', $this->parent)
+            ->with('guardian', $this->guardian)
             ->layout('layouts.admin.app', [
                 'title' => 'Parent Child | ' . institution()->name,
             ]);

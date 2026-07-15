@@ -1,165 +1,158 @@
-<div class="mat-card" style="padding-top:28px">
+<div>
+    <div class="card border-0 bg-transparent">
+        <div class="container-xl mt-4">
 
-    {{-- Floating Header --}}
-    <div class="mat-card-header header-pink-gradient">
-        <h5 id="cardHeaderTitleStudentOverview">
-            <span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">
-                payments
-            </span>
-            Add Payment
-        </h5>
-        <p>Create new payment record</p>
-    </div>
+            @include('livewire.admin.student.student-navbar')
 
-    <div class="container-xl mt-4">
+            <div class="card form-section">
+                <div class="row g-4">
 
-        @include('livewire.admin.student.student-navbar')
+                    {{-- Left Column - All Fields --}}
+                    <div class="col-md-6 offset-md-1">
+                        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                            <span class="fw-bold fs-5">Payment Details</span>
+                        </div>
+                        <div class="row g-4">
 
-        <div class="form-section">
-    <div class="row g-4">
-
-        {{-- Left Column - All Fields --}}
-        <div class="col-md-6 offset-md-1">
-            <div class="row g-4">
-
-                {{-- Invoice --}}
-                <div class="col-md-12">
-                    <div class="input-group input-group-outline" wire:ignore>
-                        <label class="form-label">Invoice <span class="req">*</span></label>
-                        <select wire:model.live="fee_invoice_id" class="form-select">
-                            <option value="">Select</option>
-                            @foreach($invoices as $invoice)
-                                <option value="{{ $invoice->id }}">
-                                    {{ $invoice->invoice_no }}
-                                    (Due: {{ number_format($invoice->remaining, 0) }})
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    @error('fee_invoice_id') <span class="text-danger small">{{ $message }}</span> @enderror
-                </div>
-
-                {{-- Date --}}
-                <div class="col-md-12">
-                    <div class="input-group input-group-outline" wire:ignore>
-                        <label class="form-label">Date <span class="req">*</span></label>
-                        <input type="date" wire:model="payment_date" data-dp-value="{{ $payment_date }}"
-                               class="form-control">
-                    </div>
-                    @error('payment_date') <span class="text-danger small">{{ $message }}</span> @enderror
-                </div>
-
-                {{-- Amount --}}
-                <div class="col-md-12">
-                    <div class="input-group input-group-outline">
-                        <label class="form-label">Amount <span class="req">*</span></label>
-                        <input type="number" step="0.01" min="0"
-                               wire:model.live="amount"
-                               class="form-control"
-                               placeholder=" "
-                               onfocus="focused(this)"
-                               onfocusout="defocused(this)">
-                    </div>
-                    @error('amount') <span class="text-danger small">{{ $message }}</span> @enderror
-                </div>
-
-                {{-- Payment Method --}}
-                <div class="col-md-12">
-                    <div class="input-group input-group-outline" wire:ignore>
-                        <label class="form-label">Payment Method <span class="req">*</span></label>
-                        <select wire:model="payment_method" class="form-select">
-                            <option value="">Select</option>
-                            <option value="cash">Cash</option>
-                            <option value="bank">Bank</option>
-                            <option value="cheque">Cheque</option>
-                            <option value="online">Online</option>
-                            <option value="other">Other</option>
-                        </select>
-                    </div>
-                    @error('payment_method') <span class="text-danger small">{{ $message }}</span> @enderror
-                </div>
-
-                {{-- Account --}}
-                <div class="col-md-12">
-                    <div class="input-group input-group-outline" wire:ignore>
-                        <label class="form-label">Account</label>
-                        <select wire:model="office_account_id" class="form-select">
-                            <option value="">Select</option>
-                            @foreach($officeAccounts as $account)
-                                <option value="{{ $account->id }}">{{ $account->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    @error('office_account_id') <span class="text-danger small">{{ $message }}</span> @enderror
-                </div>
-
-                {{-- Remarks --}}
-                <div class="col-md-12">
-                    <div class="input-group input-group-outline">
-                        <label class="form-label">Remarks</label>
-                        <textarea wire:model="remarks" class="form-control" placeholder="" onfocus="focused(this)" onfocusout="defocused(this)"></textarea>
-                    </div>
-                    @error('remarks') <span class="text-danger small">{{ $message }}</span> @enderror
-                </div>
-
-                {{-- Submit --}}
-                <div class="col-md-12">
-                    <button class="btn-pink w-100 d-flex justify-content-center align-items-center gap-1"
-                            type="button"
-                            wire:click="save"
-                            wire:loading.attr="disabled"
-                            wire:target="save">
-                        <span wire:loading.remove wire:target="save">
-                            <span class="material-icons-round" style="font-size:16px;vertical-align:middle">save</span> Save Payment
-                        </span>
-                        <span wire:loading wire:target="save">
-                            <span class="material-icons-round" style="font-size:16px;animation:spin .7s linear infinite">sync</span> Saving...
-                        </span>
-                    </button>
-                </div>
-
-            </div>
-        </div>
-
-        {{-- Right Column --}}
-        <div class="col-md-4">
-
-            {{-- Selected Invoice Breakdown --}}
-            @if($fee_invoice_id)
-                @php
-                    $selectedInvoice = $invoices->firstWhere('id', (int) $fee_invoice_id);
-                @endphp
-                @if($selectedInvoice)
-
-                    <div class="pay-summary mb-3">
-                        <strong style="display:block;margin-bottom:8px">Invoice Breakdown</strong>
-                        @foreach($selectedInvoice->items as $item)
-                            <div class="pay-summary-row">
-                                {{-- ✅ FIX: fee_type_name attribute exist korto na, akhon feeSetup->feeType theke ashbe --}}
-                                <span>{{ $item->feeSetup?->feeType?->name ?? '—' }}</span>
-                                <span>৳{{ number_format($item->total_amount, 0) }}</span>
+                            {{-- Invoice --}}
+                            <div class="col-md-12">
+                                <div class="input-group input-group-outline" wire:ignore>
+                                    <label class="form-label">Invoice <span class="req">*</span></label>
+                                    <select wire:model.live="fee_invoice_id" class="form-select">
+                                        <option value="">Select</option>
+                                        @foreach($invoices as $invoice)
+                                            <option value="{{ $invoice->id }}">
+                                                {{ $invoice->invoice_no }}
+                                                (Due: {{ number_format($invoice->remaining, 0) }})
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                @error('fee_invoice_id') <span class="text-danger small">{{ $message }}</span> @enderror
                             </div>
-                        @endforeach
-                    </div>
-                @endif
-            @endif
 
-            {{-- Amount Summary --}}
-            @if($amount)
-            <div class="col-md-12">
-                <div class="pay-summary">
-                    <div class="pay-summary-row total">
-                        <span>Paying Amount</span>
-                        <span>৳{{ number_format((float)$amount, 0) }}</span>
+                            {{-- Date --}}
+                            <div class="col-md-12">
+                                <div class="input-group input-group-outline" wire:ignore>
+                                    <label class="form-label">Date <span class="req">*</span></label>
+                                    <input type="date" wire:model="payment_date" data-dp-value="{{ $payment_date }}"
+                                        class="form-control">
+                                </div>
+                                @error('payment_date') <span class="text-danger small">{{ $message }}</span> @enderror
+                            </div>
+
+                            {{-- Amount --}}
+                            <div class="col-md-12">
+                                <div class="input-group input-group-outline">
+                                    <label class="form-label">Amount <span class="req">*</span></label>
+                                    <input type="number" step="0.01" min="0"
+                                        wire:model.live="amount"
+                                        class="form-control"
+                                        placeholder=" "
+                                        onfocus="focused(this)"
+                                        onfocusout="defocused(this)">
+                                </div>
+                                @error('amount') <span class="text-danger small">{{ $message }}</span> @enderror
+                            </div>
+
+                            {{-- Payment Method --}}
+                            <div class="col-md-12">
+                                <div class="input-group input-group-outline" wire:ignore>
+                                    <label class="form-label">Payment Method <span class="req">*</span></label>
+                                    <select wire:model="payment_method" class="form-select">
+                                        <option value="">Select</option>
+                                        <option value="cash">Cash</option>
+                                        <option value="bank">Bank</option>
+                                        <option value="cheque">Cheque</option>
+                                        <option value="online">Online</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                                @error('payment_method') <span class="text-danger small">{{ $message }}</span> @enderror
+                            </div>
+
+                            {{-- Account --}}
+                            <div class="col-md-12">
+                                <div class="input-group input-group-outline" wire:ignore>
+                                    <label class="form-label">Account</label>
+                                    <select wire:model="office_account_id" class="form-select">
+                                        <option value="">Select</option>
+                                        @foreach($officeAccounts as $account)
+                                            <option value="{{ $account->id }}">{{ $account->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                @error('office_account_id') <span class="text-danger small">{{ $message }}</span> @enderror
+                            </div>
+
+                            {{-- Remarks --}}
+                            <div class="col-md-12">
+                                <div class="input-group input-group-outline">
+                                    <label class="form-label">Remarks</label>
+                                    <textarea wire:model="remarks" class="form-control" placeholder="" onfocus="focused(this)" onfocusout="defocused(this)"></textarea>
+                                </div>
+                                @error('remarks') <span class="text-danger small">{{ $message }}</span> @enderror
+                            </div>
+
+                            {{-- Submit --}}
+                            <div class="col-md-12">
+                                <button class="btn-pink w-100 d-flex justify-content-center align-items-center gap-1"
+                                        type="button"
+                                        wire:click="save"
+                                        wire:loading.attr="disabled"
+                                        wire:target="save">
+                                    <span wire:loading.remove wire:target="save">
+                                        <span class="material-icons-round" style="font-size:16px;vertical-align:middle">save</span> Save Payment
+                                    </span>
+                                    <span wire:loading wire:target="save">
+                                        <span class="material-icons-round" style="font-size:16px;animation:spin .7s linear infinite">sync</span> Saving...
+                                    </span>
+                                </button>
+                            </div>
+
+                        </div>
                     </div>
+
+                    {{-- Right Column --}}
+                    <div class="col-md-4">
+
+                        {{-- Selected Invoice Breakdown --}}
+                        @if($fee_invoice_id)
+                            @php
+                                $selectedInvoice = $invoices->firstWhere('id', (int) $fee_invoice_id);
+                            @endphp
+                            @if($selectedInvoice)
+
+                                <div class="pay-summary mb-3">
+                                    <strong style="display:block;margin-bottom:8px">Invoice Breakdown</strong>
+                                    @foreach($selectedInvoice->items as $item)
+                                        <div class="pay-summary-row">
+                                            {{-- ✅ FIX: fee_type_name attribute exist korto na, akhon feeSetup->feeType theke ashbe --}}
+                                            <span>{{ $item->feeSetup?->feeType?->name ?? '—' }}</span>
+                                            <span>৳{{ number_format($item->total_amount, 0) }}</span>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
+                        @endif
+
+                        {{-- Amount Summary --}}
+                        @if($amount)
+                        <div class="col-md-12">
+                            <div class="pay-summary">
+                                <div class="pay-summary-row total">
+                                    <span>Paying Amount</span>
+                                    <span>৳{{ number_format((float)$amount, 0) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                    </div>
+
                 </div>
             </div>
-            @endif
+
         </div>
-
-    </div>
-</div>
-
     </div>
 </div>
 

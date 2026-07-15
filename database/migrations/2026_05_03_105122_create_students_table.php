@@ -18,8 +18,8 @@ return new class extends Migration
 
             // Academic
             $table->foreignId('session_id')->nullable()->constrained('academic_sessions')->nullOnDelete();
-            $table->string('student_id')->unique();
-            $table->string('registration_no')->nullable()->unique();
+            $table->string('student_id');
+            $table->string('registration_no')->nullable();
             $table->string('roll_no')->nullable();
             $table->date('admission_date')->nullable();
             $table->foreignId('class_id')->nullable()->constrained('academic_classes')->nullOnDelete();

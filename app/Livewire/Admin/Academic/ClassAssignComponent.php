@@ -61,7 +61,7 @@ class ClassAssignComponent extends Component
 
     public function updatedClassId(string $value): void
     {
-        $this->section_id;
+        $this->section_id = null;
         $this->availableSections = [];
 
         if ($value) {

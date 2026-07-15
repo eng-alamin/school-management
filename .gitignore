@@ -1,3 +1,6 @@
+.agents
+reports
 .env
+.env.example
 guide.php
 /public/storage

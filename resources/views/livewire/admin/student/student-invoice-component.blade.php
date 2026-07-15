@@ -1,11 +1,5 @@
 <div>
-
-    <div class="card">
-
-        <div class="mat-card-header header-pink-gradient no-print">
-            <h5 id="cardHeaderTitleInvoiceHistory">Invoice History</h5>
-        </div>
-
+    <div class="card border-0 bg-transparent">
         <div class="container-xl mt-4">
 
             @include('livewire.admin.student.student-navbar')
@@ -43,7 +37,7 @@
                     $sGrandTotal = 0; $sGrandDiscount = 0; $sGrandFine = 0; $sGrandPaid = 0; $sGrandDue = 0;
                 @endphp
 
-                <div class="session-accordion-item">
+                <div class="card session-accordion-item">
                     <div class="session-accordion-header" onclick="toggleSessionPanel(this)">
                         <span class="material-icons-round chevron" style="font-size:18px">expand_more</span>
                         <span class="session-name">{{ $session->name }}</span>
@@ -200,7 +194,6 @@
             @endforelse
 
         </div>
-
     </div>
 
     {{-- ============================================================ --}}

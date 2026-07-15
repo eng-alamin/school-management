@@ -134,7 +134,7 @@ class StudentEditComponent extends Component
 
             'admission_date' => 'required|date',
 
-            'student_photo_upload'       => 'nullable',
+            'student_photo_upload'       => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
 
             'username'    => ['required', Rule::unique('users', 'username')->ignore($this->userId)],
             'password'    => 'nullable',
@@ -147,7 +147,7 @@ class StudentEditComponent extends Component
 
             'guardian_username' => !$this->guardian_exists ? ['required', Rule::unique('users', 'username')->ignore($this->userId)] : 'nullable',
 
-            'guardian_photo_upload'       => 'nullable',
+            'guardian_photo_upload'       => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ];
     }
 

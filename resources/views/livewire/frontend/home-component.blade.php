@@ -59,10 +59,10 @@
                 </div>
               </div>
               <div class="hero-stat">
-                <div class="num">99.9%</div>
+                <div class="num">200K+</div>
                 <div class="lbl">
-                  <span class="lang-bn">আপটাইম</span
-                  ><span class="lang-en">Uptime</span>
+                  <span class="lang-bn">শিক্ষক</span
+                  ><span class="lang-en">Teachers</span>
                 </div>
               </div>
               <div class="hero-stat">
@@ -389,42 +389,42 @@
               </p>
             </div>
           </div>
-          <div class="col-md-4">
+         <div class="col-md-4">
             <div class="card feature-card p-4">
-              <div class="feature-icon"><i class="bi bi-bus-front"></i></div>
+              <div class="feature-icon"><i class="bi bi-person-workspace"></i></div>
               <h5>
-                <span class="lang-bn">পরিবহন ব্যবস্থাপনা</span
-                ><span class="lang-en">Transport Management</span>
+                <span class="lang-bn">শিক্ষক ও স্টাফ ব্যবস্থাপনা</span>
+                <span class="lang-en">Teacher & Staff Management</span>
               </h5>
               <p class="text-muted mb-0">
-                <span class="lang-bn"
-                  >লাইভ GPS ট্র্যাকিং, রুট অপ্টিমাইজেশন এবং অভিভাবকদের জন্য
-                  রিয়েল-টাইম বাস লোকেশন।</span
-                ><span class="lang-en"
-                  >Live GPS tracking, route optimization, and real-time bus
-                  location for parents.</span
-                >
+                <span class="lang-bn">
+                  শিক্ষক ও কর্মীদের সম্পূর্ণ প্রোফাইল, উপস্থিতি, বেতন এবং কর্মক্ষমতা পর্যবেক্ষণ।
+                </span>
+                <span class="lang-en">
+                  Complete teacher and staff profiles, attendance, payroll, and performance monitoring.
+                </span>
               </p>
             </div>
           </div>
           <div class="col-md-4">
             <div class="card feature-card p-4">
-              <div class="feature-icon"><i class="bi bi-book"></i></div>
+              <div class="feature-icon"><i class="bi bi-laptop"></i></div>
               <h5>
-                <span class="lang-bn">লাইব্রেরি সিস্টেম</span
-                ><span class="lang-en">Library System</span>
+                <span class="lang-bn">অনলাইন লার্নিং ও ডিজিটাল ক্লাসরুম</span>
+                <span class="lang-en">Online Learning & Digital Classroom</span>
               </h5>
               <p class="text-muted mb-0">
-                <span class="lang-bn"
-                  >ডিজিটাল ক্যাটালগ, বই ইস্যু/রিটার্ন ট্র্যাকিং, ফাইন
-                  ম্যানেজমেন্ট এবং ই-বুক ইন্টিগ্রেশন।</span
-                ><span class="lang-en"
-                  >Digital catalog, book issue/return tracking, fine management,
-                  and e-book integration.</span
-                >
+                <span class="lang-bn">
+                  ভার্চুয়াল ক্লাস, অ্যাসাইনমেন্ট, অনলাইন পরীক্ষা,
+                  স্টাডি ম্যাটেরিয়াল এবং আধুনিক ডিজিটাল শিক্ষা সুবিধা।
+                </span>
+                <span class="lang-en">
+                  Virtual classrooms, assignments,
+                  study materials, and modern digital education tools.
+                </span>
               </p>
             </div>
-          </div>
+          </div>   
         </div>
       </div>
     </section>
@@ -447,7 +447,10 @@
         <div class="row mt-2 g-4">
           <div class="col-md-4">
             <div class="step-card h-100">
-              <div class="step-number">০১</div>
+              <div class="step-number">
+                <span class="lang-bn">০১</span>
+                <span class="lang-en">01</span>
+              </div>
               <h5 class="mt-3">
                 <span class="lang-bn">প্রতিষ্ঠান নিবন্ধন করুন</span>
                 <span class="lang-en">Register Your Institution</span>
@@ -466,7 +469,10 @@
           </div>
           <div class="col-md-4">
             <div class="step-card h-100">
-              <div class="step-number">০২</div>
+              <div class="step-number">
+                <span class="lang-bn">০২</span>
+                <span class="lang-en">02</span>
+              </div>
               <h5 class="mt-3">
                 <span class="lang-bn">মডিউল কনফিগার করুন</span>
                 <span class="lang-en">Configure Modules</span>
@@ -485,7 +491,10 @@
           </div>
           <div class="col-md-4">
             <div class="step-card h-100">
-              <div class="step-number">০৩</div>
+              <div class="step-number">
+                <span class="lang-bn">০৩</span>
+                <span class="lang-en">03</span>
+              </div>
               <h5 class="mt-3">
                 <span class="lang-bn">লঞ্চ করুন ও প্রশিক্ষণ দিন</span>
                 <span class="lang-en">Launch &amp; Train Staff</span>

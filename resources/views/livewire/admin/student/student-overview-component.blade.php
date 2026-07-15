@@ -1,11 +1,5 @@
 <div>
-
     <div class="card border-0 bg-transparent">
-
-        <div class="mat-card-header header-pink-gradient no-print">
-            <h5 id="cardHeaderTitleStudentOverview">Student Overview</h5>
-        </div>
-
         <div class="container-xl mt-4">
 
             <div id="studentDetailsPrintable">
@@ -196,9 +190,7 @@
             </div>
 
         </div>
-
     </div>
-
 </div>
 
 @push('scripts')

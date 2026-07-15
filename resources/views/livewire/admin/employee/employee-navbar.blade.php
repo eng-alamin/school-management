@@ -85,5 +85,11 @@
                 Overview
             </a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link {{ request()->routeIs('admin.employee.account') ? 'active' : '' }}"
+               href="{{ route('admin.employee.account', ['id' => $employee->id]) }}">
+                Account
+            </a>
+        </li>
     </ul>
 </div>
