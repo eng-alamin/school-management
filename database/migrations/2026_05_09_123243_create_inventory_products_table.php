@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
             $table->string('name');
-            $table->string('code');
+            $table->string('code')->nullable();
             $table->foreignId('category_id')->constrained('inventory_categories')->cascadeOnDelete();
             $table->foreignId('purchase_unit_id')->constrained('inventory_units')->cascadeOnDelete();
             $table->foreignId('sales_unit_id')->constrained('inventory_units')->cascadeOnDelete();

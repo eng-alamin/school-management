@@ -1,9 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Api\Inventory;
+namespace App\Http\Controllers\Api\Admin\Inventory;
 
 use App\Http\Controllers\Controller;
 use App\Models\InventoryProduct;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Validator;
 use App\Models\InventoryCategory;
 use App\Models\InventoryUnit;
 use Illuminate\Http\Request;
@@ -11,22 +13,31 @@ use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
-    // GET /api/inventory/products
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
+        $institutionId = auth()->user()->institution_id;
+
+        $perPage = (int) $request->query('per_page', 15);
+        $search  = trim((string) $request->query('search', ''));
+
         $products = InventoryProduct::query()
+            ->where('institution_id', $institutionId)
             ->with(['category', 'purchaseUnit', 'salesUnit'])
-            ->when($request->search, fn($q) => $q->where('name', 'like', "%{$request->search}%")
-                                                  ->orWhere('code', 'like', "%{$request->search}%"))
+            ->when($search !== '', function ($q) use ($search) {
+                $q->where(function ($qq) use ($search) {
+                    $qq->where('name', 'like', "%{$search}%")
+                        ->orWhere('code', 'like', "%{$search}%");
+                });
+            })
             ->orderBy('name')
-            ->paginate($request->per_page ?? 15);
+            ->paginate($perPage);
 
         return response()->json($products);
     }
 
     // GET /api/inventory/products/form-data
     // Dropdown-এর জন্য category ও unit লিস্ট একসাথে পাঠায়
-    public function formData()
+    public function formData(): JsonResponse
     {
         return response()->json([
             'categories' => InventoryCategory::orderBy('name')->get(['id', 'name']),
@@ -34,12 +45,17 @@ class ProductController extends Controller
         ]);
     }
 
-    // POST /api/inventory/products
     public function store(Request $request)
     {
+        $institutionId = auth()->user()->institution_id;
+
         $validated = $request->validate([
             'name'             => 'required|string|max:255',
-            'code'             => 'nullable|string|max:255|unique:inventory_products,code',
+            'code'        => [
+                'nullable', 'string', 'max:255',
+                Rule::unique('inventory_products', 'code')
+                    ->where('institution_id', $institutionId),
+            ],
             'category_id'      => 'required|exists:inventory_categories,id',
             'purchase_unit_id' => 'required|exists:inventory_units,id',
             'sales_unit_id'    => 'required|exists:inventory_units,id',

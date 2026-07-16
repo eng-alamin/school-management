@@ -43,6 +43,8 @@ return new class extends Migration
             $table->text('qualification')->nullable();
             $table->text('remarks')->nullable();
 
+            $table->enum('status', ['active', 'inactive', 'graduated', 'transferred', 'dropped_out'])->default('active')->index();
+
             $table->timestamps();
         });
     }

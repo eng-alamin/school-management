@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\Inventory;
+namespace App\Http\Controllers\Api\Admin\Inventory;
 
 use App\Http\Controllers\Controller;
 use App\Models\InventoryCategory;

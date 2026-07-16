@@ -15,10 +15,12 @@ return new class extends Migration
             $table->id();
             $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
             $table->string('name');
-            $table->string('code')->unique();
+            $table->string('code')->nullable();
             $table->string('mobile')->nullable();
             $table->string('address')->nullable();
             $table->text('description')->nullable();
+
+            $table->unique(['institution_id', 'code']);
             $table->timestamps();
         });
     }

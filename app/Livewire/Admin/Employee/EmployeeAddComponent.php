@@ -52,9 +52,6 @@ class EmployeeAddComponent extends Component
     {
         return [
             'role'           => 'required',
-            // BUG FIX: the form UI marks Joining Date as required (*) but this
-            // validation rule was missing, so the form could be submitted
-            // without a joining date even though the UI implied it was mandatory.
             'joining_date'   => 'required|date',
             'designation_id' => 'required|exists:employee_designations,id',
             'department_id'  => 'required|exists:employee_departments,id',
