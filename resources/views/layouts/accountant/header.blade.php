@@ -78,10 +78,11 @@
               </div>
             </div>
             <label class="sw">
-              <input type="checkbox">
+              <input type="checkbox" id="privacyModeSwitch" onchange="togglePrivacy()">
               <span class="sw-track"></span>
             </label>
           </div>
+
         </div>
       </div>
 

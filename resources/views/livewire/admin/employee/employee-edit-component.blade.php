@@ -21,7 +21,6 @@
                         <label class="form-label"><span id="emp-edit-lbl-role">Role</span> <span class="req">*</span></label>
                         <select wire:model="role" class="form-select">
                             <option value="">Select Role</option>
-                            <option value="admin">Admin</option>
                             <option value="teacher">Teacher</option>
                             <option value="accountant">Accountant</option>
                             <option value="staff">Staff</option>
@@ -100,7 +99,7 @@
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
                         <label class="form-label"><span id="emp-edit-lbl-name">Name</span> <span class="req">*</span></label>
-                        <input type="text" wire:model="name" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
+                        <input type="text" wire:model.live.debounce.500ms="name" class="form-control" placeholder=" " autocomplete="off" onfocus="focused(this)" onfocusout="defocused(this)">
                     </div>
                     @error('name') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
@@ -192,15 +191,19 @@
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
                         <label class="form-label"><span id="emp-edit-lbl-username">Username</span> <span class="req">*</span></label>
-                        <input type="text" wire:model="username" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
+                        <input type="text" wire:model.live.debounce.500ms="username" class="form-control" placeholder=" " autocomplete="off" onfocus="focused(this)" onfocusout="defocused(this)">
                     </div>
                     @error('username') <span class="text-danger">{{ $message }}</span> @enderror
+                    <button type="button" class="btn-outline" style="margin-top:6px;font-size:.72rem;padding:4px 10px" wire:click="enableUsernameAutoSuggest">
+                        <span class="material-icons-round" style="font-size:14px;vertical-align:middle">autorenew</span>
+                        Suggest from Name
+                    </button>
                 </div>
 
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
                         <label class="form-label" id="emp-edit-lbl-password">Password</label>
-                        <input type="password" wire:model="password" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
+                        <input type="password" wire:model="password" class="form-control" placeholder=" " autocomplete="new-password" onfocus="focused(this)" onfocusout="defocused(this)">
                     </div>
                     @error('password') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>

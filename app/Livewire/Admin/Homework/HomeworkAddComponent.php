@@ -13,6 +13,7 @@ use App\Models\AcademicSection;
 use App\Models\AcademicSubject;
 use App\Models\AcademicClassAssign;
 use App\Models\Employee;
+use App\Models\User;
 
 class HomeworkAddComponent extends Component
 {
@@ -53,6 +54,7 @@ class HomeworkAddComponent extends Component
         if (!$value) return;
 
         $assigns = AcademicClassAssign::with('section')
+            ->where('institution_id', institution()->id)
             ->where('class_id', $value)
             ->whereNotNull('section_id')
             ->get();
@@ -86,7 +88,8 @@ class HomeworkAddComponent extends Component
 
     protected function loadSubjects($class_id, $section_id = null): void
     {
-        $query = AcademicClassAssign::where('class_id', $class_id);
+        $query = AcademicClassAssign::where('institution_id', institution()->id)
+            ->where('class_id', $class_id);
 
         if ($section_id) {
             $query->where('section_id', $section_id);
@@ -124,7 +127,8 @@ class HomeworkAddComponent extends Component
 
         $sectionId = ($this->section_id && $this->section_id !== 'all') ? $this->section_id : null;
 
-        $query = AcademicClassAssign::where('class_id', $this->class_id);
+        $query = AcademicClassAssign::where('institution_id', institution()->id)
+            ->where('class_id', $this->class_id);
 
         if ($sectionId) {
             $query->where('section_id', $sectionId);
@@ -154,18 +158,26 @@ class HomeworkAddComponent extends Component
     public function save(): void
     {
         $this->validate([
-            'class_id'        => 'required|exists:academic_classes,id',
+            'class_id'        => [
+                'required',
+                Rule::exists('academic_classes', 'id')->where('institution_id', institution()->id),
+            ],
             'section_id'      => 'nullable',
             'subject_id'      => [
                 'required',
-                'exists:academic_subjects,id',
+                Rule::exists('academic_subjects', 'id')->where('institution_id', institution()->id),
                 function ($attribute, $value, $fail) {
                     if (!in_array($value, $this->validSubjectIdsForSelection())) {
                         $fail('Selected subject is not assigned to the selected class/section.');
                     }
                 },
             ],
-            'teacher_id'      => 'nullable|exists:employees,id',
+            'teacher_id'      => [
+                'nullable',
+                Rule::exists('users', 'id')
+                    ->where('institution_id', institution()->id)
+                    ->where('role', User::ROLE_TEACHER),
+            ],
             'title'           => 'required|string|max:255',
             'description'     => 'required|string',
             'homework_date'   => 'required|date',
@@ -191,6 +203,7 @@ class HomeworkAddComponent extends Component
 
             $homework = DB::transaction(function () use ($sectionId, $attachmentPath) {
                 $homework = Homework::create([
+                    'institution_id'  => institution()->id,
                     'class_id'        => $this->class_id,
                     'section_id'      => $sectionId,
                     'subject_id'      => $this->subject_id,
@@ -228,11 +241,16 @@ class HomeworkAddComponent extends Component
 
     public function render()
     {
-        $classes = AcademicClass::whereIn('id', AcademicClassAssign::distinct()->pluck('class_id'))
+        $classes = AcademicClass::where('institution_id', institution()->id)
+            ->whereIn('id', AcademicClassAssign::where('institution_id', institution()->id)->distinct()->pluck('class_id'))
             ->orderBy('name')
             ->get();
 
-        $teachers = Employee::orderBy('name')->get(['id', 'name']);
+        $teachers = User::where('institution_id', institution()->id)
+            ->where('role', User::ROLE_TEACHER)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name']);
 
         return view('livewire.admin.homework.homework-add-component')
             ->with('classes', $classes)

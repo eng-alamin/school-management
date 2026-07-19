@@ -20,7 +20,13 @@
                     <select wire:model.live="filterExam" class="form-select">
                         <option value="">Select Exam</option>
                         @foreach ($exams as $item)
-                            <option value="{{ $item->id }}">{{ $item->name }}</option>
+                            <option value="{{ $item->id }}">
+                                {{ $item->name }}
+                                @if($item->classAssign)
+                                    — {{ $item->classAssign->class->name ?? '' }}
+                                    @if($item->classAssign->section) ({{ $item->classAssign->section->name }}) @endif
+                                @endif
+                            </option>
                         @endforeach
                     </select>
                 </div>

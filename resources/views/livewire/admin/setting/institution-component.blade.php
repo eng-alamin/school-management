@@ -78,35 +78,6 @@
                     @error('address') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
 
-                <!-- Language -->
-                <div class="col-md-6">
-                    <div class="input-group input-group-outline" wire:ignore>
-                        <label class="form-label">Language <span class="req">*</span></label>
-                        <select wire:model="language" class="form-select">
-                            <option value="English">English</option>
-                            <option value="Bangla">Bangla</option>
-                            <option value="Arabic">Arabic</option>
-                            <option value="Hindi">Hindi</option>
-                            <option value="Urdu">Urdu</option>
-                            <option value="French">French</option>
-                        </select>
-                    </div>
-                    @error('language') <span class="text-danger">{{ $message }}</span> @enderror
-                </div>
-
-                <!-- Timezone -->
-                <div class="col-md-6">
-                    <div class="input-group input-group-outline" wire:ignore>
-                        <label class="form-label">Timezone <span class="req">*</span></label>
-                        <select wire:model="timezone" class="form-select">
-                            @foreach(\DateTimeZone::listIdentifiers() as $tz)
-                                <option value="{{ $tz }}">{{ $tz }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    @error('timezone') <span class="text-danger">{{ $message }}</span> @enderror
-                </div>
-
                 <!-- Weekends — selectpicker (subjects pattern) -->
                 <div class="col-md-12">
                     <label class="form-label">Weekends</label>
@@ -151,14 +122,6 @@
                         </div>
                     </div>
                     @error('unique_roll') <span class="text-danger">{{ $message }}</span> @enderror
-                </div>
-
-                <!-- Teacher Restricted -->
-                <div class="col-md-12">
-                    <div class="form-check mt-1">
-                        <input wire:model="teacher_restricted" class="form-check-input" type="checkbox" id="teacherRestricted">
-                        <label class="form-check-label" for="teacherRestricted">Teacher Restricted</label>
-                    </div>
                 </div>
 
             </div>
@@ -226,32 +189,6 @@
         </div>
     </div>
 
-    <!-- ══ OFFLINE PAYMENTS SETTING ══ -->
-    <div class="mat-card" style="padding-top:28px; margin-bottom:24px">
-
-        <div class="mat-card-header header-pink-gradient">
-            <h5>
-                <span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">account_balance_wallet</span>
-                Offline Payments Setting
-            </h5>
-        </div>
-
-        <div class="form-section">
-            <div class="row g-4">
-                <div class="col-md-6">
-                    <div class="input-group input-group-outline" wire:ignore>
-                        <label class="form-label">Offline Payments</label>
-                        <select wire:model="offline_payment_enabled" class="form-select">
-                            <option value="1">Enabled</option>
-                            <option value="0">Disabled</option>
-                        </select>
-                    </div>
-                    @error('offline_payment_enabled') <span class="text-danger">{{ $message }}</span> @enderror
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- ══ ONLINE EXAM ══ -->
     <div class="mat-card" style="padding-top:28px; margin-bottom:24px">
 
@@ -307,43 +244,6 @@
                         <input wire:model="due_fees_calculation_with_fine" class="form-check-input"
                                type="checkbox" id="dueFeesWithFine">
                         <label class="form-check-label" for="dueFeesWithFine">Due Fees Calculation With Fine</label>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </div>
-
-    <!-- ══ AUTOMATICALLY GENERATE LOGIN DETAILS ══ -->
-    <div class="mat-card" style="padding-top:28px; margin-bottom:24px">
-
-        <div class="mat-card-header header-pink-gradient">
-            <h5>
-                <span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">manage_accounts</span>
-                Automatically Generate Login Details
-            </h5>
-        </div>
-
-        <div class="form-section">
-            <div class="row g-4">
-
-                <div class="col-md-12">
-                    <div class="form-check mt-1">
-                        <input wire:model="auto_generate_student_login" class="form-check-input"
-                               type="checkbox" id="autoStudentLogin">
-                        <label class="form-check-label" for="autoStudentLogin">
-                            Automatically Generate Student Login Details.
-                        </label>
-                    </div>
-                </div>
-
-                <div class="col-md-12">
-                    <div class="form-check mt-1">
-                        <input wire:model="auto_generate_guardian_login" class="form-check-input"
-                               type="checkbox" id="autoGuardianLogin">
-                        <label class="form-check-label" for="autoGuardianLogin">
-                            Automatically Generate Guardian Login Details.
-                        </label>
                     </div>
                 </div>
 

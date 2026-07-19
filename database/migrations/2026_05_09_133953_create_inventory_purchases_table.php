@@ -16,11 +16,13 @@ return new class extends Migration
             $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
             $table->foreignId('supplier_id')->constrained('inventory_suppliers')->cascadeOnDelete();
             $table->foreignId('store_id')->constrained('inventory_stores')->cascadeOnDelete();
-            $table->string('bill_no')->unique();
+            $table->string('bill_no');
             $table->enum('purchase_status', ['pending','ordered','completed','received','cancelled'])->default('pending');
             $table->date('date');
             $table->decimal('net_total', 15, 2)->default(0);
             $table->text('remarks')->nullable();
+
+            $table->unique(['institution_id', 'bill_no']);
             $table->timestamps();
         });
     }

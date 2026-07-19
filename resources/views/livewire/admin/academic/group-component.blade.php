@@ -54,6 +54,7 @@
                             <th id="th-name" wire:click="sortBy('name')" style="cursor:pointer">
                                 Name @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
+                            <th id="th-status">Status</th>
                             <th id="th-actions">Actions</th>
                         </tr>
                     </thead>
@@ -63,11 +64,21 @@
                             <td class="text-muted">{{ $groups->firstItem() + $i }}</td>
                             <td>{{ $group->name }}</td>
                             <td>
+                                @if($group->is_current)
+                                    <span class="badge bg-success">Current</span>
+                                @else
+                                    <span class="badge bg-secondary">Inactive</span>
+                                @endif
+                            </td>
+                            <td>
                                 <div class="d-flex gap-1">
                                     <button class="act-btn edit" title="Edit" wire:click="openEdit({{ $group->id }})">
                                         <span class="material-icons-round">drive_file_rename_outline</span>
                                     </button>
-                                    <button class="act-btn delete" title="Delete" wire:click="confirmDeleteRecord({{ $group->id }})">
+                                    <button class="act-btn delete" title="Delete"
+                                        wire:click="confirmDeleteRecord({{ $group->id }})"
+                                        @if($group->is_current) disabled title="Current group cannot be deleted" @endif
+                                        style="{{ $group->is_current ? 'opacity:.4;cursor:not-allowed;pointer-events:none;' : '' }}">
                                         <span class="material-icons-round">delete</span>
                                     </button>
                                 </div>
@@ -75,7 +86,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="3" class="text-center py-5 text-muted">
+                            <td colspan="4" class="text-center py-5 text-muted">
                                 <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
                                 No groups found. <a href="#" wire:click.prevent="openCreate">Create one now</a>.
                             </td>
@@ -103,13 +114,22 @@
                         <button type="button" class="btn-close" wire:click="$set('showModal', false)"></button>
                     </div>
                     <div class="modal-body">
-                        <div class="row g-3">
-                            <div class="col-md-12">
-                                <label class="form-label">Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model.defer="name" placeholder="e.g. Science">
-                                @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        <form wire:submit.prevent="save">
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    <label class="form-label">Name <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model.defer="name" placeholder="e.g. Science">
+                                    @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </div>
+
+                                <div class="col-md-12">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="isCurrentCheck" wire:model.defer="is_current">
+                                        <label class="form-check-label" for="isCurrentCheck">Current</label>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+                        </form>
                     </div>
                     <div class="modal-footer border-0">
                         <button type="button" class="btn btn-light" wire:click="$set('showModal', false)">Cancel</button>

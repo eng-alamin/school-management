@@ -137,6 +137,24 @@ if (localStorage.getItem("darkMode") === "1") {
 }
 
 /* ═══════════════════════════════════════
+   PRIVACY MODE
+═══════════════════════════════════════ */
+function togglePrivacy() {
+    const isPrivate = document.body.classList.toggle("privacy-mode");
+    const sw = document.getElementById("privacyModeSwitch");
+    if (sw) sw.checked = isPrivate;
+    localStorage.setItem("privacyMode", isPrivate ? "1" : "0");
+}
+if (localStorage.getItem("privacyMode") === "1") {
+    document.body.classList.add("privacy-mode");
+    // sync switch after DOM ready
+    window.addEventListener("DOMContentLoaded", () => {
+        const sw = document.getElementById("privacyModeSwitch");
+        if (sw) sw.checked = true;
+    });
+}
+
+/* ═══════════════════════════════════════
    TOPNAV DROPDOWNS
 ═══════════════════════════════════════ */
 function toggleDropdown(id, e) {

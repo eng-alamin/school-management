@@ -17,7 +17,7 @@ class DepositAddComponent extends Component
 
     public $account_id = '';
     public $head_id = '';
-    public $pay_via = '';
+    public $pay_via = 'cash';
     public $reference = '';
     public $amount = '';
     public $date = '';
@@ -27,6 +27,7 @@ class DepositAddComponent extends Component
     public function mount()
     {
         $this->date = now()->format('Y-m-d');
+
     }
 
     public function resetForm()

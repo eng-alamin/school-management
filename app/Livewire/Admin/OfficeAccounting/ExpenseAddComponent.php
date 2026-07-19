@@ -17,7 +17,7 @@ class ExpenseAddComponent extends Component
 
     public $account_id = '';
     public $head_id = '';
-    public $pay_via = '';
+    public $pay_via = 'cash';
     public $reference = '';
     public $amount = '';
     public $date = '';

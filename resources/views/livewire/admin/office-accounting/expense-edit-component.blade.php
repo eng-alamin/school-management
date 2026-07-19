@@ -53,11 +53,11 @@
                         <label class="form-label">Pay Via</label>
                         <select wire:model="pay_via" class="form-select" id="payViaSelect">
                             <option value="">Select</option>
-                            <option value="Cash" @selected($pay_via == 'Cash')>Cash</option>
-                            <option value="Bank Transfer" @selected($pay_via == 'Bank Transfer')>Bank Transfer</option>
-                            <option value="Cheque" @selected($pay_via == 'Cheque')>Cheque</option>
-                            <option value="Mobile Banking" @selected($pay_via == 'Mobile Banking')>Mobile Banking</option>
-                            <option value="Card" @selected($pay_via == 'Card')>Card</option>
+                            <option value="cash" @selected($pay_via == 'cash')>Cash</option>
+                            <option value="card" @selected($pay_via == 'card')>Card</option>
+                            <option value="bank" @selected($pay_via == 'bank')>Bank</option>
+                            <option value="cheque" @selected($pay_via == 'cheque')>Cheque</option>
+                            <option value="mobile_banking" @selected($pay_via == 'mobile_banking')>Mobile Banking</option>
                         </select>
                     </div>
                     @error('pay_via') <span class="text-danger">{{ $message }}</span> @enderror

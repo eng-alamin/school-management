@@ -244,7 +244,8 @@
                                     @if($alreadyPaid) disabled @endif>
                                 <option value="">Select</option>
                                 <option value="cash">Cash</option>
-                                <option value="bank">Bank Transfer</option>
+                                <option value="card">Card</option>
+                                <option value="bank">Bank</option>
                                 <option value="cheque">Cheque</option>
                                 <option value="mobile_banking">Mobile Banking</option>
                             </select>

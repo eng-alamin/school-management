@@ -31,7 +31,7 @@ return new class extends Migration
                 $table->decimal('net_salary', 15, 2)->default(0);
 
                 $table->date('payment_date')->nullable();
-                $table->enum('payment_method', ['cash','bank','cheque','mobile_banking'])->default('cash');
+                $table->enum('payment_method', ['cash', 'card', 'bank','cheque','mobile_banking'])->default('cash');
                 $table->foreignId('account_id')->nullable()->constrained('office_accounts')->nullOnDelete();
                 $table->string('transaction_id')->nullable();
                 $table->enum('status', ['paid','unpaid','partial'])->default('unpaid');

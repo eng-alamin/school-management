@@ -53,8 +53,14 @@
                     <label class="form-label">Exam</label>
                     <select wire:model.lazy="filterExam" class="form-select">
                         <option value="">Select Exam</option>
-                        @foreach($exams as $exam)
-                            <option value="{{ $exam->id }}">{{ $exam->name }}</option>
+                        @foreach ($exams as $item)
+                            <option value="{{ $item->id }}">
+                                {{ $item->name }}
+                                @if($item->classAssign)
+                                    — {{ $item->classAssign->class->name ?? '' }}
+                                    @if($item->classAssign->section) ({{ $item->classAssign->section->name }}) @endif
+                                @endif
+                            </option>
                         @endforeach
                     </select>
                 </div>

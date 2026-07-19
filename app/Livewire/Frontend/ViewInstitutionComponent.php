@@ -249,6 +249,8 @@ class ViewInstitutionComponent extends Component
      * TODO (Dynamic Plan): ভবিষ্যতে `institutions` টেবিলে বা আলাদা
      * `admission_settings` টেবিলে (institution_id, is_open, fee_min, fee_max,
      * apply_mode, documents_json) কলাম যোগ করে এখান থেকে fetch করতে হবে।
+     * `documents` এর প্রতিটা item-এ 'bn' ও 'en' দুইটা key thakle Blade আর কোনো
+     * পরিবর্তন লাগবে না।
      */
     public function getAdmissionProperty(): array
     {
@@ -258,10 +260,10 @@ class ViewInstitutionComponent extends Component
             'fee_max'    => 1500,
             'apply_mode' => 'online', // online | offline | both
             'documents'  => [
-                'জন্ম নিবন্ধন সনদের কপি',
-                'পূর্ববর্তী স্কুলের প্রত্যায়নপত্র (যদি থাকে)',
-                'অভিভাবকের জাতীয় পরিচয়পত্রের কপি',
-                'সাম্প্রতিক তোলা ২ কপি ছবি',
+                ['bn' => 'জন্ম নিবন্ধন সনদের কপি', 'en' => 'Copy of Birth Registration Certificate'],
+                ['bn' => 'পূর্ববর্তী স্কুলের প্রত্যায়নপত্র (যদি থাকে)', 'en' => 'Transfer Certificate from Previous School (if any)'],
+                ['bn' => 'অভিভাবকের জাতীয় পরিচয়পত্রের কপি', 'en' => "Copy of Guardian's National ID Card"],
+                ['bn' => 'সাম্প্রতিক তোলা ২ কপি ছবি', 'en' => '2 Recent Passport-size Photographs'],
             ],
         ];
     }

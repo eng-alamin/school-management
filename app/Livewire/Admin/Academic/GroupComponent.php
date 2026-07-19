@@ -26,11 +26,13 @@ class GroupComponent extends Component
     // Form
     public ?int $editId = null;
     public string $name = '';
+    public bool $is_current = true;
 
     protected function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
+            'name'      => 'required|string|max:255|unique:academic_groups,name,' . $this->editId . ',id,institution_id,' . institution()->id,
+            'is_current' => 'boolean',
         ];
     }
 
@@ -60,9 +62,12 @@ class GroupComponent extends Component
 
     public function openEdit(int $id): void
     {
-        $record = AcademicGroup::findOrFail($id);
+        $record = AcademicGroup::where('institution_id', institution()->id)
+            ->findOrFail($id);
+
         $this->editId    = $id;
         $this->name      = $record->name;
+        $this->is_current = (bool) $record->is_current;
         $this->showModal = true;
     }
 
@@ -70,12 +75,33 @@ class GroupComponent extends Component
     {
         $this->validate();
 
+        $data = [
+            'name'      => $this->name,
+            'is_current' => $this->is_current,
+        ];
+
         if ($this->editId) {
-            AcademicGroup::findOrFail($this->editId)->update(['name' => $this->name]);
+            AcademicGroup::where('institution_id', institution()->id)
+                ->findOrFail($this->editId)
+                ->update($data);
+
+            $savedId = $this->editId;
             $this->dispatch('toast', type: 'success', message: 'Data updated successfully!');
         } else {
-            AcademicGroup::create(['name' => $this->name]);
+            $data['institution_id'] = institution()->id;
+
+            $record  = AcademicGroup::create($data);
+            $savedId = $record->id;
+
             $this->dispatch('toast', type: 'success', message: 'Data created successfully!');
+        }
+
+        // current = true হলে একই institution-এর বাকি সব group inactive হয়ে যাবে
+        if ($this->is_current) {
+            AcademicGroup::where('institution_id', institution()->id)
+                ->where('id', '!=', $savedId)
+                ->where('is_current', true)
+                ->update(['is_current' => false]);
         }
 
         $this->showModal = false;
@@ -90,7 +116,10 @@ class GroupComponent extends Component
 
     public function deleteRecord(): void
     {
-        AcademicGroup::findOrFail($this->deleteId)->delete();
+        AcademicGroup::where('institution_id', institution()->id)
+            ->findOrFail($this->deleteId)
+            ->delete();
+
         $this->confirmDelete = false;
         $this->deleteId      = null;
         $this->dispatch('toast', type: 'success', message: 'Data deleted successfully!');
@@ -99,18 +128,20 @@ class GroupComponent extends Component
     private function resetForm(): void
     {
         $this->reset(['name', 'editId']);
+        $this->is_current = true;
         $this->resetValidation();
     }
 
     public function render()
     {
         $groups = AcademicGroup::query()
+            ->where('institution_id', institution()->id)
             ->when($this->search, fn($q) => $q->where('name', 'like', "%{$this->search}%"))
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
         return view('livewire.admin.academic.group-component')
-        ->with('groups', $groups)
+            ->with('groups', $groups)
             ->layout('layouts.admin.app', [
                 'title' => 'Groups | ' . institution()->name,
             ]);

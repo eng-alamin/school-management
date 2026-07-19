@@ -93,7 +93,7 @@
                 <div class="col-md-6">
                         <div class="input-group input-group-outline">
                         <label class="form-label">Full Name <span class="req">*</span></label>
-                        <input type="text" wire:model="name" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
+                        <input type="text" wire:model.live.debounce.500ms="name" class="form-control" placeholder=" " autocomplete="off" onfocus="focused(this)" onfocusout="defocused(this)">
                         @error('name') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
                 </div>
@@ -203,14 +203,18 @@
             <div class="col-md-6">
                 <div class="input-group input-group-outline">
                     <label class="form-label">Username <span class="req">*</span></label>
-                    <input type="text" wire:model="username" class="form-control" onfocus="focused(this)" onfocusout="defocused(this)">
+                    <input type="text" wire:model.live.debounce.500ms="username" class="form-control" autocomplete="off" onfocus="focused(this)" onfocusout="defocused(this)">
                     @error('username') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
+                <button type="button" class="btn-outline" style="margin-top:6px;font-size:.72rem;padding:4px 10px" wire:click="enableUsernameAutoSuggest">
+                    <span class="material-icons-round" style="font-size:14px;vertical-align:middle">autorenew</span>
+                    Suggest from Name
+                </button>
             </div>
             <div class="col-md-6">
                 <div class="input-group input-group-outline">
                     <label class="form-label">Password</label>
-                    <input type="password" wire:model="password" class="form-control" placeholder="Leave blank to keep current password" onfocus="focused(this)" onfocusout="defocused(this)">
+                    <input type="password" wire:model="password" class="form-control" placeholder="" autocomplete="new-password" onfocus="focused(this)" onfocusout="defocused(this)">
                     @error('password') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
             </div>
@@ -252,7 +256,7 @@
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
                         <label class="form-label">Name <span class="req">*</span></label>
-                        <input type="text" wire:model="guardian_name" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
+                        <input type="text" wire:model.live.debounce.500ms="guardian_name" class="form-control" placeholder=" " autocomplete="off" onfocus="focused(this)" onfocusout="defocused(this)">
                         @error('guardian_name') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
                 </div>
@@ -341,14 +345,18 @@
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
                         <label class="form-label">Username <span class="req">*</span></label>
-                        <input type="text" wire:model="guardian_username" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
+                        <input type="text" wire:model.live.debounce.500ms="guardian_username" class="form-control" placeholder=" " autocomplete="off" onfocus="focused(this)" onfocusout="defocused(this)">
                         @error('guardian_username') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
+                    <button type="button" class="btn-outline" style="margin-top:6px;font-size:.72rem;padding:4px 10px" wire:click="enableGuardianUsernameAutoSuggest">
+                        <span class="material-icons-round" style="font-size:14px;vertical-align:middle">autorenew</span>
+                        Suggest from Name
+                    </button>
                 </div>
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
                         <label class="form-label">Password</label>
-                        <input type="password" wire:model="guardian_password" class="form-control" placeholder="Default: 1234" onfocus="focused(this)" onfocusout="defocused(this)">
+                        <input type="password" wire:model="guardian_password" class="form-control" placeholder="" autocomplete="new-password" onfocus="focused(this)" onfocusout="defocused(this)">
                         @error('guardian_password') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
                 </div>
@@ -469,12 +477,6 @@
                 });
 
                 // ── 4. Datepicker ──
-                // BUG FIX: age shudhu ".input-group-outline input[type=date]" diye query
-                // hoto, jeta shudhu PROTHOM matched date input (Admission Date) return
-                // korto. Fole "dob" er jonno dispatch kora event-o vulbhabe Admission
-                // Date input-ke target kore ditho. Ekhon PHP theke pathano "field"
-                // (wire:model attribute name) diye exact input খুঁজে বের করা হচ্ছে,
-                // tai Admission Date ar DOB dutai thikmoto আলাদাভাবে update hobe.
                 Livewire.on('date-updated', function (event) {
                     var data = Array.isArray(event) ? event[0] : event;
                     if (!data || !data.field) return;

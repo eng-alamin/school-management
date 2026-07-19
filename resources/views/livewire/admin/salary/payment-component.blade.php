@@ -135,9 +135,9 @@
                         {{-- Basic Salary: paid amount if paid, else assign amount --}}
                         <td>
                             @if($employee->salary_basic)
-                                ${{ number_format($employee->salary_basic, 2) }}
+                                ৳{{ number_format($employee->salary_basic, 2) }}
                             @elseif($employee->sa_basic)
-                                ${{ number_format($employee->sa_basic, 2) }}
+                                ৳{{ number_format($employee->sa_basic, 2) }}
                             @else
                                 —
                             @endif

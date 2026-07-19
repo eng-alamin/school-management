@@ -56,7 +56,6 @@ class ApplicationComponent extends Component
     // ── Role → Model class map ──
     // আলাদা model থাকলে এখানে map করো, যেমন: 'student' => \App\Models\Student::class
     protected array $roleModelMap = [
-        'admin'        => User::class,
         'teacher'      => User::class,
         'accountant'   => User::class,
         'staff'        => User::class,
@@ -139,7 +138,8 @@ class ApplicationComponent extends Component
         if (!$modelClass) return [];
 
         if ($modelClass === User::class) {
-            return $modelClass::where('role', $value)
+            return $modelClass::where('institution_id', institution()->id)
+                ->where('role', $value)
                 ->orderBy('name')
                 ->get(['id', 'name'])
                 ->toArray();

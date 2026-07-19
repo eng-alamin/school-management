@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('role')->nullable();
             $table->unsignedBigInteger('saleable_id');
             $table->string('saleable_type');
-            $table->string('bill_no')->unique();
+            $table->string('bill_no');
             $table->date('date');
             $table->decimal('sub_total', 15, 2)->default(0);
             $table->decimal('discount', 15, 2)->default(0);
@@ -27,6 +27,8 @@ return new class extends Migration
             $table->string('pay_via')->nullable();
             $table->enum('payment_status', ['paid','partial', 'due'])->default('due');
             $table->text('remarks')->nullable();
+
+            $table->unique(['institution_id', 'bill_no']);
             $table->timestamps();
         });
     }

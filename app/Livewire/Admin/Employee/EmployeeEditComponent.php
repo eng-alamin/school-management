@@ -8,6 +8,7 @@ use App\Models\EmployeeDepartment;
 use App\Models\EmployeeDesignation;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
@@ -46,6 +47,12 @@ class EmployeeEditComponent extends Component
     // Login Details
     public $username;
     public $password;
+
+    // ── Username auto-generate theke manually edit hoyeche kina track korar flag.
+    // Edit page e existing username DB theke pre-fill hoy, tai mount() e eta
+    // 'true' rakha hocche jate purono employee-er username accidentally
+    // overwrite na hoye jay (nahole tar login vengge jabe).
+    public bool $usernameManuallyEdited = true;
 
     // Bank Info
     public $bank_name;
@@ -90,6 +97,71 @@ class EmployeeEditComponent extends Component
         $this->bank_address = $this->employee->bank_address;
         $this->ifsc_code    = $this->employee->ifsc_code;
         $this->account_no   = $this->employee->account_no;
+    }
+
+    /**
+     * Name change hole -> Username auto-generate hobe, KINTU shudhu tokhoni
+     * jokhon usernameManuallyEdited flag manually 'false' kora hoyeche
+     * (mane user "Suggest" button diye notun suggestion cheyeche).
+     * Default e existing employee-er username protected thake.
+     */
+    public function updatedName($value): void
+    {
+        if (!$this->usernameManuallyEdited) {
+            $this->username = $this->generateUniqueUsername($value, $this->userId);
+        }
+    }
+
+    /**
+     * User Username field e hate diye change korle flag lock hoye jabe,
+     * jate porer name change eta overwrite na kore.
+     */
+    public function updatedUsername(): void
+    {
+        $this->usernameManuallyEdited = true;
+    }
+
+    /**
+     * Admin ইচ্ছাকৃতভাবে "Suggest" button click korle notun username
+     * suggest hobe current name theke, ebong pore Name change hole
+     * ar auto-update hobe.
+     */
+    public function enableUsernameAutoSuggest(): void
+    {
+        $this->usernameManuallyEdited = false;
+        $this->username = $this->generateUniqueUsername($this->name, $this->userId);
+    }
+
+    /**
+     * Name theke unique username slug generate kore.
+     * "Abc 123" -> "abc_123". Duplicate thakle "_1", "_2"... suffix add hobe.
+     * $ignoreUserId dile nijer current username-ke duplicate hisebe dhora hobe na.
+     */
+    private function generateUniqueUsername(?string $name, ?int $ignoreUserId = null): ?string
+    {
+        if (!$name || trim($name) === '') {
+            return null;
+        }
+
+        $base = Str::slug($name, '_');
+
+        if ($base === '') {
+            return null;
+        }
+
+        $username = $base;
+        $counter = 1;
+
+        while (
+            User::where('username', $username)
+                ->when($ignoreUserId, fn($q) => $q->where('id', '!=', $ignoreUserId))
+                ->exists()
+        ) {
+            $username = $base . '_' . $counter;
+            $counter++;
+        }
+
+        return $username;
     }
 
     public function rules()

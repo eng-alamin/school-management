@@ -8,6 +8,7 @@ use App\Models\EmployeeDepartment;
 use App\Models\EmployeeDesignation;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
@@ -40,6 +41,9 @@ class EmployeeAddComponent extends Component
     public $username;
     public $password;
 
+    // ── Username auto-generate theke manually edit hoyeche kina track korar flag ──
+    public bool $usernameManuallyEdited = false;
+
     // Bank Info
     public $bank_name;
     public $holder_name;
@@ -47,6 +51,52 @@ class EmployeeAddComponent extends Component
     public $bank_address;
     public $ifsc_code;
     public $account_no;
+
+    /**
+     * Name change hole -> Username auto-generate hobe,
+     * jodi user nijer hate Username field e already type na kore thake.
+     */
+    public function updatedName($value): void
+    {
+        if (!$this->usernameManuallyEdited) {
+            $this->username = $this->generateUniqueUsername($value);
+        }
+    }
+
+    /**
+     * User nijer hate Username field e type korle, auto-generate bondho hoye jabe.
+     */
+    public function updatedUsername(): void
+    {
+        $this->usernameManuallyEdited = true;
+    }
+
+    /**
+     * Name theke unique username slug generate kore.
+     * "Abc 123" -> "abc_123". Duplicate thakle "_1", "_2"... suffix add hobe.
+     */
+    private function generateUniqueUsername(?string $name): ?string
+    {
+        if (!$name || trim($name) === '') {
+            return null;
+        }
+
+        $base = Str::slug($name, '_');
+
+        if ($base === '') {
+            return null;
+        }
+
+        $username = $base;
+        $counter = 1;
+
+        while (User::where('username', $username)->exists()) {
+            $username = $base . '_' . $counter;
+            $counter++;
+        }
+
+        return $username;
+    }
 
     public function rules(): array
     {
@@ -77,6 +127,7 @@ class EmployeeAddComponent extends Component
     public function resetForm(): void
     {
         $this->reset();
+        $this->usernameManuallyEdited = false;
         $this->dispatch('form-reset');
     }
 

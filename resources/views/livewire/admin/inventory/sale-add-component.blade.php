@@ -255,7 +255,7 @@
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
                         <span style="font-size:.83rem;color:var(--muted);font-weight:600">Sub Total</span>
                         <div style="display:flex;align-items:center;gap:6px">
-                            <span style="font-size:.8rem;color:var(--muted);font-weight:600">$</span>
+                            <span style="font-size:.8rem;color:var(--muted);font-weight:600">৳</span>
                             <div style="background:var(--input-bg,#f8f9fa);border:1px solid var(--border,#e9ecef);border-radius:8px;padding:6px 12px;min-width:120px;text-align:right;font-size:.83rem;font-weight:600">
                                 {{ number_format($sub_total, 2) }}
                             </div>
@@ -266,7 +266,7 @@
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
                         <span style="font-size:.83rem;color:var(--muted);font-weight:600">Discount ( - )</span>
                         <div style="display:flex;align-items:center;gap:6px">
-                            <span style="font-size:.8rem;color:var(--muted);font-weight:600">$</span>
+                            <span style="font-size:.8rem;color:var(--muted);font-weight:600">৳</span>
                             <div style="background:var(--input-bg,#f8f9fa);border:1px solid var(--border,#e9ecef);border-radius:8px;padding:6px 12px;min-width:120px;text-align:right;font-size:.83rem;font-weight:600">
                                 {{ number_format($total_discount, 2) }}
                             </div>
@@ -277,7 +277,7 @@
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-top:10px;border-top:1px solid var(--border,#e9ecef)">
                         <span style="font-size:.85rem;font-weight:700">Net Payable</span>
                         <div style="display:flex;align-items:center;gap:6px">
-                            <span style="font-size:.8rem;color:var(--muted);font-weight:600">$</span>
+                            <span style="font-size:.8rem;color:var(--muted);font-weight:600">৳</span>
                             <div style="background:var(--input-bg,#f8f9fa);border:1px solid var(--border,#e9ecef);border-radius:8px;padding:6px 12px;min-width:120px;text-align:right;font-size:.85rem;font-weight:700;color:var(--primary,#e91e8c)">
                                 {{ number_format($net_payable, 2) }}
                             </div>

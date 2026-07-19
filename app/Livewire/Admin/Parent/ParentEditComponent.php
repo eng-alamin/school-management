@@ -6,6 +6,7 @@ use Livewire\Component;
 use App\Models\User;
 use App\Models\Guardian;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
@@ -37,6 +38,8 @@ class ParentEditComponent extends Component
     public $username;
     public $password;
 
+    public bool $usernameManuallyEdited = true;
+
     public function mount($id)
     {
         $this->guardianId = $id;
@@ -57,6 +60,51 @@ class ParentEditComponent extends Component
         $this->photo = $this->guardian->photo;
 
         $this->username = $this->guardian->user->username;
+    }
+
+    public function updatedName($value): void
+    {
+        if (!$this->usernameManuallyEdited) {
+            $this->username = $this->generateUniqueUsername($value, $this->userId);
+        }
+    }
+
+    public function updatedUsername(): void
+    {
+        $this->usernameManuallyEdited = true;
+    }
+
+    public function enableUsernameAutoSuggest(): void
+    {
+        $this->usernameManuallyEdited = false;
+        $this->username = $this->generateUniqueUsername($this->name, $this->userId);
+    }
+
+    private function generateUniqueUsername(?string $name, ?int $ignoreUserId = null): ?string
+    {
+        if (!$name || trim($name) === '') {
+            return null;
+        }
+
+        $base = Str::slug($name, '_');
+
+        if ($base === '') {
+            return null;
+        }
+
+        $username = $base;
+        $counter = 1;
+
+        while (
+            User::where('username', $username)
+                ->when($ignoreUserId, fn($q) => $q->where('id', '!=', $ignoreUserId))
+                ->exists()
+        ) {
+            $username = $base . '_' . $counter;
+            $counter++;
+        }
+
+        return $username;
     }
 
     public function rules()

@@ -336,7 +336,10 @@ class GenerateAdmitCardComponent extends Component
             ? AdmitCardTemplate::find($this->filterTemplate)
             : null;
 
-        $exams = ExamSetup::get();
+        $exams = ExamSetup::with('classAssign.class', 'classAssign.section')
+            ->whereHas('details')
+            ->orderBy('name')
+            ->get();
 
         return view('livewire.admin.card.generate-admit-card-component')
             ->with('templates', $templates)

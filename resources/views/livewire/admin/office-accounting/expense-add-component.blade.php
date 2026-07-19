@@ -45,11 +45,11 @@
                         <label class="form-label">Pay Via</label>
                         <select wire:model="pay_via" class="form-select">
                             <option value="">Select</option>
-                            <option value="Cash">Cash</option>
-                            <option value="Bank Transfer">Bank Transfer</option>
-                            <option value="Cheque">Cheque</option>
-                            <option value="Mobile Banking">Mobile Banking</option>
-                            <option value="Card">Card</option>
+                            <option value="cash" selected>Cash</option>
+                            <option value="card">Card</option>
+                            <option value="bank">Bank</option>
+                            <option value="cheque">Cheque</option>
+                            <option value="mobile_banking">Mobile Banking</option>
                         </select>
                     </div>
                     @error('pay_via') <span class="text-danger">{{ $message }}</span> @enderror

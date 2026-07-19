@@ -203,11 +203,9 @@ class EmployeeIdCardComponent extends Component
     public function getAvailableRoles(): array
     {
         return [
-            'admin',
             'teacher',
             'accountant',
-            'librarian',
-            'receptionist',
+            'staff',
         ];
     }
 

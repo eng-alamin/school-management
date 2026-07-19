@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 
 class SaleEditComponent extends Component
 {
- // ── Route model ──
+    // ── Route model ──
     public int $saleId;
 
     // ── Sale header fields ──
@@ -42,7 +42,7 @@ class SaleEditComponent extends Component
             'role'                    => 'required|string|in:student,teacher,staff,other',
             'class_id'                => 'nullable|integer',
             'saleable_id'             => 'required|integer',
-            'bill_no'                 => "required|string|max:255|unique:inventory_sales,bill_no,{$this->saleId}",
+            'bill_no'                 => 'required|string|max:255|unique:inventory_sales,bill_no,' . $this->saleId . ',id,institution_id,' . institution()->id,
             'date'                    => 'required|date',
             'received_amount'         => 'nullable|numeric|min:0',
             'pay_via'                 => 'nullable|string|max:100',
@@ -72,7 +72,9 @@ class SaleEditComponent extends Component
 
     public function mount(int $id): void
     {
-        $sale = InventorySale::with('items')->findOrFail($id);
+        $sale = InventorySale::with('items')
+            ->where('institution_id', institution()->id)
+            ->findOrFail($id);
 
         $this->saleId          = $sale->id;
         $this->role            = $sale->role ?? '';
@@ -86,7 +88,8 @@ class SaleEditComponent extends Component
 
         // Resolve class_id for student role
         if ($this->role === 'student') {
-            $student = Student::find($sale->saleable_id);
+            $student = Student::where('institution_id', institution()->id)
+                ->find($sale->saleable_id);
             $this->class_id = $student?->class_id ?? '';
         }
 
@@ -134,9 +137,11 @@ class SaleEditComponent extends Component
 
         // Auto-fill unit price when product is selected
         if ($field === 'product_id' && !empty($value)) {
-            $product = InventoryProduct::find($value);
+            $product = InventoryProduct::where('institution_id', institution()->id)
+                ->find($value);
+
             if ($product) {
-                $this->items[$index]['unit_price'] = $product->price ?? 0;
+                $this->items[$index]['unit_price'] = $product->sales_price ?? 0;
             }
         }
 
@@ -220,7 +225,8 @@ class SaleEditComponent extends Component
 
             $due = max(0, $this->net_payable - (float) $this->received_amount);
 
-            $sale = InventorySale::findOrFail($this->saleId);
+            $sale = InventorySale::where('institution_id', institution()->id)
+                ->findOrFail($this->saleId);
 
             $sale->update([
                 'role'            => $this->role,
@@ -245,31 +251,36 @@ class SaleEditComponent extends Component
                 ->values()
                 ->toArray();
 
-            // Delete removed items
+            // Delete removed items (scoped to this sale + institution)
             InventorySaleItem::where('sale_id', $sale->id)
+                ->where('institution_id', institution()->id)
                 ->whereNotIn('id', $keptIds)
                 ->delete();
 
             // Update existing / create new
             foreach ($this->items as $item) {
                 if (!empty($item['id'])) {
-                    InventorySaleItem::where('id', $item['id'])->update([
-                        'category_id' => $item['category_id'] ?: null,
-                        'product_id'  => $item['product_id'],
-                        'unit_price'  => $item['unit_price'],
-                        'quantity'    => $item['quantity'],
-                        'discount'    => $item['discount'] ?? 0,
-                        'total_price' => $item['total_price'],
-                    ]);
+                    InventorySaleItem::where('id', $item['id'])
+                        ->where('sale_id', $sale->id)
+                        ->where('institution_id', institution()->id)
+                        ->update([
+                            'category_id' => $item['category_id'] ?: null,
+                            'product_id'  => $item['product_id'],
+                            'unit_price'  => $item['unit_price'],
+                            'quantity'    => $item['quantity'],
+                            'discount'    => $item['discount'] ?? 0,
+                            'total_price' => $item['total_price'],
+                        ]);
                 } else {
                     InventorySaleItem::create([
-                        'sale_id'     => $sale->id,
-                        'category_id' => $item['category_id'] ?: null,
-                        'product_id'  => $item['product_id'],
-                        'unit_price'  => $item['unit_price'],
-                        'quantity'    => $item['quantity'],
-                        'discount'    => $item['discount'] ?? 0,
-                        'total_price' => $item['total_price'],
+                        'institution_id' => institution()->id,
+                        'sale_id'        => $sale->id,
+                        'category_id'    => $item['category_id'] ?: null,
+                        'product_id'     => $item['product_id'],
+                        'unit_price'     => $item['unit_price'],
+                        'quantity'       => $item['quantity'],
+                        'discount'       => $item['discount'] ?? 0,
+                        'total_price'    => $item['total_price'],
                     ]);
                 }
             }
@@ -285,18 +296,19 @@ class SaleEditComponent extends Component
 
         if ($this->role === 'student') {
             $saleables = Student::query()
+                ->where('institution_id', institution()->id)
                 ->when($this->class_id, fn($q) => $q->where('class_id', $this->class_id))
                 ->orderBy('name')
                 ->get(['id', 'name']);
         } elseif ($this->role === 'teacher') {
-            $saleables = User::where('institution_id', auth()->user()->institution_id)->where('role', 'teacher')->orderBy('name')->get(['id', 'name']);
+            $saleables = User::where('institution_id', institution()->id)->where('role', 'teacher')->orderBy('name')->get(['id', 'name']);
         } elseif ($this->role === 'staff') {
-            $saleables = User::where('institution_id', auth()->user()->institution_id)->where('role', 'staff')->orderBy('name')->get(['id', 'name']);
+            $saleables = User::where('institution_id', institution()->id)->where('role', 'staff')->orderBy('name')->get(['id', 'name']);
         }
 
         return view('livewire.admin.inventory.sale-edit-component', [
-            'categories' => InventoryCategory::with('products')->orderBy('name')->get(),
-            'classes'    => AcademicClass::orderBy('name')->get(),
+            'categories' => InventoryCategory::where('institution_id', institution()->id)->with('products')->orderBy('name')->get(),
+            'classes'    => AcademicClass::where('institution_id', institution()->id)->orderBy('name')->get(),
             'saleables'  => $saleables,
         ])->layout('layouts.admin.app', [
             'title' => 'Edit Sale | ' . institution()->name,

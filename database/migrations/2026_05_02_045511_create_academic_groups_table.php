@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
             $table->string('name');
+            $table->boolean('is_current')->default(true);
             $table->timestamps();
         });
     }

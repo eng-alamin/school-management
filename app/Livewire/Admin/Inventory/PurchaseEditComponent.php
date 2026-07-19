@@ -34,7 +34,7 @@ class PurchaseEditComponent extends Component
         return [
             'supplier_id'              => 'required|integer|exists:inventory_suppliers,id',
             'store_id'                 => 'required|integer|exists:inventory_stores,id',
-            'bill_no'                  => "required|string|max:255|unique:inventory_purchases,bill_no,{$this->purchaseId}",
+            'bill_no'                  => 'required|string|max:255|unique:inventory_purchases,bill_no,' . $this->purchaseId . ',id,institution_id,' . institution()->id,
             'purchase_status'          => 'required|in:pending,ordered,completed,received,cancelled',
             'date'                     => 'required|date',
             'remarks'                  => 'nullable|string|max:1000',
@@ -60,7 +60,9 @@ class PurchaseEditComponent extends Component
 
     public function mount(int $id): void
     {
-        $purchase = InventoryPurchase::with('items')->findOrFail($id);
+        $purchase = InventoryPurchase::with('items')
+            ->where('institution_id', institution()->id)
+            ->findOrFail($id);
 
         $this->purchaseId      = $purchase->id;
         $this->supplier_id     = $purchase->supplier_id;
@@ -112,7 +114,9 @@ class PurchaseEditComponent extends Component
         $field = $parts[1] ?? '';
 
         if ($field === 'product_id' && !empty($value)) {
-            $product = InventoryProduct::find($value);
+            $product = InventoryProduct::where('institution_id', institution()->id)
+                ->find($value);
+
             if ($product) {
                 $this->items[$index]['unit_price'] = $product->purchase_price;
             }
@@ -146,7 +150,8 @@ class PurchaseEditComponent extends Component
 
         DB::transaction(function () {
 
-            $purchase = InventoryPurchase::findOrFail($this->purchaseId);
+            $purchase = InventoryPurchase::where('institution_id', institution()->id)
+                ->findOrFail($this->purchaseId);
 
             $purchase->update([
                 'supplier_id'     => $this->supplier_id,
@@ -165,8 +170,9 @@ class PurchaseEditComponent extends Component
                 ->values()
                 ->toArray();
 
-            // Form থেকে বাদ দেওয়া item-গুলো DB থেকে delete করো
+            // Form থেকে বাদ দেওয়া item-গুলো DB থেকে delete করো (শুধু এই purchase-এর, institution-scoped)
             InventoryPurchaseItem::where('purchase_id', $purchase->id)
+                ->where('institution_id', institution()->id)
                 ->whereNotIn('id', $keptIds)
                 ->delete();
 
@@ -174,6 +180,8 @@ class PurchaseEditComponent extends Component
             foreach ($this->items as $item) {
                 if (!empty($item['id'])) {
                     InventoryPurchaseItem::where('id', $item['id'])
+                        ->where('purchase_id', $purchase->id)
+                        ->where('institution_id', institution()->id)
                         ->update([
                             'product_id'  => $item['product_id'],
                             'unit_price'  => $item['unit_price'],
@@ -183,12 +191,13 @@ class PurchaseEditComponent extends Component
                         ]);
                 } else {
                     InventoryPurchaseItem::create([
-                        'purchase_id' => $purchase->id,
-                        'product_id'  => $item['product_id'],
-                        'unit_price'  => $item['unit_price'],
-                        'quantity'    => $item['quantity'],
-                        'discount'    => $item['discount'] ?? 0,
-                        'total_price' => $item['total_price'],
+                        'institution_id' => institution()->id,
+                        'purchase_id'    => $purchase->id,
+                        'product_id'     => $item['product_id'],
+                        'unit_price'     => $item['unit_price'],
+                        'quantity'       => $item['quantity'],
+                        'discount'       => $item['discount'] ?? 0,
+                        'total_price'    => $item['total_price'],
                     ]);
                 }
             }
@@ -200,9 +209,9 @@ class PurchaseEditComponent extends Component
     public function render()
     {
         return view('livewire.admin.inventory.purchase-edit-component', [
-            'suppliers' => InventorySupplier::orderBy('name')->get(),
-            'stores'    => InventoryStore::orderBy('name')->get(),
-            'products'  => InventoryProduct::orderBy('name')->get(),
+            'suppliers' => InventorySupplier::where('institution_id', institution()->id)->orderBy('name')->get(),
+            'stores'    => InventoryStore::where('institution_id', institution()->id)->orderBy('name')->get(),
+            'products'  => InventoryProduct::where('institution_id', institution()->id)->orderBy('name')->get(),
         ])->layout('layouts.admin.app', [
             'title' => 'Edit Purchase | ' . institution()->name,
         ]);

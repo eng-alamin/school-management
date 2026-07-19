@@ -24,7 +24,6 @@ class PaymentComponent extends Component
 
     // ── Roles map ─────────────────────────────────────────────────
     public array $roles = [
-        'admin'      => 'Admin',
         'teacher'    => 'Teacher',
         'accountant' => 'Accountant',
         'staff'      => 'Staff',

@@ -21,7 +21,6 @@
                         <label class="form-label"><span id="emp-edit-lbl-role">Role</span> <span class="req">*</span></label>
                         <select wire:model="role" class="form-select">
                             <option value="">Select Role</option>
-                            <option value="admin">Admin</option>
                             <option value="teacher">Teacher</option>
                             <option value="accountant">Accountant</option>
                             <option value="staff">Staff</option>

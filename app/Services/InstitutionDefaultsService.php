@@ -149,19 +149,25 @@ class InstitutionDefaultsService
             'is_current' => true,
         ]);
     }
-    private static function createAcademicGroups(Institution $institution): void
+     private static function createAcademicGroups(Institution $institution): void
     {
         $groups = [
-            'Science',
-            'Business Studies',
-            'Humanities',
+            'General'          => true,
+            'Science'          => false,
+            'Business Studies' => false,
+            'Humanities'       => false,
         ];
-
-        foreach ($groups as $group) {
-            AcademicGroup::firstOrCreate([
-                'institution_id' => $institution->id,
-                'name' => $group,
-            ]);
+ 
+        foreach ($groups as $name => $isCurrent) {
+            AcademicGroup::firstOrCreate(
+                [
+                    'institution_id' => $institution->id,
+                    'name'           => $name,
+                ],
+                [
+                    'is_current' => $isCurrent,
+                ]
+            );
         }
     }
     private static function createAcademicSections(Institution $institution): void
@@ -169,14 +175,6 @@ class InstitutionDefaultsService
         $sections = [
             'A',
             'B',
-            'C',
-            'D',
-            'E',
-            'F',
-            'G',
-            'H',
-            'I',
-            'J',
         ];
 
         foreach ($sections as $section) {
@@ -201,20 +199,14 @@ class InstitutionDefaultsService
             'Social Science',
             'History',
             'Geography',
-            'Civics',
             'Economics',
             'Accounting',
             'Business Studies',
             'Finance and Banking',
             'Agriculture',
             'Islam and Moral Education',
-            'Hindu Religion and Moral Education',
-            'Buddhist Religion and Moral Education',
-            'Christian Religion and Moral Education',
             'Physical Education',
             'Arts and Crafts',
-            'Music',
-            'Career Education',
         ];
 
         foreach ($subjects as $subject) {

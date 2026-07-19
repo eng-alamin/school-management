@@ -71,5 +71,26 @@ Route::middleware('auth:sanctum')->group(function () {
         // Event
         Route::get('events/form-data', [App\Http\Controllers\Api\Admin\Event\EventController::class, 'formData']);
         Route::apiResource('events', App\Http\Controllers\Api\Admin\Event\EventController::class);
+
+        Route::prefix('mailbox')->group(function () {
+            Route::get('inbox', [App\Http\Controllers\Api\Admin\Mailbox\MailboxController::class, 'inbox']);
+            Route::get('sent', [App\Http\Controllers\Api\Admin\Mailbox\MailboxController::class, 'sent']);
+            Route::get('important', [App\Http\Controllers\Api\Admin\Mailbox\MailboxController::class, 'important']);
+            Route::get('trash', [App\Http\Controllers\Api\Admin\Mailbox\MailboxController::class, 'trash']);
+            Route::get('unread-count', [App\Http\Controllers\Api\Admin\Mailbox\MailboxController::class, 'unreadCount']);
+            Route::get('users-search', [App\Http\Controllers\Api\Admin\Mailbox\MailboxController::class, 'searchUsers']);
+            Route::delete('empty-trash', [App\Http\Controllers\Api\Admin\Mailbox\MailboxController::class, 'emptyTrash']);
+
+            Route::get('{id}', [App\Http\Controllers\Api\Admin\Mailbox\MailboxController::class, 'show']);
+            Route::post('/', [App\Http\Controllers\Api\Admin\Mailbox\MailboxController::class, 'store']);
+            Route::post('{id}/reply', [App\Http\Controllers\Api\Admin\Mailbox\MailboxController::class, 'reply']);
+            Route::patch('{id}/toggle-important', [App\Http\Controllers\Api\Admin\Mailbox\MailboxController::class, 'toggleImportant']);
+            Route::patch('{id}/unmark-important', [App\Http\Controllers\Api\Admin\Mailbox\MailboxController::class, 'unmarkImportant']);
+            Route::patch('{id}/trash', [App\Http\Controllers\Api\Admin\Mailbox\MailboxController::class, 'moveToTrash']);
+            Route::patch('{id}/restore', [App\Http\Controllers\Api\Admin\Mailbox\MailboxController::class, 'restore']);
+            Route::delete('{id}/permanent', [App\Http\Controllers\Api\Admin\Mailbox\MailboxController::class, 'permanentDelete']);
+            Route::delete('{id}/sent', [App\Http\Controllers\Api\Admin\Mailbox\MailboxController::class, 'deleteSent']);
+        });
+        
     });
 });

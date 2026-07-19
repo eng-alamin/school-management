@@ -31,7 +31,7 @@ class PurchaseAddComponent extends Component
         return [
             'supplier_id'              => 'required|integer|exists:inventory_suppliers,id',
             'store_id'                 => 'required|integer|exists:inventory_stores,id',
-            'bill_no'                  => 'required|string|max:255|unique:inventory_purchases,bill_no',
+            'bill_no'                  => 'required|string|max:255|unique:inventory_purchases,bill_no,NULL,id,institution_id,' . institution()->id,
             'purchase_status'          => 'required|in:pending,ordered,completed,received,cancelled',
             'date'                     => 'required|date',
             'remarks'                  => 'nullable|string|max:1000',
@@ -62,13 +62,17 @@ class PurchaseAddComponent extends Component
         $this->addItem();
     }
 
-    // ── পরবর্তী bill number generate ──
+    // ── পরবর্তী bill number generate (নিজের institution-এর মধ্যে) ──
     private function generateBillNo(): string
     {
-        $last = InventoryPurchase::latest('id')->value('bill_no');
+        $last = InventoryPurchase::where('institution_id', institution()->id)
+            ->latest('id')
+            ->value('bill_no');
+
         $next = $last
             ? ((int) preg_replace('/\D/', '', $last)) + 1
             : 1;
+
         return 'BILL-' . str_pad($next, 4, '0', STR_PAD_LEFT);
     }
 
@@ -101,7 +105,9 @@ class PurchaseAddComponent extends Component
         $field = $parts[1] ?? '';
 
         if ($field === 'product_id' && !empty($value)) {
-            $product = InventoryProduct::find($value);
+            $product = InventoryProduct::where('institution_id', institution()->id)
+                ->find($value);
+
             if ($product) {
                 $this->items[$index]['unit_price'] = $product->purchase_price;
             }
@@ -136,6 +142,7 @@ class PurchaseAddComponent extends Component
         DB::transaction(function () {
 
             $purchase = InventoryPurchase::create([
+                'institution_id'  => institution()->id,
                 'supplier_id'     => $this->supplier_id,
                 'store_id'        => $this->store_id,
                 'bill_no'         => $this->bill_no,
@@ -147,12 +154,13 @@ class PurchaseAddComponent extends Component
 
             foreach ($this->items as $item) {
                 InventoryPurchaseItem::create([
-                    'purchase_id' => $purchase->id,
-                    'product_id'  => $item['product_id'],
-                    'unit_price'  => $item['unit_price'],
-                    'quantity'    => $item['quantity'],
-                    'discount'    => $item['discount'] ?? 0,
-                    'total_price' => $item['total_price'],
+                    'institution_id' => institution()->id,
+                    'purchase_id'    => $purchase->id,
+                    'product_id'     => $item['product_id'],
+                    'unit_price'     => $item['unit_price'],
+                    'quantity'       => $item['quantity'],
+                    'discount'       => $item['discount'] ?? 0,
+                    'total_price'    => $item['total_price'],
                 ]);
             }
         });
@@ -177,9 +185,9 @@ class PurchaseAddComponent extends Component
     public function render()
     {
         return view('livewire.admin.inventory.purchase-add-component', [
-            'suppliers' => InventorySupplier::orderBy('name')->get(),
-            'stores'    => InventoryStore::orderBy('name')->get(),
-            'products'  => InventoryProduct::orderBy('name')->get(),
+            'suppliers' => InventorySupplier::where('institution_id', institution()->id)->orderBy('name')->get(),
+            'stores'    => InventoryStore::where('institution_id', institution()->id)->orderBy('name')->get(),
+            'products'  => InventoryProduct::where('institution_id', institution()->id)->orderBy('name')->get(),
         ])->layout('layouts.admin.app', [
             'title' => 'Add Purchase | ' . institution()->name,
         ]);

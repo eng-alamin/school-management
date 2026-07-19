@@ -21,7 +21,6 @@
                         <label class="form-label"><span id="emp-add-lbl-role">Role</span> <span class="req">*</span></label>
                         <select wire:model="role" class="form-select">
                             <option value="">Select Role</option>
-                            <option value="admin">Admin</option>
                             <option value="teacher">Teacher</option>
                             <option value="accountant">Accountant</option>
                             <option value="staff">Staff</option>
@@ -100,7 +99,7 @@
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
                         <label class="form-label"><span id="emp-add-lbl-name">Name</span> <span class="req">*</span></label>
-                        <input type="text" wire:model="name" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
+                        <input type="text" wire:model.live.debounce.500ms="name" class="form-control" placeholder=" " autocomplete="off" onfocus="focused(this)" onfocusout="defocused(this)">
                     </div>
                     @error('name') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
@@ -189,7 +188,7 @@
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
                         <label class="form-label"><span id="emp-add-lbl-username">Username</span> <span class="req">*</span></label>
-                        <input type="text" wire:model="username" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
+                        <input type="text" wire:model.live.debounce.500ms="username" class="form-control" placeholder=" " autocomplete="off" onfocus="focused(this)" onfocusout="defocused(this)">
                     </div>
                     @error('username') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
@@ -197,7 +196,7 @@
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
                         <label class="form-label" id="emp-add-lbl-password">Password</label>
-                        <input type="password" wire:model="password" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
+                        <input type="password" wire:model="password" class="form-control" placeholder=" " autocomplete="new-password" onfocus="focused(this)" onfocusout="defocused(this)">
                     </div>
                     @error('password') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>

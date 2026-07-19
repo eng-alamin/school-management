@@ -24,7 +24,6 @@
                 <div>
                     <select class="form-select form-select-sm" wire:model.live="filterRole" style="width:150px;">
                         <option value="">Select Role</option>
-                        <option value="admin">Admin</option>
                         <option value="teacher">Teacher</option>
                         <option value="accountant">Accountant</option>
                         <option value="staff">Staff</option>
@@ -180,7 +179,6 @@
                                 <label class="form-label">Role <span class="text-danger">*</span></label>
                                 <select wire:model.live="role" class="form-select @error('role') is-invalid @enderror">
                                     <option value="">Select</option>
-                                    <option value="admin" @selected($role == 'admin')>Admin</option>
                                     <option value="teacher" @selected($role == 'teacher')>Teacher</option>
                                     <option value="accountant" @selected($role == 'accountant')>Accountant</option>
                                     <option value="staff" @selected($role == 'staff')>Staff</option>

@@ -27,7 +27,9 @@ class ExamComponent extends Component
     // Exam
     public function getExams()
     {
-        return ExamSetup::where('is_published', 1)
+        return ExamSetup::with('classAssign.class', 'classAssign.section')
+            ->whereHas('details')
+            ->where('is_published', 1)
             ->orderBy('name')
             ->get();
     }

@@ -39,7 +39,7 @@ class SaleAddComponent extends Component
             'role'                         => 'required|string|in:student,teacher,staff,other',
             'class_id'                     => 'nullable|integer',
             'saleable_id'                  => 'required|integer',
-            'bill_no'                      => 'required|string|max:255|unique:inventory_sales,bill_no',
+            'bill_no'                      => 'required|string|max:255|unique:inventory_sales,bill_no,NULL,id,institution_id,' . institution()->id,
             'date'                         => 'required|date',
             'received_amount'              => 'nullable|numeric|min:0',
             'pay_via'                      => 'nullable|string|max:100',
@@ -106,7 +106,9 @@ class SaleAddComponent extends Component
 
         // product_id select হলে sales_price এনে unit_price-এ বসাও
         if ($field === 'product_id' && !empty($value)) {
-            $product = InventoryProduct::find($value);
+            $product = InventoryProduct::where('institution_id', institution()->id)
+                ->find($value);
+
             if ($product) {
                 $this->items[$index]['unit_price'] = $product->sales_price;
             }
@@ -182,13 +184,17 @@ class SaleAddComponent extends Component
         return 'partial';
     }
 
-    // ── পরবর্তী bill number generate ──
+    // ── পরবর্তী bill number generate (নিজের institution-এর মধ্যে) ──
     private function generateBillNo(): string
     {
-        $last = InventorySale::latest('id')->value('bill_no');
+        $last = InventorySale::where('institution_id', institution()->id)
+            ->latest('id')
+            ->value('bill_no');
+
         $next = $last
             ? ((int) preg_replace('/\D/', '', $last)) + 1
             : 1;
+
         return 'BILL-' . str_pad($next, 4, '0', STR_PAD_LEFT);
     }
 
@@ -202,6 +208,7 @@ class SaleAddComponent extends Component
             $due = max(0, $this->net_payable - (float) $this->received_amount);
 
             $sale = InventorySale::create([
+                'institution_id'  => institution()->id,
                 'role'            => $this->role,
                 'saleable_id'     => $this->saleable_id,
                 'saleable_type'   => $this->saleableType(),
@@ -219,13 +226,14 @@ class SaleAddComponent extends Component
 
             foreach ($this->items as $item) {
                 InventorySaleItem::create([
-                    'sale_id'     => $sale->id,
-                    'category_id' => $item['category_id'] ?: null,
-                    'product_id'  => $item['product_id'],
-                    'unit_price'  => $item['unit_price'],
-                    'quantity'    => $item['quantity'],
-                    'discount'    => $item['discount'] ?? 0,
-                    'total_price' => $item['total_price'],
+                    'institution_id' => institution()->id,
+                    'sale_id'        => $sale->id,
+                    'category_id'    => $item['category_id'] ?: null,
+                    'product_id'     => $item['product_id'],
+                    'unit_price'     => $item['unit_price'],
+                    'quantity'       => $item['quantity'],
+                    'discount'       => $item['discount'] ?? 0,
+                    'total_price'    => $item['total_price'],
                 ]);
             }
         });
@@ -254,18 +262,19 @@ class SaleAddComponent extends Component
 
         if ($this->role === 'student') {
             $saleables = Student::query()
+                ->where('institution_id', institution()->id)
                 ->when($this->class_id, fn($q) => $q->where('class_id', $this->class_id))
                 ->orderBy('name')
                 ->get(['id', 'name']);
         } elseif ($this->role === 'teacher') {
-            $saleables = User::where('institution_id', auth()->user()->institution_id)->where('role', 'teacher')->orderBy('name')->get(['id', 'name']);
+            $saleables = User::where('institution_id', institution()->id)->where('role', 'teacher')->orderBy('name')->get(['id', 'name']);
         } elseif ($this->role === 'staff') {
-            $saleables = User::where('institution_id', auth()->user()->institution_id)->where('role', 'staff')->orderBy('name')->get(['id', 'name']);
+            $saleables = User::where('institution_id', institution()->id)->where('role', 'staff')->orderBy('name')->get(['id', 'name']);
         }
 
         return view('livewire.admin.inventory.sale-add-component', [
-            'categories' => InventoryCategory::with('products')->orderBy('name')->get(),
-            'classes'    => AcademicClass::orderBy('name')->get(),
+            'categories' => InventoryCategory::where('institution_id', institution()->id)->with('products')->orderBy('name')->get(),
+            'classes'    => AcademicClass::where('institution_id', institution()->id)->orderBy('name')->get(),
             'saleables'  => $saleables,
         ])->layout('layouts.admin.app', [
             'title' => 'Add Sale | ' . institution()->name,

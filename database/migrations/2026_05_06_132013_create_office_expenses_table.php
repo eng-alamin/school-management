@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('account_id')->constrained('office_accounts')->cascadeOnDelete();
             $table->foreignId('head_id')->nullable()->constrained('office_heads')->nullOnDelete();
             $table->string('voucher_no')->nullable();
-            $table->enum('pay_via', ['Cash', 'Bank Transfer', 'Cheque', 'Mobile Banking', 'Card'])->nullable();
+            $table->enum('pay_via', ['cash', 'card', 'bank', 'cheque', 'mobile_banking']);
             $table->string('reference')->nullable();
             $table->decimal('amount', 15, 2);
             $table->date('date');

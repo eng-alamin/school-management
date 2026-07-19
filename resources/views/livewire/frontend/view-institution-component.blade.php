@@ -456,7 +456,10 @@
                         </h6>
                         <ul class="small text-muted ps-3 mb-0">
                             @foreach($admission['documents'] as $document)
-                                <li>{{ $document }}</li>
+                                <li>
+                                    <span class="lang-bn">{{ $document['bn'] }}</span>
+                                    <span class="lang-en">{{ $document['en'] }}</span>
+                                </li>
                             @endforeach
                         </ul>
                     </div>

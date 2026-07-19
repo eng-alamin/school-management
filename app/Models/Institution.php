@@ -13,12 +13,8 @@ class Institution extends Model
 
     protected $casts = [
         'weekends'                       => 'array',
-        'teacher_restricted'             => 'boolean',
         'enable_registration_prefix'     => 'boolean',
-        'offline_payment_enabled'        => 'boolean',
         'due_fees_calculation_with_fine' => 'boolean',
-        'auto_generate_student_login'    => 'boolean',
-        'auto_generate_guardian_login'   => 'boolean',
         'status'                         => 'boolean',
     ];
 

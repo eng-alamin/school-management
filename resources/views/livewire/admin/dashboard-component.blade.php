@@ -19,7 +19,7 @@
                         <span class="material-icons-round" style="color:#059669;">payments</span>
                     </div>
                     <p class="dash-stat-label">Fee Collected</p>
-                    <h4 class="dash-stat-value">
+                    <h4 class="dash-stat-value privacy-amount">
                         @php
                             $fc = $totalFeeCollected;
                             echo $fc >= 100000 ? '৳'.number_format($fc/100000, 1).'L' : '৳'.number_format($fc);
@@ -36,7 +36,7 @@
                         <span class="material-icons-round" style="color:#4f46e5;">today</span>
                     </div>
                     <p class="dash-stat-label">Collected Today</p>
-                    <h4 class="dash-stat-value">
+                    <h4 class="dash-stat-value privacy-amount">
                         @php
                             $ft = $totalFeeToday;
                             echo $ft >= 100000 ? '৳'.number_format($ft/100000, 1).'L' : '৳'.number_format($ft);
@@ -53,7 +53,7 @@
                         <span class="material-icons-round" style="color:#dc2626;">warning_amber</span>
                     </div>
                     <p class="dash-stat-label">Due Fees</p>
-                    <h4 class="dash-stat-value">
+                    <h4 class="dash-stat-value privacy-amount">
                         @php
                             $due = $totalFeeDue;
                             echo $due >= 100000 ? '৳'.number_format($due/100000, 1).'L' : '৳'.number_format($due);
@@ -70,7 +70,7 @@
                         <span class="material-icons-round" style="color:#db2777;">account_balance_wallet</span>
                     </div>
                     <p class="dash-stat-label">Account Balance</p>
-                    <h4 class="dash-stat-value">
+                    <h4 class="dash-stat-value privacy-amount">
                         @php
                             $bal = $accountBalance;
                             echo $bal >= 100000 ? '৳'.number_format($bal/100000, 1).'L' : '৳'.number_format($bal);
@@ -86,7 +86,7 @@
                         <span class="material-icons-round" style="color:#0891b2;">north_east</span>
                     </div>
                     <p class="dash-stat-label">Total Deposits</p>
-                    <h4 class="dash-stat-value">
+                    <h4 class="dash-stat-value privacy-amount">
                         @php
                             $dep = $totalDeposits;
                             echo $dep >= 100000 ? '৳'.number_format($dep/100000, 1).'L' : '৳'.number_format($dep);
@@ -102,7 +102,7 @@
                         <span class="material-icons-round" style="color:#ea580c;">south_west</span>
                     </div>
                     <p class="dash-stat-label">Total Expenses</p>
-                    <h4 class="dash-stat-value">
+                    <h4 class="dash-stat-value privacy-amount">
                         @php
                             $exp = $totalExpenses;
                             echo $exp >= 100000 ? '৳'.number_format($exp/100000, 1).'L' : '৳'.number_format($exp);
@@ -118,7 +118,7 @@
                         <span class="material-icons-round" style="color:#d97706;">badge</span>
                     </div>
                     <p class="dash-stat-label">Salary Unpaid</p>
-                    <h4 class="dash-stat-value">
+                    <h4 class="dash-stat-value privacy-amount">
                         @php
                             $su = $salaryUnpaidThisMonth;
                             echo $su >= 100000 ? '৳'.number_format($su/100000, 1).'L' : '৳'.number_format($su);
@@ -239,13 +239,13 @@
                             {{ ucfirst($payment->payment_method) }} • {{ \Carbon\Carbon::parse($payment->payment_date)->format('d M Y') }}
                         </small>
                     </div>
-                    <span class="fw-semibold text-success" style="font-size:13px;">
+                    <span class="fw-semibold text-success privacy-amount" style="font-size:13px;">
                         ৳{{ number_format($payment->amount, 0) }}
                     </span>
                 </div>
             @empty
                 <p class="text-center text-secondary py-2 mb-0" style="font-size:13px;">
-                    আজ কোনো Payment Collect হয়নি
+                    No Payment Collected Today
                 </p>
             @endforelse
         </div>
@@ -268,7 +268,7 @@
                         <p class="mb-0 text-dark text-truncate" style="font-size:13px;font-weight:500;">
                             {{ $invoice->student_name }} — #{{ $invoice->invoice_no }}
                         </p>
-                        <small class="text-secondary" style="font-size:11px;">
+                        <small class="text-secondary privacy-amount" style="font-size:11px;">
                             Due: ৳{{ number_format($invoice->due_amount, 0) }}
                         </small>
                     </div>
@@ -282,7 +282,7 @@
                 </div>
             @empty
                 <p class="text-center text-secondary py-2 mb-0" style="font-size:13px;">
-                    কোনো Invoice নেই
+                   No Invoice
                 </p>
             @endforelse
         </div>
@@ -314,7 +314,7 @@
                 </div>
             @empty
                 <p class="text-center text-secondary py-2 mb-0" style="font-size:13px;">
-                    কোনো activity নেই এখনো
+                    No activity yet.
                 </p>
             @endforelse
 
@@ -609,5 +609,33 @@
             height: 52px;
         }
     }
+
+    /* ── Privacy Mode ────────────────────────────────────────────── */
+    /* body.privacy-mode toggled globally via togglePrivacy() in settings JS */
+    body.privacy-mode .privacy-amount {
+        filter: blur(7px);
+        user-select: none;
+        cursor: pointer;
+        transition: filter .15s;
+    }
+
+    /* click cheye reveal — revealPrivacyAmount() JS function diye .revealed class add hoy */
+    body.privacy-mode .privacy-amount.revealed {
+        filter: blur(0);
+    }
 </style>
+@endpush
+
+@push('scripts')
+<script>
+    // Privacy amount ekta ekta click korle 2 second-er jonno dekhabe
+    document.addEventListener('click', function (e) {
+        const el = e.target.closest('.privacy-amount');
+        if (!el || !document.body.classList.contains('privacy-mode')) return;
+
+        el.classList.add('revealed');
+        clearTimeout(el._privacyTimer);
+        el._privacyTimer = setTimeout(() => el.classList.remove('revealed'), 2000);
+    });
+</script>
 @endpush

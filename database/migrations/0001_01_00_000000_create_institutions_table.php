@@ -20,11 +20,8 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->string('city')->nullable();
             $table->text('address')->nullable();
-            $table->string('language')->default('en');        // 'Bangla' না, locale code ভালো
-            $table->string('timezone')->default('Asia/Dhaka');
             $table->json('weekends')->nullable();
             $table->enum('unique_roll', ['class_wise', 'section_wise', 'disabled'])->default('class_wise');
-            $table->boolean('teacher_restricted')->default(false);
             $table->string('academic_year')->nullable();
 
             // Registration
@@ -34,13 +31,8 @@ return new class extends Migration
             $table->unsignedInteger('register_no_digit')->default(4);
 
             // Fees
-            $table->boolean('offline_payment_enabled')->default(true);
             $table->unsignedInteger('due_days')->default(30);
             $table->boolean('due_fees_calculation_with_fine')->default(false);
-
-            // Auto login
-            $table->boolean('auto_generate_student_login')->default(false);
-            $table->boolean('auto_generate_guardian_login')->default(false);
 
             // Logos
             $table->string('system_logo')->nullable();

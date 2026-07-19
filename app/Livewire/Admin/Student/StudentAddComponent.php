@@ -97,6 +97,9 @@ class StudentAddComponent extends Component
         $session = AcademicSession::where('is_current', true)->first();
         $this->session_id = $session?->id;
 
+        $group = AcademicGroup::where('is_current', true)->first();
+        $this->group_id = $group?->id;
+
         $this->generateRegisterNo();
 
         $this->admission_date = now()->format('Y-m-d');

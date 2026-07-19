@@ -12,6 +12,7 @@ use App\Models\AcademicClass;
 use App\Models\AcademicSubject;
 use App\Models\AcademicClassAssign;
 use App\Models\Employee;
+use App\Models\User;
 
 class HomeworkEditComponent extends Component
 {
@@ -45,7 +46,8 @@ class HomeworkEditComponent extends Component
 
     public function mount($id): void
     {
-        $homework = Homework::findOrFail($id);
+        $homework = Homework::where('institution_id', institution()->id)
+            ->findOrFail($id);
 
         $this->homework_id      = $homework->id;
         $this->class_id         = $homework->class_id;
@@ -101,6 +103,7 @@ class HomeworkEditComponent extends Component
     protected function loadSections($class_id): void
     {
         $assigns = AcademicClassAssign::with('section')
+            ->where('institution_id', institution()->id)
             ->where('class_id', $class_id)
             ->whereNotNull('section_id')
             ->get();
@@ -115,7 +118,8 @@ class HomeworkEditComponent extends Component
 
     protected function loadSubjects($class_id, $section_id = null): void
     {
-        $query = AcademicClassAssign::where('class_id', $class_id);
+        $query = AcademicClassAssign::where('institution_id', institution()->id)
+            ->where('class_id', $class_id);
 
         if ($section_id) {
             $query->where('section_id', $section_id);
@@ -154,7 +158,8 @@ class HomeworkEditComponent extends Component
 
         $sectionId = ($this->section_id && $this->section_id !== 'all') ? $this->section_id : null;
 
-        $query = AcademicClassAssign::where('class_id', $this->class_id);
+        $query = AcademicClassAssign::where('institution_id', institution()->id)
+            ->where('class_id', $this->class_id);
 
         if ($sectionId) {
             $query->where('section_id', $sectionId);
@@ -170,18 +175,26 @@ class HomeworkEditComponent extends Component
     public function update(): void
     {
         $this->validate([
-            'class_id'        => 'required|exists:academic_classes,id',
+            'class_id'        => [
+                'required',
+                Rule::exists('academic_classes', 'id')->where('institution_id', institution()->id),
+            ],
             'section_id'      => 'nullable',
             'subject_id'      => [
                 'required',
-                'exists:academic_subjects,id',
+                Rule::exists('academic_subjects', 'id')->where('institution_id', institution()->id),
                 function ($attribute, $value, $fail) {
                     if (!in_array($value, $this->validSubjectIdsForSelection())) {
                         $fail('Selected subject is not assigned to the selected class/section.');
                     }
                 },
             ],
-            'teacher_id'      => 'nullable|exists:employees,id',
+            'teacher_id'      => [
+                'nullable',
+                Rule::exists('users', 'id')
+                    ->where('institution_id', institution()->id)
+                    ->where('role', User::ROLE_TEACHER),
+            ],
             'title'           => 'required|string|max:255',
             'description'     => 'required|string',
             'homework_date'   => 'required|date',
@@ -197,7 +210,8 @@ class HomeworkEditComponent extends Component
         $oldAttachmentPath = null;
 
         try {
-            $homework = Homework::findOrFail($this->homework_id);
+            $homework = Homework::where('institution_id', institution()->id)
+                ->findOrFail($this->homework_id);
 
             $sectionId = ($this->section_id && $this->section_id !== 'all')
                 ? $this->section_id
@@ -252,11 +266,16 @@ class HomeworkEditComponent extends Component
 
     public function render()
     {
-        $classes = AcademicClass::whereIn('id', AcademicClassAssign::distinct()->pluck('class_id'))
+        $classes = AcademicClass::where('institution_id', institution()->id)
+            ->whereIn('id', AcademicClassAssign::where('institution_id', institution()->id)->distinct()->pluck('class_id'))
             ->orderBy('name')
             ->get();
 
-        $teachers = Employee::orderBy('name')->get(['id', 'name']);
+        $teachers = User::where('institution_id', institution()->id)
+            ->where('role', User::ROLE_TEACHER)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name']);
 
         return view('livewire.admin.homework.homework-edit-component')
             ->with('classes', $classes)

@@ -77,7 +77,7 @@
                 </div>
 
                 <div class="col-md-4">
-                    <div class="input-group input-group-outline" wire:ignore>
+                    <div class="input-group input-group-outline">
                         <label class="form-label">Section</label>
                         <select wire:model="section_id" class="form-select" id="sectionSelect">
                             <option value="">Select Section</option>
@@ -95,7 +95,7 @@
                         <select wire:model="group_id" class="form-select">
                             <option value="">Select Group</option>
                             @foreach($groups as $group)
-                                <option value="{{ $group->id }}">{{ $group->name }}</option>
+                                <option @if($group->is_current == true) selected @endif value="{{ $group->id }}">{{ $group->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -227,7 +227,7 @@
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
                         <label class="form-label">Password</label>
-                        <input type="password" wire:model="password" class="form-control" placeholder="Default: 1234" onfocus="focused(this)" onfocusout="defocused(this)">
+                        <input type="password" wire:model="password" class="form-control" placeholder="" autocomplete="new-password" onfocus="focused(this)" onfocusout="defocused(this)">
                         @error('password') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
                 </div>
@@ -361,7 +361,7 @@
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
                         <label class="form-label">Password</label>
-                        <input type="password" wire:model="guardian_password" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
+                        <input type="password" wire:model="guardian_password" class="form-control" placeholder="" autocomplete="new-password" onfocus="focused(this)" onfocusout="defocused(this)">
                         @error('guardian_password') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
                 </div>
@@ -732,12 +732,6 @@
                     }
                 });
 
-                // BUG FIX: age ekhane shudhu ".input-group-outline input[type=date]" diye
-                // query hoto, jeta shudhu PROTHOM matched date input (Admission Date) return
-                // korto. Fole "dob" field-er jonno dispatch kora event-o vulbhabe
-                // Admission Date input-ke target kore ditho. Ekhon PHP theke pathano
-                // "field" (wire:model attribute name) diye exact input খুঁজে বের করা হচ্ছে,
-                // tai Admission Date ar DOB dutai thikmoto আলাদাভাবে update/clear hobe.
                 Livewire.on('date-updated', function (event) {
                     var data = Array.isArray(event) ? event[0] : event;
                     if (!data || !data.field) return;

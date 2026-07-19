@@ -68,20 +68,7 @@
               <button id="settingsLangBN" onclick="setLangFromSettings('bn')">বাং</button>
             </div>
           </div>
-
-          <div class="settings-item">
-            <div class="settings-item-left">
-              <span class="material-icons-round">lock</span>
-              <div>
-                <div class="settings-item-label">Privacy Mode</div>
-                <div class="settings-item-sub">Hide sensitive data</div>
-              </div>
-            </div>
-            <label class="sw">
-              <input type="checkbox">
-              <span class="sw-track"></span>
-            </label>
-          </div>
+          
         </div>
       </div>
 

@@ -11,6 +11,7 @@ use App\Models\AcademicClass;
 use App\Models\AcademicSection;
 use App\Models\AcademicGroup;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
@@ -49,6 +50,12 @@ class StudentEditComponent extends Component
     public $username;
     public $password;
 
+    // ── Username auto-generate theke manually edit hoyeche kina track korar flag.
+    // Edit page e existing username DB theke pre-fill hoy, tai mount() e eta
+    // 'true' rakha hocche jate purono/existing student-er username accidentally
+    // overwrite na hoye jay (nahole tar login vengge jabe).
+    public bool $usernameManuallyEdited = true;
+
     public $guardian_id;
     public $guardian_name, $guardian_relation;
     public $guardian_father_name, $guardian_mother_name;
@@ -61,6 +68,9 @@ class StudentEditComponent extends Component
 
     public $guardian_username;
     public $guardian_password;
+
+    // ── Guardian Username o same karone, existing guardian thakle protect kora hocche.
+    public bool $guardianUsernameManuallyEdited = true;
 
     public $previous_institution;
     public $qualification;
@@ -115,6 +125,89 @@ class StudentEditComponent extends Component
 
         $this->dispatch('date-updated', field: 'admission_date', date: $this->admission_date);
         $this->dispatch('date-updated', field: 'dob', date: $this->dob);
+    }
+
+    /**
+     * Name change hole -> Username auto-generate hobe, KINTU shudhu tokhoni
+     * jokhon usernameManuallyEdited flag manually 'false' kora hoyeche
+     * (mane user nijer hoyeche Username field ta clear/reset kore notun
+     * suggestion চেয়েছে). Default e existing student-er username protected thake.
+     */
+    public function updatedName($value): void
+    {
+        if (!$this->usernameManuallyEdited) {
+            $this->username = $this->generateUniqueUsername($value, $this->userId);
+        }
+    }
+
+    /**
+     * User Username field e hate diye change korle flag lock hoye jabe,
+     * jate porer name change eta overwrite na kore.
+     */
+    public function updatedUsername(): void
+    {
+        $this->usernameManuallyEdited = true;
+    }
+
+    /**
+     * Ekhane user "notun suggestion chai" bolte chaile, Username field khali
+     * kore ei button/action call korte parbe (blade e optional button hisebe
+     * jog kora jete pare) — flag off kore dile abar Name theke auto-suggest hobe.
+     */
+    public function enableUsernameAutoSuggest(): void
+    {
+        $this->usernameManuallyEdited = false;
+        $this->username = $this->generateUniqueUsername($this->name, $this->userId);
+    }
+
+    public function updatedGuardianName($value): void
+    {
+        if (!$this->guardian_exists && !$this->guardianUsernameManuallyEdited) {
+            $this->guardian_username = $this->generateUniqueUsername($value);
+        }
+    }
+
+    public function updatedGuardianUsername(): void
+    {
+        $this->guardianUsernameManuallyEdited = true;
+    }
+
+    public function enableGuardianUsernameAutoSuggest(): void
+    {
+        $this->guardianUsernameManuallyEdited = false;
+        $this->guardian_username = $this->generateUniqueUsername($this->guardian_name);
+    }
+
+    /**
+     * Name theke unique username slug generate kore.
+     * "Abc 123" -> "abc_123". Duplicate thakle "_1", "_2"... suffix add hobe.
+     * $ignoreUserId dile nijer current username-ke duplicate hisebe dhora hobe na.
+     */
+    private function generateUniqueUsername(?string $name, ?int $ignoreUserId = null): ?string
+    {
+        if (!$name || trim($name) === '') {
+            return null;
+        }
+
+        $base = Str::slug($name, '_');
+
+        if ($base === '') {
+            return null;
+        }
+
+        $username = $base;
+        $counter = 1;
+
+        while (
+            User::where('username', $username)
+                ->when($ignoreUserId, fn($q) => $q->where('id', '!=', $ignoreUserId))
+                ->exists()
+        ) {
+            $username = $base . '_' . $counter;
+            $counter++;
+        }
+
+        return $username;
     }
 
     public function rules()

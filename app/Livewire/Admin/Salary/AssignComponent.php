@@ -230,7 +230,6 @@ class AssignComponent extends Component
     public function getAvailableRoles(): array
     {
         return [
-            'admin'      => 'Admin',
             'teacher'    => 'Teacher',
             'accountant' => 'Accountant',
             'staff'      => 'Staff',
