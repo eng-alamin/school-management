@@ -328,19 +328,30 @@
       </li> --}}
 
       <li class="nav1-item">
-        <div class="nav1-link {{ request()->is('setting/*', 'notifications', 'activity-logs', 'login-logs') ? 'active open' : '' }}" onclick="toggleNav1(this)">
+        <div class="nav1-link {{ str_contains(request()->url(), 'activity-logs') || str_contains(request()->url(), 'session-logs') || str_contains(request()->url(), 'login-logs') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
+          <span class="material-icons-round nav-icon">security</span>
+          <span class="nav-label" id="nav-schools">Audit & Security Logs</span>
+          <span class="material-icons-round nav-arrow">expand_more</span>
+        </div>
+        <div class="nav2-collapse {{ str_contains(request()->url(), 'activity-logs') || str_contains(request()->url(), 'session-logs') || str_contains(request()->url(), 'login-logs') == true ? 'show' : '' }}">
+          <ul>
+            <li class="nav2-item"><a href="{{ route('admin.activitylog') }}" class="nav2-link {{ Route::is('admin.activitylog') == true ? 'active' : '' }}"><span class="nav2-icon">AL</span><span class="nav2-label" id="nav-activity-logs">Activity Logs</span></a></li>
+            <li class="nav2-item"><a href="{{ route('admin.sessionlog') }}" class="nav2-link {{ Route::is('admin.sessionlog') == true ? 'active' : '' }}"><span class="nav2-icon">SL</span><span class="nav2-label" id="nav-session-logs">Session Logs</span></a></li>
+            <li class="nav2-item"><a href="{{ route('admin.loginlog') }}" class="nav2-link {{ Route::is('admin.loginlog') == true ? 'active' : '' }}"><span class="nav2-icon">LL</span><span class="nav2-label" id="nav-login-logs">Login Logs</span></a></li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="nav1-item">
+        <div class="nav1-link {{ request()->is('setting/*', 'notifications') ? 'active open' : '' }}" onclick="toggleNav1(this)">
           <span class="material-icons-round nav-icon">settings</span>
           <span class="nav-label" id="nav-settings">Settings</span>
           <span class="material-icons-round nav-arrow">expand_more</span>
         </div>
-        <div class="nav2-collapse {{ request()->is('setting/*', 'notifications', 'activity-logs', 'login-logs') ? 'show' : '' }}">
+        <div class="nav2-collapse {{ request()->is('setting/*', 'notifications') ? 'show' : '' }}">
           <ul>
             <li class="nav2-item"><a href="{{route('admin.setting.institution') }}" class="nav2-link {{ str_contains(request()->url(), 'setting/institution') == true ? 'active' : '' }}"><span class="nav2-icon">S</span><span class="nav2-label" id="nav-institution-settings">Institution Settings</span></a></li>
-            <li class="nav2-item"><div class="nav2-link"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-cron-job">Cron Job</span></div></li>
             <li class="nav2-item"><a href="{{route('admin.notifications.index') }}" class="nav2-link {{ str_contains(request()->url(), 'notifications') == true ? 'active' : '' }}"><span class="nav2-icon">AL</span><span class="nav2-label" id="nav-notifications">Notifications</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.activitylog') }}" class="nav2-link {{ str_contains(request()->url(), 'activity-log') == true ? 'active' : '' }}"><span class="nav2-icon">AL</span><span class="nav2-label" id="nav-activity-logs">Activity Logs</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.loginlog') }}" class="nav2-link {{ str_contains(request()->url(), 'login-log') == true ? 'active' : '' }}"><span class="nav2-icon">LL</span><span class="nav2-label" id="nav-login-logs">Login Logs</span></a></li>
-            <li class="nav2-item"><a href="{{route('clear') }}" class="nav2-link"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-clear-cache">Clear Cache</span></a></li>
           </ul>
         </div>
       </li>

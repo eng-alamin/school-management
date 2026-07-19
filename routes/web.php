@@ -413,10 +413,13 @@ Route::middleware(['auth', 'role:admin', 'billing.check'])->group(function () {
     Route::get('mailbox/important', \App\Livewire\Admin\Mailbox\ImportantComponent::class)->name('admin.mailbox.important');
     Route::get('mailbox/trash', \App\Livewire\Admin\Mailbox\TrashComponent::class)->name('admin.mailbox.trash');
 
+    // Log
+    Route::get('/activity-logs', \App\Livewire\Admin\Log\ActivityLogComponent::class)->name('admin.activitylog');
+    Route::get('/session-logs', \App\Livewire\Admin\Log\SessionLogComponent::class)->name('admin.sessionlog');
+    Route::get('/login-logs', \App\Livewire\Admin\Log\LoginLogComponent::class)->name('admin.loginlog');
+
     // Other
     Route::get('notices', \App\Livewire\Admin\Notice\NoticeComponent::class)->name('admin.notices');
-    Route::get('activity-logs', \App\Livewire\Admin\Log\ActivityLogComponent::class)->name('admin.activitylog');
-    Route::get('login-logs', \App\Livewire\Admin\Log\LoginLogComponent::class)->name('admin.loginlog');
     Route::get('notifications', \App\Livewire\Admin\Notifications\Index::class)->name('admin.notifications.index');
     Route::get('setting/institution', \App\Livewire\Admin\Setting\InstitutionComponent::class)->name('admin.setting.institution');
 

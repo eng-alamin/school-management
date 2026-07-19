@@ -35,10 +35,10 @@ class ActivityLogComponent extends Component
             ->latest()
             ->paginate($this->perPage);
 
-        return view('livewire.admin.log.activity-log-component')
+        return view('livewire.super-admin.log.activity-log-component')
             ->with('logs', $logs)
             ->layout('layouts.admin.app', [
-                'title' => 'Activity Log | ' . institution()->name,
+                'title' => 'Activity Log | ' . setting('app_name', 'EMS'),
             ]);
     }
 }
