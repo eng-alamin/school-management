@@ -865,6 +865,20 @@
         color: #fff;
       }
 
+      [data-theme="dark"] .navbar-toggler {
+        background: var(--primary);
+      }
+      [data-theme="dark"] .table>:not(caption)>*>* {
+        color: #fff;
+      }
+      [data-theme="dark"] .table th, [data-theme="dark"] .table td {
+        background: rgba(25, 135, 84, 0.08);
+        border: 1px solid var(--border);
+      }
+      [data-theme="dark"] .table>:not(caption)>*>* {
+        color: #fff;
+      }
+
       /* ── ANIMATIONS ── */
       @keyframes fadeInUp {
         from {

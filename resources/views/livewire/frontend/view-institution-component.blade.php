@@ -276,7 +276,7 @@
 
                         <div class="row g-3">
                             @foreach($facilities as $facility)
-                                <div class="col-md-4 col-6" wire:key="facility-{{ $facility['key'] }}">
+                                <div class="col-md-4 col-12" wire:key="facility-{{ $facility['key'] }}">
                                     <div class="d-flex align-items-center gap-2 p-3 rounded-3"
                                          style="background: {{ $facility['available'] ? 'rgba(25,135,84,0.08)' : 'var(--bg-alt)' }}; border: 1px solid var(--border);">
                                         <i class="bi {{ $facility['icon'] }} fs-5" style="color: {{ $facility['available'] ? '#198754' : '#adb5bd' }};"></i>
