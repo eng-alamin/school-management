@@ -26,6 +26,7 @@ class EmployeeAddComponent extends Component
     public $qualification;
     public $experience_detail;
     public $total_experience;
+    public $comments;
 
     // Employee Details
     public $name;
@@ -36,6 +37,9 @@ class EmployeeAddComponent extends Component
     public $present_address;
     public $permanent_address;
     public $photo_upload;
+
+    // Employee ID (preview)
+    public $employee_id;
 
     // Login Details
     public $username;
@@ -52,10 +56,22 @@ class EmployeeAddComponent extends Component
     public $ifsc_code;
     public $account_no;
 
-    /**
-     * Name change hole -> Username auto-generate hobe,
-     * jodi user nijer hate Username field e already type na kore thake.
-     */
+    public function mount()
+    {
+        $this->joining_date = now()->format('Y-m-d');
+        $this->generateEmployeeId();
+    }
+
+    public function getSelectedDesignationNameProperty(): ?string
+    {
+        if (!$this->designation_id) {
+            return null;
+        }
+
+        return EmployeeDesignation::find($this->designation_id)?->name;
+    }
+
+
     public function updatedName($value): void
     {
         if (!$this->usernameManuallyEdited) {
@@ -98,19 +114,47 @@ class EmployeeAddComponent extends Component
         return $username;
     }
 
+    private function generateEmployeeId(): void
+    {
+        $institutionId = auth()->user()->institution_id;
+        $inst = institution();
+
+        $digit     = (int) ($inst->employee_id_digit_length ?? 6);
+        $startFrom = (int) ($inst->employee_id_start_from ?? 1);
+
+        $prefix = ($inst->enable_employee_id_prefix && $inst->employee_id_code_prefix)
+            ? $inst->employee_id_code_prefix
+            : 'SCH' . str_pad($institutionId, 2, '0', STR_PAD_LEFT);
+
+        $year = now()->format('y');
+
+        $lastEmployee = Employee::where('institution_id', $institutionId)
+            ->whereNotNull('employee_id')
+            ->orderByDesc('id')
+            ->first();
+
+        $serial = $lastEmployee
+            ? ((int) substr($lastEmployee->employee_id, -$digit)) + 1
+            : $startFrom;
+
+        $this->employee_id = $prefix . $year . str_pad($serial, $digit, '0', STR_PAD_LEFT);
+    }
+
     public function rules(): array
     {
         return [
-            'role'           => 'required',
-            'joining_date'   => 'required|date',
-            'designation_id' => 'required|exists:employee_designations,id',
-            'department_id'  => 'required|exists:employee_departments,id',
-            'name'           => 'required',
-            'mobile'         => 'nullable|string|max:20',
-            'email'          => 'nullable|unique:users,email',
-            'photo_upload'   => 'nullable|image|max:2048',
-            'username'       => 'required|unique:users,username',
-            'password'       => 'nullable|min:8',
+            'role'                   => 'required',
+            'joining_date'           => 'required|date',
+            'designation_id'         => 'required|exists:employee_designations,id',
+            'department_id'          => 'required|exists:employee_departments,id',
+            'comments'               => 'nullable|string|max:1000',
+            'name'                   => 'required',
+            'mobile'                 => 'nullable|string|max:20',
+            'email'                  => 'nullable|unique:users,email',
+            'photo_upload'           => 'nullable|image|max:2048',
+            'employee_id'            => 'nullable|unique:employees,employee_id',
+            'username'               => 'required|unique:users,username',
+            'password'               => 'nullable|min:8',
         ];
     }
 
@@ -128,6 +172,8 @@ class EmployeeAddComponent extends Component
     {
         $this->reset();
         $this->usernameManuallyEdited = false;
+        $this->joining_date = now()->format('Y-m-d');
+        $this->generateEmployeeId();
         $this->dispatch('form-reset');
     }
 
@@ -154,20 +200,30 @@ class EmployeeAddComponent extends Component
                 ? $this->photo_upload->store('employees', 'public')
                 : null;
 
-            // ── Generate Employee ID (SAFE - avoid duplicate)
-            $institutionCode = 'SCH' . str_pad($institutionId, 2, '0', STR_PAD_LEFT);
+            // ── Race-condition safety: lock kore last employee dhore
+            // employee_id ke re-verify/re-generate kora hocche, preview-e generate
+            // kora value use na kore ekhane lock-safe kora holo ──
+            $inst = institution();
+            $digit     = (int) ($inst->employee_id_digit_length ?? 6);
+            $startFrom = (int) ($inst->employee_id_start_from ?? 1);
+
+            $prefix = ($inst->enable_employee_id_prefix && $inst->employee_id_code_prefix)
+                ? $inst->employee_id_code_prefix
+                : 'SCH' . str_pad($institutionId, 2, '0', STR_PAD_LEFT);
+
             $year = now()->format('y');
 
-            $lastEmployee = Employee::where('institution_id', $institutionId)
+            $lastEmployeeForId = Employee::where('institution_id', $institutionId)
+                ->whereNotNull('employee_id')
                 ->lockForUpdate()
                 ->orderByDesc('id')
                 ->first();
 
-            $serial = $lastEmployee
-                ? ((int) substr($lastEmployee->employee_id, -4)) + 1
-                : 1;
+            $serial = $lastEmployeeForId
+                ? ((int) substr($lastEmployeeForId->employee_id, -$digit)) + 1
+                : $startFrom;
 
-            $employeeId = $institutionCode . $year . str_pad($serial, 4, '0', STR_PAD_LEFT);
+            $employeeId = $prefix . $year . str_pad($serial, $digit, '0', STR_PAD_LEFT);
 
             Employee::create([
                 'institution_id'    => $institutionId,
@@ -179,6 +235,7 @@ class EmployeeAddComponent extends Component
                 'qualification'     => $this->qualification,
                 'experience_detail' => $this->experience_detail,
                 'total_experience'  => $this->total_experience,
+                'comments'          => $this->comments,
                 'name'              => $this->name,
                 'dob'               => $this->dob,
                 'religion'          => $this->religion,

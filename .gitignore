@@ -1,4 +1,5 @@
 .agents
+.kilo
 reports
 .env
 .env.example

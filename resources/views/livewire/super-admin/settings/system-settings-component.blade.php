@@ -20,7 +20,6 @@
                 'smtp'        => ['icon' => 'fa-envelope',      'label' => 'SMTP'],
                 'gateway'     => ['icon' => 'fa-credit-card',   'label' => 'Gateway'],
                 'register'    => ['icon' => 'fa-user-plus',     'label' => 'Register'],
-                'features'    => ['icon' => 'fa-toggle-on',     'label' => 'Feature Control'],
                 'maintenance' => ['icon' => 'fa-screwdriver-wrench', 'label' => 'Maintenance'],
             ] as $tab => $info)
                 <li class="nav-item">
@@ -145,32 +144,6 @@
                             <label class="form-label">{{ __('Registration Fee') }}</label>
                             <input type="number" wire:model="register_fee" class="form-control" placeholder="5000">
                             @error('register_fee') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
-                        </div>
-                    </div>
-                @endif
-
-                {{-- ===== TAB: FEATURE CONTROL ===== --}}
-                @if($activeTab === 'features')
-                    <h5 class="mb-4">{{ __('Feature Control') }}</h5>
-
-                    <div class="row g-4">
-                        <div class="col-md-4">
-                            <div class="form-check form-switch">
-                                <input type="checkbox" wire:model="feature_student" class="form-check-input" id="featureStudent">
-                                <label class="form-check-label" for="featureStudent">{{ __('Student Module') }}</label>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-check form-switch">
-                                <input type="checkbox" wire:model="feature_teacher" class="form-check-input" id="featureTeacher">
-                                <label class="form-check-label" for="featureTeacher">{{ __('Teacher Module') }}</label>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-check form-switch">
-                                <input type="checkbox" wire:model="feature_fee" class="form-check-input" id="featureFee">
-                                <label class="form-check-label" for="featureFee">{{ __('Fee Module') }}</label>
-                            </div>
                         </div>
                     </div>
                 @endif

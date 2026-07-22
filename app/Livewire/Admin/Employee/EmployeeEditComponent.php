@@ -31,6 +31,7 @@ class EmployeeEditComponent extends Component
     public $qualification;
     public $experience_detail;
     public $total_experience;
+    public $comments;
 
     // Employee Details
     public $name;
@@ -75,6 +76,7 @@ class EmployeeEditComponent extends Component
         $this->qualification      = $this->employee->qualification;
         $this->experience_detail  = $this->employee->experience_detail;
         $this->total_experience   = $this->employee->total_experience;
+        $this->comments           = $this->employee->comments;
 
         // Employee Details
         $this->name              = $this->employee->name;
@@ -97,6 +99,19 @@ class EmployeeEditComponent extends Component
         $this->bank_address = $this->employee->bank_address;
         $this->ifsc_code    = $this->employee->ifsc_code;
         $this->account_no   = $this->employee->account_no;
+    }
+
+    /**
+     * Selected designation_id theke designation name বের করে।
+     * Blade e "Principal" check korar jonno use hobe.
+     */
+    public function getSelectedDesignationNameProperty(): ?string
+    {
+        if (!$this->designation_id) {
+            return null;
+        }
+
+        return EmployeeDesignation::find($this->designation_id)?->name;
     }
 
     /**
@@ -171,6 +186,7 @@ class EmployeeEditComponent extends Component
             'joining_date' => 'required|date',
             'designation_id' => 'required|exists:employee_designations,id',
             'department_id' => 'required|exists:employee_departments,id',
+            'comments' => 'nullable|string|max:1000',
 
             'name' => 'required',
             'mobile' => 'nullable|string|max:20',
@@ -223,6 +239,7 @@ class EmployeeEditComponent extends Component
                 'qualification'     => $this->qualification,
                 'experience_detail' => $this->experience_detail,
                 'total_experience'  => $this->total_experience,
+                'comments'          => $this->comments,
 
                 'name'              => $this->name,
                 'dob'               => $this->dob,

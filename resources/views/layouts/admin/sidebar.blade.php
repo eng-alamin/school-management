@@ -39,22 +39,24 @@
         </a>
       </li>
 
-      <li class="nav1-item">
-        <div class="nav1-link {{ str_contains(request()->url(), 'inventory/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
-          <span class="material-icons-round nav-icon">inventory_2</span>
-          <span class="nav-label" id="nav-inventory">Inventory</span>
-          <span class="material-icons-round nav-arrow">expand_more</span>
-        </div>
-        <div class="nav2-collapse {{ str_contains(request()->url(), 'inventory/') == true ? 'show' : '' }}">
-          <ul>
-            <li class="nav2-item"><a href="{{ route('admin.inventory.products') }}" class="nav2-link {{ Route::is('admin.inventory.products') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-products">Products</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.inventory.stores') }}" class="nav2-link {{ Route::is('admin.inventory.stores') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-stores">Stores</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.inventory.suppliers') }}" class="nav2-link {{ Route::is('admin.inventory.suppliers') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-suppliers">Suppliers</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.inventory.purchase.list') }}" class="nav2-link {{ str_contains(request()->url(), 'purchase') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-purchases">Purchases</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.inventory.sale.list') }}" class="nav2-link {{ str_contains(request()->url(), 'sale') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-sales">Sales</span></a></li>
-          </ul>
-        </div>
-      </li>
+      @if(feature_enabled(\App\Support\Feature::INVENTORY_MANAGEMENT_MODULE))
+        <li class="nav1-item">
+          <div class="nav1-link {{ str_contains(request()->url(), 'inventory/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
+            <span class="material-icons-round nav-icon">inventory_2</span>
+            <span class="nav-label" id="nav-inventory">Inventory</span>
+            <span class="material-icons-round nav-arrow">expand_more</span>
+          </div>
+          <div class="nav2-collapse {{ str_contains(request()->url(), 'inventory/') == true ? 'show' : '' }}">
+            <ul>
+              <li class="nav2-item"><a href="{{ route('admin.inventory.products') }}" class="nav2-link {{ Route::is('admin.inventory.products') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-products">Products</span></a></li>
+              <li class="nav2-item"><a href="{{route('admin.inventory.stores') }}" class="nav2-link {{ Route::is('admin.inventory.stores') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-stores">Stores</span></a></li>
+              <li class="nav2-item"><a href="{{route('admin.inventory.suppliers') }}" class="nav2-link {{ Route::is('admin.inventory.suppliers') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-suppliers">Suppliers</span></a></li>
+              <li class="nav2-item"><a href="{{route('admin.inventory.purchase.list') }}" class="nav2-link {{ str_contains(request()->url(), 'purchase') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-purchases">Purchases</span></a></li>
+              <li class="nav2-item"><a href="{{route('admin.inventory.sale.list') }}" class="nav2-link {{ str_contains(request()->url(), 'sale') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-sales">Sales</span></a></li>
+            </ul>
+          </div>
+        </li>
+      @endif
 
       <li class="nav1-item">
         <div class="nav1-link {{ Route::is('admin.student.add') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
@@ -227,37 +229,41 @@
         </div>
       </li>
 
-      <li class="nav1-item">
-        <div class="nav1-link {{ str_contains(request()->url(), 'card/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
-          <span class="material-icons-round nav-icon">credit_card</span>
-          <span class="nav-label" id="nav-card-management">Card Management</span>
-          <span class="material-icons-round nav-arrow">expand_more</span>
-        </div>
-        <div class="nav2-collapse {{ str_contains(request()->url(), 'card/') == true ? 'show' : '' }}">
-          <ul>
-            <li class="nav2-item"><a href="{{route('admin.card.id-card-templates') }}" class="nav2-link {{ str_contains(request()->url(), 'card/id-card-templates') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-id-card-template">Id Card Template</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.card.student-id-cards') }}" class="nav2-link {{ str_contains(request()->url(), 'card/student-id-cards') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-student-id-card">Student Id Card</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.card.employee-id-cards') }}" class="nav2-link {{ str_contains(request()->url(), 'card/employee-id-cards') == true ? 'active' : '' }}"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-employee-id-card">Employee Id Card</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.card.admit-card-templates') }}" class="nav2-link {{ str_contains(request()->url(), 'card/admit-card-templates') == true ? 'active' : '' }}"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-admit-card-template">Admit Card Template</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.card.generate-admit-cards') }}" class="nav2-link {{ str_contains(request()->url(), 'card/generate-admit-cards') == true ? 'active' : '' }}"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-admit-card-generate">Admit Card Generate</span></a></li>
-          </ul>
-        </div>
-      </li>
+      @if(feature_enabled(\App\Support\Feature::CARD_MANAGEMENT_MODULE))
+        <li class="nav1-item">
+          <div class="nav1-link {{ str_contains(request()->url(), 'card/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
+            <span class="material-icons-round nav-icon">credit_card</span>
+            <span class="nav-label" id="nav-card-management">Card Management</span>
+            <span class="material-icons-round nav-arrow">expand_more</span>
+          </div>
+          <div class="nav2-collapse {{ str_contains(request()->url(), 'card/') == true ? 'show' : '' }}">
+            <ul>
+              <li class="nav2-item"><a href="{{route('admin.card.id-card-templates') }}" class="nav2-link {{ str_contains(request()->url(), 'card/id-card-templates') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-id-card-template">Id Card Template</span></a></li>
+              <li class="nav2-item"><a href="{{route('admin.card.student-id-cards') }}" class="nav2-link {{ str_contains(request()->url(), 'card/student-id-cards') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-student-id-card">Student Id Card</span></a></li>
+              <li class="nav2-item"><a href="{{route('admin.card.employee-id-cards') }}" class="nav2-link {{ str_contains(request()->url(), 'card/employee-id-cards') == true ? 'active' : '' }}"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-employee-id-card">Employee Id Card</span></a></li>
+              <li class="nav2-item"><a href="{{route('admin.card.admit-card-templates') }}" class="nav2-link {{ str_contains(request()->url(), 'card/admit-card-templates') == true ? 'active' : '' }}"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-admit-card-template">Admit Card Template</span></a></li>
+              <li class="nav2-item"><a href="{{route('admin.card.generate-admit-cards') }}" class="nav2-link {{ str_contains(request()->url(), 'card/generate-admit-cards') == true ? 'active' : '' }}"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-admit-card-generate">Admit Card Generate</span></a></li>
+            </ul>
+          </div>
+        </li>
+      @endif
 
-      <li class="nav1-item">
-        <div class="nav1-link {{ str_contains(request()->url(), 'certificate/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
-          <span class="material-icons-round nav-icon">workspace_premium</span>
-          <span class="nav-label" id="nav-certificate-management">Certificate Management</span>
-          <span class="material-icons-round nav-arrow">expand_more</span>
-        </div>
-        <div class="nav2-collapse {{ str_contains(request()->url(), 'certificate/') == true ? 'show' : '' }}">
-          <ul>
-            <li class="nav2-item"><a href="{{route('admin.certificate.list-template') }}" class="nav2-link {{ str_contains(request()->url(), 'certificate/list-template') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-certificate-template">Certificate Template</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.certificate.generate-student') }}" class="nav2-link {{ str_contains(request()->url(), 'certificate/generate-student') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-generate-student">Generate Student</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.certificate.generate-employee') }}" class="nav2-link {{ str_contains(request()->url(), 'certificate/generate-employee') == true ? 'active' : '' }}"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-generate-employee">Generate Employee</span></a></li>
-          </ul>
-        </div>
-      </li>
+      @if(feature_enabled(\App\Support\Feature::CERTIFICATE_MANAGEMENT_MODULE))
+        <li class="nav1-item">
+          <div class="nav1-link {{ str_contains(request()->url(), 'certificate/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
+            <span class="material-icons-round nav-icon">workspace_premium</span>
+            <span class="nav-label" id="nav-certificate-management">Certificate Management</span>
+            <span class="material-icons-round nav-arrow">expand_more</span>
+          </div>
+          <div class="nav2-collapse {{ str_contains(request()->url(), 'certificate/') == true ? 'show' : '' }}">
+            <ul>
+              <li class="nav2-item"><a href="{{route('admin.certificate.list-template') }}" class="nav2-link {{ str_contains(request()->url(), 'certificate/list-template') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-certificate-template">Certificate Template</span></a></li>
+              <li class="nav2-item"><a href="{{route('admin.certificate.generate-student') }}" class="nav2-link {{ str_contains(request()->url(), 'certificate/generate-student') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-generate-student">Generate Student</span></a></li>
+              <li class="nav2-item"><a href="{{route('admin.certificate.generate-employee') }}" class="nav2-link {{ str_contains(request()->url(), 'certificate/generate-employee') == true ? 'active' : '' }}"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-generate-employee">Generate Employee</span></a></li>
+            </ul>
+          </div>
+        </li>
+      @endif
 
       <li class="nav1-item">
         <a href="{{route('admin.leave.applications') }}" class="nav1-link {{ str_contains(request()->url(), 'leave/applications') || str_contains(request()->url(), 'leave/categories') == true ? 'active' : '' }}">
@@ -293,7 +299,14 @@
           <span class="nav-label" id="nav-billing">Billing</span>
         </a>
       </li>
-            
+
+      <li class="nav1-item">
+        <a href="{{route('admin.notifications.index') }}" class="nav1-link {{ str_contains(request()->url(), 'notifications') == true ? 'active' : '' }}">
+          <span class="material-icons-round nav-icon">notifications</span>
+          <span class="nav-label" id="nav-notifications">Notifications</span>
+        </a>
+      </li>
+       
       {{-- <li class="nav1-item">
         <div class="nav1-link" onclick="toggleNav1(this)">
           <span class="material-icons-round nav-icon">bar_chart</span>
@@ -343,15 +356,15 @@
       </li>
 
       <li class="nav1-item">
-        <div class="nav1-link {{ request()->is('setting/*', 'notifications') ? 'active open' : '' }}" onclick="toggleNav1(this)">
+        <div class="nav1-link {{ request()->is('setting/*') ? 'active open' : '' }}" onclick="toggleNav1(this)">
           <span class="material-icons-round nav-icon">settings</span>
           <span class="nav-label" id="nav-settings">Settings</span>
           <span class="material-icons-round nav-arrow">expand_more</span>
         </div>
-        <div class="nav2-collapse {{ request()->is('setting/*', 'notifications') ? 'show' : '' }}">
+        <div class="nav2-collapse {{ request()->is('setting/*') ? 'show' : '' }}">
           <ul>
             <li class="nav2-item"><a href="{{route('admin.setting.institution') }}" class="nav2-link {{ str_contains(request()->url(), 'setting/institution') == true ? 'active' : '' }}"><span class="nav2-icon">S</span><span class="nav2-label" id="nav-institution-settings">Institution Settings</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.notifications.index') }}" class="nav2-link {{ str_contains(request()->url(), 'notifications') == true ? 'active' : '' }}"><span class="nav2-icon">AL</span><span class="nav2-label" id="nav-notifications">Notifications</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.setting.features') }}" class="nav2-link {{ str_contains(request()->url(), 'setting/features') == true ? 'active' : '' }}"><span class="nav2-icon">F</span><span class="nav2-label" id="nav-features">Feature Control</span></a></li>
           </ul>
         </div>
       </li>

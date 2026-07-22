@@ -369,8 +369,11 @@ class AdmissionService
 
     /**
      * StudentAddComponent::save() er identical numbering pattern follow kora hocche:
-     * student_id  = SCH + institution_id(2) + year(2) + serial(6)
-     * registration_no = RG  + institution_id(2) + year(2) + same serial(6)
+     * student_id  = Institution Settings (enable_student_id_prefix, student_id_code_prefix,
+     *     student_id_digit_length, student_id_start_from) onujayi dynamically generate hoy.
+     * registration_no = Institution Settings (enable_registration_prefix,
+     *     registration_code_prefix, registration_digit_length, registration_start_from) onujayi
+     *     dynamically generate hoy — student_id theke completely independent serial.
      * roll_no     = class-wise student count + 1, 2-digit zero-padded
      *
      * lockForUpdate() diye race-condition theke bacha hocche, jate ekshathe
@@ -388,23 +391,13 @@ class AdmissionService
     {
         $institutionId = $admission->institution_id;
 
-        $institutionCodeStudent  = 'SCH' . str_pad((string) $institutionId, 2, '0', STR_PAD_LEFT);
-        $institutionCodeRegister = 'RG'  . str_pad((string) $institutionId, 2, '0', STR_PAD_LEFT);
+        // ── student_id: Institution Settings onujayi dynamic ───────────────
         $year = now()->format('y');
 
-        $lastStudent = Student::where('institution_id', $institutionId)
-            ->lockForUpdate()
-            ->orderByDesc('id')
-            ->first();
+        $studentId = $this->generateStudentId($institutionId, $year);
 
-        $serial = $lastStudent
-            ? ((int) substr($lastStudent->student_id, -6)) + 1
-            : 1;
-
-        $paddedSerial = str_pad((string) $serial, 6, '0', STR_PAD_LEFT);
-
-        $studentId  = $institutionCodeStudent . $year . $paddedSerial;
-        $registerNo = $institutionCodeRegister . $year . $paddedSerial;
+        // ── registration_no: Institution Settings onujayi dynamic ──────────
+        $registerNo = $this->generateRegisterNo($institutionId, $year);
 
         $rollSerial = Student::where('institution_id', $institutionId)
             ->where('class_id', $admission->applied_class_id)
@@ -456,6 +449,65 @@ class AdmissionService
                 'password' => $studentPlainPassword,
             ],
         ];
+    }
+
+    /**
+     * Institution Settings (enable_student_id_prefix, student_id_code_prefix,
+     * student_id_digit_length, student_id_start_from) onujayi student_id generate kore.
+     * StudentAddComponent::generateStudentId()-er logic-er sathe consistent.
+     * lockForUpdate() diye race-condition theke bacha hoy.
+     */
+    private function generateStudentId(int $institutionId, string $year): string
+    {
+        $inst = institution();
+
+        $digit     = (int) ($inst?->student_id_digit_length ?? 6);
+        $startFrom = (int) ($inst?->student_id_start_from ?? 1);
+
+        $prefix = ($inst?->enable_student_id_prefix && $inst?->student_id_code_prefix)
+            ? $inst->student_id_code_prefix
+            : 'SCH' . str_pad((string) $institutionId, 2, '0', STR_PAD_LEFT);
+
+        $lastStudent = Student::where('institution_id', $institutionId)
+            ->whereNotNull('student_id')
+            ->lockForUpdate()
+            ->orderByDesc('id')
+            ->first();
+
+        $serial = $lastStudent
+            ? ((int) substr($lastStudent->student_id, -$digit)) + 1
+            : $startFrom;
+
+        return $prefix . $year . str_pad((string) $serial, $digit, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Institution Settings (enable_registration_prefix, registration_code_prefix,
+     * registration_digit_length, registration_start_from) onujayi registration_no generate kore.
+     * StudentAddComponent::generateRegisterNo()-er logic-er sathe consistent.
+     */
+    private function generateRegisterNo(int $institutionId, string $year): string
+    {
+        $inst = institution();
+
+        $digit     = (int) ($inst?->registration_digit_length ?? 6);
+        $startFrom = (int) ($inst?->registration_start_from ?? 1);
+
+        $prefix = ($inst?->enable_registration_prefix && $inst?->registration_code_prefix)
+            ? $inst->registration_code_prefix
+            : 'RG' . str_pad((string) $institutionId, 2, '0', STR_PAD_LEFT);
+
+        $lastStudent = Student::where('institution_id', $institutionId)
+            ->whereNotNull('registration_no')
+            ->lockForUpdate()
+            ->orderByDesc('id')
+            ->first();
+
+        $serial = $lastStudent
+            ? ((int) substr($lastStudent->registration_no, -$digit)) + 1
+            : $startFrom;
+
+        return $prefix . $year . str_pad((string) $serial, $digit, '0', STR_PAD_LEFT);
     }
 
     /**

@@ -288,7 +288,7 @@ class StudentEditComponent extends Component
                 'user_id'          => $user->id,
 
                 'session_id'       => $this->session_id,
-                'registration_no'      => $this->registration_no,
+                'registration_no'  => $this->registration_no,
                 'roll_no'          => $this->roll_no,
                 'admission_date'   => $this->admission_date,
                 'class_id'         => $this->class_id,

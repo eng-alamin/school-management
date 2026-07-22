@@ -126,5 +126,6 @@ return array(
     'ec07570ca5a812141189b1fa81503674' => $vendorDir . '/phpunit/phpunit/src/Framework/Assert/Functions.php',
     '72b1e3f4a2af9b30b3f137b3ec2057fc' => $vendorDir . '/spatie/laravel-activitylog/src/helpers.php',
     '6b8e8291feeda6a98e9aeed7b849b543' => $baseDir . '/app/Helpers/institution.php',
+    '7f94a9e26197aa209baa7ee094645911' => $baseDir . '/app/Helpers/feature.php',
     '5179301619630776b3dbb87bd750d6fc' => $baseDir . '/app/Helpers/setting.php',
 );

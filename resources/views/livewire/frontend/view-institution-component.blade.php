@@ -150,7 +150,7 @@
                                             </div>
                                         </div>
                                         <p class="text-muted mb-0" style="line-height: 1.8;">
-                                            <i class="bi bi-quote me-1"></i>{{ $principal->message }}
+                                            <i class="bi bi-quote me-1"></i>{{ $principal->comments }}
                                         </p>
                                     </div>
                                 </div>

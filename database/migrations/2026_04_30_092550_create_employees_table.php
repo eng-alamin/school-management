@@ -24,6 +24,7 @@ return new class extends Migration
             $table->string('qualification')->nullable();
             $table->text('experience_detail')->nullable();
             $table->string('total_experience')->nullable();
+            $table->text('comments')->nullable();
  
             // Employee Details
             $table->string('name');

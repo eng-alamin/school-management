@@ -1,384 +1,432 @@
 <div>
-
-    @if (session()->has('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <div class="page-header-area">
+        <div class="container-fluid">
+            <h4>{{ __('Institution Settings') }}</h4>
         </div>
-    @endif
+    </div>
 
-    <!-- ══ GENERAL SETTING ══ -->
-    <div class="mat-card" style="padding-top:28px; margin-bottom:24px">
+    <div class="container-fluid mt-4">
 
-        <div class="mat-card-header header-pink-gradient">
-            <h5>
-                <span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">settings</span>
-                General Setting
-            </h5>
-        </div>
+        @if(session('success'))
+            <div class="alert alert-success">{{ session('success') }}</div>
+        @endif
 
-        <div class="form-section">
-            <div class="row g-4">
-                <!-- Institution Name -->
-                <div class="col-md-6">
-                    <div class="input-group input-group-outline">
-                        <label class="form-label">Institution Name <span class="req">*</span></label>
-                        <input type="text" wire:model="name" class="form-control"
-                               placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
-                    </div>
-                    @error('name') <span class="text-danger">{{ $message }}</span> @enderror
-                </div>
-                 <!-- EIIN/কোড -->
-                <div class="col-md-6">
-                    <div class="input-group input-group-outline">
-                        <label class="form-label">EIIN/কোড</label>
-                        <input type="text" wire:model="eiin" class="form-control"
-                               placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
-                    </div>
-                    @error('eiin') <span class="text-danger">{{ $message }}</span> @enderror
-                </div>
+        {{-- Tabs --}}
+        <ul class="nav nav-tabs mb-4">
+            @foreach([
+                'general'  => ['icon' => 'fa-gear',              'label' => 'General'],
+                'register' => ['icon' => 'fa-id-badge',          'label' => 'Register Prefix'],
+                'fees'     => ['icon' => 'fa-money-bill',        'label' => 'Fees'],
+                'logo'     => ['icon' => 'fa-image',             'label' => 'Logo'],
+            ] as $tab => $info)
+                <li class="nav-item">
+                    <button
+                        wire:click="$set('activeTab', '{{ $tab }}')"
+                        type="button"
+                        class="nav-link {{ $activeTab === $tab ? 'active' : '' }}"
+                    >
+                        <i class="fas {{ $info['icon'] }} me-1"></i> {{ $info['label'] }}
+                    </button>
+                </li>
+            @endforeach
+        </ul>
 
-                <!-- Email -->
-                <div class="col-md-6">
-                    <div class="input-group input-group-outline">
-                        <label class="form-label">Email</label>
-                        <input type="email" wire:model="email" class="form-control"
-                               placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
-                    </div>
-                    @error('email') <span class="text-danger">{{ $message }}</span> @enderror
-                </div>
+        <div class="card">
 
-                <!-- Phone No -->
-                <div class="col-md-6">
-                    <div class="input-group input-group-outline">
-                        <label class="form-label">Phone No</label>
-                        <input type="text" wire:model="phone" class="form-control"
-                               placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
-                    </div>
-                    @error('phone') <span class="text-danger">{{ $message }}</span> @enderror
-                </div>
+            <div class="form-section">
 
-                <!-- City -->
-                <div class="col-md-6">
-                    <div class="input-group input-group-outline">
-                        <label class="form-label">City</label>
-                        <input type="text" wire:model="city" class="form-control"
-                               placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
-                    </div>
-                    @error('city') <span class="text-danger">{{ $message }}</span> @enderror
-                </div>
-
-                <!-- Address -->
-                <div class="col-md-12">
-                    <div class="input-group input-group-outline">
-                        <label class="form-label">Address</label>
-                        <textarea wire:model="address" class="form-control" style="min-height:80px"
-                                  placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)"></textarea>
-                    </div>
-                    @error('address') <span class="text-danger">{{ $message }}</span> @enderror
-                </div>
-
-                <!-- Weekends — selectpicker (subjects pattern) -->
-                <div class="col-md-12">
-                    <label class="form-label">Weekends</label>
-                    <div wire:ignore>
-                        <select
-                            id="weekendsSelect"
-                            multiple
-                            title="Select Weekends..."
-                            class="form-select w-100 selectpicker">
-                            <option value="Saturday">Saturday</option>
-                            <option value="Sunday">Sunday</option>
-                            <option value="Monday">Monday</option>
-                            <option value="Tuesday">Tuesday</option>
-                            <option value="Wednesday">Wednesday</option>
-                            <option value="Thursday">Thursday</option>
-                            <option value="Friday">Friday</option>
-                        </select>
-                    </div>
-                    @error('weekends') <span class="text-danger">{{ $message }}</span> @enderror
-                </div>
-
-                <!-- Unique Roll -->
-                <div class="col-md-12">
-                    <label style="font-size:.73rem;font-weight:600;color:var(--muted);display:block;margin-bottom:8px">
-                        Unique Roll
-                    </label>
-                    <div class="d-flex gap-3 flex-wrap align-items-center">
-                        <div class="form-check">
-                            <input wire:model="unique_roll" class="form-check-input" type="radio"
-                                   value="class_wise" id="rollClassWise">
-                            <label class="form-check-label" for="rollClassWise">Classes Wise</label>
+                {{-- ===== TAB: GENERAL ===== --}}
+                @if($activeTab === 'general')
+                    <div class="row g-4 mb-4">
+                        <!-- Institution Name -->
+                        <div class="col-md-6">
+                            <div class="input-group input-group-outline">
+                                <label class="form-label">Institution Name <span class="req">*</span></label>
+                                <input type="text" wire:model="name" class="form-control"
+                                       placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
+                            </div>
+                            @error('name') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
-                        <div class="form-check">
-                            <input wire:model="unique_roll" class="form-check-input" type="radio"
-                                   value="section_wise" id="rollSectionWise">
-                            <label class="form-check-label" for="rollSectionWise">Section Wise</label>
+                        <!-- EIIN/কোড -->
+                        <div class="col-md-6">
+                            <div class="input-group input-group-outline">
+                                <label class="form-label">EIIN/কোড</label>
+                                <input type="text" wire:model="eiin" class="form-control"
+                                       placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
+                            </div>
+                            @error('eiin') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
-                        <div class="form-check">
-                            <input wire:model="unique_roll" class="form-check-input" type="radio"
-                                   value="disabled" id="rollDisabled">
-                            <label class="form-check-label" for="rollDisabled">Disabled</label>
+
+                        <!-- Email -->
+                        <div class="col-md-6">
+                            <div class="input-group input-group-outline">
+                                <label class="form-label">Email</label>
+                                <input type="email" wire:model="email" class="form-control"
+                                       placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
+                            </div>
+                            @error('email') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+
+                        <!-- Phone No -->
+                        <div class="col-md-6">
+                            <div class="input-group input-group-outline">
+                                <label class="form-label">Phone No</label>
+                                <input type="text" wire:model="phone" class="form-control"
+                                       placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
+                            </div>
+                            @error('phone') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+
+                        <!-- City -->
+                        <div class="col-md-6">
+                            <div class="input-group input-group-outline">
+                                <label class="form-label">City</label>
+                                <input type="text" wire:model="city" class="form-control"
+                                       placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
+                            </div>
+                            @error('city') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+
+                        <!-- Address -->
+                        <div class="col-md-12">
+                            <div class="input-group input-group-outline">
+                                <label class="form-label">Address</label>
+                                <textarea wire:model="address" class="form-control" style="min-height:80px"
+                                          placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)"></textarea>
+                            </div>
+                            @error('address') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+
+                        <!-- Weekends — selectpicker (subjects pattern) -->
+                        <div class="col-md-12">
+                            <label class="form-label">Weekends</label>
+                            <div wire:ignore>
+                                <select
+                                    id="weekendsSelect"
+                                    multiple
+                                    title="Select Weekends..."
+                                    class="form-select w-100 selectpicker">
+                                    <option value="Saturday">Saturday</option>
+                                    <option value="Sunday">Sunday</option>
+                                    <option value="Monday">Monday</option>
+                                    <option value="Tuesday">Tuesday</option>
+                                    <option value="Wednesday">Wednesday</option>
+                                    <option value="Thursday">Thursday</option>
+                                    <option value="Friday">Friday</option>
+                                </select>
+                            </div>
+                            @error('weekends') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+
+                        <!-- Unique Roll -->
+                        <div class="col-md-12">
+                            <label style="font-size:.73rem;font-weight:600;color:var(--muted);display:block;margin-bottom:8px">
+                                Unique Roll
+                            </label>
+                            <div class="d-flex gap-3 flex-wrap align-items-center">
+                                <div class="form-check">
+                                    <input wire:model="unique_roll" class="form-check-input" type="radio"
+                                           value="class_wise" id="rollClassWise">
+                                    <label class="form-check-label" for="rollClassWise">Classes Wise</label>
+                                </div>
+                                <div class="form-check">
+                                    <input wire:model="unique_roll" class="form-check-input" type="radio"
+                                           value="section_wise" id="rollSectionWise">
+                                    <label class="form-check-label" for="rollSectionWise">Section Wise</label>
+                                </div>
+                                <div class="form-check">
+                                    <input wire:model="unique_roll" class="form-check-input" type="radio"
+                                           value="disabled" id="rollDisabled">
+                                    <label class="form-check-label" for="rollDisabled">Disabled</label>
+                                </div>
+                            </div>
+                            @error('unique_roll') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
                     </div>
-                    @error('unique_roll') <span class="text-danger">{{ $message }}</span> @enderror
-                </div>
+                @endif
+
+                {{-- ===== TAB: REGISTER PREFIX ===== --}}
+                @if($activeTab === 'register')
+                    <div class="row g-4 mb-4">
+                        <!-- Enable Prefix -->
+                        <div class="col-md-12">
+                            <div class="form-check mt-1">
+                                <input wire:model.live="enable_registration_prefix" class="form-check-input"
+                                       type="checkbox" id="enablePrefix">
+                                <label class="form-check-label" for="enablePrefix">
+                                    Enable Auto Prefix for Student Registration No.
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Registration Code Prefix -->
+                        <div class="col-md-6">
+                            <div class="input-group input-group-outline">
+                                <label class="form-label">Registration Code (Prefix) <span class="req">*</span></label>
+                                <input type="text" wire:model="registration_code_prefix" class="form-control"
+                                       placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
+                            </div>
+                            @error('registration_code_prefix') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+
+                        <!-- Register No Start From -->
+                        <div class="col-md-3">
+                            <div class="input-group input-group-outline">
+                                <label class="form-label">Registration Start From <span class="req">*</span></label>
+                                <input type="number" wire:model="registration_start_from" class="form-control"
+                                       min="1" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
+                            </div>
+                            @error('registration_start_from') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+
+                        <!-- Register No Digit -->
+                        <div class="col-md-3">
+                            <div class="input-group input-group-outline" wire:ignore>
+                                <label class="form-label">Registration Digit Length <span class="req">*</span></label>
+                                <select wire:model="registration_digit_length" class="form-select">
+                                    @for($i = 1; $i <= 10; $i++)
+                                        <option value="{{ $i }}">{{ $i }}</option>
+                                    @endfor
+                                </select>
+                            </div>
+                            @error('registration_digit_length') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+
+                        <!-- Divider between Registration and Student ID -->
+                        <div class="col-md-12">
+                            <hr>
+                        </div>
+
+                        <!-- Enable Student ID Prefix -->
+                        <div class="col-md-12">
+                            <div class="form-check mt-1">
+                                <input wire:model.live="enable_student_id_prefix" class="form-check-input"
+                                       type="checkbox" id="enableStudentIdPrefix">
+                                <label class="form-check-label" for="enableStudentIdPrefix">
+                                    Enable Auto Prefix for Student ID
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Student ID Code Prefix -->
+                        <div class="col-md-6">
+                            <div class="input-group input-group-outline">
+                                <label class="form-label">Student ID Code (Prefix) <span class="req">*</span></label>
+                                <input type="text" wire:model="student_id_code_prefix" class="form-control"
+                                       placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
+                            </div>
+                            @error('student_id_code_prefix') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+
+                        <!-- Student ID Start From -->
+                        <div class="col-md-3">
+                            <div class="input-group input-group-outline">
+                                <label class="form-label">Student ID Start From <span class="req">*</span></label>
+                                <input type="number" wire:model="student_id_start_from" class="form-control"
+                                       min="1" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
+                            </div>
+                            @error('student_id_start_from') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+
+                        <!-- Student ID Digit Length -->
+                        <div class="col-md-3">
+                            <div class="input-group input-group-outline" wire:ignore>
+                                <label class="form-label">Student ID Digit Length <span class="req">*</span></label>
+                                <select wire:model="student_id_digit_length" class="form-select">
+                                    @for($i = 1; $i <= 10; $i++)
+                                        <option value="{{ $i }}">{{ $i }}</option>
+                                    @endfor
+                                </select>
+                            </div>
+                            @error('student_id_digit_length') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+
+                        <!-- Divider between Student ID and Employee ID -->
+                        <div class="col-md-12">
+                            <hr>
+                        </div>
+
+                        <!-- Enable Employee ID Prefix -->
+                        <div class="col-md-12">
+                            <div class="form-check mt-1">
+                                <input wire:model.live="enable_employee_id_prefix" class="form-check-input"
+                                       type="checkbox" id="enableEmployeeIdPrefix">
+                                <label class="form-check-label" for="enableEmployeeIdPrefix">
+                                    Enable Auto Prefix for Employee ID
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Employee ID Code Prefix -->
+                        <div class="col-md-6">
+                            <div class="input-group input-group-outline">
+                                <label class="form-label">Employee ID Code (Prefix) <span class="req">*</span></label>
+                                <input type="text" wire:model="employee_id_code_prefix" class="form-control"
+                                       placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
+                            </div>
+                            @error('employee_id_code_prefix') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+
+                        <!-- Employee ID Start From -->
+                        <div class="col-md-3">
+                            <div class="input-group input-group-outline">
+                                <label class="form-label">Employee ID Start From <span class="req">*</span></label>
+                                <input type="number" wire:model="employee_id_start_from" class="form-control"
+                                       min="1" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
+                            </div>
+                            @error('employee_id_start_from') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+
+                        <!-- Employee ID Digit Length -->
+                        <div class="col-md-3">
+                            <div class="input-group input-group-outline" wire:ignore>
+                                <label class="form-label">Employee ID Digit Length <span class="req">*</span></label>
+                                <select wire:model="employee_id_digit_length" class="form-select">
+                                    @for($i = 1; $i <= 10; $i++)
+                                        <option value="{{ $i }}">{{ $i }}</option>
+                                    @endfor
+                                </select>
+                            </div>
+                            @error('employee_id_digit_length') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+                @endif
+
+                {{-- ===== TAB: FEES ===== --}}
+                @if($activeTab === 'fees')
+                    <div class="row g-4 mb-4">
+                        <!-- Due Days -->
+                        <div class="col-md-6">
+                            <div class="input-group input-group-outline">
+                                <label class="form-label">Due Days</label>
+                                <input type="number" wire:model="due_days" class="form-control"
+                                       min="0" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
+                            </div>
+                            @error('due_days') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+
+                        <!-- Due Fees Calculation With Fine -->
+                        <div class="col-md-12">
+                            <div class="form-check mt-1">
+                                <input wire:model="due_fees_calculation_with_fine" class="form-check-input"
+                                       type="checkbox" id="dueFeesWithFine">
+                                <label class="form-check-label" for="dueFeesWithFine">Due Fees Calculation With Fine</label>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                {{-- ===== TAB: LOGO ===== --}}
+                @if($activeTab === 'logo')
+                    <div class="row g-4 mb-4">
+
+                        <!-- System Logo -->
+                        <div class="col-md-6 col-lg-3">
+                            <label style="font-size:.73rem;font-weight:600;color:var(--muted);display:block;margin-bottom:8px">
+                                System Logo
+                            </label>
+                            <div class="photo-upload-box">
+                                @if($system_logo_upload)
+                                    <img src="{{ $system_logo_upload->temporaryUrl() }}" alt="Preview"
+                                         style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
+                                @elseif($system_logo)
+                                    <img src="{{ asset('storage/' . $system_logo) }}" alt="System Logo"
+                                         style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
+                                @else
+                                    <span class="material-icons-round">image</span>
+                                    <span class="lbl">Click to upload</span>
+                                @endif
+                                <small style="color:#bbb;font-size:.7rem">PNG, JPG up to 2MB</small>
+                                <input type="file" wire:model="system_logo_upload" accept="image/*">
+                            </div>
+                            @error('system_logo_upload') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+
+                        <!-- Text Logo -->
+                        <div class="col-md-6 col-lg-3">
+                            <label style="font-size:.73rem;font-weight:600;color:var(--muted);display:block;margin-bottom:8px">
+                                Text Logo
+                            </label>
+                            <div class="photo-upload-box">
+                                @if($text_logo_upload)
+                                    <img src="{{ $text_logo_upload->temporaryUrl() }}" alt="Preview"
+                                         style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
+                                @elseif($text_logo)
+                                    <img src="{{ asset('storage/' . $text_logo) }}" alt="Text Logo"
+                                         style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
+                                @else
+                                    <span class="material-icons-round">image</span>
+                                    <span class="lbl">Click to upload</span>
+                                @endif
+                                <small style="color:#bbb;font-size:.7rem">PNG, JPG up to 2MB</small>
+                                <input type="file" wire:model="text_logo_upload" accept="image/*">
+                            </div>
+                            @error('text_logo_upload') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+
+                        <!-- Printing Logo -->
+                        <div class="col-md-6 col-lg-3">
+                            <label style="font-size:.73rem;font-weight:600;color:var(--muted);display:block;margin-bottom:8px">
+                                Printing Logo
+                            </label>
+                            <div class="photo-upload-box">
+                                @if($print_logo_upload)
+                                    <img src="{{ $print_logo_upload->temporaryUrl() }}" alt="Preview"
+                                         style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
+                                @elseif($print_logo)
+                                    <img src="{{ asset('storage/' . $print_logo) }}" alt="Printing Logo"
+                                         style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
+                                @else
+                                    <span class="material-icons-round">image</span>
+                                    <span class="lbl">Click to upload</span>
+                                @endif
+                                <small style="color:#bbb;font-size:.7rem">PNG, JPG up to 2MB</small>
+                                <input type="file" wire:model="print_logo_upload" accept="image/*">
+                            </div>
+                            @error('print_logo_upload') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+
+                        <!-- Report Card Logo -->
+                        <div class="col-md-6 col-lg-3">
+                            <label style="font-size:.73rem;font-weight:600;color:var(--muted);display:block;margin-bottom:8px">
+                                Report Card
+                            </label>
+                            <div class="photo-upload-box">
+                                @if($report_logo_upload)
+                                    <img src="{{ $report_logo_upload->temporaryUrl() }}" alt="Preview"
+                                         style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
+                                @elseif($report_logo)
+                                    <img src="{{ asset('storage/' . $report_logo) }}" alt="Report Card Logo"
+                                         style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
+                                @else
+                                    <span class="material-icons-round">image</span>
+                                    <span class="lbl">Click to upload</span>
+                                @endif
+                                <small style="color:#bbb;font-size:.7rem">PNG, JPG up to 2MB</small>
+                                <input type="file" wire:model="report_logo_upload" accept="image/*">
+                            </div>
+                            @error('report_logo_upload') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+
+                    </div>
+                @endif
 
             </div>
         </div>
-    </div>
 
-    <!-- ══ REGISTER NO PREFIX ══ -->
-    <div class="mat-card" style="padding-top:28px; margin-bottom:24px">
-
-        <div class="mat-card-header header-pink-gradient">
-            <h5>
-                <span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">badge</span>
-                Register No Prefix
-            </h5>
-        </div>
-
-        <div class="form-section">
-            <div class="row g-4">
-
-                <!-- Enable Prefix -->
-                <div class="col-md-12">
-                    <div class="form-check mt-1">
-                        <input wire:model.live="enable_registration_prefix" class="form-check-input"
-                               type="checkbox" id="enablePrefix">
-                        <label class="form-check-label" for="enablePrefix">
-                            Enable Student Admission Registration No Prefix Auto.
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Institution Code Prefix -->
-                <div class="col-md-6">
-                    <div class="input-group input-group-outline">
-                        <label class="form-label">Institution Code (Prefix) <span class="req">*</span></label>
-                        <input type="text" wire:model="institution_code_prefix" class="form-control"
-                               placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
-                    </div>
-                    @error('institution_code_prefix') <span class="text-danger">{{ $message }}</span> @enderror
-                </div>
-
-                <!-- Register No Start From -->
-                <div class="col-md-3">
-                    <div class="input-group input-group-outline">
-                        <label class="form-label">Register No Start From <span class="req">*</span></label>
-                        <input type="number" wire:model="register_start_from" class="form-control"
-                               min="1" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
-                    </div>
-                    @error('register_start_from') <span class="text-danger">{{ $message }}</span> @enderror
-                </div>
-
-                <!-- Register No Digit -->
-                <div class="col-md-3">
-                    <div class="input-group input-group-outline" wire:ignore>
-                        <label class="form-label">Register No Digit <span class="req">*</span></label>
-                        <select wire:model="register_no_digit" class="form-select">
-                            @for($i = 1; $i <= 10; $i++)
-                                <option value="{{ $i }}">{{ $i }}</option>
-                            @endfor
-                        </select>
-                    </div>
-                    @error('register_no_digit') <span class="text-danger">{{ $message }}</span> @enderror
-                </div>
-
-            </div>
-        </div>
-    </div>
-
-    <!-- ══ ONLINE EXAM ══ -->
-    <div class="mat-card" style="padding-top:28px; margin-bottom:24px">
-
-        <div class="mat-card-header header-pink-gradient">
-            <h5>
-                <span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">quiz</span>
-                Online Exam
-            </h5>
-        </div>
-
-        <div class="form-section">
-            <div class="row g-4">
-                <div class="col-md-6">
-                    <div class="input-group input-group-outline" wire:ignore>
-                        <label class="form-label">Show Only Own Question</label>
-                        <select wire:model="show_only_own_question" class="form-select">
-                            <option value="0">Disabled</option>
-                            <option value="1">Enabled</option>
-                        </select>
-                    </div>
-                    @error('show_only_own_question') <span class="text-danger">{{ $message }}</span> @enderror
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ══ FEES CARRY FORWARD SETTING ══ -->
-    <div class="mat-card" style="padding-top:28px; margin-bottom:24px">
-
-        <div class="mat-card-header header-pink-gradient">
-            <h5>
-                <span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">currency_exchange</span>
-                Fees Carry Forward Setting
-            </h5>
-        </div>
-
-        <div class="form-section">
-            <div class="row g-4">
-
-                <!-- Due Days -->
-                <div class="col-md-6">
-                    <div class="input-group input-group-outline">
-                        <label class="form-label">Due Days</label>
-                        <input type="number" wire:model="due_days" class="form-control"
-                               min="0" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
-                    </div>
-                    @error('due_days') <span class="text-danger">{{ $message }}</span> @enderror
-                </div>
-
-                <!-- Due Fees Calculation With Fine -->
-                <div class="col-md-12">
-                    <div class="form-check mt-1">
-                        <input wire:model="due_fees_calculation_with_fine" class="form-check-input"
-                               type="checkbox" id="dueFeesWithFine">
-                        <label class="form-check-label" for="dueFeesWithFine">Due Fees Calculation With Fine</label>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </div>
-
-    <!-- ══ LOGO SETTING ══ -->
-    <div class="mat-card" style="padding-top:28px; margin-bottom:24px">
-
-        <div class="mat-card-header header-pink-gradient">
-            <h5>
-                <span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">image</span>
-                Logo Setting
-            </h5>
-        </div>
-<form wire:submit="save" enctype="multipart/form-data">
-        <div class="form-section">
-            <div class="row g-4">
-
-                <!-- System Logo -->
-                <div class="col-md-6 col-lg-3">
-                    <label style="font-size:.73rem;font-weight:600;color:var(--muted);display:block;margin-bottom:8px">
-                        System Logo
-                    </label>
-                    <div class="photo-upload-box">
-                        @if($system_logo_upload)
-                            <img src="{{ $system_logo_upload->temporaryUrl() }}" alt="Preview"
-                                 style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
-                        @elseif($system_logo)
-                            <img src="{{ asset('storage/' . $system_logo) }}" alt="System Logo"
-                                 style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
-                        @else
-                            <span class="material-icons-round">image</span>
-                            <span class="lbl">Click to upload</span>
-                        @endif
-                        <small style="color:#bbb;font-size:.7rem">PNG, JPG up to 2MB</small>
-                        <input type="file" wire:model="system_logo_upload" accept="image/*">
-                    </div>
-                    @error('system_logo_upload') <span class="text-danger">{{ $message }}</span> @enderror
-                </div>
-
-                <!-- Text Logo -->
-                <div class="col-md-6 col-lg-3">
-                    <label style="font-size:.73rem;font-weight:600;color:var(--muted);display:block;margin-bottom:8px">
-                        Text Logo
-                    </label>
-                    <div class="photo-upload-box">
-                        @if($text_logo_upload)
-                            <img src="{{ $text_logo_upload->temporaryUrl() }}" alt="Preview"
-                                 style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
-                        @elseif($text_logo)
-                            <img src="{{ asset('storage/' . $text_logo) }}" alt="Text Logo"
-                                 style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
-                        @else
-                            <span class="material-icons-round">image</span>
-                            <span class="lbl">Click to upload</span>
-                        @endif
-                        <small style="color:#bbb;font-size:.7rem">PNG, JPG up to 2MB</small>
-                        <input type="file" wire:model="text_logo_upload" accept="image/*">
-                    </div>
-                    @error('text_logo_upload') <span class="text-danger">{{ $message }}</span> @enderror
-                </div>
-
-                <!-- Printing Logo -->
-                <div class="col-md-6 col-lg-3">
-                    <label style="font-size:.73rem;font-weight:600;color:var(--muted);display:block;margin-bottom:8px">
-                        Printing Logo
-                    </label>
-                    <div class="photo-upload-box">
-                        @if($print_logo_upload)
-                            <img src="{{ $print_logo_upload->temporaryUrl() }}" alt="Preview"
-                                 style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
-                        @elseif($print_logo)
-                            <img src="{{ asset('storage/' . $print_logo) }}" alt="Printing Logo"
-                                 style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
-                        @else
-                            <span class="material-icons-round">image</span>
-                            <span class="lbl">Click to upload</span>
-                        @endif
-                        <small style="color:#bbb;font-size:.7rem">PNG, JPG up to 2MB</small>
-                        <input type="file" wire:model="print_logo_upload" accept="image/*">
-                    </div>
-                    @error('print_logo_upload') <span class="text-danger">{{ $message }}</span> @enderror
-                </div>
-
-                <!-- Report Card Logo -->
-                <div class="col-md-6 col-lg-3">
-                    <label style="font-size:.73rem;font-weight:600;color:var(--muted);display:block;margin-bottom:8px">
-                        Report Card
-                    </label>
-                    <div class="photo-upload-box">
-                        @if($report_logo_upload)
-                            <img src="{{ $report_logo_upload->temporaryUrl() }}" alt="Preview"
-                                 style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
-                        @elseif($report_logo)
-                            <img src="{{ asset('storage/' . $report_logo) }}" alt="Report Card Logo"
-                                 style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
-                        @else
-                            <span class="material-icons-round">image</span>
-                            <span class="lbl">Click to upload</span>
-                        @endif
-                        <small style="color:#bbb;font-size:.7rem">PNG, JPG up to 2MB</small>
-                        <input type="file" wire:model="report_logo_upload" accept="image/*">
-                    </div>
-                    @error('report_logo_upload') <span class="text-danger">{{ $message }}</span> @enderror
-                </div>
-
-            </div>
-        </div>
-
-        <!-- FORM FOOTER -->
-        <div class="form-footer">
-            <button class="btn-pink"
-                    type="submit"
-                    wire:loading.attr="disabled"
-                    wire:target="save">
-
+        {{-- Action Buttons (SystemSettingsComponent pattern) --}}
+        <div class="d-flex gap-3 mt-4 mb-5">
+            <button wire:click="save" class="btn btn-outline bg-dark text-white px-5">
                 <span wire:loading.remove wire:target="save">
-                    <span class="material-icons-round">save</span>
-                    Save
+                    <i class="fas fa-save me-2"></i>{{ __('Save Changes') }}
                 </span>
-
                 <span wire:loading wire:target="save">
-                    <span class="material-icons-round"
-                          style="font-size:16px;animation:spin .7s linear infinite">
-                        sync
-                    </span>
-                    Saving...
+                    <i class="fas fa-spinner fa-spin me-2"></i>{{ __('Saving...') }}
                 </span>
             </button>
         </div>
-</form>
-    </div>
 
+    </div>
 </div>
 
 @push('styles')
@@ -391,7 +439,6 @@
 <script>
     function initAllFields() {
 
-        // Text/Textarea is-filled
         document.querySelectorAll('.input-group-outline input, .input-group-outline textarea').forEach(function(input) {
             var group = input.closest('.input-group');
             if (!group) return;
@@ -412,7 +459,6 @@
             });
         });
 
-        // Select is-filled
         document.querySelectorAll('.input-group-outline select').forEach(function(select) {
             var group = select.closest('.input-group');
             if (!group) return;
@@ -430,7 +476,6 @@
             select.addEventListener('blur', function() { group.classList.remove('is-focused'); });
         });
 
-        // Custom Select rebuild
         document.querySelectorAll('.input-group-outline .form-select').forEach(function(select) {
             var old = select.parentNode.querySelector('.custom-select-wrapper');
             if (old) old.remove();
@@ -441,13 +486,10 @@
         });
     }
 
-    // ── Weekends selectpicker ────────────────────────────────────────────
     function initWeekendsPicker() {
         var $sel = $('#weekendsSelect');
         if (!$sel.length) return;
 
-        // আগের instance destroy kore notun kore init kora — idempotent,
-        // tai kotobar e function call hoy oita matter kore na
         try { $sel.selectpicker('destroy'); } catch (e) {}
 
         var currentWeekends = @json($weekends ?? []);
@@ -462,11 +504,6 @@
         }
     }
 
-    // ✅ MAIN FIX: 'livewire:initialized' / 'livewire:init' pura session-e
-    // MAATTRO EKBAR fire hoy — wire:navigate diye onno page theke fire e
-    // page-e fire ashle eta abar fire e hoy na, tai picker init e hoy na.
-    // 'livewire:navigated' initial load + protek wire:navigate navigation-e
-    // fire hoy, tai eta e thik event.
     document.addEventListener('livewire:navigated', () => {
         setTimeout(() => {
             initAllFields();
@@ -474,22 +511,28 @@
         }, 250);
     });
 
-    // sync value to Livewire — delegated, ekbar bind korai jothesto
+    // Tab change kore General tab e ashle weekendsSelect abar dom-e render hoy,
+    // tai eta abar init korte hobe — noile purono DOM-er sathe bind thake.
+    document.addEventListener('livewire:navigated', () => {
+        if (!window.__institutionTabHookBound) {
+            window.__institutionTabHookBound = true;
+            Livewire.hook('morph.updated', () => {
+                setTimeout(() => {
+                    initAllFields();
+                    if (document.getElementById('weekendsSelect')) {
+                        initWeekendsPicker();
+                    }
+                }, 50);
+            });
+        }
+    });
+
     $(document).on('changed.bs.select', '#weekendsSelect', function () {
         @this.set('weekends', $(this).val() ?? []);
     });
 
-    // Livewire.hook globally protibar register hoy — guard diye duplicate atkano
     if (!window.__institutionSettingsHooksBound) {
         window.__institutionSettingsHooksBound = true;
-
-        Livewire.hook('morph.updated', () => {
-            setTimeout(() => initAllFields(), 50);
-        });
-
-        Livewire.hook('message.processed', () => {
-            setTimeout(() => refreshWeekendsPicker(), 50);
-        });
 
         Livewire.on('saved', () => {
             setTimeout(() => {

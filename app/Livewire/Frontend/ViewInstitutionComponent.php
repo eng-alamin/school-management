@@ -84,11 +84,6 @@ class ViewInstitutionComponent extends Component
 
     /**
      * Principal & Vice Principal Message Section।
-     *
-     * TODO (Dynamic Plan): ভবিষ্যতে `users` টেবিলে একটি `message` (text, nullable)
-     * column যোগ করে নিচের placeholder সরিয়ে `$user->message` ব্যবহার করতে হবে।
-     * Blade structure অপরিবর্তিত থাকবে কারণ Blade শুধু 'id', 'name', 'avatar',
-     * 'role', 'role_label_bn', 'role_label_en', 'message' — এই key গুলো আশা করে।
      */
     public function getPrincipalsProperty()
     {
@@ -97,8 +92,14 @@ class ViewInstitutionComponent extends Component
             'vice_principal' => ['bn' => 'সহকারী প্রধান শিক্ষক', 'en' => 'Vice Principal'],
         ];
 
+        $defaultMessages = [
+            'principal'      => 'আমাদের প্রতিষ্ঠানে শিক্ষার্থীদের মানসম্মত শিক্ষা ও নৈতিক মূল্যবোধ গঠনে আমরা প্রতিশ্রুতিবদ্ধ। আপনাদের সন্তানদের উজ্জ্বল ভবিষ্যৎ গড়ার লক্ষ্যে আমরা সবসময় পাশে আছি।',
+            'vice_principal' => 'শিক্ষার্থীদের সার্বিক উন্নয়ন ও শৃঙ্খলা রক্ষায় আমরা নিরলসভাবে কাজ করে যাচ্ছি। অভিভাবকদের সহযোগিতা আমাদের এই যাত্রাকে আরও সহজ করে তোলে।',
+        ];
+
         return Employee::query()
-            ->select(['id', 'user_id', 'designation_id', 'name', 'photo'])
+            ->select(['id', 'user_id', 'institution_id', 'designation_id', 'name', 'photo', 'comments'])
+            ->where('institution_id', institution()->id)
             ->whereHas('designation', function ($query) {
                 $query->whereIn('name', ['Principal', 'Vice Principal']);
             })
@@ -108,17 +109,16 @@ class ViewInstitutionComponent extends Component
                 return $employee->designation->name === 'Principal' ? 0 : 1;
             })
             ->values()
-            ->map(function ($employee) use ($roleLabels) {
+            ->map(function ($employee) use ($roleLabels, $defaultMessages) {
                 $designationName = $employee->designation->name;
                 $roleKey = $designationName === 'Principal' ? 'principal' : 'vice_principal';
 
                 $employee->role_label_bn = $roleLabels[$roleKey]['bn'] ?? $designationName;
                 $employee->role_label_en = $roleLabels[$roleKey]['en'] ?? $designationName;
 
-                // Placeholder message — employees টেবিলে message column তৈরি হলে এখানে $employee->message বসবে।
-                $employee->message = $roleKey === 'principal'
-                    ? 'আমাদের প্রতিষ্ঠানে শিক্ষার্থীদের মানসম্মত শিক্ষা ও নৈতিক মূল্যবোধ গঠনে আমরা প্রতিশ্রুতিবদ্ধ। আপনাদের সন্তানদের উজ্জ্বল ভবিষ্যৎ গড়ার লক্ষ্যে আমরা সবসময় পাশে আছি।'
-                    : 'শিক্ষার্থীদের সার্বিক উন্নয়ন ও শৃঙ্খলা রক্ষায় আমরা নিরলসভাবে কাজ করে যাচ্ছি। অভিভাবকদের সহযোগিতা আমাদের এই যাত্রাকে আরও সহজ করে তোলে।';
+                $employee->message = !empty($employee->comments)
+                    ? $employee->comments
+                    : $defaultMessages[$roleKey];
 
                 return $employee;
             });

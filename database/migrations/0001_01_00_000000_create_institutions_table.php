@@ -26,9 +26,21 @@ return new class extends Migration
 
             // Registration
             $table->boolean('enable_registration_prefix')->default(false);
-            $table->string('institution_code_prefix')->nullable();
-            $table->unsignedBigInteger('register_start_from')->default(1);
-            $table->unsignedInteger('register_no_digit')->default(4);
+            $table->string('registration_code_prefix')->nullable();
+            $table->unsignedBigInteger('registration_start_from')->default(1);
+            $table->unsignedTinyInteger('registration_digit_length')->default(6);
+
+            // Student ID
+            $table->boolean('enable_student_id_prefix')->default(false);
+            $table->string('student_id_code_prefix')->nullable();
+            $table->unsignedBigInteger('student_id_start_from')->default(1);
+            $table->unsignedTinyInteger('student_id_digit_length')->default(6);
+
+            // Employee ID
+            $table->boolean('enable_employee_id_prefix')->default(false);
+            $table->string('employee_id_code_prefix')->nullable();
+            $table->unsignedBigInteger('employee_id_start_from')->default(1);
+            $table->unsignedTinyInteger('employee_id_digit_length')->default(6);
 
             // Fees
             $table->unsignedInteger('due_days')->default(30);

@@ -421,7 +421,10 @@ Route::middleware(['auth', 'role:admin', 'billing.check'])->group(function () {
     // Other
     Route::get('notices', \App\Livewire\Admin\Notice\NoticeComponent::class)->name('admin.notices');
     Route::get('notifications', \App\Livewire\Admin\Notifications\Index::class)->name('admin.notifications.index');
+
+    // Setting
     Route::get('setting/institution', \App\Livewire\Admin\Setting\InstitutionComponent::class)->name('admin.setting.institution');
+    Route::get('setting/features', \App\Livewire\Admin\Setting\FeatureComponent::class)->name('admin.setting.features');
 
     // Profile
     Route::get('profile/overview', \App\Livewire\Admin\Profile\OverviewComponent::class)->name('admin.profile.overview');

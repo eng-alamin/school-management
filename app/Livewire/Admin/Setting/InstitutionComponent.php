@@ -12,8 +12,7 @@ class InstitutionComponent extends Component
 {
     use WithFileUploads;
 
-    // Single-tenant: always id = 1
-    protected const INSTITUTION_ID = 1;
+    public string $activeTab = 'general';
 
     // General
     public string $name         = '';
@@ -28,16 +27,25 @@ class InstitutionComponent extends Component
 
     // Registration
     public bool $enable_registration_prefix = false;
-    public ?string $institution_code_prefix = null;
-    public int $register_start_from         = 1;
-    public int $register_no_digit           = 4;
+    public ?string $registration_code_prefix = null;
+    public int $registration_start_from         = 1;
+    public int $registration_digit_length           = 4;
+
+    // Student ID
+    public bool $enable_student_id_prefix = false;
+    public ?string $student_id_code_prefix = null;
+    public int $student_id_start_from         = 1;
+    public int $student_id_digit_length           = 6;
+
+    // Employee ID
+    public bool $enable_employee_id_prefix = false;
+    public ?string $employee_id_code_prefix = null;
+    public int $employee_id_start_from         = 1;
+    public int $employee_id_digit_length           = 6;
 
     // Fees
     public int $due_days                          = 30;
     public bool $due_fees_calculation_with_fine   = false;
-
-    // Online Exam ✅ (declare kora hoyni age, missing chilo)
-    public bool $show_only_own_question = false;
 
     // Logo paths (stored — raw relative path, e.g. "institutions/logos/xxx.webp")
     public ?string $system_logo = null;
@@ -66,14 +74,22 @@ class InstitutionComponent extends Component
             'academic_year'     => 'nullable|string|max:20',
 
             'enable_registration_prefix' => 'boolean',
-            'institution_code_prefix'    => 'nullable|string|max:50',
-            'register_start_from'        => 'required|integer|min:1',
-            'register_no_digit'          => 'required|integer|min:1|max:10',
+            'registration_code_prefix'    => 'nullable|string|max:50',
+            'registration_start_from'        => 'required|integer|min:1',
+            'registration_digit_length'          => 'required|integer|min:1|max:10',
+
+            'enable_student_id_prefix' => 'boolean',
+            'student_id_code_prefix'    => 'nullable|string|max:50',
+            'student_id_start_from'        => 'required|integer|min:1',
+            'student_id_digit_length'          => 'required|integer|min:1|max:10',
+
+            'enable_employee_id_prefix' => 'boolean',
+            'employee_id_code_prefix'    => 'nullable|string|max:50',
+            'employee_id_start_from'        => 'required|integer|min:1',
+            'employee_id_digit_length'          => 'required|integer|min:1|max:10',
 
             'due_days'                         => 'required|integer|min:0',
             'due_fees_calculation_with_fine'   => 'boolean',
-
-            'show_only_own_question' => 'boolean',
 
             'system_logo_upload' => 'nullable|image|max:2048',
             'text_logo_upload'   => 'nullable|image|max:2048',
@@ -101,14 +117,22 @@ class InstitutionComponent extends Component
         $this->academic_year                = $setting->academic_year;
 
         $this->enable_registration_prefix   = (bool) $setting->enable_registration_prefix;
-        $this->institution_code_prefix      = $setting->institution_code_prefix;
-        $this->register_start_from          = (int) ($setting->register_start_from ?? 1);
-        $this->register_no_digit            = (int) ($setting->register_no_digit   ?? 4);
+        $this->registration_code_prefix      = $setting->registration_code_prefix;
+        $this->registration_start_from          = (int) ($setting->registration_start_from ?? 1);
+        $this->registration_digit_length            = (int) ($setting->registration_digit_length   ?? 4);
+
+        $this->enable_student_id_prefix   = (bool) $setting->enable_student_id_prefix;
+        $this->student_id_code_prefix      = $setting->student_id_code_prefix;
+        $this->student_id_start_from          = (int) ($setting->student_id_start_from ?? 1);
+        $this->student_id_digit_length            = (int) ($setting->student_id_digit_length   ?? 6);
+
+        $this->enable_employee_id_prefix   = (bool) $setting->enable_employee_id_prefix;
+        $this->employee_id_code_prefix      = $setting->employee_id_code_prefix;
+        $this->employee_id_start_from          = (int) ($setting->employee_id_start_from ?? 1);
+        $this->employee_id_digit_length            = (int) ($setting->employee_id_digit_length   ?? 6);
 
         $this->due_days                         = (int) ($setting->due_days ?? 30);
         $this->due_fees_calculation_with_fine   = (bool) $setting->due_fees_calculation_with_fine;
-
-        $this->show_only_own_question = (bool) ($setting->show_only_own_question ?? false);
 
         // raw path সরাসরি property-তে রাখা হলো (storage/ prefix নেই)
         $this->system_logo  = $setting->system_logo;
@@ -158,20 +182,28 @@ class InstitutionComponent extends Component
             'academic_year'                  => $this->academic_year,
 
             'enable_registration_prefix'     => $this->enable_registration_prefix,
-            'institution_code_prefix'        => $this->institution_code_prefix,
-            'register_start_from'            => $this->register_start_from,
-            'register_no_digit'              => $this->register_no_digit,
+            'registration_code_prefix'        => $this->registration_code_prefix,
+            'registration_start_from'            => $this->registration_start_from,
+            'registration_digit_length'              => $this->registration_digit_length,
+
+            'enable_student_id_prefix'       => $this->enable_student_id_prefix,
+            'student_id_code_prefix'          => $this->student_id_code_prefix,
+            'student_id_start_from'              => $this->student_id_start_from,
+            'student_id_digit_length'                => $this->student_id_digit_length,
+
+            'enable_employee_id_prefix'      => $this->enable_employee_id_prefix,
+            'employee_id_code_prefix'         => $this->employee_id_code_prefix,
+            'employee_id_start_from'             => $this->employee_id_start_from,
+            'employee_id_digit_length'               => $this->employee_id_digit_length,
 
             'due_days'                       => $this->due_days,
             'due_fees_calculation_with_fine' => $this->due_fees_calculation_with_fine,
-
-            // 'show_only_own_question'         => $this->show_only_own_question,
         ]);
 
         $setting->save();
 
         // Clear institution settings cache
-        Cache::forget('institution_settings');
+        Cache::forget("institution_settings_{$setting->id}");
 
         // Reset upload fields after save
         $this->reset([
@@ -179,7 +211,6 @@ class InstitutionComponent extends Component
             'print_logo_upload',  'report_logo_upload',
         ]);
 
-        $this->redirect(request()->header('Referer'));
         $this->dispatch('toast', type: 'success', message: 'Institution settings saved successfully.');
     }
 

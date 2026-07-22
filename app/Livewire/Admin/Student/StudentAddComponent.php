@@ -27,6 +27,7 @@ class StudentAddComponent extends Component
 
     public $session_id;
     public $registration_no;
+    public $student_id;
     public $roll_no;
     public $admission_date;
     public $class_id;
@@ -61,8 +62,6 @@ class StudentAddComponent extends Component
     public $previous_institution;
     public $qualification;
     public $remarks;
-
-    public $studentId;
 
     public bool $guardian_exists = false;
 
@@ -101,6 +100,7 @@ class StudentAddComponent extends Component
         $this->group_id = $group?->id;
 
         $this->generateRegisterNo();
+        $this->generateStudentId();
 
         $this->admission_date = now()->format('Y-m-d');
         $this->paymentDate = now()->format('Y-m-d');
@@ -113,19 +113,53 @@ class StudentAddComponent extends Component
     private function generateRegisterNo(): void
     {
         $institutionId = auth()->user()->institution_id;
-        $institutionCode = 'RG' . str_pad($institutionId, 2, '0', STR_PAD_LEFT);
+        $inst = institution();
+
+        $digit     = (int) ($inst->registration_digit_length ?? 6);
+        $startFrom = (int) ($inst->registration_start_from ?? 1);
+
+        $prefix = ($inst->enable_registration_prefix && $inst->registration_code_prefix)
+            ? $inst->registration_code_prefix
+            : 'RG' . str_pad($institutionId, 2, '0', STR_PAD_LEFT);
+
         $year = now()->format('y');
 
         $lastStudent = Student::where('institution_id', $institutionId)
-            ->lockForUpdate()
+            ->whereNotNull('registration_no')
             ->orderByDesc('id')
             ->first();
 
         $serial = $lastStudent
-            ? ((int) substr($lastStudent->student_id, -6)) + 1
-            : 1;
+            ? ((int) substr($lastStudent->registration_no, -$digit)) + 1
+            : $startFrom;
 
-        $this->registration_no = $institutionCode . $year . str_pad($serial, 6, '0', STR_PAD_LEFT);
+        $this->registration_no = $prefix . $year . str_pad($serial, $digit, '0', STR_PAD_LEFT);
+    }
+
+    private function generateStudentId(): void
+    {
+        $institutionId = auth()->user()->institution_id;
+        $inst = institution();
+
+        $digit     = (int) ($inst->student_id_digit_length ?? 6);
+        $startFrom = (int) ($inst->student_id_start_from ?? 1);
+
+        $prefix = ($inst->enable_student_id_prefix && $inst->student_id_code_prefix)
+            ? $inst->student_id_code_prefix
+            : 'SCH' . str_pad($institutionId, 2, '0', STR_PAD_LEFT);
+
+        $year = now()->format('y');
+
+        $lastStudent = Student::where('institution_id', $institutionId)
+            ->whereNotNull('student_id')
+            ->orderByDesc('id')
+            ->first();
+
+        $serial = $lastStudent
+            ? ((int) substr($lastStudent->student_id, -$digit)) + 1
+            : $startFrom;
+
+        $this->student_id = $prefix . $year . str_pad($serial, $digit, '0', STR_PAD_LEFT);
     }
 
     private function generateRollNo($classId): void
@@ -177,6 +211,7 @@ class StudentAddComponent extends Component
         return [
             'session_id'  => 'required',
             'registration_no' => 'nullable|unique:students,registration_no',
+            'student_id'  => 'nullable|unique:students,student_id',
             'class_id'    => 'required',
 
             'name' => 'required',
@@ -217,6 +252,7 @@ class StudentAddComponent extends Component
         $this->session_id = $session?->id;
 
         $this->generateRegisterNo();
+        $this->generateStudentId();
 
         $this->admission_date = now()->format('Y-m-d');
         $this->paymentDate = now()->format('Y-m-d');
@@ -386,19 +422,52 @@ class StudentAddComponent extends Component
                 ? $this->guardian_photo_upload->store('guardians', 'public')
                 : null;
 
-            $institutionCode = 'SCH' . str_pad($institutionId, 2, '0', STR_PAD_LEFT);
+            // ── Race-condition safety: lock kore last student dhore
+            // student_id ke re-verify/re-generate kora hocche, preview-e generate
+            // kora value use na kore ekhane lock-safe kora holo ──
+            $inst = institution();
+            $stdDigit     = (int) ($inst->student_id_digit_length ?? 6);
+            $stdStartFrom = (int) ($inst->student_id_start_from ?? 1);
+
+            $stdPrefix = ($inst->enable_student_id_prefix && $inst->student_id_code_prefix)
+                ? $inst->student_id_code_prefix
+                : 'SCH' . str_pad($institutionId, 2, '0', STR_PAD_LEFT);
+
             $year = now()->format('y');
 
-            $lastStudent = Student::where('institution_id', $institutionId)
+            $lastStudentForId = Student::where('institution_id', $institutionId)
+                ->whereNotNull('student_id')
                 ->lockForUpdate()
                 ->orderByDesc('id')
                 ->first();
 
-            $serial = $lastStudent
-                ? ((int) substr($lastStudent->student_id, -6)) + 1
-                : 1;
+            $stdSerial = $lastStudentForId
+                ? ((int) substr($lastStudentForId->student_id, -$stdDigit)) + 1
+                : $stdStartFrom;
 
-            $studentId = $institutionCode . $year . str_pad($serial, 6, '0', STR_PAD_LEFT);
+            $studentId = $stdPrefix . $year . str_pad($stdSerial, $stdDigit, '0', STR_PAD_LEFT);
+
+            // ── Race-condition safety: registration_no-o ekhon ekivabei
+            // lock kore re-verify/re-generate kora hocche, preview-e generate
+            // kora value use na kore ──
+            $regDigit     = (int) ($inst->registration_digit_length ?? 6);
+            $regStartFrom = (int) ($inst->registration_start_from ?? 1);
+
+            $regPrefix = ($inst->enable_registration_prefix && $inst->registration_code_prefix)
+                ? $inst->registration_code_prefix
+                : 'RG' . str_pad($institutionId, 2, '0', STR_PAD_LEFT);
+
+            $lastStudentForReg = Student::where('institution_id', $institutionId)
+                ->whereNotNull('registration_no')
+                ->lockForUpdate()
+                ->orderByDesc('id')
+                ->first();
+
+            $regSerial = $lastStudentForReg
+                ? ((int) substr($lastStudentForReg->registration_no, -$regDigit)) + 1
+                : $regStartFrom;
+
+            $registrationNo = $regPrefix . $year . str_pad($regSerial, $regDigit, '0', STR_PAD_LEFT);
 
             $rollSerial = Student::where('institution_id', $institutionId)
                 ->where('class_id', $this->class_id)
@@ -412,7 +481,7 @@ class StudentAddComponent extends Component
 
                 'session_id'     => $this->session_id,
                 'student_id'     => $studentId,
-                'registration_no'    => $this->registration_no,
+                'registration_no'    => $registrationNo,
                 'roll_no'        => $rollNo,
                 'admission_date' => $this->admission_date,
                 'class_id'       => $this->class_id,

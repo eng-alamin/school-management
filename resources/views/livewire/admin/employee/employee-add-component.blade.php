@@ -40,7 +40,7 @@
                 <div class="col-md-6">
                     <div class="input-group input-group-outline" wire:ignore>
                         <label class="form-label"><span id="emp-add-lbl-designation">Designation</span> <span class="req">*</span></label>
-                        <select wire:model="designation_id" class="form-select">
+                        <select wire:model.live="designation_id" class="form-select">
                             <option value="">Select Designation</option>
                             @foreach ($designations as $designation)
                                 <option value="{{ $designation->id }}">{{ $designation->name }}</option>
@@ -86,6 +86,16 @@
                     </div>
                     @error('experience_detail') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
+
+                @if($this->selectedDesignationName === 'Principal')
+                    <div class="col-12">
+                        <div class="input-group input-group-outline">
+                            <label class="form-label" id="emp-add-lbl-comments">Comments</label>
+                            <textarea wire:model="comments" class="form-control" placeholder=" " style="min-height:90px" onfocus="focused(this)" onfocusout="defocused(this)"></textarea>
+                        </div>
+                        @error('comments') <span class="text-danger">{{ $message }}</span> @enderror
+                    </div>
+                @endif
             </div>
         </div>
 

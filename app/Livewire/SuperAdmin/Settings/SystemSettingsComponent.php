@@ -34,11 +34,6 @@ class SystemSettingsComponent extends Component
     public ?string $register_type = null;
     public ?string $register_fee = null;
 
-    // Feature Toggle
-    public bool $feature_student = true;
-    public bool $feature_teacher = true;
-    public bool $feature_fee = true;
-
     // Maintenance
     public bool $maintenance_mode = false;
 
@@ -54,9 +49,6 @@ class SystemSettingsComponent extends Component
         'payment_gateway'   => null,
         'register_type'     => 'free',
         'register_fee'      => 0,
-        'feature_student'   => 1,
-        'feature_teacher'   => 1,
-        'feature_fee'       => 1,
         'maintenance_mode'  => 0,
     ];
 
@@ -76,10 +68,6 @@ class SystemSettingsComponent extends Component
 
         $this->register_type = setting('register_type');
         $this->register_fee  = setting('register_fee');
-
-        $this->feature_student = setting('feature_student') == '1';
-        $this->feature_teacher = setting('feature_teacher') == '1';
-        $this->feature_fee     = setting('feature_fee') == '1';
 
         $this->maintenance_mode = setting('maintenance_mode') == '1';
     }
@@ -116,9 +104,6 @@ class SystemSettingsComponent extends Component
             'register_type'    => $this->register_type,
             'register_fee'     => $this->register_fee,
             'maintenance_mode' => $this->maintenance_mode ? 1 : 0,
-            'feature_student'  => $this->feature_student ? 1 : 0,
-            'feature_teacher'  => $this->feature_teacher ? 1 : 0,
-            'feature_fee'      => $this->feature_fee ? 1 : 0,
         ];
 
         // Only touch the logo if a new file was actually chosen
