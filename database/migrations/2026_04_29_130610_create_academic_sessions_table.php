@@ -19,6 +19,7 @@ return new class extends Migration
             $table->date('end_date')->nullable();
             $table->boolean('is_current')->default(true);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

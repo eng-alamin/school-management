@@ -124,7 +124,7 @@ class EmployeeAddComponent extends Component
 
         $prefix = ($inst->enable_employee_id_prefix && $inst->employee_id_code_prefix)
             ? $inst->employee_id_code_prefix
-            : 'SCH' . str_pad($institutionId, 2, '0', STR_PAD_LEFT);
+            : 'EMP' . str_pad($institutionId, 2, '0', STR_PAD_LEFT);
 
         $year = now()->format('y');
 
@@ -209,7 +209,7 @@ class EmployeeAddComponent extends Component
 
             $prefix = ($inst->enable_employee_id_prefix && $inst->employee_id_code_prefix)
                 ? $inst->employee_id_code_prefix
-                : 'SCH' . str_pad($institutionId, 2, '0', STR_PAD_LEFT);
+                : 'EMP' . str_pad($institutionId, 2, '0', STR_PAD_LEFT);
 
             $year = now()->format('y');
 

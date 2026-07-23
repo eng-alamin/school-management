@@ -1,411 +1,5 @@
 <div>
-
-    {{-- =========================================================
-        STYLES
-    ========================================================== --}}
-    <style>
-        :root{
-            --primary:#4f46e5;
-            --primary-dark:#4338ca;
-            --success:#10b981;
-            --danger:#ef4444;
-            --light:#f8fafc;
-            --border:#e5e7eb;
-            --text:#111827;
-            --muted:#6b7280;
-        }
-
-        body{
-            background:
-                radial-gradient(circle at top left,#6366f1 0%,transparent 30%),
-                radial-gradient(circle at bottom right,#8b5cf6 0%,transparent 30%),
-                #0f172a;
-        }
-
-        .wizard-wrapper{
-            min-height:100vh;
-            padding:40px 0;
-        }
-
-        .wizard-card{
-            border:none;
-            border-radius:30px;
-            overflow:hidden;
-            background:rgba(255,255,255,.96);
-            backdrop-filter:blur(15px);
-            box-shadow:
-                0 10px 40px rgba(0,0,0,.15),
-                0 2px 8px rgba(0,0,0,.05);
-        }
-
-        .wizard-sidebar{
-            background:linear-gradient(180deg,#4f46e5 0%,#7c3aed 100%);
-            color:white;
-            padding:50px 40px;
-            height:100%;
-            position:relative;
-            overflow:hidden;
-        }
-
-        .wizard-sidebar::before{
-            content:'';
-            position:absolute;
-            width:400px;
-            height:400px;
-            background:rgba(255,255,255,.08);
-            border-radius:50%;
-            top:-150px;
-            right:-150px;
-        }
-
-        .wizard-sidebar::after{
-            content:'';
-            position:absolute;
-            width:250px;
-            height:250px;
-            background:rgba(255,255,255,.08);
-            border-radius:50%;
-            bottom:-100px;
-            left:-100px;
-        }
-
-        .brand-logo{
-            width:70px;
-            height:70px;
-            border-radius:20px;
-            background:rgba(255,255,255,.15);
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            font-size:28px;
-            margin-bottom:25px;
-            backdrop-filter:blur(10px);
-        }
-
-        .sidebar-title{
-            font-size:34px;
-            font-weight:800;
-            line-height:1.2;
-        }
-
-        .sidebar-subtitle{
-            opacity:.85;
-            margin-top:15px;
-            line-height:1.8;
-        }
-
-        .step-list{
-            margin-top:50px;
-        }
-
-        .step-item{
-            display:flex;
-            align-items:center;
-            margin-bottom:25px;
-            position:relative;
-            z-index:2;
-        }
-
-        .step-circle{
-            width:48px;
-            height:48px;
-            border-radius:50%;
-            background:rgba(255,255,255,.15);
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            font-weight:700;
-            margin-right:18px;
-            flex-shrink:0;
-            transition:.3s;
-            border:2px solid rgba(255,255,255,.2);
-        }
-
-        .step-item.active .step-circle{
-            background:white;
-            color:var(--primary);
-            transform:scale(1.08);
-        }
-
-        .step-item.completed .step-circle{
-            background:var(--success);
-            border-color:var(--success);
-        }
-
-        .step-title{
-            font-weight:700;
-            margin-bottom:3px;
-        }
-
-        .step-desc{
-            opacity:.8;
-            font-size:13px;
-        }
-
-        .wizard-content{
-            padding:50px;
-        }
-
-        .top-progress{
-            height:10px;
-            border-radius:30px;
-            background:#eef2ff;
-            overflow:hidden;
-            margin-bottom:40px;
-        }
-
-        .top-progress-bar{
-            height:100%;
-            background:linear-gradient(90deg,#4f46e5,#8b5cf6);
-            border-radius:30px;
-            transition:width .4s ease;
-        }
-
-        .wizard-heading{
-            font-size:32px;
-            font-weight:800;
-            color:var(--text);
-            margin-bottom:10px;
-        }
-
-        .wizard-text{
-            color:var(--muted);
-            margin-bottom:35px;
-        }
-
-        .form-label{
-            font-weight:700;
-            color:#374151;
-            margin-bottom:10px;
-        }
-
-        .form-control,
-        .form-select{
-            border-radius:16px;
-            min-height:56px;
-            border:1px solid var(--border);
-            padding-left:18px;
-            font-size:15px;
-            transition:.25s;
-        }
-
-        .form-control:focus,
-        .form-select:focus{
-            border-color:var(--primary);
-            box-shadow:0 0 0 4px rgba(79,70,229,.1);
-        }
-
-        .wizard-btn{
-            min-height:56px;
-            border-radius:16px;
-            font-weight:700;
-            padding:0 30px;
-            transition:.25s;
-        }
-
-        .btn-primary{
-            background:var(--primary);
-            border:none;
-        }
-
-        .btn-primary:hover{
-            background:var(--primary-dark);
-            transform:translateY(-2px);
-        }
-
-        .btn-light-custom{
-            background:#f3f4f6;
-            border:none;
-            color:#374151;
-        }
-
-        .upload-box{
-            border:2px dashed #c7d2fe;
-            border-radius:20px;
-            padding:35px;
-            text-align:center;
-            background:#f8faff;
-            transition:.25s;
-            cursor:pointer;
-        }
-
-        .upload-box:hover{
-            border-color:var(--primary);
-            background:#eef2ff;
-        }
-
-        .feature-box{
-            border-radius:20px;
-            background:#f8fafc;
-            padding:25px;
-            border:1px solid #eef2f7;
-            height:100%;
-        }
-
-        .feature-icon{
-            width:55px;
-            height:55px;
-            border-radius:16px;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            background:#eef2ff;
-            color:var(--primary);
-            font-size:22px;
-            margin-bottom:18px;
-        }
-
-        .summary-box{
-            border-radius:20px;
-            background:#f8fafc;
-            border:1px solid #eef2f7;
-            padding:25px;
-        }
-
-        .summary-item{
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            padding:12px 0;
-            border-bottom:1px solid #f1f5f9;
-        }
-
-        .summary-item:last-child{
-            border-bottom:none;
-            margin-bottom:0;
-        }
-
-        .summary-label{
-            color:#6b7280;
-            font-weight:600;
-        }
-
-        .summary-value{
-            font-weight:700;
-            color:#111827;
-        }
-
-        .payment-amount-box{
-            background:linear-gradient(135deg,#4f46e5,#7c3aed);
-            border-radius:24px;
-            padding:40px;
-            text-align:center;
-            color:white;
-            position:relative;
-            overflow:hidden;
-        }
-
-        .payment-amount-box::before{
-            content:'';
-            position:absolute;
-            width:200px;
-            height:200px;
-            background:rgba(255,255,255,.08);
-            border-radius:50%;
-            top:-80px;
-            right:-60px;
-        }
-
-        .payment-amount-box::after{
-            content:'';
-            position:absolute;
-            width:150px;
-            height:150px;
-            background:rgba(255,255,255,.06);
-            border-radius:50%;
-            bottom:-50px;
-            left:-40px;
-        }
-
-        .payment-taka{
-            font-size:64px;
-            font-weight:900;
-            line-height:1;
-            position:relative;
-            z-index:1;
-        }
-
-        .payment-taka span{
-            font-size:32px;
-            font-weight:600;
-            opacity:.85;
-            vertical-align:super;
-        }
-
-        .payment-label{
-            opacity:.85;
-            margin-top:8px;
-            font-size:15px;
-            position:relative;
-            z-index:1;
-        }
-
-        .payment-feature-row{
-            display:flex;
-            align-items:center;
-            gap:10px;
-            padding:10px 0;
-            border-bottom:1px solid #f1f5f9;
-            font-weight:500;
-            color:#374151;
-        }
-
-        .payment-feature-row:last-child{
-            border-bottom:none;
-        }
-
-        .payment-feature-row i{
-            color:var(--success);
-            font-size:18px;
-            flex-shrink:0;
-        }
-
-        .ssl-badge{
-            display:inline-flex;
-            align-items:center;
-            gap:6px;
-            background:#f0fdf4;
-            border:1px solid #bbf7d0;
-            border-radius:30px;
-            padding:6px 16px;
-            font-size:13px;
-            font-weight:600;
-            color:#16a34a;
-        }
-
-        .success-animation{
-            width:120px;
-            height:120px;
-            border-radius:50%;
-            background:#dcfce7;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            margin:auto;
-            font-size:55px;
-            color:#16a34a;
-            animation:pulse 2s infinite;
-        }
-
-        @keyframes pulse{
-            0%{transform:scale(1);box-shadow:0 0 0 0 rgba(16,185,129,.4);}
-            70%{transform:scale(1.05);box-shadow:0 0 0 20px rgba(16,185,129,0);}
-            100%{transform:scale(1);}
-        }
-
-        @media(max-width:991px){
-            .wizard-content{padding:35px 25px;}
-            .wizard-sidebar{padding:35px 25px;}
-            .sidebar-title{font-size:26px;}
-            .payment-taka{font-size:48px;}
-        }
-    </style>
-
-    {{-- =========================================================
-        WRAPPER
-    ========================================================== --}}
-
-    <div class="container wizard-wrapper">
+    <div class="container wizard-wrapper mt-5">
         <div class="row justify-content-center">
             <div class="col-12 col-xl-11">
                 <div class="card wizard-card">
@@ -423,13 +17,15 @@
                                 </div>
 
                                 <h2 class="sidebar-title">
-                                    Setup Your Institution
+                                    <span class="lang-bn">আপনার প্রতিষ্ঠান সেটআপ করুন</span>
+                                    <span class="lang-en">Setup Your Institution</span>
                                 </h2>
 
                                 <p class="sidebar-subtitle">
-                                    Get your institution management system
+                                    <span class="lang-bn">২ মিনিটেরও কম সময়ে আপনার প্রতিষ্ঠান ব্যবস্থাপনা সিস্টেম চালু করুন।</span>
+                                    <span class="lang-en">Get your institution management system
                                     up and running in less than
-                                    2 minutes.
+                                    2 minutes.</span>
                                 </p>
 
                                 {{-- STEPS --}}
@@ -449,8 +45,14 @@
                                             @endif
                                         </div>
                                         <div>
-                                            <div class="step-title">Institution Information</div>
-                                            <div class="step-desc">Setup institution profile</div>
+                                            <div class="step-title">
+                                                <span class="lang-bn">প্রতিষ্ঠানের তথ্য</span>
+                                                <span class="lang-en">Institution Information</span>
+                                            </div>
+                                            <div class="step-desc">
+                                                <span class="lang-bn">প্রতিষ্ঠানের প্রোফাইল সেটআপ করুন</span>
+                                                <span class="lang-en">Setup institution profile</span>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -467,8 +69,14 @@
                                             @endif
                                         </div>
                                         <div>
-                                            <div class="step-title">Admin Account</div>
-                                            <div class="step-desc">Create super admin</div>
+                                            <div class="step-title">
+                                                <span class="lang-bn">অ্যাডমিন অ্যাকাউন্ট</span>
+                                                <span class="lang-en">Admin Account</span>
+                                            </div>
+                                            <div class="step-desc">
+                                                <span class="lang-bn">সুপার অ্যাডমিন তৈরি করুন</span>
+                                                <span class="lang-en">Create super admin</span>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -485,8 +93,14 @@
                                             @endif
                                         </div>
                                         <div>
-                                            <div class="step-title">Payment</div>
-                                            <div class="step-desc">৳5,000 registration fee</div>
+                                            <div class="step-title">
+                                                <span class="lang-bn">পেমেন্ট</span>
+                                                <span class="lang-en">Payment</span>
+                                            </div>
+                                            <div class="step-desc">
+                                                <span class="lang-bn">৳৫,০০০ নিবন্ধন ফি</span>
+                                                <span class="lang-en">৳5,000 registration fee</span>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -496,8 +110,14 @@
                                     ">
                                         <div class="step-circle">4</div>
                                         <div>
-                                            <div class="step-title">Confirmation</div>
-                                            <div class="step-desc">Complete setup</div>
+                                            <div class="step-title">
+                                                <span class="lang-bn">নিশ্চিতকরণ</span>
+                                                <span class="lang-en">Confirmation</span>
+                                            </div>
+                                            <div class="step-desc">
+                                                <span class="lang-bn">সেটআপ সম্পন্ন করুন</span>
+                                                <span class="lang-en">Complete setup</span>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -529,13 +149,22 @@
 
                                     <div wire:key="step-1">
 
-                                        <h2 class="wizard-heading">Institution Information</h2>
-                                        <p class="wizard-text">Tell us about your institution.</p>
+                                        <h2 class="wizard-heading">
+                                            <span class="lang-bn">প্রতিষ্ঠানের তথ্য</span>
+                                            <span class="lang-en">Institution Information</span>
+                                        </h2>
+                                        <p class="wizard-text">
+                                            <span class="lang-bn">আপনার প্রতিষ্ঠান সম্পর্কে আমাদের জানান।</span>
+                                            <span class="lang-en">Tell us about your institution.</span>
+                                        </p>
 
                                         <div class="row">
 
                                             <div class="col-md-6 mb-4">
-                                                <label class="form-label">Institution Name</label>
+                                                <label class="form-label">
+                                                    <span class="lang-bn">প্রতিষ্ঠানের নাম</span>
+                                                    <span class="lang-en">Institution Name</span>
+                                                </label>
                                                 <input
                                                     type="text"
                                                     class="form-control @error('institution_name') is-invalid @enderror"
@@ -548,7 +177,10 @@
                                             </div>
 
                                             <div class="col-md-6 mb-4">
-                                                <label class="form-label">Institution Type</label>
+                                                <label class="form-label">
+                                                    <span class="lang-bn">প্রতিষ্ঠানের ধরন</span>
+                                                    <span class="lang-en">Institution Type</span>
+                                                </label>
                                                 <select
                                                     class="form-select @error('institution_type') is-invalid @enderror"
                                                     wire:model.live="institution_type"
@@ -565,7 +197,10 @@
                                             </div>
 
                                             <div class="col-md-6 mb-4">
-                                                <label class="form-label">Email Address</label>
+                                                <label class="form-label">
+                                                    <span class="lang-bn">ইমেইল ঠিকানা</span>
+                                                    <span class="lang-en">Email Address</span>
+                                                </label>
                                                 <input
                                                     type="email"
                                                     class="form-control @error('email') is-invalid @enderror"
@@ -578,7 +213,10 @@
                                             </div>
 
                                             <div class="col-md-6 mb-4">
-                                                <label class="form-label">Phone Number</label>
+                                                <label class="form-label">
+                                                    <span class="lang-bn">ফোন নম্বর</span>
+                                                    <span class="lang-en">Phone Number</span>
+                                                </label>
                                                 <input
                                                     type="text"
                                                     class="form-control @error('phone') is-invalid @enderror"
@@ -591,7 +229,10 @@
                                             </div>
 
                                             <div class="col-12 mb-4">
-                                                <label class="form-label">Institution Logo</label>
+                                                <label class="form-label">
+                                                    <span class="lang-bn">প্রতিষ্ঠানের লোগো</span>
+                                                    <span class="lang-en">Institution Logo</span>
+                                                </label>
                                                 <label class="upload-box w-100">
                                                     <input
                                                         type="file"
@@ -607,12 +248,19 @@
                                                         >
                                                         <div class="mt-2 text-success fw-bold small">
                                                             <i class="bi bi-check-circle-fill me-1"></i>
-                                                            Logo uploaded
+                                                            <span class="lang-bn">লোগো আপলোড হয়েছে</span>
+                                                            <span class="lang-en">Logo uploaded</span>
                                                         </div>
                                                     @else
                                                         <i class="bi bi-cloud-arrow-up-fill fs-1 text-primary"></i>
-                                                        <div class="mt-3 fw-bold">Upload Institution Logo</div>
-                                                        <div class="text-muted small mt-2">PNG, JPG up to 2MB</div>
+                                                        <div class="mt-3 fw-bold">
+                                                            <span class="lang-bn">প্রতিষ্ঠানের লোগো আপলোড করুন</span>
+                                                            <span class="lang-en">Upload Institution Logo</span>
+                                                        </div>
+                                                        <div class="text-muted small mt-2">
+                                                            <span class="lang-bn">২ এমবি পর্যন্ত PNG, JPG</span>
+                                                            <span class="lang-en">PNG, JPG up to 2MB</span>
+                                                        </div>
                                                     @endif
                                                 </label>
                                                 @error('logo')
@@ -630,8 +278,14 @@
                                                     <div class="feature-icon">
                                                         <i class="bi bi-people-fill"></i>
                                                     </div>
-                                                    <h6 class="fw-bold">Student Management</h6>
-                                                    <p class="text-muted small mb-0">Full control over students & classes.</p>
+                                                    <h6 class="fw-bold">
+                                                        <span class="lang-bn">শিক্ষার্থী ব্যবস্থাপনা</span>
+                                                        <span class="lang-en">Student Management</span>
+                                                    </h6>
+                                                    <p class="text-muted small mb-0">
+                                                        <span class="lang-bn">শিক্ষার্থী ও ক্লাসের উপর সম্পূর্ণ নিয়ন্ত্রণ।</span>
+                                                        <span class="lang-en">Full control over students & classes.</span>
+                                                    </p>
                                                 </div>
                                             </div>
 
@@ -640,8 +294,14 @@
                                                     <div class="feature-icon">
                                                         <i class="bi bi-lightning-charge-fill"></i>
                                                     </div>
-                                                    <h6 class="fw-bold">Instant Setup</h6>
-                                                    <p class="text-muted small mb-0">Ready to use within seconds.</p>
+                                                    <h6 class="fw-bold">
+                                                        <span class="lang-bn">তাৎক্ষণিক সেটআপ</span>
+                                                        <span class="lang-en">Instant Setup</span>
+                                                    </h6>
+                                                    <p class="text-muted small mb-0">
+                                                        <span class="lang-bn">কয়েক সেকেন্ডের মধ্যেই ব্যবহারের জন্য প্রস্তুত।</span>
+                                                        <span class="lang-en">Ready to use within seconds.</span>
+                                                    </p>
                                                 </div>
                                             </div>
 
@@ -650,8 +310,14 @@
                                                     <div class="feature-icon">
                                                         <i class="bi bi-shield-lock-fill"></i>
                                                     </div>
-                                                    <h6 class="fw-bold">Secure Access</h6>
-                                                    <p class="text-muted small mb-0">Role-based access control built-in.</p>
+                                                    <h6 class="fw-bold">
+                                                        <span class="lang-bn">নিরাপদ প্রবেশাধিকার</span>
+                                                        <span class="lang-en">Secure Access</span>
+                                                    </h6>
+                                                    <p class="text-muted small mb-0">
+                                                        <span class="lang-bn">বিল্ট-ইন রোল-ভিত্তিক প্রবেশাধিকার নিয়ন্ত্রণ।</span>
+                                                        <span class="lang-en">Role-based access control built-in.</span>
+                                                    </p>
                                                 </div>
                                             </div>
 
@@ -669,13 +335,22 @@
 
                                     <div wire:key="step-2">
 
-                                        <h2 class="wizard-heading">Create Admin Account</h2>
-                                        <p class="wizard-text">Setup your super administrator account.</p>
+                                        <h2 class="wizard-heading">
+                                            <span class="lang-bn">অ্যাডমিন অ্যাকাউন্ট তৈরি করুন</span>
+                                            <span class="lang-en">Create Admin Account</span>
+                                        </h2>
+                                        <p class="wizard-text">
+                                            <span class="lang-bn">আপনার সুপার অ্যাডমিনিস্ট্রেটর অ্যাকাউন্ট সেটআপ করুন।</span>
+                                            <span class="lang-en">Setup your super administrator account.</span>
+                                        </p>
 
                                         <div class="row">
 
                                             <div class="col-md-6 mb-4">
-                                                <label class="form-label">Full Name</label>
+                                                <label class="form-label">
+                                                    <span class="lang-bn">পূর্ণ নাম</span>
+                                                    <span class="lang-en">Full Name</span>
+                                                </label>
                                                 <input
                                                     type="text"
                                                     class="form-control @error('admin_name') is-invalid @enderror"
@@ -688,7 +363,10 @@
                                             </div>
 
                                             <div class="col-md-6 mb-4">
-                                                <label class="form-label">Email Address</label>
+                                                <label class="form-label">
+                                                    <span class="lang-bn">ইমেইল ঠিকানা</span>
+                                                    <span class="lang-en">Email Address</span>
+                                                </label>
                                                 <input
                                                     type="email"
                                                     class="form-control @error('admin_email') is-invalid @enderror"
@@ -701,7 +379,10 @@
                                             </div>
 
                                             <div class="col-md-6 mb-4">
-                                                <label class="form-label">Password</label>
+                                                <label class="form-label">
+                                                    <span class="lang-bn">পাসওয়ার্ড</span>
+                                                    <span class="lang-en">Password</span>
+                                                </label>
                                                 <input
                                                     type="password"
                                                     class="form-control @error('password') is-invalid @enderror"
@@ -714,7 +395,10 @@
                                             </div>
 
                                             <div class="col-md-6 mb-4">
-                                                <label class="form-label">Confirm Password</label>
+                                                <label class="form-label">
+                                                    <span class="lang-bn">পাসওয়ার্ড নিশ্চিত করুন</span>
+                                                    <span class="lang-en">Confirm Password</span>
+                                                </label>
                                                 <input
                                                     type="password"
                                                     class="form-control"
@@ -732,9 +416,13 @@
                                                     <i class="bi bi-shield-check"></i>
                                                 </div>
                                                 <div>
-                                                    <h6 class="fw-bold mb-1">Secure Credentials</h6>
+                                                    <h6 class="fw-bold mb-1">
+                                                        <span class="lang-bn">নিরাপদ ক্রেডেনশিয়াল</span>
+                                                        <span class="lang-en">Secure Credentials</span>
+                                                    </h6>
                                                     <div class="text-muted small">
-                                                        Your password is encrypted with bcrypt hashing before being stored.
+                                                        <span class="lang-bn">সংরক্ষণের আগে আপনার পাসওয়ার্ড bcrypt hashing দিয়ে এনক্রিপ্ট করা হয়।</span>
+                                                        <span class="lang-en">Your password is encrypted with bcrypt hashing before being stored.</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -752,9 +440,13 @@
 
                                     <div wire:key="step-3">
 
-                                        <h2 class="wizard-heading">Registration Payment</h2>
+                                        <h2 class="wizard-heading">
+                                            <span class="lang-bn">নিবন্ধন পেমেন্ট</span>
+                                            <span class="lang-en">Registration Payment</span>
+                                        </h2>
                                         <p class="wizard-text">
-                                            একটি one-time registration fee পরিশোধ করুন এবং আপনার institution activate করুন।
+                                            <span class="lang-bn">একটি one-time registration fee পরিশোধ করুন এবং আপনার institution activate করুন।</span>
+                                            <span class="lang-en">Pay a one-time registration fee and activate your institution.</span>
                                         </p>
 
                                         {{-- AMOUNT BOX --}}
@@ -763,12 +455,14 @@
                                                 <span>৳</span>5,000
                                             </div>
                                             <div class="payment-label">
-                                                One-time Registration Fee
+                                                <span class="lang-bn">একবারের নিবন্ধন ফি</span>
+                                                <span class="lang-en">One-time Registration Fee</span>
                                             </div>
                                             <div class="mt-3" style="position:relative;z-index:1;">
                                                 <span class="ssl-badge" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.3);color:white;">
                                                     <i class="bi bi-shield-lock-fill"></i>
-                                                    Secured by SSLCommerz
+                                                    <span class="lang-bn">SSLCommerz দ্বারা সুরক্ষিত</span>
+                                                    <span class="lang-en">Secured by SSLCommerz</span>
                                                 </span>
                                             </div>
                                         </div>
@@ -780,27 +474,33 @@
                                                 <div class="summary-box h-100">
                                                     <h6 class="fw-bold mb-3">
                                                         <i class="bi bi-gift-fill text-primary me-2"></i>
-                                                        What You Get
+                                                        <span class="lang-bn">আপনি যা পাবেন</span>
+                                                        <span class="lang-en">What You Get</span>
                                                     </h6>
                                                     <div class="payment-feature-row">
                                                         <i class="bi bi-check-circle-fill"></i>
-                                                        Unlimited Students
+                                                        <span class="lang-bn">সীমাহীন শিক্ষার্থী</span>
+                                                        <span class="lang-en">Unlimited Students</span>
                                                     </div>
                                                     <div class="payment-feature-row">
                                                         <i class="bi bi-check-circle-fill"></i>
-                                                        Full Admin Panel
+                                                        <span class="lang-bn">সম্পূর্ণ অ্যাডমিন প্যানেল</span>
+                                                        <span class="lang-en">Full Admin Panel</span>
                                                     </div>
                                                     <div class="payment-feature-row">
                                                         <i class="bi bi-check-circle-fill"></i>
-                                                        Attendance Management
+                                                        <span class="lang-bn">উপস্থিতি ব্যবস্থাপনা</span>
+                                                        <span class="lang-en">Attendance Management</span>
                                                     </div>
                                                     <div class="payment-feature-row">
                                                         <i class="bi bi-check-circle-fill"></i>
-                                                        Fee & Billing System
+                                                        <span class="lang-bn">ফি ও বিলিং সিস্টেম</span>
+                                                        <span class="lang-en">Fee & Billing System</span>
                                                     </div>
                                                     <div class="payment-feature-row">
                                                         <i class="bi bi-check-circle-fill"></i>
-                                                        Result & Exam Management
+                                                        <span class="lang-bn">ফলাফল ও পরীক্ষা ব্যবস্থাপনা</span>
+                                                        <span class="lang-en">Result & Exam Management</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -810,7 +510,8 @@
                                                 <div class="summary-box h-100">
                                                     <h6 class="fw-bold mb-3">
                                                         <i class="bi bi-wallet2 text-primary me-2"></i>
-                                                        Payment Methods
+                                                        <span class="lang-bn">পেমেন্ট পদ্ধতি</span>
+                                                        <span class="lang-en">Payment Methods</span>
                                                     </h6>
                                                     <div class="payment-feature-row">
                                                         <i class="bi bi-check-circle-fill"></i>
@@ -822,7 +523,8 @@
                                                     </div>
                                                     <div class="payment-feature-row">
                                                         <i class="bi bi-check-circle-fill"></i>
-                                                        Internet Banking
+                                                        <span class="lang-bn">ইন্টারনেট ব্যাংকিং</span>
+                                                        <span class="lang-en">Internet Banking</span>
                                                     </div>
                                                     <div class="payment-feature-row">
                                                         <i class="bi bi-check-circle-fill"></i>
@@ -830,7 +532,8 @@
                                                     </div>
                                                     <div class="payment-feature-row">
                                                         <i class="bi bi-check-circle-fill"></i>
-                                                        All Major Banks
+                                                        <span class="lang-bn">সকল প্রধান ব্যাংক</span>
+                                                        <span class="lang-en">All Major Banks</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -841,24 +544,37 @@
                                         <div class="summary-box">
                                             <h6 class="fw-bold mb-0">
                                                 <i class="bi bi-receipt me-2 text-primary"></i>
-                                                Order Summary
+                                                <span class="lang-bn">অর্ডার সারসংক্ষেপ</span>
+                                                <span class="lang-en">Order Summary</span>
                                             </h6>
                                             <div class="summary-item mt-3">
-                                                <div class="summary-label">Institution Name</div>
+                                                <div class="summary-label">
+                                                    <span class="lang-bn">প্রতিষ্ঠানের নাম</span>
+                                                    <span class="lang-en">Institution Name</span>
+                                                </div>
                                                 <div class="summary-value">{{ $institution_name }}</div>
                                             </div>
                                             <div class="summary-item">
-                                                <div class="summary-label">Admin Email</div>
+                                                <div class="summary-label">
+                                                    <span class="lang-bn">অ্যাডমিন ইমেইল</span>
+                                                    <span class="lang-en">Admin Email</span>
+                                                </div>
                                                 <div class="summary-value">{{ $admin_email }}</div>
                                             </div>
                                             <div class="summary-item">
-                                                <div class="summary-label">Registration Fee</div>
+                                                <div class="summary-label">
+                                                    <span class="lang-bn">নিবন্ধন ফি</span>
+                                                    <span class="lang-en">Registration Fee</span>
+                                                </div>
                                                 <div class="summary-value text-primary">
                                                     ৳ {{ number_format(setting('register_fee', 4), 0) }}
                                                 </div>
                                             </div>
                                             <div class="summary-item" style="border-bottom:none;">
-                                                <div class="summary-label fw-bold text-dark">Total Payable</div>
+                                                <div class="summary-label fw-bold text-dark">
+                                                    <span class="lang-bn">মোট পরিশোধযোগ্য</span>
+                                                    <span class="lang-en">Total Payable</span>
+                                                </div>
                                                 <div class="summary-value fs-5 text-success">
                                                     ৳ @if(setting('register_type') === 'paid') {{ number_format(setting('register_fee'), 0) }} @else 00 @endif
                                                 </div>
@@ -883,30 +599,54 @@
                                             <div class="success-animation mb-4">
                                                 <i class="bi bi-check-lg"></i>
                                             </div>
-                                            <h2 class="wizard-heading">Ready To Launch 🚀</h2>
-                                            <p class="wizard-text">Review your details before payment.</p>
+                                            <h2 class="wizard-heading">
+                                                <span class="lang-bn">চালু করার জন্য প্রস্তুত 🚀</span>
+                                                <span class="lang-en">Ready To Launch 🚀</span>
+                                            </h2>
+                                            <p class="wizard-text">
+                                                <span class="lang-bn">পেমেন্টের আগে আপনার তথ্য পর্যালোচনা করুন।</span>
+                                                <span class="lang-en">Review your details before payment.</span>
+                                            </p>
                                         </div>
 
                                         <div class="summary-box mt-4">
-                                            <h5 class="fw-bold mb-3">Setup Summary</h5>
+                                            <h5 class="fw-bold mb-3">
+                                                <span class="lang-bn">সেটআপ সারসংক্ষেপ</span>
+                                                <span class="lang-en">Setup Summary</span>
+                                            </h5>
                                             <div class="summary-item">
-                                                <div class="summary-label">Institution Name</div>
+                                                <div class="summary-label">
+                                                    <span class="lang-bn">প্রতিষ্ঠানের নাম</span>
+                                                    <span class="lang-en">Institution Name</span>
+                                                </div>
                                                 <div class="summary-value">{{ $institution_name }}</div>
                                             </div>
                                             <div class="summary-item">
-                                                <div class="summary-label">Institution Type</div>
+                                                <div class="summary-label">
+                                                    <span class="lang-bn">প্রতিষ্ঠানের ধরন</span>
+                                                    <span class="lang-en">Institution Type</span>
+                                                </div>
                                                 <div class="summary-value">{{ ucfirst($institution_type) }}</div>
                                             </div>
                                             <div class="summary-item">
-                                                <div class="summary-label">Institution Email</div>
+                                                <div class="summary-label">
+                                                    <span class="lang-bn">প্রতিষ্ঠানের ইমেইল</span>
+                                                    <span class="lang-en">Institution Email</span>
+                                                </div>
                                                 <div class="summary-value">{{ $email }}</div>
                                             </div>
                                             <div class="summary-item">
-                                                <div class="summary-label">Admin Account</div>
+                                                <div class="summary-label">
+                                                    <span class="lang-bn">অ্যাডমিন অ্যাকাউন্ট</span>
+                                                    <span class="lang-en">Admin Account</span>
+                                                </div>
                                                 <div class="summary-value">{{ $admin_email }}</div>
                                             </div>
                                             <div class="summary-item">
-                                                <div class="summary-label">Timezone</div>
+                                                <div class="summary-label">
+                                                    <span class="lang-bn">টাইমজোন</span>
+                                                    <span class="lang-en">Timezone</span>
+                                                </div>
                                                 <div class="summary-value">{{ $timezone }}</div>
                                             </div>
                                         </div>
@@ -929,7 +669,8 @@
                                                 wire:click="previousStep"
                                             >
                                                 <i class="bi bi-arrow-left me-1"></i>
-                                                Previous
+                                                <span class="lang-bn">পূর্ববর্তী</span>
+                                                <span class="lang-en">Previous</span>
                                             </button>
                                         @endif
                                     </div>
@@ -943,7 +684,8 @@
                                                 class="btn btn-primary wizard-btn"
                                                 wire:click="nextStep"
                                             >
-                                                Continue
+                                                <span class="lang-bn">এগিয়ে যান</span>
+                                                <span class="lang-en">Continue</span>
                                                 <i class="bi bi-arrow-right ms-2"></i>
                                             </button>
                                         @endif
@@ -959,11 +701,13 @@
                                                 >
                                                     <span wire:loading.remove wire:target="initiatePayment">
                                                         <i class="bi bi-credit-card me-2"></i>
-                                                        Pay ৳5,000 via SSLCommerz
+                                                        <span class="lang-bn">SSLCommerz দিয়ে ৳৫,০০০ পরিশোধ করুন</span>
+                                                        <span class="lang-en">Pay ৳5,000 via SSLCommerz</span>
                                                     </span>
                                                     <span wire:loading wire:target="initiatePayment">
                                                         <span class="spinner-border spinner-border-sm me-2"></span>
-                                                        Connecting to gateway...
+                                                        <span class="lang-bn">গেটওয়ের সাথে সংযোগ হচ্ছে...</span>
+                                                        <span class="lang-en">Connecting to gateway...</span>
                                                     </span>
                                                 </button>
                                             @endif
@@ -978,11 +722,13 @@
                                                 >
                                                     <span wire:loading.remove wire:target="initiatePayment">
                                                         <i class="bi bi-rocket-takeoff me-2"></i>
-                                                        Launch Institution
+                                                        <span class="lang-bn">প্রতিষ্ঠান চালু করুন</span>
+                                                        <span class="lang-en">Launch Institution</span>
                                                     </span>
                                                     <span wire:loading wire:target="initiatePayment">
                                                         <span class="spinner-border spinner-border-sm me-2"></span>
-                                                        Setting up...
+                                                        <span class="lang-bn">সেটআপ হচ্ছে...</span>
+                                                        <span class="lang-en">Setting up...</span>
                                                     </span>
                                                 </button>
                                             @endif
@@ -996,11 +742,13 @@
                                                 >
                                                     <span wire:loading.remove wire:target="initiateFree">
                                                         <i class="bi bi-rocket-takeoff me-2"></i>
-                                                        Launch Institution
+                                                        <span class="lang-bn">প্রতিষ্ঠান চালু করুন</span>
+                                                        <span class="lang-en">Launch Institution</span>
                                                     </span>
                                                     <span wire:loading wire:target="initiateFree">
                                                         <span class="spinner-border spinner-border-sm me-2"></span>
-                                                        Setting up...
+                                                        <span class="lang-bn">সেটআপ হচ্ছে...</span>
+                                                        <span class="lang-en">Setting up...</span>
                                                     </span>
                                                 </button>
                                             @endif

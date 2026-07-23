@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire;
+namespace App\Livewire\Auth;
 
 use Livewire\Component;
 use App\Models\User;
@@ -74,8 +74,8 @@ class LoginComponent extends Component
 
     public function render()
     {
-        return view('livewire.login-component')
-            ->layout('layouts.app', [
+        return view('livewire.auth.login-component')
+            ->layout('layouts.frontend.app', [
                 'title' => 'Login | ' . setting('app_name', 'EMS'),
             ]);
     }

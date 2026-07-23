@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 
 Route::middleware('guest')->group(function () {
-    Route::get('login', \App\Livewire\LoginComponent::class)->name('login');
+    Route::get('login', \App\Livewire\Auth\LoginComponent::class)->name('login');
     Route::get('forgot-password', \App\Livewire\Auth\ForgotPasswordComponent::class)->name('forgot.password');
     Route::get('/reset-password/{token}',  \App\Livewire\Auth\ResetPasswordComponent::class)->name('password.reset');
 });
@@ -296,11 +296,11 @@ Route::middleware(['auth', 'role:admin', 'billing.check'])->group(function () {
 
     // Student
     Route::get('/student/add', \App\Livewire\Admin\Student\StudentAddComponent::class)->name('admin.student.add');
+    Route::get('/student/payment-collect/{invoice}', \App\Livewire\Admin\Student\StudentPaymentCollectComponent::class)->name('admin.students.payment-collect');
     Route::get('/student/list', \App\Livewire\Admin\Student\StudentListComponent::class)->name('admin.student.list');
     Route::get('/student/{id}/edit', \App\Livewire\Admin\Student\StudentEditComponent::class)->name('admin.student.edit');
     Route::get('/student/{id}/overview', \App\Livewire\Admin\Student\StudentOverviewComponent::class)->name('admin.student.overview');
     Route::get('/student/{id}/invoice', \App\Livewire\Admin\Student\StudentInvoiceComponent::class)->name('admin.student.invoice');
-    Route::get('/student/{id}/payment', \App\Livewire\Admin\Student\StudentPaymentComponent::class)->name('admin.student.payment');
     Route::get('/student/{id}/account', \App\Livewire\Admin\Student\StudentAccountComponent::class)->name('admin.student.account');
 
     // Academic

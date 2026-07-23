@@ -9,6 +9,7 @@ use App\Models\InventorySupplier;
 use App\Models\InventoryStore;
 use App\Models\InventoryProduct;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class PurchaseEditComponent extends Component
 {
@@ -16,8 +17,8 @@ class PurchaseEditComponent extends Component
     public int $purchaseId;
 
     // ── Purchase header fields ──
-    public int|string $supplier_id     = '';
-    public int|string $store_id        = '';
+    public ?int $supplier_id = null;
+    public ?int $store_id = null;
     public string     $bill_no         = '';
     public string     $purchase_status = 'pending';
     public string     $date            = '';
@@ -32,9 +33,27 @@ class PurchaseEditComponent extends Component
     protected function rules(): array
     {
         return [
-            'supplier_id'              => 'required|integer|exists:inventory_suppliers,id',
-            'store_id'                 => 'required|integer|exists:inventory_stores,id',
-            'bill_no'                  => 'required|string|max:255|unique:inventory_purchases,bill_no,' . $this->purchaseId . ',id,institution_id,' . institution()->id,
+            'supplier_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('inventory_suppliers', 'id')
+                    ->where(fn ($query) => $query->where('institution_id', institution()->id)),
+            ],
+
+            'store_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('inventory_stores', 'id')
+                    ->where(fn ($query) => $query->where('institution_id', institution()->id)),
+            ],
+            'bill_no' => [
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('inventory_purchases', 'bill_no')
+                    ->where(fn ($query) => $query->where('institution_id', institution()->id))
+                    ->ignore($this->purchaseId),
+            ],
             'purchase_status'          => 'required|in:pending,ordered,completed,received,cancelled',
             'date'                     => 'required|date',
             'remarks'                  => 'nullable|string|max:1000',
@@ -154,8 +173,8 @@ class PurchaseEditComponent extends Component
                 ->findOrFail($this->purchaseId);
 
             $purchase->update([
-                'supplier_id'     => $this->supplier_id,
-                'store_id'        => $this->store_id,
+                'supplier_id' => $this->supplier_id ?: null,
+                'store_id'    => $this->store_id ?: null,
                 'bill_no'         => $this->bill_no,
                 'purchase_status' => $this->purchase_status,
                 'date'            => $this->date,

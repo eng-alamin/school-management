@@ -7,8 +7,6 @@ use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Institution;
-use App\Models\EmployeeDepartment;
-use App\Models\EmployeeDesignation;
 use App\Models\Employee;
 use App\Models\User;
 
@@ -22,13 +20,12 @@ class TeacherRegistrationComponent extends Component
     private const TOTAL_STEPS = 5;
 
     // ── Step 1: Institution (search-based selection, same pattern as OnlineAdmissionComponent) ──
+    public $institution;
     public $institution_id;
     public string $institutionSearch = '';
 
     // ── Step 2: Job Details ──
     public $joining_date;
-    public $designation_id;
-    public $department_id;
     public $qualification;
     public $experience_detail;
     public $total_experience;
@@ -70,16 +67,6 @@ class TeacherRegistrationComponent extends Component
     }
 
     /**
-     * Livewire auto-calls this jokhon $institution_id property change hoy —
-     * chai seta wire:model theke hok ba selectInstitution() theke programmatically.
-     */
-    public function updatedInstitutionId(): void
-    {
-        $this->designation_id = null;
-        $this->department_id = null;
-    }
-
-    /**
      * Search result theke user ekta institution click korle eta call hobe.
      */
     public function selectInstitution($institutionId): void
@@ -90,6 +77,7 @@ class TeacherRegistrationComponent extends Component
             return;
         }
 
+        $this->institution = $institution;
         $this->institution_id = $institution->id;
         $this->institutionSearch = $institution->name;
     }
@@ -101,8 +89,6 @@ class TeacherRegistrationComponent extends Component
     {
         $this->institution_id = null;
         $this->institutionSearch = '';
-        $this->designation_id = null;
-        $this->department_id = null;
     }
 
     /**
@@ -121,8 +107,6 @@ class TeacherRegistrationComponent extends Component
     {
         $this->validate([
             'joining_date'   => 'required|date',
-            'designation_id' => 'required|exists:employee_designations,id',
-            'department_id'  => 'required|exists:employee_departments,id',
         ]);
     }
 
@@ -135,7 +119,7 @@ class TeacherRegistrationComponent extends Component
             'dob'                => 'nullable|date',
             'religion'           => 'nullable|string|max:50',
             'mobile'             => 'nullable|string|max:20',
-            'email'              => 'nullable|email|unique:users,email',
+            'email'              => 'required|email|unique:users,email',
             'present_address'    => 'nullable|string',
             'permanent_address'  => 'nullable|string',
             'photo_upload'       => 'nullable|image|max:2048',
@@ -186,8 +170,6 @@ class TeacherRegistrationComponent extends Component
             'institution_id'  => 'required|exists:institutions,id',
 
             'joining_date'    => 'required|date',
-            'designation_id'  => 'required|exists:employee_designations,id',
-            'department_id'   => 'required|exists:employee_departments,id',
             'qualification'   => 'nullable|string',
             'experience_detail' => 'nullable|string',
             'total_experience'  => 'nullable|string|max:50',
@@ -265,29 +247,33 @@ class TeacherRegistrationComponent extends Component
                 'password' => !empty($this->password) ? $this->password : '1234',
             ]);
 
-            // ── Generate Employee ID (SAFE - avoid duplicate), same pattern as EmployeeAddComponent
-            $institutionCode = 'SCH' . str_pad($this->institution_id, 2, '0', STR_PAD_LEFT);
+            $inst      = $this->institution;
+            $digit     = (int) ($inst->employee_id_digit_length ?? 6);
+            $startFrom = (int) ($inst->employee_id_start_from ?? 1);
+
+            $prefix = ($inst->enable_employee_id_prefix && $inst->employee_id_code_prefix)
+                ? $inst->employee_id_code_prefix
+                : 'EMP' . str_pad($this->institution_id, 2, '0', STR_PAD_LEFT);
+
             $year = now()->format('y');
 
-            $lastEmployee = Employee::withoutGlobalScopes()
-                ->where('institution_id', $this->institution_id)
+            $lastEmployeeForId = Employee::where('institution_id', $this->institution_id)
+                ->whereNotNull('employee_id')
                 ->lockForUpdate()
                 ->orderByDesc('id')
                 ->first();
 
-            $serial = $lastEmployee
-                ? ((int) substr($lastEmployee->employee_id, -4)) + 1
-                : 1;
+            $serial = $lastEmployeeForId
+                ? ((int) substr($lastEmployeeForId->employee_id, -$digit)) + 1
+                : $startFrom;
 
-            $employeeId = $institutionCode . $year . str_pad($serial, 4, '0', STR_PAD_LEFT);
+            $employeeId = $prefix . $year . str_pad($serial, $digit, '0', STR_PAD_LEFT);
 
             $employee = Employee::create([
                 'institution_id'    => $this->institution_id,
                 'user_id'           => $user->id,
                 'employee_id'       => $employeeId,
                 'joining_date'      => $this->joining_date,
-                'designation_id'    => $this->designation_id,
-                'department_id'     => $this->department_id,
                 'qualification'     => $this->qualification,
                 'experience_detail' => $this->experience_detail,
                 'total_experience'  => $this->total_experience,
@@ -347,7 +333,7 @@ class TeacherRegistrationComponent extends Component
         $this->reset([
             'currentStep',
             'institution_id', 'institutionSearch',
-            'joining_date', 'designation_id', 'department_id', 'qualification',
+            'joining_date', 'qualification',
             'experience_detail', 'total_experience',
             'name', 'gender', 'blood_group', 'dob', 'religion', 'mobile', 'email',
             'present_address', 'permanent_address', 'photo_upload',
@@ -375,30 +361,9 @@ class TeacherRegistrationComponent extends Component
             $institutionResults = $query->limit(10)->get();
         }
 
-        $designations = collect();
-        $departments = collect();
-
-        if ($this->institution_id) {
-            // ── Guest context-e kono authenticated user na thakay
-            // BelongsToInstitution global scope active thake na, tai
-            // explicit withoutGlobalScopes() + where('institution_id') diye
-            // filter kora hocche, thik Admission component-er Guardian
-            // search-er moto. ──
-            $designations = EmployeeDesignation::withoutGlobalScopes()
-                ->where('institution_id', $this->institution_id)
-                ->orderBy('name')
-                ->get();
-
-            $departments = EmployeeDepartment::withoutGlobalScopes()
-                ->where('institution_id', $this->institution_id)
-                ->orderBy('name')
-                ->get();
-        }
 
         return view('livewire.frontend.teacher-registration-component')
             ->with('institutionResults', $institutionResults)
-            ->with('designations', $designations)
-            ->with('departments', $departments)
             ->layout('layouts.frontend.app', [
                 'title' => 'Teacher Registration',
             ]);

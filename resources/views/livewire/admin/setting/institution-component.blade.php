@@ -14,10 +14,11 @@
         {{-- Tabs --}}
         <ul class="nav nav-tabs mb-4">
             @foreach([
-                'general'  => ['icon' => 'fa-gear',              'label' => 'General'],
-                'register' => ['icon' => 'fa-id-badge',          'label' => 'Register Prefix'],
-                'fees'     => ['icon' => 'fa-money-bill',        'label' => 'Fees'],
-                'logo'     => ['icon' => 'fa-image',             'label' => 'Logo'],
+                'general'    => ['icon' => 'fa-gear',              'label' => 'General'],
+                'register'   => ['icon' => 'fa-id-badge',          'label' => 'Register Prefix'],
+                'fees'       => ['icon' => 'fa-money-bill',        'label' => 'Fees'],
+                'facilities' => ['icon' => 'fa-house-chimney',     'label' => 'Facilities'],
+                'logo'       => ['icon' => 'fa-image',             'label' => 'Logo'],
             ] as $tab => $info)
                 <li class="nav-item">
                     <button
@@ -316,6 +317,41 @@
                     </div>
                 @endif
 
+                {{-- ===== TAB: FACILITIES ===== --}}
+                @if($activeTab === 'facilities')
+                    <div class="facility-tab-wrap">
+                        <div class="facility-tab-header">
+                            <div class="facility-tab-icon">
+                                <span class="material-icons-round">cottage</span>
+                            </div>
+                            <h5 class="mb-0">Facilities</h5>
+                        </div>
+                        <hr class="facility-tab-divider">
+
+                        <div class="row g-3 mb-4">
+                            @foreach($facilityDefinitions as $key => $def)
+                                @php $enabled = (bool) ($facilities[$key] ?? false); @endphp
+                                <div class="col-md-6 col-lg-3">
+                                    <button
+                                        type="button"
+                                        wire:click="toggleFacility('{{ $key }}')"
+                                        wire:key="facility-{{ $key }}"
+                                        class="facility-toggle-card {{ $enabled ? 'is-enabled' : '' }}"
+                                    >
+                                        <span class="facility-toggle-left">
+                                            <span class="facility-toggle-label">{{ $def['label'] }}</span>
+                                        </span>
+                                        <span class="facility-toggle-status">
+                                            <span class="material-icons-round">{{ $enabled ? 'check_circle' : 'do_not_disturb_on' }}</span>
+                                        </span>
+                                    </button>
+                                </div>
+                            @endforeach
+                        </div>
+                        @error('facilities') <span class="text-danger d-block mt-2">{{ $message }}</span> @enderror
+                    </div>
+                @endif
+
                 {{-- ===== TAB: LOGO ===== --}}
                 @if($activeTab === 'logo')
                     <div class="row g-4 mb-4">
@@ -431,6 +467,66 @@
 
 @push('styles')
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css">
+    <style>
+        /* Facilities tab — uses CSS variables so it respects [data-bs-theme="dark"] automatically */
+        .facility-tab-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .facility-tab-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(var(--bs-success-rgb), 0.12);
+            color: var(--bs-success);
+            font-size: 1.1rem;
+        }
+        .facility-tab-divider {
+            margin: 16px 0 20px;
+            opacity: .15;
+        }
+        .facility-toggle-card {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 14px 16px;
+            border-radius: 10px;
+            border: 1px solid var(--bs-border-color);
+            background-color: var(--bs-tertiary-bg, var(--bs-body-bg));
+            color: var(--bs-body-color);
+            text-align: left;
+            transition: border-color .15s ease, background-color .15s ease;
+        }
+        .facility-toggle-card:hover {
+            border-color: var(--bs-success);
+        }
+        .facility-toggle-card.is-enabled {
+            border-color: rgba(var(--bs-success-rgb), 0.5);
+            background-color: rgba(var(--bs-success-rgb), 0.08);
+        }
+        .facility-toggle-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .facility-toggle-label {
+            font-weight: 600;
+            font-size: .92rem;
+        }
+        .facility-toggle-status .material-icons-round {
+            font-size: 1.3rem;
+            color: var(--muted, var(--bs-secondary-color));
+        }
+        .facility-toggle-card.is-enabled .facility-toggle-status .material-icons-round {
+            color: var(--bs-success);
+        }
+    </style>
 @endpush
 
 @push('scripts')

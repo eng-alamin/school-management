@@ -3,9 +3,6 @@
     <!-- Floating Header -->
     <div class="mat-card-header header-pink-gradient">
         <h5 id="sale-add-title">
-            <span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">
-                point_of_sale
-            </span>
             Add Sale
         </h5>
         <p id="sale-add-subtitle">Create new sale bill record</p>
@@ -13,10 +10,10 @@
 
     <!-- ══ SALE DETAILS ══ -->
     <div class="form-section">
-        <div class="row g-4">
+        <div class="row g-3 g-md-4">
 
             <!-- Role -->
-            <div class="col-md-6">
+            <div class="col-12 col-md-6">
                 <div class="input-group input-group-outline">
                     <label class="form-label">Role <span class="req">*</span></label>
                     <select wire:model.live="role" class="form-select">
@@ -32,7 +29,7 @@
 
             <!-- Class (only when role = student) -->
             @if($role === 'student')
-                <div class="col-md-6">
+                <div class="col-12 col-md-6">
                     <div class="input-group input-group-outline">
                         <label class="form-label">Class <span class="req">*</span></label>
                         <select wire:model.live="class_id" class="form-select">
@@ -47,7 +44,7 @@
             @endif
 
             <!-- Sale To (saleable_id) -->
-            <div class="col-md-6">
+            <div class="col-12 col-md-6">
                 <div class="input-group input-group-outline">
                     <label class="form-label">Sale To <span class="req">*</span></label>
                     <select wire:model="saleable_id" class="form-select">
@@ -65,7 +62,7 @@
             </div>
 
             <!-- Bill No -->
-            <div class="col-md-6">
+            <div class="col-12 col-md-6">
                 <div class="input-group input-group-outline">
                     <label class="form-label">Bill No <span class="req">*</span></label>
                     <input type="text"
@@ -79,7 +76,7 @@
             </div>
 
             <!-- Date -->
-            <div class="col-md-6">
+            <div class="col-12 col-md-6">
                 <div class="input-group input-group-outline" wire:ignore>
                     <label class="form-label">Date <span class="req">*</span></label>
                     <input type="date"
@@ -99,8 +96,8 @@
         @error('items') <span class="text-danger d-block mb-2">{{ $message }}</span> @enderror
 
         <!-- Items Table -->
-        <div style="overflow-x:auto">
-            <table style="width:100%;border-collapse:collapse;font-size:.82rem">
+        <div class="table-responsive">
+            <table style="width:100%;min-width:820px;border-collapse:collapse;font-size:.82rem">
                 <thead>
                     <tr style="border-bottom:2px solid var(--border,#e9ecef)">
                         <th id="sadd-th-category" style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Category <span class="req">*</span></th>
@@ -117,7 +114,7 @@
                         <tr style="border-bottom:1px solid var(--border,#f0f0f0)">
 
                             <!-- Category -->
-                            <td style="padding:6px 10px;min-width:170px">
+                            <td style="padding:6px 10px;min-width:200px">
                                 <div class="input-group input-group-outline" wire:ignore.self style="margin-bottom:0">
                                     <select wire:model.live="items.{{ $index }}.category_id"
                                             class="form-select form-select-sm"
@@ -151,13 +148,13 @@
                             </td>
 
                             <!-- Unit Price -->
-                            <td style="padding:6px 10px;min-width:120px">
+                            <td style="padding:6px 10px;min-width: 100px; width: 140px;">
                                 <div class="input-group input-group-outline" style="margin-bottom:0">
                                     <input type="number"
                                            wire:model.live="items.{{ $index }}.unit_price"
                                            class="form-control form-control-sm"
                                            style="font-size:.8rem"
-                                           placeholder="0.00"
+                                           placeholder="0"
                                            min="0"
                                            step="0.01"
                                            onfocus="focused(this)"
@@ -167,7 +164,7 @@
                             </td>
 
                             <!-- Quantity -->
-                            <td style="padding:6px 10px;min-width:100px">
+                            <td style="padding:6px 10px;min-width: 100px; width: 140px;">
                                 <div class="input-group input-group-outline" style="margin-bottom:0">
                                     <input type="number"
                                            wire:model.live="items.{{ $index }}.quantity"
@@ -183,7 +180,7 @@
                             </td>
 
                             <!-- Discount -->
-                            <td style="padding:6px 10px;min-width:110px">
+                            <td style="padding:6px 10px;min-width: 100px; width: 140px;">
                                 <div class="input-group input-group-outline" style="margin-bottom:0">
                                     <input type="number"
                                            wire:model.live="items.{{ $index }}.discount"
@@ -200,7 +197,7 @@
 
                             <!-- Total Price (read-only) -->
                             <td style="padding:10px 10px;text-align:right;font-weight:600;white-space:nowrap">
-                                {{ number_format($item['total_price'] ?? 0, 2) }}
+                                {{ number_format($item['total_price'] ?? 0, 0) }}
                             </td>
 
                             <!-- Remove -->
@@ -243,51 +240,51 @@
     <!-- ══ BILL SUMMARY ══ -->
     <div class="form-section" style="margin-top:8px">
         <div class="row justify-content-end">
-            <div class="col-md-6">
+            <div class="col-12 col-md-8 col-lg-6">
 
-                <div style="border:1px solid var(--border,#e9ecef);border-radius:12px;padding:24px;background:var(--card-bg,#fff)">
+                <div style="border:1px solid var(--border,#e9ecef);border-radius:12px;padding:20px;background:var(--card-bg,#fff)" class="p-md-4">
                     <h6 style="font-weight:700;font-size:.9rem;margin-bottom:20px">
                         <span class="material-icons-round" style="font-size:16px;vertical-align:middle;margin-right:6px;color:var(--muted)">receipt_long</span>
                         Bill Summary
                     </h6>
 
                     <!-- Sub Total -->
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2" style="margin-bottom:14px">
                         <span style="font-size:.83rem;color:var(--muted);font-weight:600">Sub Total</span>
-                        <div style="display:flex;align-items:center;gap:6px">
+                        <div class="d-flex align-items-center gap-2">
                             <span style="font-size:.8rem;color:var(--muted);font-weight:600">৳</span>
-                            <div style="background:var(--input-bg,#f8f9fa);border:1px solid var(--border,#e9ecef);border-radius:8px;padding:6px 12px;min-width:120px;text-align:right;font-size:.83rem;font-weight:600">
-                                {{ number_format($sub_total, 2) }}
+                            <div style="background:var(--input-bg,#f8f9fa);border:1px solid var(--border,#e9ecef);border-radius:8px;padding:6px 12px;min-width:140px;text-align:right;font-size:.83rem;font-weight:600">
+                                {{ number_format($sub_total, 0) }}
                             </div>
                         </div>
                     </div>
 
                     <!-- Discount -->
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2" style="margin-bottom:14px">
                         <span style="font-size:.83rem;color:var(--muted);font-weight:600">Discount ( - )</span>
-                        <div style="display:flex;align-items:center;gap:6px">
+                        <div class="d-flex align-items-center gap-2">
                             <span style="font-size:.8rem;color:var(--muted);font-weight:600">৳</span>
-                            <div style="background:var(--input-bg,#f8f9fa);border:1px solid var(--border,#e9ecef);border-radius:8px;padding:6px 12px;min-width:120px;text-align:right;font-size:.83rem;font-weight:600">
-                                {{ number_format($total_discount, 2) }}
+                            <div style="background:var(--input-bg,#f8f9fa);border:1px solid var(--border,#e9ecef);border-radius:8px;padding:6px 12px;min-width:140px;text-align:right;font-size:.83rem;font-weight:600">
+                                {{ number_format($total_discount, 0) }}
                             </div>
                         </div>
                     </div>
 
                     <!-- Net Payable -->
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-top:10px;border-top:1px solid var(--border,#e9ecef)">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2" style="margin-bottom:14px;padding-top:10px;border-top:1px solid var(--border,#e9ecef)">
                         <span style="font-size:.85rem;font-weight:700">Net Payable</span>
-                        <div style="display:flex;align-items:center;gap:6px">
+                        <div class="d-flex align-items-center gap-2">
                             <span style="font-size:.8rem;color:var(--muted);font-weight:600">৳</span>
-                            <div style="background:var(--input-bg,#f8f9fa);border:1px solid var(--border,#e9ecef);border-radius:8px;padding:6px 12px;min-width:120px;text-align:right;font-size:.85rem;font-weight:700;color:var(--primary,#e91e8c)">
-                                {{ number_format($net_payable, 2) }}
+                            <div style="background:var(--input-bg,#f8f9fa);border:1px solid var(--border,#e9ecef);border-radius:8px;padding:6px 12px;min-width:140px;text-align:right;font-size:.85rem;font-weight:700;color:var(--primary,#e91e8c)">
+                                {{ number_format($net_payable, 0) }}
                             </div>
                         </div>
                     </div>
 
                     <!-- Received Amount -->
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2" style="margin-bottom:14px">
                         <span style="font-size:.83rem;color:var(--muted);font-weight:600">Received Amount</span>
-                        <div class="input-group input-group-outline" style="max-width:160px;margin-bottom:0">
+                        <div class="input-group input-group-outline" style="max-width:220px;width:100%;margin-bottom:0">
                             <input type="number"
                                    wire:model.live="received_amount"
                                    class="form-control form-control-sm"
@@ -302,9 +299,9 @@
                     @error('received_amount') <div class="text-danger text-end mb-2" style="font-size:.75rem">{{ $message }}</div> @enderror
 
                     <!-- Pay Via -->
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2" style="margin-bottom:14px">
                         <span style="font-size:.83rem;color:var(--muted);font-weight:600">Pay Via</span>
-                        <div class="input-group input-group-outline" wire:ignore style="max-width:160px;margin-bottom:0">
+                        <div class="input-group input-group-outline" wire:ignore style="max-width:220px;width:100%;margin-bottom:0">
                             <select wire:model="pay_via" class="form-select form-select-sm" style="font-size:.82rem">
                                 <option value="">Select</option>
                                 <option value="cash">Cash</option>
@@ -318,9 +315,9 @@
                     @error('pay_via') <div class="text-danger text-end mb-2" style="font-size:.75rem">{{ $message }}</div> @enderror
 
                     <!-- Remarks -->
-                    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px">
+                    <div class="d-flex flex-wrap align-items-start justify-content-between gap-2" style="margin-bottom:4px">
                         <span style="font-size:.83rem;color:var(--muted);font-weight:600;padding-top:8px">Remarks</span>
-                        <div class="input-group input-group-outline" style="max-width:160px;margin-bottom:0">
+                        <div class="input-group input-group-outline" style="max-width:220px;width:100%;margin-bottom:0">
                             <textarea wire:model="remarks"
                                       class="form-control form-control-sm"
                                       style="font-size:.82rem;min-height:60px;resize:none"
@@ -353,9 +350,9 @@
                 wire:loading.attr="disabled"
                 wire:target="save">
 
-            <span wire:loading.remove wire:target="save">
+            <span wire:loading.remove wire:target="save" style="display: inline-flex;align-items: center;gap: 6px">
                 <span class="material-icons-round">receipt</span>
-                Create Bill
+                Create
             </span>
 
             <span wire:loading wire:target="save">

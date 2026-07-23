@@ -60,9 +60,14 @@
                                 </span>
                             </td>
                             <td>
-                                <button class="act-btn edit" title="View" wire:click="openDetail({{ $hw['id'] }})">
-                                    <span class="material-icons-round">visibility</span>
-                                </button>
+                                <div class="d-flex gap-1">
+                                    @if ($hw['attachment'])
+                                        <a href="{{ Storage::url($hw['attachment']) }}" target="_blank" class="act-btn"><span class="material-icons-round">attachment</span></a>
+                                    @endif
+                                    <button class="act-btn edit" title="View" wire:click="openDetail({{ $hw['id'] }})">
+                                        <span class="material-icons-round">visibility</span>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                         @empty

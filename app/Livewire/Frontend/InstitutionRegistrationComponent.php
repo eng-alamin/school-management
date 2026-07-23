@@ -192,7 +192,7 @@ class InstitutionRegistrationComponent extends Component
     public function render()
     {
         return view('livewire.frontend.institution-registration-component')
-            ->layout('layouts.app', [
+            ->layout('layouts.frontend.app', [
                 'title' => 'Institution Setup | ' . setting('app_name', 'EMS'),
             ]);
     }

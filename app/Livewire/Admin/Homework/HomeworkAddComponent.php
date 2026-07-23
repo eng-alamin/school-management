@@ -7,13 +7,16 @@ use Livewire\WithFileUploads;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use App\Models\Homework;
 use App\Models\AcademicClass;
 use App\Models\AcademicSection;
 use App\Models\AcademicSubject;
 use App\Models\AcademicClassAssign;
 use App\Models\Employee;
+use App\Models\Student;
 use App\Models\User;
+use App\Services\NotificationService;
 
 class HomeworkAddComponent extends Component
 {
@@ -226,16 +229,119 @@ class HomeworkAddComponent extends Component
                 return $homework;
             });
 
+            // ── Notification: শুধু published homework-এর ক্ষেত্রেই এখনই notify করব ──
+            // draft হলে এখনো কেউ দেখবে না, closed practically create হয় না, তাই safe check।
+            if ($homework->status === 'published' && !$homework->published_later) {
+                $this->notifyStudentsAndGuardians($homework);
+            }
+
             $this->dispatch('toast', type: 'success', message: 'Homework created successfully!');
             $this->resetForm();
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             // Roll back the uploaded file if DB insert failed, to avoid orphan files.
             if ($attachmentPath) {
                 Storage::disk('public')->delete($attachmentPath);
             }
 
             $this->dispatch('toast', type: 'error', message: 'Creation failed: ' . $e->getMessage());
+            report($e);
+        }
+    }
+
+    // ──────────────────────────────────────────
+    // Notification: homework-এর class/section-এর সব student + তাদের guardian-দের পাঠানো
+    // (DB transaction commit হওয়ার পর কল হয়, যাতে notification fail হলেও homework save rollback না হয়)
+    // ──────────────────────────────────────────
+    private function notifyStudentsAndGuardians(Homework $homework): void
+    {
+        try {
+            // class_id / section_id "students" টেবিলে থাকে, "users" টেবিলে না —
+            // তাই Student model থেকে query শুরু করে, তারপর linked User account বের করতে হবে।
+            $studentsQuery = Student::with(['user', 'guardians.user'])
+                ->where('institution_id', institution()->id)
+                ->where('class_id', $homework->class_id);
+
+            if ($homework->section_id) {
+                $studentsQuery->where('section_id', $homework->section_id);
+            }
+
+            $students = $studentsQuery->get();
+
+            if ($students->isEmpty()) {
+                return;
+            }
+
+            $subjectName = optional($homework->subject)->name ?? '';
+            $dueDate     = $homework->submission_date instanceof \Carbon\Carbon
+                ? $homework->submission_date->format('d M Y')
+                : \Carbon\Carbon::parse($homework->submission_date)->format('d M Y');
+
+            $title   = 'New Homework: ' . $homework->title;
+            $message = ($subjectName ? "{$subjectName} বিষয়ে " : '')
+                . "নতুন Homework দেওয়া হয়েছে। জমা দেওয়ার শেষ তারিখ: {$dueDate}।";
+
+            $data = [
+                'icon' => 'assignment',
+                'url'  => '#',
+                // 'url'  => route('admin.homework.index'),
+            ];
+
+            // ── প্রতিটা student-এর নিজস্ব login User account (থাকলে) ──
+            $studentUsers = collect();
+
+            foreach ($students as $student) {
+                $studentUser = $student->user;
+
+                if ($studentUser instanceof User && $studentUser->is_active) {
+                    $studentUsers->push($studentUser);
+                } else {
+                    Log::warning('Homework notification skipped: student has no active linked User account.', [
+                        'homework_id' => $homework->id,
+                        'student_id'  => $student->id,
+                    ]);
+                }
+            }
+
+            $studentUsers = $studentUsers->unique('id');
+
+            if ($studentUsers->isNotEmpty()) {
+                NotificationService::sendToMany($studentUsers, 'homework', $title, $message, $data);
+            }
+
+            // ── প্রতিটা student-এর guardian(s)-কে notify করা ──
+            $guardianUsers = collect();
+
+            foreach ($students as $student) {
+                foreach ($student->guardians as $guardian) {
+                    // Guardian-এর সাথে যুক্ত login User account থাকলে সেটাই notify হবে।
+                    // না থাকলে (শুধু contact info হিসেবে guardian থাকলে) ApplicationComponent-এর
+                    // pattern অনুযায়ী skip করে log করি, ভুল model-এ notification পাঠানো ঠেকাতে।
+                    $guardianUser = $guardian->user;
+
+                    if ($guardianUser instanceof User) {
+                        $guardianUsers->push($guardianUser);
+                    } else {
+                        Log::warning('Homework notification skipped: guardian has no linked User account.', [
+                            'homework_id' => $homework->id,
+                            'student_id'  => $student->id,
+                            'guardian_id' => $guardian->id,
+                        ]);
+                    }
+                }
+            }
+
+            $guardianUsers = $guardianUsers->unique('id');
+
+            if ($guardianUsers->isNotEmpty()) {
+                NotificationService::sendToMany($guardianUsers, 'homework', $title, $message, $data);
+            }
+        } catch (\Throwable $e) {
+            // Notification ব্যর্থ হলেও homework save সফল থাকবে — শুধু log করে রাখি।
+            Log::warning('Homework notification failed.', [
+                'homework_id' => $homework->id,
+                'error'       => $e->getMessage(),
+            ]);
         }
     }
 

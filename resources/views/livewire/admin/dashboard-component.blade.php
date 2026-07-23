@@ -2,10 +2,30 @@
 
 <div class="dash-wrap">
 
+    {{-- ══ Skeleton Loading (shown only while Livewire request is in-flight) ══ --}}
+    <div wire:loading.delay class="px-3 pt-3">
+        <div class="skeleton skeleton-title" style="width:220px;height:20px;"></div>
+        <div class="skeleton skeleton-text" style="width:320px;height:12px;margin-top:8px;"></div>
+        <div class="row g-3 pt-3">
+            @for($i = 0; $i < 8; $i++)
+                <div class="col-6 col-md-3">
+                    <div class="dash-stat-card">
+                        <div class="skeleton skeleton-icon"></div>
+                        <div class="skeleton skeleton-text" style="width:70%;margin-top:10px;"></div>
+                        <div class="skeleton skeleton-title" style="width:50%;height:22px;"></div>
+                    </div>
+                </div>
+            @endfor
+        </div>
+    </div>
+
+    {{-- ══ Real Content (hidden while a Livewire request is in-flight) ══ --}}
+    <div wire:loading.remove.delay>
+
     {{-- ══ Welcome Header ══════════════════════════════════════════════════ --}}
     <div class="dash-header px-3 pt-3 pb-2">
         <h5 class="fw-bold mb-0 text-dark">Welcome, Admin! 👋</h5>
-        <p class="text-secondary mb-0" style="font-size:12px;">Here's what's happening at your <span style="color: #db2777; font-weight: bold;">{{institution()->name}}</span> today</p>
+        <p class="text-secondary mb-0" style="font-size:12px;">Here's what's happening at your <span style="color: var(--primary); font-weight: bold;">{{institution()->name}}</span> today</p>
     </div>
 
     {{-- ══ Stat Cards — 2 columns (mobile) / 4 columns (md+) ══════════════ --}}
@@ -403,6 +423,8 @@
         </div>
     </div>
 
+    </div>{{-- /wire:loading.remove wrapper --}}
+
 </div>
 
 {{-- ══ Scoped CSS ══════════════════════════════════════════════════════════ --}}
@@ -410,7 +432,7 @@
 <style>
     /* ── Wrapper ─────────────────────────────────────────────────── */
     .dash-wrap {
-        background: #f5f6fa;
+        background: var(--body-bg);
         min-height: 100vh;
         padding-bottom: 24px;
     }
@@ -421,11 +443,12 @@
 
     /* ── Stat Cards ──────────────────────────────────────────────── */
     .dash-stat-card {
-        background: #ffffff;
-        border-radius: 16px;
+        background: var(--card);
+        border-radius: var(--radius-card);
         padding: 14px;
-        box-shadow: 0 1px 6px rgba(0,0,0,.06);
+        box-shadow: var(--shadow);
         height: 100%;
+        border: 1px solid var(--border);
     }
 
     .dash-stat-icon {
@@ -444,14 +467,14 @@
 
     .dash-stat-label {
         font-size: 11px;
-        color: #9ca3af;
+        color: var(--lbl);
         margin-bottom: 2px;
     }
 
     .dash-stat-value {
         font-size: 20px;
         font-weight: 700;
-        color: #111827;
+        color: var(--val);
         margin-bottom: 4px;
     }
 
@@ -462,16 +485,17 @@
 
     /* ── Section Cards ───────────────────────────────────────────── */
     .dash-section-card {
-        background: #ffffff;
-        border-radius: 16px;
+        background: var(--card);
+        border-radius: var(--radius-card);
         padding: 16px;
-        box-shadow: 0 1px 6px rgba(0,0,0,.06);
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
     }
 
     .dash-section-title {
         font-size: 14px;
         font-weight: 600;
-        color: #111827;
+        color: var(--val);
         display: flex;
         align-items: center;
         gap: 6px;
@@ -480,7 +504,7 @@
 
     .dash-view-all {
         font-size: 12px;
-        color: #e94d82;
+        color: var(--pink);
         font-weight: 500;
         text-decoration: none;
     }
@@ -491,7 +515,7 @@
         align-items: center;
         gap: 10px;
         padding: 8px 0;
-        border-bottom: 1px solid #f3f4f6;
+        border-bottom: 1px solid var(--border);
     }
 
     .dash-activity-item:last-child {
@@ -503,7 +527,7 @@
         width: 32px;
         height: 32px;
         border-radius: 8px;
-        background: #f9fafb;
+        background: var(--section-bg);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -518,12 +542,13 @@
         gap: 6px;
         padding: 10px 4px;
         border-radius: 12px;
-        background: #f9fafb;
-        transition: background .15s;
+        background: var(--section-bg);
+        transition: background .15s, transform .15s;
     }
 
     .dash-quick-action:hover {
-        background: #f3f4f6;
+        background: var(--pink-light);
+        transform: translateY(-2px);
     }
 
     .dash-quick-icon {
@@ -538,7 +563,7 @@
     .dash-quick-label {
         font-size: 11px;
         font-weight: 500;
-        color: #374151;
+        color: var(--val);
         text-align: center;
         line-height: 1.3;
     }
@@ -549,7 +574,7 @@
         align-items: center;
         padding: 11px 12px;
         border-radius: 10px;
-        background: #f9fafb;
+        background: var(--section-bg);
         margin-bottom: 8px;
         gap: 8px;
     }
@@ -577,7 +602,7 @@
         align-items: center;
         gap: 12px;
         padding: 8px 0;
-        border-bottom: 1px solid #f3f4f6;
+        border-bottom: 1px solid var(--border);
     }
 
     .dash-birthday-row:last-child {
@@ -589,7 +614,7 @@
         width: 38px;
         height: 38px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #e94d82, #f4a8c5);
+        background: linear-gradient(135deg, var(--pink), #7ba3ff);
         color: #fff;
         font-size: 15px;
         font-weight: 700;

@@ -30,6 +30,12 @@ class SaleAddComponent extends Component
     public string     $pay_via         = '';
     public string     $remarks         = '';
 
+    // ── Tracks whether user has manually edited Received Amount.
+    //    While false, Received Amount auto-syncs to Net Payable.
+    //    Once the user types into the field, auto-sync stops so we
+    //    never overwrite a manually entered (e.g. partial) payment. ──
+    public bool $receivedAmountTouched = false;
+
     // ── Line items ──
     public array $items = [];
 
@@ -118,9 +124,11 @@ class SaleAddComponent extends Component
         $this->recalculate();
     }
 
-    // ── Received amount change হলে recalculate ──
+    // ── Received amount manually change হলে recalculate,
+    //    এবং auto-sync বন্ধ করে দাও (user নিজে হাতে বসিয়েছে) ──
     public function updatedReceivedAmount(): void
     {
+        $this->receivedAmountTouched = true;
         $this->recalculate();
     }
 
@@ -162,6 +170,12 @@ class SaleAddComponent extends Component
         $this->sub_total      = collect($this->items)->sum(fn($i) => (float)($i['unit_price'] ?? 0) * (int)($i['quantity'] ?? 1));
         $this->total_discount = collect($this->items)->sum(fn($i) => (float)($i['discount'] ?? 0));
         $this->net_payable    = max(0, $this->sub_total - $this->total_discount);
+
+        // ── Received Amount ডিফল্টভাবে Net Payable-এর সমান থাকবে,
+        //    যতক্ষণ না ইউজার নিজে হাত দিয়ে amount পরিবর্তন করে ──
+        if (!$this->receivedAmountTouched) {
+            $this->received_amount = $this->net_payable;
+        }
     }
 
     // ── Role থেকে saleable_type নির্ধারণ ──
@@ -239,7 +253,7 @@ class SaleAddComponent extends Component
         });
 
         $this->dispatch('toast', type: 'success', message: 'Data created successfully!');
-        $this->resetForm();
+        $this->redirectRoute('admin.inventory.sale.list', navigate: true);
     }
 
     public function resetForm(): void
@@ -250,6 +264,7 @@ class SaleAddComponent extends Component
             'pay_via', 'received_amount',
             'sub_total', 'total_discount', 'net_payable',
         ]);
+        $this->receivedAmountTouched = false;
         $this->date    = now()->format('Y-m-d');
         $this->bill_no = $this->generateBillNo();
         $this->resetValidation();

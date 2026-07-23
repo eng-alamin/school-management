@@ -12,11 +12,47 @@
             @elseif ($feeTypes->isEmpty())
                 <div class="alert alert-warning">কোনো Fee Type পাওয়া যায়নি। আগে Fee Type যোগ করুন।</div>
             @else
-                <div class="table-responsive">
+                <style>
+                    .fee-setup-table-wrapper {
+                        overflow-x: auto;
+                        position: relative;
+                    }
+
+                    .fee-setup-table-wrapper table thead th.sticky-col,
+                    .fee-setup-table-wrapper table tbody td.sticky-col {
+                        position: sticky;
+                        left: 0;
+                        z-index: 2;
+                        background-color: #fff;
+                    }
+
+                    .fee-setup-table-wrapper table thead th.sticky-col {
+                        z-index: 3;
+                        background-color: #f8f9fa; /* matches table-light */
+                    }
+
+                    .fee-setup-table-wrapper table tbody td.sticky-col {
+                        box-shadow: 2px 0 3px -1px rgba(0, 0, 0, 0.08);
+                    }
+
+                    .fee-setup-table-wrapper table thead th.sticky-col {
+                        box-shadow: 2px 0 3px -1px rgba(0, 0, 0, 0.08);
+                    }
+
+                    [data-bs-theme="dark"] .fee-setup-table-wrapper table thead th.sticky-col {
+                        background-color: #212529;
+                    }
+
+                    [data-bs-theme="dark"] .fee-setup-table-wrapper table tbody td.sticky-col {
+                        background-color: #1e2124;
+                    }
+                </style>
+
+                <div class="fee-setup-table-wrapper">
                     <table class="table table-bordered align-middle">
                         <thead class="table-light">
                             <tr>
-                                <th style="min-width:150px;">Class</th>
+                                <th class="sticky-col" style="min-width:150px;">Class</th>
                                 @foreach ($feeTypes as $feeType)
                                     <th wire:key="fee-type-head-{{ $feeType->id }}" style="min-width:190px;">
                                         {{ $feeType->name }}
@@ -27,7 +63,7 @@
                         <tbody>
                             @foreach ($classes as $class)
                                 <tr wire:key="class-row-{{ $class->id }}">
-                                    <td class="fw-semibold">{{ $class->name }}</td>
+                                    <td class="fw-semibold sticky-col">{{ $class->name }}</td>
 
                                     @foreach ($feeTypes as $feeType)
                                         @php

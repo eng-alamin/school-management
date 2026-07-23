@@ -33,6 +33,13 @@ class SaleEditComponent extends Component
     public string $pay_via         = '';
     public string $remarks         = '';
 
+    // ── Tracks whether Received Amount already holds a meaningful value
+    //    (loaded from DB, or manually edited by the user).
+    //    Defaults to TRUE here (unlike Add) because on Edit we load a real,
+    //    previously saved received_amount from the database — it must NEVER
+    //    be silently overwritten by auto-sync during recalculation. ──
+    public bool $receivedAmountTouched = true;
+
     // ── Line items ──
     public array $items = [];
 
@@ -85,6 +92,11 @@ class SaleEditComponent extends Component
         $this->received_amount = (float) $sale->received_amount;
         $this->pay_via         = $sale->pay_via ?? '';
         $this->remarks         = $sale->remarks ?? '';
+
+        // The received_amount above is a real, previously saved value —
+        // mark it as "touched" so the recalculate() call below (and any
+        // future item edits) never silently overwrite it with net_payable.
+        $this->receivedAmountTouched = true;
 
         // Resolve class_id for student role
         if ($this->role === 'student') {
@@ -149,9 +161,11 @@ class SaleEditComponent extends Component
         $this->recalculate();
     }
 
-    // ── Recalculate when received amount changes ──
+    // ── Recalculate when received amount changes, and lock auto-sync
+    //    since the user has now manually taken control of this field ──
     public function updatedReceivedAmount(): void
     {
+        $this->receivedAmountTouched = true;
         $this->recalculate();
     }
 
@@ -194,6 +208,14 @@ class SaleEditComponent extends Component
         $this->sub_total      = collect($this->items)->sum(fn($i) => (float)($i['unit_price'] ?? 0) * (int)($i['quantity'] ?? 1));
         $this->total_discount = collect($this->items)->sum(fn($i) => (float)($i['discount'] ?? 0));
         $this->net_payable    = max(0, $this->sub_total - $this->total_discount);
+
+        // ── Received Amount শুধু তখনই Net Payable-এর সমান অটো-সেট হবে
+        //    যখন এটা কখনো "touched" হয়নি (নতুন/blank state) — Edit-এ
+        //    যেহেতু mount() থেকেই touched = true সেট করা থাকে, তাই এখানে
+        //    এই ব্লক কার্যত কখনো existing সংরক্ষিত ভ্যালু ওভাররাইট করবে না ──
+        if (!$this->receivedAmountTouched) {
+            $this->received_amount = $this->net_payable;
+        }
     }
 
     // ── Determine saleable_type from role ──
@@ -288,6 +310,7 @@ class SaleEditComponent extends Component
 
         $this->dispatch('date-updated', date: $this->date);
         $this->dispatch('toast', type: 'success', message: 'Data updated successfully!');
+        $this->redirectRoute('admin.inventory.sale.list', navigate: true);
     }
 
     public function render()

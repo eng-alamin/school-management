@@ -16,6 +16,7 @@ class Institution extends Model
         'enable_registration_prefix'     => 'boolean',
         'due_fees_calculation_with_fine' => 'boolean',
         'status'                         => 'boolean',
+        'facilities'                     => 'array',
     ];
 
     // ৳15,000 format

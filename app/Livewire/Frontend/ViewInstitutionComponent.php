@@ -99,7 +99,7 @@ class ViewInstitutionComponent extends Component
 
         return Employee::query()
             ->select(['id', 'user_id', 'institution_id', 'designation_id', 'name', 'photo', 'comments'])
-            ->where('institution_id', institution()->id)
+            ->where('institution_id', $this->institution->id)
             ->whereHas('designation', function ($query) {
                 $query->whereIn('name', ['Principal', 'Vice Principal']);
             })
@@ -206,41 +206,60 @@ class ViewInstitutionComponent extends Component
     }
 
     /**
-     * Facilities / Infrastructure list.
-     *
-     * TODO (Dynamic Plan): ভবিষ্যতে একটি `institution_facilities` টেবিল বানাতে হবে
-     * (columns: institution_id, key, label_bn, label_en, icon, is_available)
-     * এবং এই মেথডে DB থেকে fetch করলেই Blade ফাইল অপরিবর্তিত থাকবে,
-     * কারণ Blade শুধু 'key', 'label_bn', 'label_en', 'icon', 'available' — এই structure আশা করে।
+     * Facilities / Infrastructure master definitions: key => [label_bn, label_en, icon].
      */
-    public function getFacilitiesProperty(): array
+    private static function facilityDefinitions(): array
     {
         return [
-            ['key' => 'library',   'label_bn' => 'লাইব্রেরি',        'label_en' => 'Library',          'icon' => 'bi-book-half',        'available' => true],
-            ['key' => 'science_lab','label_bn' => 'সায়েন্স ল্যাব',    'label_en' => 'Science Lab',      'icon' => 'bi-flask',            'available' => true],
-            ['key' => 'computer_lab','label_bn' => 'কম্পিউটার ল্যাব', 'label_en' => 'Computer Lab',     'icon' => 'bi-pc-display',       'available' => true],
-            ['key' => 'playground', 'label_bn' => 'খেলার মাঠ',        'label_en' => 'Playground',       'icon' => 'bi-tree',             'available' => true],
-            ['key' => 'transport',  'label_bn' => 'পরিবহন সুবিধা',    'label_en' => 'Transport',        'icon' => 'bi-bus-front',        'available' => false],
-            ['key' => 'hostel',     'label_bn' => 'হোস্টেল',          'label_en' => 'Hostel',           'icon' => 'bi-house-door',       'available' => false],
-            ['key' => 'canteen',    'label_bn' => 'ক্যান্টিন',        'label_en' => 'Canteen',          'icon' => 'bi-cup-hot',          'available' => true],
+            'library'      => ['label_bn' => 'লাইব্রেরি',        'label_en' => 'Library',        'icon' => 'bi-book-half'],
+            'science_lab'  => ['label_bn' => 'সায়েন্স ল্যাব',    'label_en' => 'Science Lab',    'icon' => 'bi-eyedropper'],
+            'computer_lab' => ['label_bn' => 'কম্পিউটার ল্যাব',  'label_en' => 'Computer Lab',    'icon' => 'bi-pc-display'],
+            'playground'   => ['label_bn' => 'খেলার মাঠ',        'label_en' => 'Playground',     'icon' => 'bi-tree'],
+            'transport'    => ['label_bn' => 'পরিবহন সুবিধা',    'label_en' => 'Transport',       'icon' => 'bi-bus-front'],
+            'hostel'       => ['label_bn' => 'হোস্টেল',          'label_en' => 'Hostel',          'icon' => 'bi-house-door'],
+            'canteen'      => ['label_bn' => 'ক্যান্টিন',        'label_en' => 'Canteen',         'icon' => 'bi-cup-hot'],
         ];
     }
 
     /**
+     * Facilities / Infrastructure list.
+     */
+    public function getFacilitiesProperty(): array
+    {
+        $saved = $this->institution->facilities ?? [];
+
+        return collect(self::facilityDefinitions())
+            ->map(function (array $def, string $key) use ($saved) {
+                return [
+                    'key'       => $key,
+                    'label_bn'  => $def['label_bn'],
+                    'label_en'  => $def['label_en'],
+                    'icon'      => $def['icon'],
+                    'available' => (bool) ($saved[$key] ?? false),
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
+    /**
      * Public Notice Board.
-     *
-     * TODO (Dynamic Plan): `notices` টেবিল থেকে
-     * ->where('institution_id', $this->institution->id)->where('is_public', true)
-     * ->latest()->take(5)->get() দিয়ে replace করতে হবে।
-     * Blade structure: 'title', 'type', 'date' — এই তিনটা key থাকলেই চলবে।
      */
     public function getNoticesProperty(): array
     {
-        return [
-            ['title' => 'নতুন শিক্ষাবর্ষের ভর্তি বিজ্ঞপ্তি প্রকাশিত হয়েছে', 'type' => 'admission', 'date' => now()->subDays(2)->format('d M, Y')],
-            ['title' => 'বার্ষিক ক্রীড়া প্রতিযোগিতা আগামী মাসে অনুষ্ঠিত হবে', 'type' => 'event',     'date' => now()->subDays(5)->format('d M, Y')],
-            ['title' => 'জাতীয় ছুটির কারণে প্রতিষ্ঠান বন্ধ থাকবে',           'type' => 'holiday',   'date' => now()->subDays(9)->format('d M, Y')],
-        ];
+        return \App\Models\Notice::query()
+        ->where('institution_id', $this->institution->id)
+        ->forAudience('all')
+        ->active()
+        ->latest('published_at')
+        ->take(5)
+        ->get()
+        ->map(fn ($notice) => [
+            'title' => $notice->title,
+            'type'  => $notice->priority,
+            'date'  => $notice->published_at->format('d M, Y'),
+        ])
+        ->all();
     }
 
     /**

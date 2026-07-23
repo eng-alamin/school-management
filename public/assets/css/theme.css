@@ -6,8 +6,14 @@
     --sidebar-mini: 88px;
     --nav-h: 72px;
 
+    /* ── Modern Minimal — Soft Blue / White palette ── */
     --primary: rgba(33, 37, 41);
     --primary-light: rgba(239, 84, 84, 0.12);
+
+    --secondary: #1a1a1a;
+    --secondary-dark: #000000;
+    --secondary-light: #f0f0f0;
+    --secondary-shadow: rgba(0, 0, 0, 0.3);
 
     --pink: #1a1a1a;
     --pink-dark: #000000;
@@ -20,29 +26,43 @@
     --sidebar-bg: #fff;
     --card-shadow: 0 20px 27px 0 rgba(0, 0, 0, 0.05);
 
-    --success: #4caf50;
-    --danger: #f44335;
-    --warning: #fb8c00;
-    --info: #1a73e8;
+    /* --primary: #3b6fed;
+    --primary-light: rgba(59, 111, 237, 0.12);
 
-    --radius-card: 16px;
-    --radius-btn: 8px;
-    --transition: 0.25s ease;
+    --pink: #3b6fed;
+    --pink-dark: #2856c7;
+    --pink-light: #eaf0fe;
+    --pink-shadow: rgba(59, 111, 237, 0.28);
+
+    --dark: #1e293b;
+    --muted: #7b8aa3;
+    --body-bg: #f3f6fb;
+    --sidebar-bg: #fff;
+    --card-shadow: 0 10px 30px 0 rgba(30, 41, 59, 0.06); */
+
+    --success: #22c55e;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --info: #3b6fed;
+
+    --radius-card: 18px;
+    --radius-btn: 10px;
+    --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
     /* Custom Select */
-    --select-border: #d2d6da;
-    --select-focus: #344767;
+    --select-border: #d8dfea;
+    --select-focus: #3b6fed;
     --select-bg: #fff;
-    --select-item-hover: #f5f6fa;
-    --select-radius: 0.375rem;
-    --select-shadow: 0 8px 32px rgba(52, 71, 103, 0.13);
+    --select-item-hover: #f0f5ff;
+    --select-radius: 0.5rem;
+    --select-shadow: 0 8px 32px rgba(30, 41, 59, 0.12);
 
     --card: #ffffff;
-    --border: #eaeff6;
-    --lbl: #8a9bb5;
-    --val: #16202e;
-    --section-bg: #f8fafd;
-    --shadow: 0 2px 20px rgba(22, 32, 46, 0.07);
+    --border: #e8edf5;
+    --lbl: #8a95ab;
+    --val: #1e293b;
+    --section-bg: #f6f9fd;
+    --shadow: 0 2px 20px rgba(30, 41, 59, 0.06);
 }
 
 /* ═══════════════════════════════════════
@@ -135,7 +155,7 @@ body.dark-mode .text-dark {
     height: 36px;
     border-radius: 10px;
     flex-shrink: 0;
-    background: linear-gradient(195deg, #444, #111);
+    background: linear-gradient(195deg, #5b8bff, #3b6fed);
     box-shadow: 0 4px 14px var(--pink-shadow);
     display: flex;
     align-items: center;
@@ -2284,14 +2304,24 @@ body.dark-mode .pd-menu-item:hover {
        DARK MODE
     ═══════════════════════════════════════ */
 body.dark-mode {
-    --body-bg: #0f1117;
-    --sidebar-bg: #1a1d27;
-    --dark: #e2e8f0;
+    --body-bg: #0d1117;
+    --sidebar-bg: #151b26;
+    --card: #1a2130;
+    --border: rgba(255, 255, 255, 0.08);
+    --dark: #e6ebf5;
+    --val: #e6ebf5;
+    --lbl: #94a3b8;
     --muted: #94a3b8;
-    --card-shadow: 0 20px 27px 0 rgba(0, 0, 0, 0.3);
-    --select-bg: #1a1d27;
+    --primary: #5b8bff;
+    --pink: #5b8bff;
+    --pink-dark: #3b6fed;
+    --pink-light: rgba(91, 139, 255, 0.15);
+    --pink-shadow: rgba(0, 0, 0, 0.35);
+    --card-shadow: 0 20px 27px 0 rgba(0, 0, 0, 0.35);
+    --section-bg: #1a2130;
+    --select-bg: #1a2130;
     --select-border: rgba(255, 255, 255, 0.18);
-    --select-focus: #e2e8f0;
+    --select-focus: #5b8bff;
     --select-item-hover: rgba(255, 255, 255, 0.06);
     --select-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
@@ -3155,4 +3185,340 @@ body.dark-mode .dash-quick-label {
 body.dark-mode .bg-light,
 body.dark-mode .usage-estimate-box {
     background: rgba(26, 29, 39, 0.92) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   MODERN UI ENHANCEMENTS — Phase 1 (Layout + Theme)
+   Added on top of the existing design system. Nothing above this line
+   was removed — only :root / dark-mode color values were updated and
+   this new section was appended. Safe to re-run without breaking any
+   existing blade component.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── Smooth global font rendering ── */
+html {
+    scroll-behavior: smooth;
+}
+body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Page fade-in on load (applied via JS to .page-body) ── */
+.page-body {
+    animation: pageFadeIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes pageFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── Card hover-lift micro interaction (applies to Bootstrap + custom cards) ── */
+.card,
+.dash-stat-card,
+.dash-section-card,
+.mat-card {
+    transition:
+        transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow 0.2s ease;
+}
+.card:hover,
+.dash-stat-card:hover,
+.dash-section-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 32px rgba(30, 41, 59, 0.09);
+}
+body.dark-mode .card:hover,
+body.dark-mode .dash-stat-card:hover,
+body.dark-mode .dash-section-card:hover {
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.45);
+}
+
+/* ── Button micro interaction ── */
+.btn {
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease,
+        background 0.15s ease;
+}
+.btn:active {
+    transform: scale(0.97);
+}
+.btn-pink,
+.btn-primary {
+    box-shadow: 0 4px 14px var(--pink-shadow);
+}
+.btn-pink:hover,
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px var(--pink-shadow);
+}
+
+/* ── Sidebar nav item smooth slide-in indicator ── */
+.nav1-link.active {
+    position: relative;
+}
+.nav1-link.active::before {
+    content: "";
+    position: absolute;
+    left: -10px;
+    top: 8px;
+    bottom: 8px;
+    width: 4px;
+    border-radius: 0 4px 4px 0;
+    background: var(--pink);
+    animation: navIndicatorGrow 0.25s ease;
+}
+@keyframes navIndicatorGrow {
+    from {
+        transform: scaleY(0);
+    }
+    to {
+        transform: scaleY(1);
+    }
+}
+
+/* ── Stagger fade-in for dashboard-style card grids ── */
+.row.g-3 > [class^="col-"],
+.row.g-2 > [class^="col-"] {
+    animation: cardFadeUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+.row.g-3 > [class^="col-"]:nth-child(1),
+.row.g-2 > [class^="col-"]:nth-child(1) {
+    animation-delay: 0.02s;
+}
+.row.g-3 > [class^="col-"]:nth-child(2),
+.row.g-2 > [class^="col-"]:nth-child(2) {
+    animation-delay: 0.05s;
+}
+.row.g-3 > [class^="col-"]:nth-child(3),
+.row.g-2 > [class^="col-"]:nth-child(3) {
+    animation-delay: 0.08s;
+}
+.row.g-3 > [class^="col-"]:nth-child(4),
+.row.g-2 > [class^="col-"]:nth-child(4) {
+    animation-delay: 0.11s;
+}
+.row.g-3 > [class^="col-"]:nth-child(5),
+.row.g-2 > [class^="col-"]:nth-child(5) {
+    animation-delay: 0.14s;
+}
+.row.g-3 > [class^="col-"]:nth-child(6),
+.row.g-2 > [class^="col-"]:nth-child(6) {
+    animation-delay: 0.17s;
+}
+.row.g-3 > [class^="col-"]:nth-child(n + 7) {
+    animation-delay: 0.2s;
+}
+@keyframes cardFadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   SKELETON LOADING — use with Livewire wire:loading / wire:loading.class
+   Example:
+     <div wire:loading class="skeleton skeleton-text" style="width:60%"></div>
+     <div wire:loading.remove>{{ $realValue }}</div>
+   ══════════════════════════════════════════════════════════════════════ */
+.skeleton {
+    position: relative;
+    overflow: hidden;
+    background: #e9edf3;
+    border-radius: 6px;
+    display: inline-block;
+}
+.skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.65) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    animation: skeletonShimmer 1.4s infinite;
+}
+@keyframes skeletonShimmer {
+    100% {
+        transform: translateX(100%);
+    }
+}
+.skeleton-text {
+    height: 12px;
+    width: 100%;
+    margin-bottom: 6px;
+}
+.skeleton-title {
+    height: 18px;
+    width: 60%;
+    margin-bottom: 10px;
+}
+.skeleton-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+}
+.skeleton-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+}
+.skeleton-card {
+    height: 100px;
+    width: 100%;
+    border-radius: var(--radius-card);
+}
+.skeleton-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+}
+body.dark-mode .skeleton {
+    background: rgba(255, 255, 255, 0.06);
+}
+body.dark-mode .skeleton::after {
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.1) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   DESKTOP SIDEBAR COLLAPSE (mini) MODE
+   Toggled by JS: document.body.classList.toggle('sidebar-collapsed')
+   ══════════════════════════════════════════════════════════════════════ */
+@media (min-width: 993px) {
+    body.sidebar-collapsed .sidebar {
+        width: var(--sidebar-mini);
+    }
+    body.sidebar-collapsed .main-wrap {
+        margin-left: var(--sidebar-mini);
+    }
+    body.sidebar-collapsed .brand-text,
+    body.sidebar-collapsed .user-name,
+    body.sidebar-collapsed .user-arrow,
+    body.sidebar-collapsed .nav-label,
+    body.sidebar-collapsed .nav-arrow,
+    body.sidebar-collapsed .nav-section-title,
+    body.sidebar-collapsed .nav2-collapse {
+        display: none !important;
+    }
+    body.sidebar-collapsed .sidebar-brand,
+    body.sidebar-collapsed .sidebar-user {
+        justify-content: center;
+    }
+    body.sidebar-collapsed .nav1-link,
+    body.sidebar-collapsed .nav1-item > div.nav1-link {
+        justify-content: center;
+        padding-left: 0;
+        padding-right: 0;
+    }
+    body.sidebar-collapsed .sidebar:hover {
+        width: var(--sidebar-w);
+        box-shadow: 0 4px 30px rgba(30, 41, 59, 0.18);
+    }
+    body.sidebar-collapsed .sidebar:hover .brand-text,
+    body.sidebar-collapsed .sidebar:hover .user-name,
+    body.sidebar-collapsed .sidebar:hover .user-arrow,
+    body.sidebar-collapsed .sidebar:hover .nav-label,
+    body.sidebar-collapsed .sidebar:hover .nav-arrow,
+    body.sidebar-collapsed .sidebar:hover .nav-section-title {
+        display: inline-block !important;
+    }
+    body.sidebar-collapsed .sidebar:hover .nav1-link,
+    body.sidebar-collapsed .sidebar:hover .nav1-item > div.nav1-link {
+        justify-content: flex-start;
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+    body.sidebar-collapsed .sidebar:hover .sidebar-brand,
+    body.sidebar-collapsed .sidebar:hover .sidebar-user {
+        justify-content: flex-start;
+    }
+}
+
+/* Desktop collapse toggle button (placed in header) */
+.sidebar-collapse-btn {
+    display: none;
+}
+@media (min-width: 993px) {
+    .sidebar-collapse-btn {
+        display: inline-flex;
+    }
+    .topnav-toggle {
+        display: none;
+    }
+}
+
+/* ── Custom scrollbar (page-wide, subtle) ── */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+body.dark-mode ::-webkit-scrollbar-thumb {
+    background: #2b3546;
+}
+
+/* ── Accessible focus rings ── */
+a:focus-visible,
+button:focus-visible,
+.btn:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* ── Mobile polish ── */
+@media (max-width: 992px) {
+    .sidebar-overlay.show {
+        backdrop-filter: blur(2px);
+        background: rgba(15, 23, 42, 0.45);
+    }
+    .dash-stat-value {
+        font-size: 18px;
+    }
+    .topnav {
+        padding-inline: 10px;
+    }
+}
+
+/* ── Reduced motion accessibility ── */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+    }
 }

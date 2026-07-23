@@ -49,7 +49,7 @@
             <div class="col-6 col-md-3">
                 <div class="dash-stat-card">
                     <div class="dash-stat-icon" style="background:#fef3c7;">
-                        <span class="material-icons-round" style="color:#d97706;">institution</span>
+                        <span class="material-icons-round" style="color:#d97706;">school</span>
                     </div>
                     <p class="dash-stat-label">Total Students</p>
                     <h4 class="dash-stat-value">{{ number_format($totalStudents) }}</h4>
@@ -82,7 +82,7 @@
                         <span class="material-icons-round" style="color:#db2777;">payments</span>
                     </div>
                     <p class="dash-stat-label">Total Revenue</p>
-                    <h4 class="dash-stat-value">
+                    <h4 class="dash-stat-value privacy-amount">
                         @php
                             $rev = $totalRevenue;
                             echo $rev >= 100000
@@ -104,7 +104,7 @@
                         <span class="material-icons-round" style="color:#0891b2;">calendar_month</span>
                     </div>
                     <p class="dash-stat-label">Revenue This Month</p>
-                    <h4 class="dash-stat-value">
+                    <h4 class="dash-stat-value privacy-amount">
                         @php
                             $rm = $revenueThisMonth;
                             echo $rm >= 100000
@@ -124,7 +124,7 @@
                     </div>
                     <p class="dash-stat-label">Pending Invoices</p>
                     <h4 class="dash-stat-value">{{ $pendingInvoices }}</h4>
-                    <span class="dash-stat-badge text-danger">
+                    <span class="dash-stat-badge text-danger privacy-amount">
                         @php
                             $pa = $pendingAmount;
                             echo $pa >= 100000
@@ -162,12 +162,12 @@
             </div>
 
             @forelse($recentInstitutions as $institution)
-                <div class="dash-institution-row">
+                <div class="dash-notice-row">
                     <div class="dash-institution-avatar">
                         {{ strtoupper(substr($institution->name, 0, 1)) }}
                     </div>
                     <div class="flex-grow-1 min-w-0">
-                        <p class="mb-0 fw-semibold text-truncate" style="font-size:13px;">
+                        <p class="mb-0 text-dark fw-semibold text-truncate" style="font-size:13px;">
                             {{ $institution->name }}
                         </p>
                         <small class="text-secondary" style="font-size:11px;">
@@ -175,14 +175,14 @@
                         </small>
                     </div>
                     @if($institution->status)
-                        <span class="dash-status-badge dash-badge-active">Active</span>
+                        <span class="inv-badge paid">Active</span>
                     @else
-                        <span class="dash-status-badge dash-badge-inactive">Inactive</span>
+                        <span class="inv-badge unpaid">Inactive</span>
                     @endif
                 </div>
             @empty
                 <p class="text-center text-secondary py-2 mb-0" style="font-size:13px;">
-                    কোনো institution নেই এখনো
+                    No Institutions Yet
                 </p>
             @endforelse
         </div>
@@ -200,9 +200,9 @@
             </div>
 
             @forelse($recentInvoices as $inv)
-                <div class="dash-institution-row">
+                <div class="dash-notice-row">
                     <div class="flex-grow-1 min-w-0">
-                        <p class="mb-0 fw-semibold text-truncate" style="font-size:13px;">
+                        <p class="mb-0 text-dark fw-semibold text-truncate" style="font-size:13px;">
                             {{ $inv->institution_name }}
                         </p>
                         <small class="text-secondary" style="font-size:11px;">
@@ -210,19 +210,19 @@
                         </small>
                     </div>
                     <div class="text-end ms-2" style="flex-shrink:0;">
-                        <p class="mb-0 fw-semibold" style="font-size:13px;">
+                        <p class="mb-0 fw-semibold text-dark privacy-amount" style="font-size:13px;">
                             ৳{{ number_format($inv->total_amount) }}
                         </p>
                         @if($inv->status === 'paid')
-                            <span class="dash-status-badge dash-badge-active">Paid</span>
+                            <span class="inv-badge paid">Paid</span>
                         @else
-                            <span class="dash-status-badge dash-badge-inactive">Unpaid</span>
+                            <span class="inv-badge unpaid">Unpaid</span>
                         @endif
                     </div>
                 </div>
             @empty
                 <p class="text-center text-secondary py-2 mb-0" style="font-size:13px;">
-                    কোনো invoice নেই এখনো
+                    No Invoices Yet
                 </p>
             @endforelse
         </div>
@@ -254,7 +254,7 @@
                 </div>
             @empty
                 <p class="text-center text-secondary py-2 mb-0" style="font-size:13px;">
-                    কোনো activity নেই এখনো
+                    No Activity Yet
                 </p>
             @endforelse
         </div>
@@ -262,68 +262,184 @@
 
 </div>
 
+{{-- ══ Scoped CSS (same variables as admin dashboard — dark mode ready) ══════ --}}
 @push('styles')
 <style>
-    .dash-wrap { background: #f5f6fa; min-height: 100vh; padding-bottom: 24px; }
-    .dash-header { padding-top: 16px; }
+    /* ── Wrapper ─────────────────────────────────────────────────── */
+    .dash-wrap {
+        background: var(--body-bg);
+        min-height: 100vh;
+        padding-bottom: 24px;
+    }
 
+    .dash-header {
+        padding-top: 16px;
+    }
+
+    /* ── Stat Cards ──────────────────────────────────────────────── */
     .dash-stat-card {
-        background: #ffffff; border-radius: 16px; padding: 14px;
-        box-shadow: 0 1px 6px rgba(0,0,0,.06); height: 100%;
+        background: var(--card);
+        border-radius: var(--radius-card);
+        padding: 14px;
+        box-shadow: var(--shadow);
+        height: 100%;
+        border: 1px solid var(--border);
     }
+
     .dash-stat-icon {
-        width: 38px; height: 38px; border-radius: 10px;
-        display: flex; align-items: center; justify-content: center; margin-bottom: 10px;
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 10px;
     }
-    .dash-stat-icon .material-icons-round { font-size: 20px; }
-    .dash-stat-label { font-size: 11px; color: #9ca3af; margin-bottom: 2px; }
-    .dash-stat-value { font-size: 20px; font-weight: 700; color: #111827; margin-bottom: 4px; }
-    .dash-stat-badge { font-size: 11px; font-weight: 500; }
 
+    .dash-stat-icon .material-icons-round {
+        font-size: 20px;
+    }
+
+    .dash-stat-label {
+        font-size: 11px;
+        color: var(--lbl);
+        margin-bottom: 2px;
+    }
+
+    .dash-stat-value {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--val);
+        margin-bottom: 4px;
+    }
+
+    .dash-stat-badge {
+        font-size: 11px;
+        font-weight: 500;
+    }
+
+    /* ── Section Cards ───────────────────────────────────────────── */
     .dash-section-card {
-        background: #ffffff; border-radius: 16px;
-        padding: 16px; box-shadow: 0 1px 6px rgba(0,0,0,.06);
+        background: var(--card);
+        border-radius: var(--radius-card);
+        padding: 16px;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
     }
-    .dash-section-title {
-        font-size: 14px; font-weight: 600; color: #111827;
-        display: flex; align-items: center; gap: 6px; margin-bottom: 12px;
-    }
-    .dash-view-all { font-size: 12px; color: #e94d82; font-weight: 500; text-decoration: none; }
 
-    .dash-institution-row {
-        display: flex; align-items: center; gap: 10px;
-        padding: 10px 12px; border-radius: 10px;
-        background: #f9fafb; margin-bottom: 8px;
+    .dash-section-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--val);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 12px;
     }
-    .dash-institution-row:last-child { margin-bottom: 0; }
+
+    .dash-view-all {
+        font-size: 12px;
+        color: var(--pink);
+        font-weight: 500;
+        text-decoration: none;
+    }
+
+    /* ── Notices / Institution / Invoice rows ───────────────────── */
+    .dash-notice-row {
+        display: flex;
+        align-items: center;
+        padding: 11px 12px;
+        border-radius: 10px;
+        background: var(--section-bg);
+        margin-bottom: 8px;
+        gap: 10px;
+    }
+
+    .dash-notice-row:last-child {
+        margin-bottom: 0;
+    }
 
     .dash-institution-avatar {
-        width: 36px; height: 36px; border-radius: 10px;
-        background: linear-gradient(135deg, #e94d82, #f4a8c5);
-        color: #fff; font-size: 14px; font-weight: 700;
-        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, var(--pink), #7ba3ff);
+        color: #fff;
+        font-size: 14px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
     }
 
-    .dash-status-badge {
-        font-size: 11px; padding: 3px 10px;
-        border-radius: 20px; font-weight: 500; flex-shrink: 0;
+    .inv-badge {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        border: 1px solid transparent;
+        flex-shrink: 0;
     }
-    .dash-badge-active   { background: #d1fae5; color: #065f46; }
-    .dash-badge-inactive { background: #fef2f2; color: #991b1b; }
+    .inv-badge.paid    { background: transparent; border-color: #22c55e; color: #22c55e; }
+    .inv-badge.unpaid  { background: transparent; border-color: #ef4444; color: #ef4444; }
 
+    /* ── Activity ────────────────────────────────────────────────── */
     .dash-activity-item {
-        display: flex; align-items: center; gap: 10px;
-        padding: 8px 0; border-bottom: 1px solid #f3f4f6;
-    }
-    .dash-activity-item:last-child { border-bottom: none; padding-bottom: 0; }
-    .dash-activity-icon {
-        width: 32px; height: 32px; border-radius: 8px;
-        background: #f9fafb; display: flex;
-        align-items: center; justify-content: center; flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--border);
     }
 
+    .dash-activity-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .dash-activity-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: var(--section-bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    /* ── Responsive tweaks ───────────────────────────────────────── */
     @media (min-width: 768px) {
-        .dash-stat-value { font-size: 22px; }
+        .dash-stat-value {
+            font-size: 22px;
+        }
+    }
+
+    /* ── Privacy Mode ────────────────────────────────────────────── */
+    body.privacy-mode .privacy-amount {
+        filter: blur(7px);
+        user-select: none;
+        cursor: pointer;
+        transition: filter .15s;
+    }
+
+    body.privacy-mode .privacy-amount.revealed {
+        filter: blur(0);
     }
 </style>
+@endpush
+
+@push('scripts')
+<script>
+    document.addEventListener('click', function (e) {
+        const el = e.target.closest('.privacy-amount');
+        if (!el || !document.body.classList.contains('privacy-mode')) return;
+
+        el.classList.add('revealed');
+        clearTimeout(el._privacyTimer);
+        el._privacyTimer = setTimeout(() => el.classList.remove('revealed'), 2000);
+    });
+</script>
 @endpush

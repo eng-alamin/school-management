@@ -47,6 +47,9 @@ class InstitutionComponent extends Component
     public int $due_days                          = 30;
     public bool $due_fees_calculation_with_fine   = false;
 
+    // Facilities (key => bool)
+    public array $facilities = [];
+
     // Logo paths (stored — raw relative path, e.g. "institutions/logos/xxx.webp")
     public ?string $system_logo = null;
     public ?string $text_logo   = null;
@@ -58,6 +61,32 @@ class InstitutionComponent extends Component
     public $text_logo_upload   = null;
     public $print_logo_upload  = null;
     public $report_logo_upload = null;
+
+    /**
+     * Master list of available facilities: key => [label, icon].
+     * Adding a new facility only requires adding an entry here (Open/Closed Principle).
+     * Icons use Bootstrap Icons (bi-*), already used across the project.
+     */
+    public static function facilityDefinitions(): array
+    {
+        return [
+            'library'       => ['label' => 'Library',        'icon' => 'bi-book'],
+            'science_lab'   => ['label' => 'Science Lab',    'icon' => 'bi-flask'],
+            'computer_lab'  => ['label' => 'Computer Lab',   'icon' => 'bi-pc-display'],
+            'playground'    => ['label' => 'Playground',     'icon' => 'bi-tree'],
+            'transport'     => ['label' => 'Transport',      'icon' => 'bi-bus-front'],
+            'hostel'        => ['label' => 'Hostel',         'icon' => 'bi-house-door'],
+            'canteen'       => ['label' => 'Canteen',        'icon' => 'bi-cup-hot'],
+        ];
+    }
+
+    /**
+     * Default facilities array (all disabled) — used when institution has no saved value yet.
+     */
+    protected function defaultFacilities(): array
+    {
+        return array_fill_keys(array_keys(self::facilityDefinitions()), false);
+    }
 
     protected function rules(): array
     {
@@ -90,6 +119,9 @@ class InstitutionComponent extends Component
 
             'due_days'                         => 'required|integer|min:0',
             'due_fees_calculation_with_fine'   => 'boolean',
+
+            'facilities'    => 'nullable|array',
+            'facilities.*'  => 'boolean',
 
             'system_logo_upload' => 'nullable|image|max:2048',
             'text_logo_upload'   => 'nullable|image|max:2048',
@@ -134,11 +166,32 @@ class InstitutionComponent extends Component
         $this->due_days                         = (int) ($setting->due_days ?? 30);
         $this->due_fees_calculation_with_fine   = (bool) $setting->due_fees_calculation_with_fine;
 
+        // Merge saved facilities with default definitions so newly added
+        // facility keys (added later in facilityDefinitions()) always appear,
+        // even if the institution's saved JSON doesn't have them yet.
+        $saved = $setting->facilities ?? [];
+        $this->facilities = array_merge($this->defaultFacilities(), array_intersect_key(
+            $saved,
+            $this->defaultFacilities()
+        ));
+
         // raw path সরাসরি property-তে রাখা হলো (storage/ prefix নেই)
         $this->system_logo  = $setting->system_logo;
         $this->text_logo    = $setting->text_logo;
         $this->print_logo   = $setting->print_logo;
         $this->report_logo  = $setting->report_logo;
+    }
+
+    /**
+     * Toggle a single facility flag on/off. Called from the Facilities tab UI.
+     */
+    public function toggleFacility(string $key): void
+    {
+        if (! array_key_exists($key, self::facilityDefinitions())) {
+            return; // ignore unknown keys — protects against tampered wire:click payloads
+        }
+
+        $this->facilities[$key] = ! ($this->facilities[$key] ?? false);
     }
 
     // ── Save ──────────────────────────────────────────────────────────────────
@@ -198,6 +251,8 @@ class InstitutionComponent extends Component
 
             'due_days'                       => $this->due_days,
             'due_fees_calculation_with_fine' => $this->due_fees_calculation_with_fine,
+
+            'facilities'                     => $this->facilities,
         ]);
 
         $setting->save();
@@ -216,7 +271,9 @@ class InstitutionComponent extends Component
 
     public function render()
     {
-        return view('livewire.admin.setting.institution-component')
+        return view('livewire.admin.setting.institution-component', [
+            'facilityDefinitions' => self::facilityDefinitions(),
+        ])
             ->layout('layouts.admin.app', [
                 'title' => 'Institution Settings | ' . institution()->name,
             ]);

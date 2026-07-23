@@ -381,9 +381,12 @@
                             </table>
                         </div>
 
-                        <div class="mt-3">
-                            {{ $employees->links() }}
-                        </div>
+                        @if($employees->hasPages())
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 py-2 px-3">
+                                <small class="text-muted">Showing {{ $employees->firstItem() ?? 0 }}–{{ $employees->lastItem() ?? 0 }} of {{ $employees->total() }}</small>
+                                {{ $employees->links('vendor.pagination.custom') }}
+                            </div>
+                        @endif
                     </div>
                 </div>
 
@@ -479,9 +482,10 @@
                         @forelse($notices as $notice)
                             @php
                                 $typeBadge = [
-                                    'admission' => 'bg-primary',
-                                    'event'     => 'bg-info text-dark',
-                                    'holiday'   => 'bg-warning text-dark',
+                                    'low'    => 'bg-primary',
+                                    'medium' => 'bg-info text-dark',
+                                    'high'   => 'bg-warning text-dark',
+                                    'urgent' => 'bg-danger',
                                 ][$notice['type']] ?? 'bg-secondary';
                             @endphp
                             <div class="d-flex align-items-start gap-2 py-2" style="border-bottom: 1px solid var(--border);">

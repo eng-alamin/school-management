@@ -4,7 +4,6 @@ namespace App\Livewire\Auth;
 
 use Livewire\Component;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Str;
@@ -19,6 +18,9 @@ class ResetPasswordComponent extends Component
     public bool   $showPassword        = false;
     public bool   $showConfirmPassword = false;
 
+    // ── Submission Result (same pattern as TeacherRegistrationComponent) ──
+    public bool $submitted = false;
+
     protected function rules(): array
     {
         return [
@@ -31,13 +33,13 @@ class ResetPasswordComponent extends Component
     protected function messages(): array
     {
         return [
-            'email.required'                 => 'Email দিন।',
-            'email.email'                    => 'সঠিক Email দিন।',
-            'email.exists'                   => 'এই Email আমাদের সিস্টেমে নেই।',
-            'password.required'              => 'নতুন Password দিন।',
-            'password.min'                   => 'Password কমপক্ষে ৮ অক্ষরের হতে হবে।',
-            'password.confirmed'             => 'Password দুটো মিলছে না।',
-            'password_confirmation.required' => 'Password আবার দিন।',
+            'email.required'                 => 'Please enter your email address.',
+            'email.email'                    => 'Please enter a valid email address.',
+            'email.exists'                   => 'This email is not registered in our system.',
+            'password.required'              => 'Please enter a new password.',
+            'password.min'                   => 'Password must be at least 8 characters.',
+            'password.confirmed'             => 'Passwords do not match.',
+            'password_confirmation.required' => 'Please confirm your new password.',
         ];
     }
 
@@ -69,23 +71,27 @@ class ResetPasswordComponent extends Component
         );
 
         if ($status === Password::PASSWORD_RESET) {
-            session()->flash('success', 'Password সফলভাবে পরিবর্তন হয়েছে। এখন Login করুন।');
-            $this->redirect(route('login'));
+            $this->submitted = true;
+            $this->reset(['password', 'password_confirmation']);
+
+            $this->dispatch('toast', type: 'success', message: 'Password changed successfully!');
+            $this->dispatch('scroll-top');
+
             return;
         }
 
         // Token invalid বা expired
-        $this->addError('email', match($status) {
-            Password::INVALID_TOKEN => 'Reset link expired বা invalid। নতুন link request করুন।',
-            Password::INVALID_USER  => 'এই Email আমাদের সিস্টেমে নেই।',
-            default                 => 'কিছু একটা সমস্যা হয়েছে। আবার চেষ্টা করুন।',
+        $this->addError('email', match ($status) {
+            Password::INVALID_TOKEN => 'Reset link expired or invalid. Please request a new link.',
+            Password::INVALID_USER  => 'This email is not registered in our system.',
+            default                 => 'Something went wrong. Please try again.',
         });
     }
 
     public function render()
     {
         return view('livewire.auth.reset-password-component')
-            ->layout('layouts.app', [
+            ->layout('layouts.frontend.app', [
                 'title' => 'Reset Password | Monarchy School',
             ]);
     }

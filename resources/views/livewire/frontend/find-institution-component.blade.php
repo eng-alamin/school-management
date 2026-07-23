@@ -246,54 +246,11 @@
             </div>
 
             @if($institutions->hasPages())
-             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 py-2 px-3">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 py-2 px-3">
                 <small class="text-muted">Showing {{ $institutions->firstItem() ?? 0 }}–{{ $institutions->lastItem() ?? 0 }} of {{ $institutions->total() }}</small>
                 {{ $institutions->links('vendor.pagination.custom') }}
             </div>
-                {{-- <div class="mt-5 d-flex justify-content-center">
-                    {{ $institutions->links() }}
-                </div> --}}
             @endif
         </div>
     </section>
 </div>
-
-@push('styles')
-    <style>
-        /* START PAGINATION  */
-        .custom-pagination {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-        .custom-pagination li {
-            list-style: none;
-        }
-        .custom-pagination button {
-            min-width: 34px;
-            height: 32px;
-            border-radius: 10px;
-            border: 1px solid #e0e0e0;
-            background: #f5f5f5;
-            color: #444;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .custom-pagination button:hover {
-            background: #eee;
-        }
-        .custom-pagination button.active {
-            background: linear-gradient(195deg, #198754, #20c997);
-            /* background: linear-gradient(195deg, #ec407a, #d81b60); */
-            color: #fff;
-            border: none;
-            box-shadow: 0 4px 12px rgba(216, 27, 96, 0.4);
-        }
-        .custom-pagination button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        /* END PAGINATION  */
-    </style>
-@endpush

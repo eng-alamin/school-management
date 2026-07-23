@@ -3,6 +3,11 @@
       <span class="material-icons-round">menu</span>
     </button>
 
+    <!-- Desktop Sidebar Collapse Toggle (Phase 1 modern UI: mini-sidebar mode, hover-to-expand, persisted in localStorage via theme.js toggleSidebarCollapse()) -->
+    <button class="icon-btn d-none d-lg-flex" id="sidebarCollapseBtn" onclick="toggleSidebarCollapse()" title="Collapse Sidebar">
+      <span class="material-icons-round">menu_open</span>
+    </button>
+
     <div class="breadcrumb-wrap">
       @livewire('student.child-switcher-component')
       <!-- <div class="breadcrumb-title" id="pageTitleEl">Pages</div> -->

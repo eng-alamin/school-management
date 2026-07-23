@@ -52,6 +52,9 @@ return new class extends Migration
             $table->string('print_logo')->nullable();
             $table->string('report_logo')->nullable();
 
+            // facilities
+            $table->json('facilities')->nullable();
+
             $table->boolean('status')->default(true);
             $table->timestamps();
             $table->softDeletes();

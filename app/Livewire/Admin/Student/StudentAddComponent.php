@@ -13,8 +13,6 @@ use App\Models\AcademicGroup;
 use App\Models\FeeSetup;
 use App\Models\FeeInvoice;
 use App\Models\FeeInvoiceItem;
-use App\Models\FeePayment;
-use App\Models\OfficeAccount;
 use Illuminate\Support\Facades\DB;
 
 use Illuminate\Validation\ValidationException;
@@ -80,17 +78,6 @@ class StudentAddComponent extends Component
         'monthly_fee'      => true,
     ];
 
-    // ── STEP 2: Payment Collect Modal (invoice toiri howar por) ──
-    public bool $showPaymentModal = false;
-    public $createdInvoiceId;
-    public $createdInvoiceNo;
-    public $createdInvoiceDue = 0;
-    public $payAmount = 0;
-    public string $paymentMethod = 'cash';
-    public $paymentDate;
-    public $officeAccountId;
-    public $paymentRemarks;
-
     public function mount()
     {
         $session = AcademicSession::where('is_current', true)->first();
@@ -103,7 +90,6 @@ class StudentAddComponent extends Component
         $this->generateStudentId();
 
         $this->admission_date = now()->format('Y-m-d');
-        $this->paymentDate = now()->format('Y-m-d');
         $this->gender = 'male';
 
         $this->dispatch('date-updated', date: $this->admission_date);
@@ -234,16 +220,6 @@ class StudentAddComponent extends Component
         ];
     }
 
-    private function paymentRules(): array
-    {
-        return [
-            'payAmount'      => 'required|numeric|min:0.01|max:' . $this->createdInvoiceDue,
-            'paymentMethod'  => 'required|in:cash,bkash,nagad,bank,cheque',
-            'paymentDate'    => 'required|date',
-            'officeAccountId' => 'nullable',
-        ];
-    }
-
     public function resetForm()
     {
         $this->reset();
@@ -255,7 +231,6 @@ class StudentAddComponent extends Component
         $this->generateStudentId();
 
         $this->admission_date = now()->format('Y-m-d');
-        $this->paymentDate = now()->format('Y-m-d');
         $this->gender = 'male';
         $this->is_new_student = true;
 
@@ -266,15 +241,6 @@ class StudentAddComponent extends Component
             'registration_fee' => true,
             'monthly_fee'      => true,
         ];
-
-        $this->showPaymentModal = false;
-        $this->createdInvoiceId = null;
-        $this->createdInvoiceNo = null;
-        $this->createdInvoiceDue = 0;
-        $this->payAmount = 0;
-        $this->paymentMethod = 'cash';
-        $this->officeAccountId = null;
-        $this->paymentRemarks = null;
 
         $this->dispatch('date-updated', date: $this->admission_date);
         $this->dispatch('date-updated', date: $this->dob);
@@ -287,7 +253,7 @@ class StudentAddComponent extends Component
 
     public function updated($propertyName)
     {
-        if (str_starts_with($propertyName, 'selectedFees') || str_starts_with($propertyName, 'paymentRows')) {
+        if (str_starts_with($propertyName, 'selectedFees')) {
             return;
         }
         $this->validateOnly($propertyName, $this->rules());
@@ -390,7 +356,8 @@ class StudentAddComponent extends Component
 
     /**
      * STEP 1 Confirm & Save -> Student + Invoice create.
-     * Invoice toiri hole direct form reset na kore, STEP 2 Payment Modal open kore.
+     * Invoice toiri hole (new student + fee selected) StudentPaymentCollectComponent
+     * page-e redirect kora hoy (invoice id shoho). Invoice na thakle form reset kore dey.
      */
     public function save()
     {
@@ -557,21 +524,16 @@ class StudentAddComponent extends Component
             $this->showFeeModal = false;
 
             if ($invoice) {
-                // ── Invoice toiri hoyeche - Payment Collect Modal open koro ──
-                $this->createdInvoiceId  = $invoice->id;
-                $this->createdInvoiceNo  = $invoice->invoice_no;
-                $this->createdInvoiceDue = (float) $invoice->due_amount;
-                $this->payAmount         = (float) $invoice->due_amount;
-
-                $this->showPaymentModal = true;
-
+                // ── Invoice toiri hoyeche - Payment Collect page e redirect koro ──
                 $this->dispatch('toast', type: 'success', message: 'Student created successfully!');
-            } else {
-                $this->resetForm();
-                $this->dispatch('date-updated', date: $this->admission_date);
-                $this->dispatch('date-updated', date: $this->dob);
-                $this->dispatch('toast', type: 'success', message: 'Student created successfully!');
+
+                return redirect()->route('admin.students.payment-collect', ['invoice' => $invoice->id]);
             }
+
+            $this->resetForm();
+            $this->dispatch('date-updated', date: $this->admission_date);
+            $this->dispatch('date-updated', date: $this->dob);
+            $this->dispatch('toast', type: 'success', message: 'Student created successfully!');
 
         } catch (\Throwable $e) {
 
@@ -648,100 +610,6 @@ class StudentAddComponent extends Component
         return $prefix . str_pad($serial, 5, '0', STR_PAD_LEFT);
     }
 
-    /**
-     * STEP 2: Payment Modal theke "Skip / Later" -> Payment na kore Form reset kore dao.
-     */
-    public function skipPayment()
-    {
-        $this->resetForm();
-        $this->dispatch('date-updated', date: $this->admission_date);
-        $this->dispatch('date-updated', date: $this->dob);
-    }
-
-    /**
-     * STEP 2: Payment Modal theke "Confirm Payment" -> fee_payments e record hobe,
-     * invoice paid_amount/due_amount/payment_status update hobe, tarpor print dispatch hobe.
-     */
-    public function confirmPayment()
-    {
-        $this->validate($this->paymentRules());
-
-        DB::beginTransaction();
-
-        try {
-
-            $invoice = FeeInvoice::findOrFail($this->createdInvoiceId);
-            $institutionId = auth()->user()->institution_id;
-
-            FeePayment::create([
-                'institution_id'   => $institutionId,
-                'fee_invoice_id'   => $invoice->id,
-                'student_id'       => $invoice->student_id,
-                'amount'           => $this->payAmount,
-                'payment_method'           => $this->paymentMethod,
-                'payment_date'     => $this->paymentDate,
-                'office_account_id' => $this->officeAccountId ?: null,
-                'remarks'          => $this->paymentRemarks,
-            ]);
-
-            $newPaid = (float) $invoice->paid_amount + (float) $this->payAmount;
-            $newDue  = (float) $invoice->total_amount - $newPaid;
-
-            $invoice->update([
-                'paid_amount'    => $newPaid,
-                'due_amount'     => max($newDue, 0),
-                'payment_status' => $newDue <= 0 ? 'paid' : 'partial',
-            ]);
-
-            DB::commit();
-
-            // ── Print korar jonno dorkari data pathai ──
-            $this->dispatch('open-invoice-print', [
-            'invoiceNo'    => $invoice->invoice_no,
-            'studentName'  => $invoice->student->name,
-            'paymentDate'  => \Carbon\Carbon::parse($this->paymentDate)->format('d.M.Y'),
-            'totalAmount'  => number_format($invoice->total_amount, 0),
-            'paidAmount'   => number_format($invoice->paid_amount, 0),
-            'dueAmount'    => number_format($invoice->due_amount, 0),
-            'items'        => $invoice->items->map(function ($item) use ($invoice) {
-                $isMonthly  = $item->feeSetup?->frequency === 'monthly';
-                $monthLabel = $isMonthly
-                    ? \Carbon\Carbon::parse($invoice->invoice_date)->format('F')
-                    : null;
-
-                return [
-                    'feeTypeName' => $item->feeSetup?->feeType?->name ?? '—',
-                    'monthLabel'  => $monthLabel,
-                    'amount'      => number_format($item->base_amount, 0),
-                    'discount'    => number_format($item->discount_amount, 0),
-                    'fine'        => number_format($item->fine_amount, 0),
-                ];
-            })->toArray(),
-        ]);
-
-            $this->dispatch('toast', type: 'success', message: 'Payment collected successfully!');
-
-            $this->resetForm();
-
-            $this->dispatch('date-updated', date: $this->admission_date);
-            $this->dispatch('date-updated', date: $this->dob);
-
-        } catch (\Throwable $e) {
-
-            DB::rollBack();
-            $this->dispatch('toast', type: 'error', message: 'Payment failed!');
-            throw $e;
-        }
-    }
-
-    public function closePaymentModal()
-    {
-        // Modal bondho korle o student already save hoye geche, tai form reset kore dao
-        $this->resetForm();
-        $this->dispatch('date-updated', date: $this->admission_date);
-        $this->dispatch('date-updated', date: $this->dob);
-    }
-
     public function render()
     {
         $institutionId = auth()->user()->institution_id;
@@ -758,14 +626,12 @@ class StudentAddComponent extends Component
 
         $groups = AcademicGroup::orderBy('name')->get();
         $guardians = Guardian::all();
-        $officeAccounts = OfficeAccount::orderBy('name')->get();
 
         return view('livewire.admin.student.student-add-component')
             ->with('sessions', $sessions)
             ->with('classes', $classes)
             ->with('groups', $groups)
             ->with('guardians', $guardians)
-            ->with('officeAccounts', $officeAccounts)
             ->layout('layouts.admin.app', [
                 'title' => 'Create Admission | ' . institution()->name,
             ]);

@@ -3,7 +3,7 @@
 namespace App\Livewire\Student;
 
 use App\Models\AcademicClassAssign;
-use App\Models\ExamSchedule;
+use App\Models\ExamSetup;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -13,21 +13,14 @@ class ExamComponent extends Component
 
     protected string $paginationTheme = 'bootstrap';
 
-    /**
-     * exam_schedules table-e exam_id/class_id/section_id kono column nei —
-     * shegulo exam_setups -> academic_class_assigns relation diye ashe.
-     * Tai sorting shudhu exam_schedules-er nijer real column-er upor
-     * whitelist kora hocche.
-     */
-    private const SORTABLE_FIELDS = ['exam_date', 'start_time', 'class_room'];
-
     public string $search        = '';
     public int    $perPage       = 10;
-    public string $sortField     = 'exam_date';
+    public string $sortField     = 'name';
     public string $sortDirection = 'asc';
 
-    public bool $showViewModal  = false;
-    public ?ExamSchedule $viewRecord = null;
+    // Modal
+    public bool       $showViewModal = false;
+    public ?ExamSetup $viewRecord    = null;
 
     public function updatingSearch(): void
     {
@@ -36,26 +29,28 @@ class ExamComponent extends Component
 
     public function sortBy(string $field): void
     {
-        if (! in_array($field, self::SORTABLE_FIELDS, true)) {
-            return;
+        if ($this->sortField === $field) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortField     = $field;
+            $this->sortDirection = 'asc';
         }
 
-        $this->sortDirection = ($this->sortField === $field && $this->sortDirection === 'asc')
-            ? 'desc' : 'asc';
-        $this->sortField = $field;
         $this->resetPage();
     }
 
-    public function openView(int $id): void
+    public function openView(int $examSetupId): void
     {
-        $this->viewRecord = ExamSchedule::with([
-            'examSetup.term',
-            'examSetup.type',
-            'examSetup.classAssign.class',
-            'examSetup.classAssign.section',
-            'examSetupDetail.classAssignDetail.subject',
-            'examSetupDetail.classAssignDetail.teacher',
-        ])->findOrFail($id);
+        $this->viewRecord = ExamSetup::with([
+            'classAssign.class',
+            'classAssign.section',
+            'schedules.examSetupDetail.classAssignDetail.subject',
+        ])->findOrFail($examSetupId);
+
+        $this->viewRecord->setRelation(
+            'schedules',
+            $this->viewRecord->schedules->sortBy(['exam_date', 'start_time'])
+        );
 
         $this->showViewModal = true;
     }
@@ -63,10 +58,7 @@ class ExamComponent extends Component
     public function render()
     {
         $student = auth()->user()->student;
-        $search  = $this->search;
 
-        // Student-er nijer class + section-er AcademicClassAssign row
-        // ber kora hocche — exam_setups etar shathe link kora thake.
         $assign = null;
 
         if ($student?->class_id) {
@@ -75,38 +67,26 @@ class ExamComponent extends Component
                 ->first();
         }
 
-        $schedules = ExamSchedule::with([
-                'examSetup.classAssign.class',
-                'examSetup.classAssign.section',
-                'examSetupDetail.classAssignDetail.subject',
-                'examSetupDetail.classAssignDetail.teacher',
+        $setups = ExamSetup::with(['classAssign.class', 'classAssign.section'])
+            ->withCount([
+                'schedules as total_subjects',
+                'schedules as published_count' => fn ($q) => $q->where('is_published', true),
             ])
+            ->whereHas('schedules')
             ->when(
                 $assign,
-                fn ($q) => $q->whereHas('examSetup', fn ($setup) => $setup->where('academic_class_assign_id', $assign->id)),
-                // Student-er kono class assign na thakle kono result e jeno na
-                // ashe, tai forcibly empty result set banano hocche.
+                fn ($q) => $q->where('academic_class_assign_id', $assign->id),
+                // Student-er kono class assign na thakle kono result e jeno na ashe
                 fn ($q) => $q->whereRaw('1 = 0')
             )
-            ->when($search, function ($q) use ($search) {
-                // Grouped where() — jate ei OR condition class scope-er
-                // baire leak na kore (ExamComponent-er age-er search bug-er
-                // moto).
-                $q->where(function ($sub) use ($search) {
-                    $sub->whereHas('examSetup', fn ($e) => $e->where('name', 'like', "%{$search}%"))
-                        ->orWhereHas(
-                            'examSetupDetail.classAssignDetail.subject',
-                            fn ($e) => $e->where('name', 'like', "%{$search}%")
-                        );
-                });
-            })
+            ->when($this->search, fn ($q) => $q->where('name', 'like', "%{$this->search}%"))
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
         return view('livewire.student.exam-component')
-            ->with('schedules', $schedules)
+            ->with('schedules', $setups)
             ->layout('layouts.student.app', [
-                'title' => 'Exam Schedule | Monarchy School',
+                'title' => 'Exam Schedule | ' . institution()->name,
             ]);
     }
 }

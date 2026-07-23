@@ -66,7 +66,7 @@ class ForgotPasswordComponent extends Component
     public function render()
     {
         return view('livewire.auth.forgot-password-component')
-            ->layout('layouts.app', [
+            ->layout('layouts.frontend.app', [
                 'title' => 'Forgot Password | Monarchy School',
             ]);
     }

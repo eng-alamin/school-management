@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('inventory_purchases', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
-            $table->foreignId('supplier_id')->constrained('inventory_suppliers')->cascadeOnDelete();
-            $table->foreignId('store_id')->constrained('inventory_stores')->cascadeOnDelete();
+            $table->foreignId('supplier_id')->nullable()->constrained('inventory_suppliers')->nullOnDelete();
+            $table->foreignId('store_id')->nullable()->constrained('inventory_stores')->nullOnDelete();
             $table->string('bill_no');
             $table->enum('purchase_status', ['pending','ordered','completed','received','cancelled'])->default('pending');
             $table->date('date');

@@ -24,7 +24,7 @@
                 <span style="font-size:13px;font-weight:600;color:{{ $att['color'] }}">{{ $att['label'] }}</span>
             </div>
         @else
-            <div style="background:#f3f4f6;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+            <div class="dash-att-unmarked" style="border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:8px;margin-bottom:4px;">
                 <span class="material-icons-round" style="font-size:18px;color:#9ca3af">schedule</span>
                 <span style="font-size:13px;font-weight:500;color:#6b7280">Attendance not marked yet today</span>
             </div>
@@ -204,7 +204,7 @@
             @empty
                 <p class="text-center text-secondary py-2 mb-0" style="font-size:13px;">
                     No leave applications yet.
-                    <a href="#" class="text-decoration-none" style="color:#e94d82;">Apply now</a>
+                    <a href="#" class="text-decoration-none" style="color:var(--pink);">Apply now</a>
                 </p>
             @endforelse
         </div>
@@ -328,23 +328,29 @@
 </div>
 
 
-{{-- ══ Scoped CSS ══════════════════════════════════════════════════════════ --}}
+{{-- ══ Scoped CSS (same variables as admin dashboard — dark mode ready) ══════ --}}
 @push('styles')
 <style>
     .dash-wrap {
-        background: #f5f6fa;
+        background: var(--body-bg);
         min-height: 100vh;
         padding-bottom: 24px;
     }
     .dash-header { padding-top: 16px; }
 
+    /* ── Attendance unmarked banner ─────────────────────────────── */
+    .dash-att-unmarked {
+        background: var(--section-bg);
+    }
+
     /* ── Stat Cards ──────────────────────────────────────────────── */
     .dash-stat-card {
-        background: #fff;
-        border-radius: 16px;
+        background: var(--card);
+        border-radius: var(--radius-card);
         padding: 14px;
-        box-shadow: 0 1px 6px rgba(0,0,0,.06);
+        box-shadow: var(--shadow);
         height: 100%;
+        border: 1px solid var(--border);
     }
     .dash-stat-icon {
         width: 38px; height: 38px;
@@ -353,29 +359,30 @@
         margin-bottom: 10px;
     }
     .dash-stat-icon .material-icons-round { font-size: 20px; }
-    .dash-stat-label  { font-size: 11px; color: #9ca3af; margin-bottom: 2px; }
-    .dash-stat-value  { font-size: 20px; font-weight: 700; color: #111827; margin-bottom: 4px; }
+    .dash-stat-label  { font-size: 11px; color: var(--lbl); margin-bottom: 2px; }
+    .dash-stat-value  { font-size: 20px; font-weight: 700; color: var(--val); margin-bottom: 4px; }
     .dash-stat-badge  { font-size: 11px; font-weight: 500; }
 
     /* ── Section Cards ───────────────────────────────────────────── */
     .dash-section-card {
-        background: #fff;
-        border-radius: 16px;
+        background: var(--card);
+        border-radius: var(--radius-card);
         padding: 16px;
-        box-shadow: 0 1px 6px rgba(0,0,0,.06);
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
     }
     .dash-section-title {
-        font-size: 14px; font-weight: 600; color: #111827;
+        font-size: 14px; font-weight: 600; color: var(--val);
         display: flex; align-items: center; gap: 6px;
         margin-bottom: 12px;
     }
-    .dash-view-all { font-size: 12px; color: #e94d82; font-weight: 500; text-decoration: none; }
+    .dash-view-all { font-size: 12px; color: var(--pink); font-weight: 500; text-decoration: none; }
 
     /* ── Leave Rows ──────────────────────────────────────────────── */
     .dash-leave-row {
         display: flex; align-items: center; gap: 10px;
         padding: 9px 0;
-        border-bottom: 1px solid #f3f4f6;
+        border-bottom: 1px solid var(--border);
     }
     .dash-leave-row:last-child { border-bottom: none; padding-bottom: 0; }
 
@@ -383,7 +390,7 @@
     .dash-notice-row {
         display: flex; align-items: center;
         padding: 10px 12px;
-        border-radius: 10px; background: #f9fafb;
+        border-radius: 10px; background: var(--section-bg);
         margin-bottom: 8px; gap: 8px;
     }
     .dash-notice-row:last-child { margin-bottom: 0; }
@@ -392,10 +399,10 @@
     .dash-msg-row {
         display: flex; align-items: center; gap: 10px;
         padding: 9px 0;
-        border-bottom: 1px solid #f3f4f6;
+        border-bottom: 1px solid var(--border);
     }
     .dash-msg-row:last-child { border-bottom: none; padding-bottom: 0; }
-    .dash-msg-unread { background: #fafafa; border-radius: 8px; padding: 9px 8px; margin: 0 -8px; }
+    .dash-msg-unread { background: var(--section-bg); border-radius: 8px; padding: 9px 8px; margin: 0 -8px; }
     .dash-msg-avatar {
         width: 34px; height: 34px; border-radius: 50%;
         background: linear-gradient(135deg, #7c3aed, #c4b5fd);
@@ -404,19 +411,19 @@
     }
     .dash-unread-dot {
         width: 8px; height: 8px; border-radius: 50%;
-        background: #e94d82; flex-shrink: 0;
+        background: var(--pink); flex-shrink: 0;
     }
 
     /* ── Activity ────────────────────────────────────────────────── */
     .dash-activity-item {
         display: flex; align-items: center; gap: 10px;
         padding: 8px 0;
-        border-bottom: 1px solid #f3f4f6;
+        border-bottom: 1px solid var(--border);
     }
     .dash-activity-item:last-child { border-bottom: none; padding-bottom: 0; }
     .dash-activity-icon {
         width: 32px; height: 32px; border-radius: 8px;
-        background: #f9fafb;
+        background: var(--section-bg);
         display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
 
@@ -424,16 +431,16 @@
     .dash-quick-action {
         display: flex; flex-direction: column; align-items: center;
         gap: 6px; padding: 10px 4px;
-        border-radius: 12px; background: #f9fafb;
-        transition: background .15s;
+        border-radius: 12px; background: var(--section-bg);
+        transition: background .15s, transform .15s;
     }
-    .dash-quick-action:hover { background: #f3f4f6; }
+    .dash-quick-action:hover { background: var(--pink-light); transform: translateY(-2px); }
     .dash-quick-icon {
         width: 48px; height: 48px; border-radius: 14px;
         display: flex; align-items: center; justify-content: center;
     }
     .dash-quick-label {
-        font-size: 11px; font-weight: 500; color: #374151;
+        font-size: 11px; font-weight: 500; color: var(--val);
         text-align: center; line-height: 1.3;
     }
 
@@ -441,12 +448,12 @@
     .dash-birthday-row {
         display: flex; align-items: center; gap: 12px;
         padding: 8px 0;
-        border-bottom: 1px solid #f3f4f6;
+        border-bottom: 1px solid var(--border);
     }
     .dash-birthday-row:last-child { border-bottom: none; padding-bottom: 0; }
     .dash-birthday-avatar {
         width: 38px; height: 38px; border-radius: 50%;
-        background: linear-gradient(135deg, #e94d82, #f4a8c5);
+        background: linear-gradient(135deg, var(--pink), #7ba3ff);
         color: #fff; font-size: 15px; font-weight: 700;
         display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }

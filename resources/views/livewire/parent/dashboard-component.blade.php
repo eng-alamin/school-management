@@ -1,9 +1,10 @@
 @push('styles')
 <style>
     .child-card {
-        background: #ffffff;
-        border: 1px solid #e5e7eb;
-        border-radius: 16px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-card);
+        box-shadow: var(--shadow);
         padding: 1.5rem 1.25rem;
         display: flex;
         flex-direction: column;
@@ -14,7 +15,7 @@
     }
 
     .child-card:hover {
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
         transform: translateY(-2px);
     }
 
@@ -23,14 +24,14 @@
         height: 80px;
         border-radius: 50%;
         overflow: hidden;
-        border: 3px solid #dbeafe;
-        background: #eff6ff;
+        border: 3px solid var(--border);
+        background: linear-gradient(135deg, var(--pink), #7ba3ff);
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1.4rem;
         font-weight: 600;
-        color: #2563eb;
+        color: #ffffff;
         flex-shrink: 0;
     }
 
@@ -42,7 +43,7 @@
 
     .child-label {
         font-size: 11px;
-        color: #9ca3af;
+        color: var(--lbl);
         margin-bottom: 2px;
         text-align: center;
     }
@@ -50,7 +51,7 @@
     .child-name {
         font-size: 15px;
         font-weight: 600;
-        color: #1f2937;
+        color: var(--val);
         text-align: center;
         line-height: 1.3;
         margin: 0;
@@ -58,7 +59,7 @@
 
     .child-class {
         font-size: 13px;
-        color: #6b7280;
+        color: var(--lbl);
         text-align: center;
         margin: 2px 0 0;
     }
@@ -67,14 +68,15 @@
         display: inline-flex;
         align-items: center;
         gap: 4px;
-        background: #eff6ff;
-        color: #2563eb;
+        background: var(--section-bg);
+        color: var(--pink);
         font-size: 11px;
         font-weight: 600;
         padding: 3px 10px;
         border-radius: 999px;
         margin-top: 6px;
         max-width: 100%;
+        border: 1px solid var(--border);
     }
 
     .child-institution-badge .material-icons {
@@ -91,7 +93,7 @@
     .child-divider {
         width: 100%;
         border: none;
-        border-top: 1px solid #f3f4f6;
+        border-top: 1px solid var(--border);
         margin: 0.25rem 0;
     }
 
@@ -108,12 +110,12 @@
     }
 
     .child-info-row .info-key {
-        color: #9ca3af;
+        color: var(--lbl);
     }
 
     .child-info-row .info-val {
         font-weight: 600;
-        color: #374151;
+        color: var(--val);
     }
 
     .child-dashboard-btn {
@@ -123,7 +125,7 @@
         align-items: center;
         justify-content: center;
         gap: 6px;
-        background: #2563eb;
+        background: var(--pink);
         color: #ffffff;
         font-size: 13px;
         font-weight: 500;
@@ -131,28 +133,28 @@
         border-radius: 10px;
         border: none;
         cursor: pointer;
-        transition: background 0.15s ease;
+        transition: background 0.15s ease, opacity 0.15s ease;
     }
 
     .child-dashboard-btn:hover {
-        background: #1d4ed8;
+        opacity: 0.9;
     }
 
     .child-dashboard-btn:active {
-        background: #1e40af;
+        opacity: 0.8;
         transform: scale(0.98);
     }
 </style>
 @endpush
 
-<div class="p-4">
+<div class="dash-wrap p-4">
     <div class="mb-4">
-        <h5 class="fw-medium mb-1">My children</h5>
-        <p class="text-muted small mb-0">Select a child to view their dashboard</p>
+        <h5 class="fw-bold mb-1" style="color: var(--val);">My children</h5>
+        <p class="text-secondary small mb-0">Select a child to view their dashboard</p>
     </div>
 
     @if($children->isEmpty())
-        <div class="text-center py-5 text-muted">
+        <div class="text-center py-5 text-secondary">
             <svg xmlns="http://www.w3.org/2000/svg" class="mb-3" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" opacity="0.4">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>

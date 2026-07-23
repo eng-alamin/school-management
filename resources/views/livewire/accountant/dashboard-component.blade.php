@@ -301,11 +301,12 @@
 
 </div>
 
-{{-- ══ Scoped CSS ══════════════════════════════════════════════════════════ --}}
+{{-- ══ Scoped CSS (same variables as admin dashboard — dark mode ready) ══════ --}}
 @push('styles')
 <style>
+    /* ── Wrapper ─────────────────────────────────────────────────── */
     .dash-wrap {
-        background: #f5f6fa;
+        background: var(--body-bg);
         min-height: 100vh;
         padding-bottom: 24px;
     }
@@ -314,12 +315,14 @@
         padding-top: 16px;
     }
 
+    /* ── Stat Cards ──────────────────────────────────────────────── */
     .dash-stat-card {
-        background: #ffffff;
-        border-radius: 16px;
+        background: var(--card);
+        border-radius: var(--radius-card);
         padding: 14px;
-        box-shadow: 0 1px 6px rgba(0,0,0,.06);
+        box-shadow: var(--shadow);
         height: 100%;
+        border: 1px solid var(--border);
     }
 
     .dash-stat-icon {
@@ -338,28 +341,30 @@
 
     .dash-stat-label {
         font-size: 11px;
-        color: #9ca3af;
+        color: var(--lbl);
         margin-bottom: 2px;
     }
 
     .dash-stat-value {
         font-size: 20px;
         font-weight: 700;
-        color: #111827;
+        color: var(--val);
         margin-bottom: 4px;
     }
 
+    /* ── Section Cards ───────────────────────────────────────────── */
     .dash-section-card {
-        background: #ffffff;
-        border-radius: 16px;
+        background: var(--card);
+        border-radius: var(--radius-card);
         padding: 16px;
-        box-shadow: 0 1px 6px rgba(0,0,0,.06);
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
     }
 
     .dash-section-title {
         font-size: 14px;
         font-weight: 600;
-        color: #111827;
+        color: var(--val);
         display: flex;
         align-items: center;
         gap: 6px;
@@ -368,17 +373,18 @@
 
     .dash-view-all {
         font-size: 12px;
-        color: #e94d82;
+        color: var(--pink);
         font-weight: 500;
         text-decoration: none;
     }
 
+    /* ── Activity ────────────────────────────────────────────────── */
     .dash-activity-item {
         display: flex;
         align-items: center;
         gap: 10px;
         padding: 8px 0;
-        border-bottom: 1px solid #f3f4f6;
+        border-bottom: 1px solid var(--border);
     }
 
     .dash-activity-item:last-child {
@@ -390,13 +396,14 @@
         width: 32px;
         height: 32px;
         border-radius: 8px;
-        background: #f9fafb;
+        background: var(--section-bg);
         display: flex;
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
     }
 
+    /* ── Quick Actions ───────────────────────────────────────────── */
     .dash-quick-action {
         display: flex;
         flex-direction: column;
@@ -404,12 +411,13 @@
         gap: 6px;
         padding: 10px 4px;
         border-radius: 12px;
-        background: #f9fafb;
-        transition: background .15s;
+        background: var(--section-bg);
+        transition: background .15s, transform .15s;
     }
 
     .dash-quick-action:hover {
-        background: #f3f4f6;
+        background: var(--pink-light);
+        transform: translateY(-2px);
     }
 
     .dash-quick-icon {
@@ -424,17 +432,18 @@
     .dash-quick-label {
         font-size: 11px;
         font-weight: 500;
-        color: #374151;
+        color: var(--val);
         text-align: center;
         line-height: 1.3;
     }
 
+    /* ── Notices ─────────────────────────────────────────────────── */
     .dash-notice-row {
         display: flex;
         align-items: center;
         padding: 11px 12px;
         border-radius: 10px;
-        background: #f9fafb;
+        background: var(--section-bg);
         margin-bottom: 8px;
         gap: 8px;
     }
@@ -456,6 +465,7 @@
     .inv-badge.partial { background: transparent; border-color: #f59e0b; color: #f59e0b; }
     .inv-badge.unpaid  { background: transparent; border-color: #ef4444; color: #ef4444; }
 
+    /* ── Responsive tweaks ───────────────────────────────────────── */
     @media (min-width: 768px) {
         .dash-stat-value {
             font-size: 22px;

@@ -1041,3 +1041,28 @@ var _s = document.createElement("style");
 _s.textContent =
     "@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}";
 document.head.appendChild(_s);
+
+/* ═══════════════════════════════════════
+   MODERN UI ENHANCEMENTS — Phase 1
+   (appended — does not modify anything above)
+═══════════════════════════════════════ */
+
+/* Desktop sidebar collapse (mini) mode, persisted in localStorage */
+function toggleSidebarCollapse() {
+    const isCollapsed = document.body.classList.toggle("sidebar-collapsed");
+    localStorage.setItem("sidebarCollapsed", isCollapsed ? "1" : "0");
+}
+if (localStorage.getItem("sidebarCollapsed") === "1" && window.innerWidth >= 993) {
+    document.body.classList.add("sidebar-collapsed");
+}
+
+/* Re-trigger page fade-in animation after each Livewire navigation
+   (SPA-style navigate) so the "new page" feels alive, not just a swap */
+document.addEventListener("livewire:navigated", function () {
+    const pageBody = document.querySelector(".page-body");
+    if (!pageBody) return;
+    pageBody.style.animation = "none";
+    // force reflow so the animation can restart
+    void pageBody.offsetWidth;
+    pageBody.style.animation = "pageFadeIn 0.35s cubic-bezier(.4,0,.2,1)";
+});

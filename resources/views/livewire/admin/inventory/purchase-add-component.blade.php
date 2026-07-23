@@ -18,7 +18,7 @@
             <!-- Supplier -->
             <div class="col-md-6">
                 <div class="input-group input-group-outline" wire:ignore>
-                    <label class="form-label">Supplier <span class="req">*</span></label>
+                    <label class="form-label">Supplier</label>
                     <select wire:model="supplier_id" class="form-select">
                         <option value="">Select</option>
                         @foreach($suppliers as $supplier)
@@ -32,7 +32,7 @@
             <!-- Store -->
             <div class="col-md-6">
                 <div class="input-group input-group-outline" wire:ignore>
-                    <label class="form-label">Store <span class="req">*</span></label>
+                    <label class="form-label">Store</label>
                     <select wire:model="store_id" class="form-select">
                         <option value="">Select</option>
                         @foreach($stores as $store)

@@ -376,17 +376,6 @@ class InstitutionDefaultsService
             ['name' => 'Admission Fee',      'code' => 'admission_fee'],
             ['name' => 'Registration Fee',   'code' => 'registration_fee'],
             ['name' => 'Exam Fee',           'code' => 'exam_fee'],
-            ['name' => 'Library Fee',        'code' => 'library_fee'],
-            ['name' => 'Computer Lab Fee',   'code' => 'computer-lab_fee'],
-            ['name' => 'Science Lab Fee',    'code' => 'science-lab_fee'],
-            ['name' => 'Sports & Games Fee', 'code' => 'sports-games_fee'],
-            ['name' => 'Transport Fee',      'code' => 'transport_fee'],
-            ['name' => 'Hostel Fee',         'code' => 'hostel_fee'],
-            ['name' => 'Medical Fee',        'code' => 'medical_fee'],
-            ['name' => 'Development Fee',    'code' => 'development_fee'],
-            ['name' => 'Annual Charges',     'code' => 'annual-charges'],
-            ['name' => 'Sports Fees',    'code' => 'sports_fees'],
-            ['name' => 'Transport Fees', 'code' => 'transport_fees'],
         ];
 
         foreach ($feeTypes as $feeType) {

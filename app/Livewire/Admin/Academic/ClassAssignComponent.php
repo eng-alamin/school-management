@@ -10,6 +10,7 @@ use App\Models\AcademicClass;
 use App\Models\AcademicSubject;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class ClassAssignComponent extends Component
 {
@@ -45,12 +46,30 @@ class ClassAssignComponent extends Component
     protected function rules(): array
     {
         return [
-            'class_id'          => 'required',
+            'class_id' => [
+                'required',
+                // ── একই institution-এর মধ্যে একই class + section কম্বিনেশন
+                //    আগে থেকে assign করা থাকলে duplicate ধরে আটকে দাও।
+                //    section_id null হলে Laravel query builder এটাকে
+                //    স্বয়ংক্রিয়ভাবে whereNull হিসেবে handle করে। ──
+                Rule::unique('academic_class_assigns', 'class_id')
+                    ->where(fn ($query) => $query
+                        ->where('institution_id', institution()->id)
+                        ->where('section_id', $this->section_id ?: null))
+                    ->ignore($this->editId),
+            ],
             'section_id'        => 'nullable',
             'subject_array'     => 'nullable|array',
             'subject_array.*'   => 'required|integer|exists:academic_subjects,id',
             'teacher_array'     => 'nullable|array',
             'teacher_array.*'   => 'nullable|integer|exists:users,id',
+        ];
+    }
+
+    protected function messages(): array
+    {
+        return [
+            'class_id.unique' => 'This class and section combination has already been assigned.',
         ];
     }
 

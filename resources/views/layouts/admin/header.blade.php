@@ -3,6 +3,10 @@
       <span class="material-icons-round">menu</span>
     </button>
 
+    <button class="icon-btn sidebar-collapse-btn" id="sidebarCollapseBtn" title="Collapse Sidebar" onclick="toggleSidebarCollapse()">
+      <span class="material-icons-round">menu_open</span>
+    </button>
+
     <div class="breadcrumb-wrap">
       <!-- <div class="breadcrumb-title" id="pageTitleEl">Pages</div> -->
     </div>

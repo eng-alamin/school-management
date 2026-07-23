@@ -98,12 +98,12 @@ class OnlineAdmissionComponent extends Component
                 ->where('is_current', true)
                 ->first();
             $this->session_id = $currentSession?->id;
-        }
 
-        // NOTE: Guardian selection INTENTIONALLY reset kora hocche na —
-        // karon guardian search GLOBAL (Institution-independent), tai
-        // Institution change korleo age select kora guardian thik thakbe
-        // (shei guardian-er onno sontan hoyto eikhaneo porbe).
+            $currentGroup = AcademicGroup::where('institution_id', $this->institution_id)
+                ->where('is_current', true)
+                ->first();
+            $this->group_id = $currentGroup?->id;
+        }
     }
 
     /**
@@ -119,6 +119,8 @@ class OnlineAdmissionComponent extends Component
 
         $this->institution_id = $institution->id;
         $this->institutionSearch = $institution->name;
+
+        $this->updatedInstitutionId();
     }
 
     /**
@@ -540,6 +542,7 @@ class OnlineAdmissionComponent extends Component
                 ->get();
 
             $sessions = AcademicSession::where('institution_id', $this->institution_id)
+                ->where('is_current', true)
                 ->orderBy('name')
                 ->get();
         }
