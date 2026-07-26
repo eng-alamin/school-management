@@ -72,8 +72,8 @@ class EmployeeIdCardComponent extends Component
     {
         if ($value) {
             $this->selectedIds = $this->getEmployees()
-                ->pluck('id')
-                ->map(fn($id) => (string) $id)
+                ->pluck('employee_id')
+                ->map(fn($eid) => (string) $eid)
                 ->toArray();
         } else {
             $this->selectedIds = [];
@@ -104,7 +104,7 @@ class EmployeeIdCardComponent extends Component
         ]);
 
         $employees = Employee::with(['department', 'designation'])
-            ->whereIn('id', $this->selectedIds)
+            ->whereIn('employee_id', $this->selectedIds)
             ->get();
 
         if ($employees->isEmpty()) {
@@ -113,66 +113,56 @@ class EmployeeIdCardComponent extends Component
         }
 
         $institutionId = institution()->id;
-        $data = [];
-
-        foreach ($employees as $employee) {
-            $data[] = [
-                'institution_id' => $institutionId,
-                'employee_id'    => $employee->id,
-
-                'issue_date'  => $this->print_date,
-                'expiry_date' => $this->expiry_date,
-                'template_id' => $this->filterTemplate,
-
-                'name'        => $employee->name,
-                'gender'      => $employee->gender,
-                'blood_group' => $employee->blood_group,
-                'dob'         => $employee->dob,
-                'religion'    => $employee->religion,
-                'mobile'      => $employee->mobile,
-                'email'       => $employee->email,
-                'address'     => $employee->present_address,
-                'photo'       => $employee->photo,
-
-                'designation' => $employee->designation?->name,
-                'department'  => $employee->department?->name,
-
-                'created_at'  => now(),
-                'updated_at'  => now(),
-            ];
-        }
 
         DB::beginTransaction();
         try {
-            EmployeeIdCard::upsert(
-                $data,
-                ['employee_id'],
-                [
-                    'institution_id',
-                    'issue_date',
-                    'expiry_date',
-                    'template_id',
-                    'name',
-                    'gender',
-                    'blood_group',
-                    'dob',
-                    'religion',
-                    'mobile',
-                    'email',
-                    'address',
-                    'photo',
-                    'designation',
-                    'department',
-                    'updated_at',
-                ]
-            );
+            $cards = collect();
 
-            $cards = EmployeeIdCard::with('template')
-                ->where('institution_id', $institutionId)
-                ->whereIn('employee_id', $this->selectedIds)
-                ->get();
+            foreach ($employees as $employee) {
+                $payload = [
+                    'institution_id' => $institutionId,
+                    'template_id'    => $this->filterTemplate,
+                    'issue_date'     => $this->print_date,
+                    'expiry_date'    => $this->expiry_date,
 
-            activity()->log('Generated '.$cards->count().' employee ID card(s)');
+                    'name'        => $employee->name,
+                    'gender'      => $employee->gender,
+                    'blood_group' => $employee->blood_group,
+                    'dob'         => $employee->dob,
+                    'religion'    => $employee->religion,
+                    'mobile'      => $employee->mobile,
+                    'email'       => $employee->email,
+                    'address'     => $employee->present_address,
+                    'photo'       => $employee->photo,
+
+                    'designation' => $employee->designation?->name,
+                    'department'  => $employee->department?->name,
+                ];
+
+                $card = EmployeeIdCard::withTrashed()
+                    ->where('institution_id', $institutionId)
+                    ->where('employee_id', $employee->employee_id)
+                    ->first();
+
+                if ($card) {
+                    $card->fill($payload);
+                    if (method_exists($card, 'trashed') && $card->trashed()) {
+                        $card->restore();
+                    }
+                    $card->save();
+                } else {
+                    $card = EmployeeIdCard::create(array_merge($payload, [
+                        'employee_id' => $employee->employee_id,
+                    ]));
+                }
+
+                activity()
+                    ->performedOn($card)
+                    ->causedBy(auth()->user())
+                    ->log('Generated/updated ID card for employee: '.$employee->name);
+
+                $cards->push($card->load('template'));
+            }
 
             DB::commit();
         } catch (Throwable $e) {

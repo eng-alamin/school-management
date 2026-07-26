@@ -32,6 +32,8 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->timestamps();
             $table->softDeletes();
+
+            $table->unique(['institution_id', 'name', 'deleted_at'], 'id_card_templates_institution_name_unique');
         });
     }
 

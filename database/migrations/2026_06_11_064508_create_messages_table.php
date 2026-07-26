@@ -26,6 +26,11 @@ return new class extends Migration
             $table->boolean('is_deleted_by_receiver')->default(false);
             $table->timestamp('read_at')->nullable();
             $table->timestamps();
+
+            $table->index(['institution_id', 'receiver_id', 'is_trashed_by_receiver', 'is_deleted_by_receiver'], 'messages_inbox_lookup_idx');
+            $table->index(['institution_id', 'sender_id', 'is_trashed_by_sender', 'is_deleted_by_sender'], 'messages_sent_lookup_idx');
+            $table->index(['receiver_id', 'is_read'], 'messages_unread_lookup_idx');
+            $table->index(['receiver_id', 'is_important'], 'messages_important_lookup_idx');
         });
     }
 

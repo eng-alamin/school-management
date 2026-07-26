@@ -19,11 +19,13 @@ class TransactionComponent extends Component
     public string $search = '';
     public int $perPage = 25;
     public string $sortField = 'date';
-    public string $sortDirection = 'asc';
+    public string $sortDirection = 'desc';
 
     // Filter
     public string $filterType = '';
     public string $filterAccount = '';
+    public string $filterDateFrom = '';
+    public string $filterDateTo = '';
 
     public function updatingSearch(): void
     {
@@ -37,6 +39,23 @@ class TransactionComponent extends Component
 
     public function updatingFilterAccount(): void
     {
+        $this->resetPage();
+    }
+
+    public function updatingFilterDateFrom(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterDateTo(): void
+    {
+        $this->resetPage();
+    }
+
+    public function clearDateFilter(): void
+    {
+        $this->filterDateFrom = '';
+        $this->filterDateTo = '';
         $this->resetPage();
     }
 
@@ -82,7 +101,9 @@ class TransactionComponent extends Component
                 DB::raw('office_deposits.amount as cr'),
                 DB::raw('0 as dr'),
             ])
-            ->when($this->filterAccount, fn ($q) => $q->where('office_deposits.account_id', $this->filterAccount));
+            ->when($this->filterAccount, fn ($q) => $q->where('office_deposits.account_id', $this->filterAccount))
+            ->when($this->filterDateFrom, fn ($q) => $q->whereDate('office_deposits.date', '>=', $this->filterDateFrom))
+            ->when($this->filterDateTo, fn ($q) => $q->whereDate('office_deposits.date', '<=', $this->filterDateTo));
     }
 
     private function expenseQuery()
@@ -108,7 +129,9 @@ class TransactionComponent extends Component
                 DB::raw('0 as cr'),
                 DB::raw('office_expenses.amount as dr'),
             ])
-            ->when($this->filterAccount, fn ($q) => $q->where('office_expenses.account_id', $this->filterAccount));
+            ->when($this->filterAccount, fn ($q) => $q->where('office_expenses.account_id', $this->filterAccount))
+            ->when($this->filterDateFrom, fn ($q) => $q->whereDate('office_expenses.date', '>=', $this->filterDateFrom))
+            ->when($this->filterDateTo, fn ($q) => $q->whereDate('office_expenses.date', '<=', $this->filterDateTo));
     }
 
     public function render()
@@ -130,12 +153,9 @@ class TransactionComponent extends Component
             )
             ->when($this->filterType, fn ($q) => $q->where('type', $this->filterType))
             ->orderBy($this->sortField, $this->sortDirection)
+            ->when($this->sortField === 'date', fn ($q) => $q->orderBy('id', $this->sortDirection))
             ->paginate($this->perPage);
 
-        // ── Running balance: computed PER ACCOUNT, starting from each
-        //    account's own opening_balance. Fetched fresh (unfiltered by
-        //    search/type) so the ledger math stays correct regardless of
-        //    what the user is currently filtering/searching for. ──
         $allRows = DB::table(DB::raw("({$unionSql}) as t"))
             ->addBinding($unionBindings, 'where')
             ->orderBy('account_id', 'asc')
@@ -147,6 +167,10 @@ class TransactionComponent extends Component
         $runningBalancePerAccount = [];
         $balanceMap = [];
 
+        // ── Overall totals (all deposits vs all expenses currently in scope) ──
+        $totalDeposit = 0.0;
+        $totalExpense = 0.0;
+
         foreach ($allRows as $row) {
             if (! isset($runningBalancePerAccount[$row->account_id])) {
                 $runningBalancePerAccount[$row->account_id] = (float) ($openingBalances[$row->account_id] ?? 0);
@@ -154,14 +178,32 @@ class TransactionComponent extends Component
 
             $runningBalancePerAccount[$row->account_id] += ($row->cr - $row->dr);
             $balanceMap[$row->type . '_' . $row->id] = $runningBalancePerAccount[$row->account_id];
+
+            $totalDeposit += (float) $row->cr;
+            $totalExpense += (float) $row->dr;
         }
 
+        $netBalance = $totalDeposit - $totalExpense;
+
         $accounts = OfficeAccount::all();
+
+        $accountBalances = $accounts->map(function ($account) use ($runningBalancePerAccount) {
+            return [
+                'id'      => $account->id,
+                'name'    => $account->name,
+                'balance' => $runningBalancePerAccount[$account->id]
+                    ?? (float) $account->opening_balance,
+            ];
+        });
 
         return view('livewire.admin.office-accounting.transaction-component')
             ->with('transactions', $transactions)
             ->with('balanceMap', $balanceMap)
             ->with('accounts', $accounts)
+            ->with('totalDeposit', $totalDeposit)
+            ->with('totalExpense', $totalExpense)
+            ->with('netBalance', $netBalance)
+            ->with('accountBalances', $accountBalances)
             ->layout('layouts.admin.app', [
                 'title' => 'Transactions | ' . institution()->name,
             ]);

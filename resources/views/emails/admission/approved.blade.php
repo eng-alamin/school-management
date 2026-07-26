@@ -8,7 +8,14 @@
     <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:12px;padding:30px;">
         <h2 style="color:#16a34a;margin-top:0;">Admission Approved 🎉</h2>
 
-        <p>Dear {{ $admission->guardian_name ?? $admission->applicant_name }},</p>
+        <p>
+            Dear
+            @if($recipientRole === 'student')
+                {{ $admission->applicant_name }},
+            @else
+                {{ $admission->guardian_name ?? $admission->applicant_name }},
+            @endif
+        </p>
 
         <p>
             Congratulations! We are pleased to inform you that the admission application
@@ -33,44 +40,53 @@
             </table>
         </div>
 
-        @if(!empty($credentials['student']))
+        {{--
+            NOTE: $recipientCredentials ekhon FLAT array (shudhu EI recipient-er
+            data — 'username' / 'email' / 'password' directly, ['student'][...]
+            ba ['guardian'][...] noy). Variable naam ইচ্ছাকৃতভাবে "credentials"
+            na rekhe "recipientCredentials" rakha hoyeche, karon Mailable-er
+            public $credentials property (pura nested student+guardian array)
+            automatically view-e inject hoye "credentials" naam-er kono key-ke
+            silently overwrite kore dey — shetai age blank/dash (—) dekhanor
+            bug-er karon chilo.
+        --}}
+
+        @if($recipientRole === 'student')
             <h3 style="color:#111827;font-size:15px;margin-bottom:8px;">Student Login Details</h3>
             <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:15px;margin-bottom:20px;">
                 <table style="width:100%;font-size:14px;">
                     <tr>
                         <td style="padding:4px 0;color:#6b7280;">Username</td>
-                        <td style="padding:4px 0;font-weight:bold;text-align:right;">{{ $credentials['student']['username'] }}</td>
+                        <td style="padding:4px 0;font-weight:bold;text-align:right;">{{ $recipientCredentials['username'] ?? '—' }}</td>
                     </tr>
-                    @if(!empty($credentials['student']['email']))
+                    @if(!empty($recipientCredentials['email']))
                         <tr>
                             <td style="padding:4px 0;color:#6b7280;">Email</td>
-                            <td style="padding:4px 0;font-weight:bold;text-align:right;">{{ $credentials['student']['email'] }}</td>
+                            <td style="padding:4px 0;font-weight:bold;text-align:right;">{{ $recipientCredentials['email'] }}</td>
                         </tr>
                     @endif
                     <tr>
                         <td style="padding:4px 0;color:#6b7280;">Password</td>
-                        <td style="padding:4px 0;font-weight:bold;text-align:right;">{{ $credentials['student']['password'] }}</td>
+                        <td style="padding:4px 0;font-weight:bold;text-align:right;">{{ $recipientCredentials['password'] ?? '—' }}</td>
                     </tr>
                 </table>
             </div>
-        @endif
-
-        @if(!empty($credentials['guardian']))
+        @else
             <h3 style="color:#111827;font-size:15px;margin-bottom:8px;">Guardian Login Details</h3>
             <div style="background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:15px;margin-bottom:20px;">
                 <table style="width:100%;font-size:14px;">
                     <tr>
                         <td style="padding:4px 0;color:#6b7280;">Username</td>
-                        <td style="padding:4px 0;font-weight:bold;text-align:right;">{{ $credentials['guardian']['username'] }}</td>
+                        <td style="padding:4px 0;font-weight:bold;text-align:right;">{{ $recipientCredentials['username'] ?? '—' }}</td>
                     </tr>
                     <tr>
                         <td style="padding:4px 0;color:#6b7280;">Email</td>
-                        <td style="padding:4px 0;font-weight:bold;text-align:right;">{{ $credentials['guardian']['email'] }}</td>
+                        <td style="padding:4px 0;font-weight:bold;text-align:right;">{{ $recipientCredentials['email'] ?? '—' }}</td>
                     </tr>
-                    @if(!empty($credentials['guardian']['password']))
+                    @if(!empty($recipientCredentials['password']))
                         <tr>
                             <td style="padding:4px 0;color:#6b7280;">Password</td>
-                            <td style="padding:4px 0;font-weight:bold;text-align:right;">{{ $credentials['guardian']['password'] }}</td>
+                            <td style="padding:4px 0;font-weight:bold;text-align:right;">{{ $recipientCredentials['password'] }}</td>
                         </tr>
                     @else
                         <tr>

@@ -22,7 +22,7 @@ class DepositAddComponent extends Component
     public $amount = '';
     public $date = '';
     public $description = '';
-    public $attachment = null;
+    public $attachment = '';
 
     public function mount()
     {
@@ -54,7 +54,7 @@ class DepositAddComponent extends Component
             'amount' => 'required|numeric|min:0',
             'date' => 'required|date',
             'description' => 'nullable|string',
-            'attachment' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'attachment' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
         ];
     }
 
@@ -70,7 +70,7 @@ class DepositAddComponent extends Component
         DB::beginTransaction();
 
         try {
-            $attachmentPath = $this->attachment?->store('office-deposits', 'public');
+            $attachmentPath = $this->attachment->store('office-deposits', 'public');
 
             $deposit = OfficeDeposit::create([
                 'institution_id' => institution()->id,
@@ -95,6 +95,8 @@ class DepositAddComponent extends Component
 
             $this->dispatch('toast', type: 'success', message: 'Deposit created successfully!');
             $this->resetForm();
+
+            $this->redirect(route('admin.office-accounting.deposit.list'), navigate: true);
 
         } catch (\Throwable $e) {
             DB::rollBack();

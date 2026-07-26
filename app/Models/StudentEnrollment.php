@@ -9,25 +9,38 @@ class StudentEnrollment extends Model
 {
     use BelongsToInstitution;
     
-    protected $guarded = [];
-
+    protected $fillable = [
+        'institution_id',
+        'student_id',
+        'class_id',
+        'section_id',
+        'group_id',
+        'roll_no',
+        'status',
+        'carry_forward_due',
+    ];
+ 
+    protected $casts = [
+        'carry_forward_due' => 'boolean',
+    ];
+ 
     public function student()
     {
         return $this->belongsTo(Student::class);
     }
-
-    public function session()
-    {
-        return $this->belongsTo(AcademicSession::class, 'session_id');
-    }
-
+ 
     public function class()
     {
         return $this->belongsTo(AcademicClass::class, 'class_id');
     }
-
+ 
     public function section()
     {
         return $this->belongsTo(AcademicSection::class, 'section_id');
+    }
+ 
+    public function group()
+    {
+        return $this->belongsTo(AcademicGroup::class, 'group_id');
     }
 }

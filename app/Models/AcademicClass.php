@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\BelongsToInstitution;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class AcademicClass extends Model
 {
     use BelongsToInstitution;
+    use SoftDeletes;
     
     protected $guarded = [];
 
@@ -26,14 +28,11 @@ class AcademicClass extends Model
         );
     }
 
-    public function feeAllocations()
-    {
-        return $this->hasMany(FeeAllocation::class);
-    }
 
-    public function feeInvoices()
-    {
-        return $this->hasMany(FeeInvoice::class);
-    }
+    // Remove 
+    // public function feeInvoices()
+    // {
+    //     return $this->hasMany(FeeInvoice::class);
+    // }
 
 }

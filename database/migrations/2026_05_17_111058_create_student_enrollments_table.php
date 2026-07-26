@@ -15,10 +15,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
             $table->foreignId('student_id')->constrained('students')->cascadeOnDelete();
-            $table->foreignId('session_id')->constrained('academic_sessions')->cascadeOnDelete();
-            $table->foreignId('class_id')->constrained('academic_classes')->cascadeOnDelete();
-            $table->foreignId('section_id')->constrained('academic_sections')->cascadeOnDelete();
-            $table->string('roll')->nullable();
+            $table->foreignId('class_id')->nullable()->constrained('academic_classes')->nullOnDelete();
+            $table->foreignId('section_id')->nullable()->constrained('academic_sections')->nullOnDelete();
+            $table->foreignId('group_id')->nullable()->constrained('academic_groups')->nullOnDelete();
+            $table->string('roll_no')->nullable();
             $table->enum('status', ['running', 'promoted', 'left', 'alumni'])->default('running');
             $table->boolean('carry_forward_due')->default(false);
             $table->timestamps();

@@ -27,7 +27,7 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->unique(['institution_id', 'voucher_no']);
+            $table->unique(['institution_id', 'voucher_no', 'deleted_at'], 'office_deposits_institution_voucher_unique');
             $table->index(['institution_id', 'date']);
             $table->index(['institution_id', 'account_id', 'date']);
         });

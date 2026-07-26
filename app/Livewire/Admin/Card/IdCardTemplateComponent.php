@@ -114,7 +114,6 @@ class IdCardTemplateComponent extends Component
     {
         $this->validate();
 
-        // Upload new logo first (outside transaction, since it's a filesystem op, not DB)
         $newLogoPath = null;
         if ($this->logo) {
             $newLogoPath = $this->logo->store('templates/logos', 'public');

@@ -4,10 +4,12 @@ namespace App\Models;
 
 use App\Traits\BelongsToInstitution;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Student extends Model
 {
     use BelongsToInstitution;
+    use SoftDeletes;
 
     protected $guarded = [];
 
@@ -53,11 +55,6 @@ class Student extends Model
         return $this->morphMany(Attendance::class, 'attendable');
     }
 
-    public function feeAllocations()
-    {
-        return $this->hasMany(FeeAllocation::class, 'student_id');
-    }
-
     public function feeInvoices()
     {
         return $this->hasMany(FeeInvoice::class);
@@ -65,7 +62,7 @@ class Student extends Model
 
     public function sales()
     {
-        return $this->morphMany(Sale::class, 'saleable');
+        return $this->morphMany(InventorySale::class, 'saleable');
     }
 
     public function leaveApplications()

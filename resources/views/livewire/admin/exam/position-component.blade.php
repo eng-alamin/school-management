@@ -2,7 +2,7 @@
 
     {{-- Header --}}
     <div class="mat-card-header header-pink-gradient">
-        <h5><span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">military_tech</span>Class Position</h5>
+        <h5>Class Position</h5>
         <p>Generate and review student exam rank / position</p>
     </div>
 
@@ -47,17 +47,17 @@
                 @error('exam_setup_id') <span class="text-danger small">{{ $message }}</span> @enderror
             </div>
             {{-- Filter Button --}}
-            <div class="col-md-12 text-center">
+            <div class="col-md-12 d-flex justify-content-end">
                 <button wire:click="filter"
                         wire:loading.attr="disabled"
                         wire:target="filter"
-                        class="btn-pink w-100 d-flex justify-content-center align-items-center"
+                        class="btn-pink d-flex align-items-center gap-1"
                         type="button">
                     <span wire:loading.remove wire:target="filter">
                         <span class="material-icons-round" style="font-size:16px;vertical-align:middle;margin-right:4px">filter_alt</span> Filter
                     </span>
                     <span wire:loading wire:target="filter">
-                        <span class="material-icons-round" style="font-size:16px;animation:spin .7s linear infinite">sync</span> Loading...
+                        <span class="material-icons-round" style="font-size:16px;animation:spin .7s linear infinite">sync</span> Filtering...
                     </span>
                 </button>
             </div>
@@ -72,12 +72,6 @@
             <span class="material-icons-round">groups</span>
             Student Exam Rank : {{ $exams->firstWhere('id', $exam_setup_id)->name ?? '' }}
         </div>
-
-        @if($alreadyGenerated)
-        <div class="alert-banner" style="background:#3a1f22;color:#f08a94;padding:14px 18px;border-radius:8px;margin:16px 0;text-align:center;font-size:14px;">
-            The position has already been generated.
-        </div>
-        @endif
 
         <div class="table-responsive mt-3">
             <table class="entry-table">
@@ -101,7 +95,7 @@
                     @foreach($rows as $studentId => $row)
                     <tr wire:key="position-row-{{ $studentId }}">
                         <td>{{ $row['student_name'] }}</td>
-                        <td>{{ $row['register_no'] }}</td>
+                        <td>{{ $row['registration_no'] }}</td>
                         <td>{{ $row['class_name'] }}</td>
                         <td>{{ $row['section_name'] }}</td>
                         <td>{{ $row['roll_no'] }}</td>
@@ -123,18 +117,18 @@
                         <td>
                             <input type="number" min="1"
                                 wire:model.defer="rows.{{ $studentId }}.position"
-                                class="entry-input">
+                                class="form-control">
                             @error('rows.'.$studentId.'.position') <span class="text-danger small d-block">{{ $message }}</span> @enderror
                         </td>
                         <td>
                             <input type="text"
                                 wire:model.defer="rows.{{ $studentId }}.principal_comment"
-                                class="entry-input" style="width:160px">
+                                class="form-control" style="width:160px">
                         </td>
                         <td>
                             <input type="text"
                                 wire:model.defer="rows.{{ $studentId }}.teacher_comment"
-                                class="entry-input" style="width:160px">
+                                class="form-control" style="width:160px">
                         </td>
                     </tr>
                     @endforeach

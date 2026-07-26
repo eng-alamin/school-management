@@ -91,11 +91,11 @@
                         </tr>
                         <tr>
                             <td class="info-label">Basic Salary:</td>
-                            <td class="info-value">৳{{ number_format($basicSalary, 2) }}</td>
+                            <td class="info-value">৳{{ number_format($basicSalary, 0) }}</td>
                         </tr>
                         <tr>
                             <td class="info-label">Overtime Rate (Per Hour):</td>
-                            <td class="info-value">৳{{ number_format($overtimeRate, 2) }}</td>
+                            <td class="info-value">৳{{ number_format($overtimeRate, 0) }}</td>
                         </tr>
                     </table>
 
@@ -117,7 +117,7 @@
                                         @forelse($allowances as $row)
                                         <tr>
                                             <td>{{ $row['name'] }}</td>
-                                            <td>৳{{ number_format($row['amount'], 2) }}</td>
+                                            <td>৳{{ number_format($row['amount'], 0) }}</td>
                                         </tr>
                                         @empty
                                         <tr>
@@ -144,7 +144,7 @@
                                         @forelse($deductions as $row)
                                         <tr>
                                             <td>{{ $row['name'] }}</td>
-                                            <td>৳{{ number_format($row['amount'], 2) }}</td>
+                                            <td>৳{{ number_format($row['amount'], 0) }}</td>
                                         </tr>
                                         @empty
                                         <tr>
@@ -176,14 +176,14 @@
                         <div class="col-12">
                             <label class="ap-label">Total Allowance</label>
                             <input type="text" class="ap-input" readonly
-                                value="৳{{ number_format($totalAllowance, 2) }}">
+                                value="৳{{ number_format($totalAllowance, 0) }}">
                         </div>
 
                         {{-- Total Deductions (read-only) --}}
                         <div class="col-12">
                             <label class="ap-label">Total Deductions</label>
                             <input type="text" class="ap-input" readonly
-                                value="৳{{ number_format($totalDeduction, 2) }}">
+                                value="৳{{ number_format($totalDeduction, 0) }}">
                         </div>
 
                         {{-- Advance Deduction (read-only, auto-calculated) --}}
@@ -191,11 +191,11 @@
                         <div class="col-12">
                             <label class="ap-label">Salary Advance Deduction</label>
                             <input type="text" class="ap-input" readonly
-                                value="৳{{ number_format($advanceDeduction, 2) }}"
+                                value="৳{{ number_format($advanceDeduction, 0) }}"
                                 style="color:#d97706;font-weight:600">
                             @if(!$alreadyPaid && $advanceRemaining > 0)
                                 <small class="text-muted d-block mt-1" style="font-size:.72rem">
-                                    Remaining advance balance after this payment: ৳{{ number_format(max(0, $advanceRemaining - $advanceDeduction), 2) }}
+                                    Remaining advance balance after this payment: ৳{{ number_format(max(0, $advanceRemaining - $advanceDeduction), 0) }}
                                 </small>
                             @endif
                         </div>
@@ -216,14 +216,14 @@
                         <div class="col-12">
                             <label class="ap-label">Overtime Amount</label>
                             <input type="text" class="ap-input" readonly
-                                value="৳{{ number_format($overtimeAmount, 2) }}">
+                                value="৳{{ number_format($overtimeAmount, 0) }}">
                         </div>
 
                         {{-- Net Salary (auto-calculated) --}}
                         <div class="col-12">
                             <label class="ap-label">Net Salary</label>
                             <input type="text" class="ap-input ap-input-highlight" readonly
-                                value="৳{{ number_format($netSalary, 2) }}">
+                                value="৳{{ number_format($netSalary, 0) }}">
                         </div>
 
                         {{-- Payment Date --}}

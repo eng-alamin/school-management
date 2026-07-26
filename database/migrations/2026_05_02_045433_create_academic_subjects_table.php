@@ -19,6 +19,19 @@ return new class extends Migration
             $table->string('author')->nullable();
             $table->string('type')->nullable();
             $table->timestamps();
+            $table->softDeletes();
+
+            $table->index(['institution_id', 'deleted_at'], 'academic_subjects_institution_idx');
+
+             $table->unique(
+                ['institution_id', 'name', 'deleted_at'],
+                'academic_subjects_institution_name_unique'
+            );
+            
+            $table->unique(
+                ['institution_id', 'code', 'deleted_at'],
+                'academic_subjects_institution_code_unique'
+            );
         });
     }
 

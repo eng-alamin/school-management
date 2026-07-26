@@ -323,6 +323,7 @@ Route::middleware(['auth', 'role:admin', 'billing.check'])->group(function () {
     Route::get('/employee/{id}/edit', \App\Livewire\Admin\Employee\EmployeeEditComponent::class)->name('admin.employee.edit');
     Route::get('/employee/{id}/view', \App\Livewire\Admin\Employee\EmployeeViewComponent::class)->name('admin.employee.view');
     Route::get('/employee/{id}/account', \App\Livewire\Admin\Employee\EmployeeAccountComponent::class)->name('admin.employee.account');
+    Route::get('/employee/{id}/invoices', \App\Livewire\Admin\Employee\EmployeeInvoiceComponent::class)->name('admin.employee.invoices');
 
     // Parent
     Route::get('/parent/list', \App\Livewire\Admin\Parent\ParentListComponent::class)->name('admin.parent.list');
@@ -492,6 +493,8 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('superadmin')->name('sup
         return response()->json(['status' => 'done', 'command' => $command]);
     })->middleware(['auth', 'role:super_admin']);
 
+    use Illuminate\Support\Facades\Schedule;
+    Schedule::command('homework:publish-scheduled')->everyMinute();
 
     Route::get('clear', function () {
         Artisan::call('optimize:clear');

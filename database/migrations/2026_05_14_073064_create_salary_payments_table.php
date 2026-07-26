@@ -43,7 +43,7 @@ return new class extends Migration
                 $table->softDeletes();
 
                 $table->unique(
-                    ['employee_id', 'month'],
+                    ['employee_id', 'month', 'deleted_at'],
                     'employee_salary_month_unique'
                 );
         });

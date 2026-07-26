@@ -9,6 +9,7 @@ use App\Models\OfficeDeposit;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Livewire\WithFileUploads;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Contracts\Validation\Validator;
 
@@ -25,7 +26,7 @@ class DepositEditComponent extends Component
     public $amount = '';
     public $date = '';
     public $description = '';
-    public $attachment = null;
+    public $attachment = '';
 
     public $existing_attachment = null;
     public $remove_attachment = false;
@@ -62,7 +63,16 @@ class DepositEditComponent extends Component
             'amount' => 'required|numeric|min:0',
             'date' => 'required|date',
             'description' => 'nullable|string',
-            'attachment' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            // ── attachment তখনই required, যখন existing_attachment নেই (বা remove করা হয়েছে)
+            // এবং নতুন কোনো ফাইলও আপলোড করা হয়নি। পুরনো attachment থেকে গেলে নতুন ফাইল
+            // না দিলেও validation pass করবে। ──
+            'attachment' => [
+                Rule::requiredIf(fn () => !$this->existing_attachment && !$this->attachment),
+                'nullable',
+                'file',
+                'mimes:pdf,jpg,jpeg,png',
+                'max:2048',
+            ],
             'remove_attachment' => 'boolean',
         ];
     }
@@ -124,6 +134,8 @@ class DepositEditComponent extends Component
             $this->remove_attachment = false;
 
             $this->dispatch('toast', type: 'success', message: 'Deposit updated successfully!');
+
+            $this->redirect(route('admin.office-accounting.deposit.list'), navigate: true);
 
         } catch (\Throwable $e) {
             DB::rollBack();

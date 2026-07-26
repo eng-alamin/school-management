@@ -28,6 +28,9 @@ class GenerateAdmitCardComponent extends Component
     public string $expiry_date = '';
 
     // Selection
+    // IMPORTANT: selectedIds holds Student::$student_id values (business key),
+    // NOT the Student::$id primary key. This must stay consistent with the
+    // checkbox `value` in the Blade view.
     public array $selectedIds = [];
     public bool $selectAll = false;
 
@@ -80,10 +83,12 @@ class GenerateAdmitCardComponent extends Component
 
     public function updatedSelectAll(bool $value): void
     {
+        // FIX: must pluck 'student_id' (business key), not 'id' (primary key),
+        // to stay consistent with the checkbox value used for manual selection.
         if ($value) {
             $this->selectedIds = $this->getStudents()
-                ->pluck('id')
-                ->map(fn ($id) => (string) $id)
+                ->pluck('student_id')
+                ->map(fn ($sid) => (string) $sid)
                 ->toArray();
         } else {
             $this->selectedIds = [];
@@ -113,8 +118,10 @@ class GenerateAdmitCardComponent extends Component
             'expiry_date' => 'required|date|after_or_equal:print_date',
         ]);
 
+        // FIX: filter by 'student_id' (business key) to match $this->selectedIds,
+        // instead of the previous 'id' mismatch which silently broke selection.
         $students = Student::with(['class', 'section', 'group'])
-            ->whereIn('id', $this->selectedIds)
+            ->whereIn('student_id', $this->selectedIds)
             ->get();
 
         if ($students->isEmpty()) {
@@ -123,76 +130,70 @@ class GenerateAdmitCardComponent extends Component
         }
 
         $scheduleData  = $this->buildExamScheduleData();
-        $institutionId = institution()->id;
-        $data = [];
-
-        foreach ($students as $student) {
-            $data[] = [
-                'institution_id' => $institutionId,
-                'student_id'     => $student->id,
-
-                'issue_date'  => $this->print_date,
-                'expiry_date' => $this->expiry_date,
-                'template_id' => $this->filterTemplate,
-
-                'name'        => $student->name,
-                'gender'      => $student->gender,
-                'blood_group' => $student->full_blood_group,
-                'dob'         => $student->dob,
-                'religion'    => $student->religion,
-                'mobile'      => $student->mobile,
-                'address'     => $student->present_address,
-                'photo'       => $student->photo,
-                'session'     => $student->academic_year,
-                'register_no' => $student->register_no,
-                'roll_no'     => $student->roll_no,
-
-                'class'       => $student->class?->name,
-                'section'     => $student->section?->name,
-                'group'       => $student->group?->name,
-
-                'exam_schedules' => json_encode($scheduleData),
-
-                'updated_at'  => now(),
-                'created_at'  => now(),
-            ];
-        }
+        $institution   = institution();
+        $institutionId = $institution->id;
 
         DB::beginTransaction();
         try {
-            AdmitCard::upsert(
-                $data,
-                ['student_id'],
-                [
-                    'institution_id',
-                    'issue_date',
-                    'expiry_date',
-                    'template_id',
-                    'name',
-                    'gender',
-                    'blood_group',
-                    'dob',
-                    'religion',
-                    'mobile',
-                    'address',
-                    'photo',
-                    'session',
-                    'register_no',
-                    'roll_no',
-                    'class',
-                    'section',
-                    'exam_schedules',
-                    'group',
-                    'updated_at',
-                ]
-            );
+            $cards = collect();
 
-            $cards = AdmitCard::with('template')
-                ->where('institution_id', $institutionId)
-                ->whereIn('student_id', $this->selectedIds)
-                ->get();
+            foreach ($students as $student) {
+                $payload = [
+                    'institution_id' => $institutionId,
+                    'template_id'    => $this->filterTemplate,
+                    'issue_date'     => $this->print_date,
+                    'expiry_date'    => $this->expiry_date,
 
-            activity()->log('Generated '.$cards->count().' admit card(s)');
+                    'name'        => $student->name,
+                    'gender'      => $student->gender,
+                    'blood_group' => $student->full_blood_group,
+                    'dob'         => $student->dob,
+                    'religion'    => $student->religion,
+                    'mobile'      => $student->mobile,
+                    'address'     => $student->present_address,
+                    'photo'       => $student->photo,
+                    'session'     => $student->academic_year,
+                    'register_no' => $student->register_no,
+                    'roll_no'     => $student->roll_no,
+
+                    'class'       => $student->class?->name,
+                    'section'     => $student->section?->name,
+                    'group'       => $student->group?->name,
+
+                    'exam_schedules' => json_encode($scheduleData),
+                ];
+
+                // FIX: query WITH trashed records so an existing soft-deleted
+                // admit card for this student is found and properly RESTORED
+                // instead of being silently overwritten at the DB layer, which
+                // is what the previous raw upsert() did (it bypasses any
+                // SoftDeletes scope and leaves deleted_at set on stale data).
+                $card = AdmitCard::withTrashed()
+                    ->where('institution_id', $institutionId)
+                    ->where('student_id', $student->student_id)
+                    ->first();
+
+                if ($card) {
+                    $card->fill($payload);
+                    if (method_exists($card, 'trashed') && $card->trashed()) {
+                        $card->restore();
+                    }
+                    $card->save();
+                } else {
+                    $card = AdmitCard::create(array_merge($payload, [
+                        'student_id' => $student->student_id,
+                    ]));
+                }
+
+                // FIX: activity log now targets the actual model and records
+                // the causing user, per project audit-trail convention.
+                activity()
+                    ->performedOn($card)
+                    ->causedBy(auth()->user())
+                    ->log('Generated/updated admit card for student: '.$student->name);
+
+                $cards->push($card->load('template'));
+            }
 
             DB::commit();
         } catch (Throwable $e) {

@@ -23,6 +23,8 @@ return new class extends Migration
             $table->boolean('status')->default(true);
             $table->timestamps();
             $table->softDeletes();
+
+            $table->unique(['institution_id', 'name', 'role', 'deleted_at'], 'leave_categories_institution_name_role_unique');
         });
     }
 

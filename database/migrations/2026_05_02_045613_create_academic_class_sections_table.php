@@ -17,6 +17,11 @@ return new class extends Migration
             $table->foreignId('class_id')->constrained('academic_classes')->cascadeOnDelete();
             $table->foreignId('section_id')->constrained('academic_sections')->cascadeOnDelete();
             $table->timestamps();
+
+            $table->unique(
+                ['institution_id', 'class_id', 'section_id'],
+                'academic_class_sections_institution_class_section_unique'
+            );
         });
     }
 

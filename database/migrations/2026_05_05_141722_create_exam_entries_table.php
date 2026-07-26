@@ -14,21 +14,22 @@ return new class extends Migration
             $table->foreignId('exam_setup_id')->constrained()->cascadeOnDelete();
             $table->foreignId('exam_setup_detail_id')->constrained()->cascadeOnDelete();
             $table->foreignId('student_id')->constrained()->cascadeOnDelete();
-
+ 
             $table->boolean('is_absent')->default(false);
-
+ 
             $table->decimal('practical_obtained', 8, 2)->nullable();
             $table->decimal('written_obtained', 8, 2)->nullable();
             $table->decimal('mcq_obtained', 8, 2)->nullable();
             $table->decimal('total_obtained', 8, 2)->nullable();
-
+ 
             $table->string('grade', 10)->nullable();
             $table->text('remarks')->nullable();
-
+ 
             $table->timestamps();
-
+            $table->softDeletes();
+ 
             $table->unique(
-                ['exam_setup_detail_id', 'student_id'],
+                ['exam_setup_detail_id', 'student_id', 'deleted_at'],
                 'exam_entry_subject_student_unique'
             );
         });

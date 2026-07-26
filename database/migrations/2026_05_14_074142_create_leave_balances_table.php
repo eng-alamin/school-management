@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('leave_balances', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
-            $table->foreignId('employee_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('employee_id')->constrained('employees')->onDelete('cascade');
             $table->foreignId('leave_category_id')->constrained('leave_categories')->onDelete('cascade');
             $table->year('year');
             $table->integer('total_days');                         // মোট বরাদ্দ দিন

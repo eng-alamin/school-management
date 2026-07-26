@@ -34,9 +34,11 @@ return new class extends Migration
             $table->boolean('status')->default(true);
 
             $table->timestamps();
+            $table->softDeletes();
 
-            $table->unique(['institution_id', 'invoice_no']);
-            $table->index(['student_id', 'payment_status']);
+            $table->unique(['institution_id', 'invoice_no', 'deleted_at'], 'fee_invoices_institution_invoice_no_unique');
+            $table->index(['institution_id', 'payment_status', 'deleted_at'], 'fee_invoices_institution_status_idx');
+            $table->index(['institution_id', 'invoice_date'], 'fee_invoices_institution_date_idx');
         });
     }
 

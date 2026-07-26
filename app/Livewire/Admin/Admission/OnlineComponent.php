@@ -401,24 +401,54 @@ class OnlineComponent extends Component
     }
 
     /**
-     * Approve mail: student email thakle sudhu student ke, na thakle guardian
-     * ke pathano hoy. Ei mail-e ekhon student + guardian dujoner login
-     * credentials o thake, jate email pawa recipient-i sob kichu paye jay.
+     * Approve mail: Guardian ebong Student — dujonke ALADA ALADA mail
+     * pathano hoy (sendRejectionEmails()-er identical pattern), jate
+     * ekjoner login credential/email onnojoner kache expose na hoy.
+     *
+     * FIX (Bug): Age eta shudhu EKJON-ke (student email thakle student,
+     * nahole guardian) mail pathacchilo — mane Student email thakle
+     * Guardian ekdomi mail PETO NA, jeta bhul chilo (Guardian-er nijer
+     * account thakleo credential mail pawa uchit).
+     *
+     * Ekhon:
+     * - Guardian: SOBSHOMOY mail jay (AdmissionService-e guardian email
+     *   required enforce kora ache — tai eta guaranteed thake). Guardian
+     *   nijer credentials-i shudhu dekhbe, Student-er na.
+     * - Student: SHUDHU tokhoni mail jay jokhon Admission form-e Student-er
+     *   nijer email dewa chilo ($credentials['student']['has_email'] === true,
+     *   AdmissionService-e set kora hoy). Student nijer credentials-i shudhu
+     *   dekhbe, Guardian-er na.
+     *
+     * NOTE: AdmissionApprovedMail constructor-ke ekhon
+     * (Admission $admission, array $credentials, string $recipientRole)
+     * — $recipientRole = 'guardian' | 'student' — accept korte hobe, jate
+     * mail template bujhte pare shudhu kar credentials show korte hobe.
+     * AdmissionApprovedMail.php file-ta share korle seta-o update kore
+     * dite pari.
      */
     private function sendApprovalEmail(Admission $admission, array $credentials): void
     {
-        $recipientEmail = $admission->email ?: $admission->guardian_email;
+        $guardianEmail = $credentials['guardian']['email'] ?? null;
 
-        if (!$recipientEmail) {
-            return;
+        if ($guardianEmail) {
+            Mail::to($guardianEmail)->send(
+                new AdmissionApprovedMail($admission, $credentials, 'guardian')
+            );
         }
 
-        Mail::to($recipientEmail)->send(new AdmissionApprovedMail($admission, $credentials));
+        $studentHasEmail = $credentials['student']['has_email'] ?? false;
+        $studentEmail    = $credentials['student']['email'] ?? null;
+
+        if ($studentHasEmail && $studentEmail) {
+            Mail::to($studentEmail)->send(
+                new AdmissionApprovedMail($admission, $credentials, 'student')
+            );
+        }
     }
 
     /**
      * Guardian ebong (jodi thake) student — dutake alada alada mail pathano hoy,
-     * jate ekjon er email onnojoner kache expose na hoy.
+     * jate ekjoner email onnojoner kache expose na hoy.
      */
     private function sendRejectionEmails(Admission $admission): void
     {

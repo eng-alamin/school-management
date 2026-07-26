@@ -23,6 +23,11 @@ return new class extends Migration
             $table->boolean('is_published')->default(false);
             $table->boolean('is_result_published')->default(false);
             $table->timestamps();
+
+            $table->unique(
+                ['academic_class_assign_id', 'name'],
+                'exam_setups_class_assign_name_unique'
+            );
         });
     }
 

@@ -20,6 +20,8 @@ return new class extends Migration
             $table->decimal('max_percentage', 5, 2);
             $table->text('remarks')->nullable();
             $table->timestamps();
+
+            $table->unique(['institution_id', 'name'], 'exam_grades_institution_name_unique');
         });
     }
 

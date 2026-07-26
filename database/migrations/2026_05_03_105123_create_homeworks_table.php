@@ -42,6 +42,11 @@ return new class extends Migration
             // Status
             $table->enum('status', ['draft', 'published', 'closed'])->default('published');
             $table->timestamps();
+
+            $table->index(
+                ['institution_id', 'class_id', 'section_id', 'status'],
+                'homeworks_institution_class_section_status_idx'
+            );
         });
     }
 

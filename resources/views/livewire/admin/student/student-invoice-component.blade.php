@@ -200,46 +200,100 @@
     {{-- PRINTABLE — শুধু Selected Invoice গুলোর জন্য (Hidden, JS দিয়ে Print হবে) --}}
     {{-- ============================================================ --}}
     <div id="invoicePrintable" style="display:none">
-        <h6>{{ $student->name ?? '' }} — Fee Invoice</h6>
-        <p>Class: {{ $student->class->name ?? '—' }} | Section: {{ $student->section->name ?? '—' }}</p>
 
         @php
             $selectedInvoices = $invoices->whereIn('id', $selectedIds);
+            $printInvoiceNos  = $selectedInvoices->pluck('invoice_no')->implode(', ');
         @endphp
 
+        <div class="inv-print-header">
+            <div class="inv-print-institution">
+                <h1>{{ institution()->name ?? 'Institution Name' }}</h1>
+                @if(!empty(institution()->address))
+                    <p class="inv-print-address">{{ institution()->address }}</p>
+                @endif
+                @if($printInvoiceNos)
+                    <p class="inv-print-invoice-ref">Invoice #{{ $printInvoiceNos }}</p>
+                @endif
+            </div>
+            <div class="inv-print-doc-title">
+                <span>FEE INVOICE</span>
+            </div>
+        </div>
+
+        <div class="inv-print-student-card">
+            <div>
+                <span class="lbl">Student Name</span>
+                <strong>{{ $student->name ?? '—' }}</strong>
+            </div>
+            <div>
+                <span class="lbl">Student ID</span>
+                <strong>{{ $student->student_id ?? '—' }}</strong>
+            </div>
+            <div>
+                <span class="lbl">Class</span>
+                <strong>{{ $student->class->name ?? '—' }}</strong>
+            </div>
+            <div>
+                <span class="lbl">Section</span>
+                <strong>{{ $student->section->name ?? '—' }}</strong>
+            </div>
+        </div>
+
         @foreach($selectedInvoices as $invoice)
-            <h6 style="margin-top:16px">Invoice #{{ $invoice->invoice_no }} ({{ \Carbon\Carbon::parse($invoice->invoice_date)->format('d.M.Y') }})</h6>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Fees Type</th>
-                        <th>Amount</th>
-                        <th>Discount</th>
-                        <th>Fine</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($invoice->items as $item)
-                        @php
-                            $isMonthly   = $item->feeSetup?->frequency === 'monthly';
-                            $feeTypeName = $item->feeSetup?->feeType?->name ?? '—';
-                            $monthLabel  = $isMonthly ? \Carbon\Carbon::parse($invoice->invoice_date)->format('F') : null;
-                        @endphp
+            <div class="inv-print-block">
+                @if($selectedInvoices->count() > 1)
+                    <div class="inv-print-block-header">
+                        <span class="inv-print-invoice-no">Invoice #{{ $invoice->invoice_no }}</span>
+                    </div>
+                @endif
+
+                <table class="inv-print-table">
+                    <thead>
                         <tr>
-                            <td>{{ $feeTypeName }}{{ $monthLabel ? ' — '.$monthLabel : '' }}</td>
-                            <td>{{ number_format($item->base_amount, 0) }}</td>
-                            <td>{{ number_format($item->discount_amount, 0) }}</td>
-                            <td>{{ number_format($item->fine_amount, 0) }}</td>
+                            <th>Fees Type</th>
+                            <th class="text-right">Amount</th>
+                            <th class="text-right">Discount</th>
+                            <th class="text-right">Fine</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
-            <p style="text-align:right;margin-top:6px">
-                Total: {{ number_format($invoice->total_amount, 0) }} |
-                Paid: {{ number_format($invoice->paid_amount, 0) }} |
-                Due: {{ number_format($invoice->due_amount, 0) }}
-            </p>
+                    </thead>
+                    <tbody>
+                        @foreach($invoice->items as $item)
+                            @php
+                                $isMonthly   = $item->feeSetup?->frequency === 'monthly';
+                                $feeTypeName = $item->feeSetup?->feeType?->name ?? '—';
+                                $monthLabel  = $isMonthly ? \Carbon\Carbon::parse($invoice->invoice_date)->format('F') : null;
+                            @endphp
+                            <tr>
+                                <td>{{ $feeTypeName }}{{ $monthLabel ? ' — '.$monthLabel : '' }}</td>
+                                <td class="text-right">{{ number_format($item->base_amount, 0) }}</td>
+                                <td class="text-right">{{ number_format($item->discount_amount, 0) }}</td>
+                                <td class="text-right">{{ number_format($item->fine_amount, 0) }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+
+                <div class="inv-print-block-summary">
+                    <span>Total: <strong>{{ number_format($invoice->total_amount, 0) }}</strong></span>
+                    <span>Paid: <strong>{{ number_format($invoice->paid_amount, 0) }}</strong></span>
+                    <span>Due: <strong>{{ number_format($invoice->due_amount, 0) }}</strong></span>
+                </div>
+            </div>
         @endforeach
+
+        <div class="inv-print-signatures">
+            <div class="inv-print-sign-box">
+                <div class="inv-print-sign-line"></div>
+                <span>Received By</span>
+            </div>
+            <div class="inv-print-sign-box">
+                <div class="inv-print-sign-line"></div>
+                <span>Authorized Signature</span>
+            </div>
+        </div>
+
+        <p class="inv-print-footnote">This is a computer-generated invoice and does not require a physical stamp.</p>
     </div>
 
     {{-- ============================================================ --}}
@@ -554,16 +608,165 @@
         printWindow.document.write(`
             <html>
                 <head>
-                    <title>Fee Invoice</title>
+                    <title>Fee Invoice{{ $student->name ? ' - '.$student->name : '' }}</title>
                     <style>
                         * { box-sizing: border-box; }
-                        body { font-family: Arial, Helvetica, sans-serif; padding: 28px; color: #222; }
-                        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-                        th, td { border: 1px solid #ddd; padding: 8px 10px; text-align: left; font-size: 13px; }
-                        thead th { background: #f5f5f5; }
-                        h6 { margin: 0 0 2px 0; font-size: 16px; }
-                        p { margin: 0; color: #555; font-size: 13px; }
-                        .text-muted { color: #777 !important; text-transform: uppercase; font-size: 11px; }
+
+                        body {
+                            font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
+                            padding: 36px 40px;
+                            color: #2b2b2b;
+                            font-size: 13px;
+                            line-height: 1.5;
+                        }
+
+                        /* ── Header: Institution name + doc title ── */
+                        .inv-print-header {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: flex-start;
+                            border-bottom: 3px solid #e05252;
+                            padding-bottom: 14px;
+                            margin-bottom: 18px;
+                        }
+                        .inv-print-institution h1 {
+                            margin: 0 0 4px 0;
+                            font-size: 22px;
+                            font-weight: 700;
+                            color: #1a1a1a;
+                            letter-spacing: .3px;
+                        }
+                        .inv-print-address {
+                            margin: 0;
+                            font-size: 12px;
+                            color: #777;
+                        }
+                        .inv-print-invoice-ref {
+                            margin: 6px 0 0 0;
+                            font-size: 13px;
+                            font-weight: 600;
+                            color: #e05252;
+                        }
+                        .inv-print-doc-title {
+                            text-align: right;
+                        }
+                        .inv-print-doc-title span {
+                            display: block;
+                            font-size: 20px;
+                            font-weight: 700;
+                            color: #e05252;
+                            letter-spacing: 1px;
+                        }
+
+                        /* ── Student info card ── */
+                        .inv-print-student-card {
+                            display: flex;
+                            flex-wrap: wrap;
+                            gap: 18px;
+                            background: #f9f9f9;
+                            border: 1px solid #eee;
+                            border-radius: 8px;
+                            padding: 14px 18px;
+                            margin-bottom: 22px;
+                        }
+                        .inv-print-student-card > div {
+                            flex: 1 1 20%;
+                            min-width: 110px;
+                        }
+                        .inv-print-student-card .lbl {
+                            display: block;
+                            font-size: 10px;
+                            text-transform: uppercase;
+                            letter-spacing: .5px;
+                            color: #999;
+                            margin-bottom: 3px;
+                        }
+                        .inv-print-student-card strong {
+                            font-size: 13.5px;
+                            color: #1a1a1a;
+                        }
+
+                        /* ── Per-invoice block ── */
+                        .inv-print-block {
+                            margin-bottom: 20px;
+                            page-break-inside: avoid;
+                        }
+                        .inv-print-block-header {
+                            display: flex;
+                            align-items: center;
+                            gap: 12px;
+                            background: #212529;
+                            color: #fff;
+                            padding: 8px 14px;
+                            border-radius: 6px 6px 0 0;
+                            font-size: 12.5px;
+                        }
+                        .inv-print-invoice-no { font-weight: 700; }
+
+                        .inv-print-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                        }
+                        .inv-print-table th, .inv-print-table td {
+                            padding: 9px 14px;
+                            text-align: left;
+                            font-size: 12.5px;
+                            border-bottom: 1px solid #eee;
+                        }
+                        .inv-print-table thead th {
+                            background: #f5f5f5;
+                            font-weight: 600;
+                            font-size: 11px;
+                            text-transform: uppercase;
+                            letter-spacing: .3px;
+                            color: #666;
+                            border-bottom: 2px solid #ddd;
+                        }
+                        .inv-print-table tbody tr:nth-child(even) { background: #fafafa; }
+                        .text-right { text-align: right !important; }
+
+                        .inv-print-block-summary {
+                            display: flex;
+                            justify-content: flex-end;
+                            gap: 24px;
+                            padding: 10px 14px;
+                            border: 1px solid #eee;
+                            border-top: none;
+                            border-radius: 0 0 6px 6px;
+                            font-size: 12.5px;
+                            background: #fcfcfc;
+                        }
+                        .inv-print-block-summary strong { color: #1a1a1a; }
+
+                        /* ── Signatures ── */
+                        .inv-print-signatures {
+                            display: flex;
+                            justify-content: space-between;
+                            margin-top: 60px;
+                            padding: 0 20px;
+                        }
+                        .inv-print-sign-box {
+                            text-align: center;
+                            width: 200px;
+                            font-size: 11.5px;
+                            color: #555;
+                        }
+                        .inv-print-sign-line {
+                            border-top: 1px solid #999;
+                            margin-bottom: 6px;
+                        }
+
+                        .inv-print-footnote {
+                            margin-top: 28px;
+                            text-align: center;
+                            font-size: 10.5px;
+                            color: #aaa;
+                            font-style: italic;
+                        }
+
+                        @media print {
+                            body { padding: 0; }
+                        }
                     </style>
                 </head>
                 <body>

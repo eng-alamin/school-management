@@ -28,8 +28,10 @@ return new class extends Migration
             $table->enum('payment_status', ['paid','partial', 'due'])->default('due');
             $table->text('remarks')->nullable();
 
-            $table->unique(['institution_id', 'bill_no']);
             $table->timestamps();
+            $table->softDeletes();
+
+            $table->unique(['institution_id', 'bill_no', 'deleted_at'], 'inventory_sales_institution_bill_no_unique');
         });
     }
 

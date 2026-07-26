@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\BelongsToInstitution;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Employee extends Model
 {
     use BelongsToInstitution;
+    use SoftDeletes;
     
     protected $guarded = [];
 
@@ -33,7 +35,7 @@ class Employee extends Model
 
     public function sales()
     {
-        return $this->morphMany(Sale::class, 'saleable');
+        return $this->morphMany(InventorySale::class, 'saleable');
     }
 
     public function leaveApplications()

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('institution_id')->nullable()->constrained()->onDelete('cascade'); // registration এর সময় institution থাকে না
             $table->string('type')->default('registration'); // 'registration' বা 'billing'
-            $table->string('invoice_no')->nullable()->unique(); // registration এর invoice_no লাগে না
+            $table->string('invoice_no')->nullable(); // registration এর invoice_no লাগে না
             $table->unsignedTinyInteger('month')->nullable();
             $table->unsignedSmallInteger('year')->nullable();
             $table->decimal('total_amount', 10, 2)->default(0);
@@ -24,11 +24,15 @@ return new class extends Migration
             $table->enum('status', ['free','pending', 'paid', 'overdue', 'failed'])->default('pending');
             $table->date('due_date')->nullable();
             $table->timestamp('paid_at')->nullable();
-            $table->string('transaction_id')->nullable()->unique(); // SSLCommerz tran_id, দুই ধরনের payment-এর জন্যই
+            $table->string('transaction_id')->nullable(); // SSLCommerz tran_id, দুই ধরনের payment-এর জন্যই
             $table->string('val_id')->nullable();
             $table->string('payment_method')->nullable();
             $table->json('meta')->nullable();
             $table->timestamps();
+            $table->softDeletes();
+
+            $table->unique(['invoice_no', 'deleted_at'], 'invoices_invoice_no_unique');
+            $table->unique(['transaction_id', 'deleted_at'], 'invoices_transaction_id_unique');
         });
     }
 

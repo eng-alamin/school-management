@@ -127,7 +127,7 @@
                         <th id="th-registration-no">Registration No</th>
                         <th id="th-guardian-name">Guardian Name</th>
                         <th id="th-class">Class</th>
-                        <th id="th-role">Roll</th>
+                        <th id="th-role">Roll No</th>
                         <th id="th-current-due-amount-with-fine">Current Due Amount (With Fine)</th>
                         <th id="th-status">Status</th>
                     </tr>
@@ -164,7 +164,7 @@
                         <td>
                             <input type="text"
                                 class="form-control form-control-sm"
-                                wire:model.defer="students.{{ $studentId }}.roll"
+                                wire:model.defer="students.{{ $studentId }}.roll_no"
                                 style="width:80px">
                         </td>
                         <td>{{ $student['due_amount'] }}</td>

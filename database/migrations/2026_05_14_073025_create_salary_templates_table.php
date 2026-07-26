@@ -33,7 +33,7 @@ return new class extends Migration
             $table->softDeletes();
  
             // Prevent duplicate template name per institution
-            $table->unique(['institution_id', 'name']);
+            $table->unique(['institution_id', 'name', 'deleted_at'], 'salary_templates_institution_name_unique');
         });
     }
 

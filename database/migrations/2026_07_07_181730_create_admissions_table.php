@@ -59,6 +59,9 @@ return new class extends Migration
             $table->foreignId('student_id')->nullable()->constrained('students')->nullOnDelete();
  
             $table->timestamps();
+            $table->softDeletes();
+
+            $table->unique(['institution_id', 'application_no', 'deleted_at'], 'admissions_institution_application_no_unique');
         });
     }
 

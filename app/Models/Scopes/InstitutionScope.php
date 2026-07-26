@@ -14,8 +14,8 @@ class InstitutionScope implements Scope
             return;
         }
 
-        // Super Admin bypass
-        if (auth()->user()->role === 'super_admin') {
+        // Super Admin Bypass
+        if (auth()->user()->role === User::ROLE_SUPER_ADMIN) {
             return;
         }
 
@@ -23,9 +23,5 @@ class InstitutionScope implements Scope
             $model->getTable().'.institution_id',
             auth()->user()->institution_id
         );
-
-        // if (auth()->check()) {
-        //     $builder->where($model->getTable() . '.institution_id', auth()->user()->institution_id);
-        // }
     }
 }

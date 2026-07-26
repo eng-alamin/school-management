@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class FeePayment extends Model
 {
     use BelongsToInstitution;
+    use SoftDeletes;
 
     protected $guarded = [];
 

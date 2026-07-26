@@ -69,6 +69,22 @@ class PaymentComponent extends Component
         $this->resetValidation();
     }
 
+    // ---------------------------------------------------------------
+    // Selected Month বর্তমান মাসের চেয়ে আগে (Past) নাকি বর্তমান/ভবিষ্যৎ
+    // (Current/Future) সেটা নির্ধারণ করা হয় — Badge/Action Logic-এ ব্যবহার হবে
+    // ---------------------------------------------------------------
+    private function isSelectedMonthInPast(): bool
+    {
+        if (!$this->month) {
+            return false;
+        }
+
+        $selected = Carbon::createFromFormat('Y-m', $this->month)->startOfMonth();
+        $current  = now()->startOfMonth();
+
+        return $selected->lessThan($current);
+    }
+
     private function employeeQuery()
     {
         $monthDate     = Carbon::createFromFormat('Y-m', $this->month)->startOfMonth()->toDateString();
@@ -117,6 +133,19 @@ class PaymentComponent extends Component
                 // scope here was an incorrect assumption and a multi-tenant data leak risk.
                 // institution_id is now filtered explicitly, matching the sa_grade/sa_basic
                 // pattern above.
+
+                // FIX (Bug): We need to know whether a salary_payments ROW EXISTS for the
+                // selected month at all — not just its status — because a NULL status could
+                // mean either "no record" or a genuinely null status. salary_payment_id is
+                // the reliable existence flag used by the view to decide between
+                // "No Data Found" (past month, never processed) vs.
+                // "Invoice Not Generated Yet" (current/future month, payroll not run yet).
+                'salary_payment_id' => SalaryPayment::select('id')
+                    ->whereColumn('employee_id', 'employees.id')
+                    ->where('institution_id', $institutionId)
+                    ->where('month', $monthDate)
+                    ->limit(1),
+
                 'salary_status' => SalaryPayment::select('status')
                     ->whereColumn('employee_id', 'employees.id')
                     ->where('institution_id', $institutionId)
@@ -138,7 +167,8 @@ class PaymentComponent extends Component
             : null;
 
         return view('livewire.admin.salary.payment-component', [
-            'employees' => $employees,
+            'employees'          => $employees,
+            'isSelectedMonthPast' => $this->isSelectedMonthInPast(),
         ])->layout('layouts.admin.app', [
             'title' => 'Payroll | ' . institution()->name,
         ]);

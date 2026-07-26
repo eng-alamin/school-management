@@ -7,7 +7,7 @@ use App\Traits\BelongsToInstitution;
 
 class ExamSetupDetail extends Model
 {
-    // use BelongsToInstitution;
+    use BelongsToInstitution;
 
     protected $guarded = [];
 

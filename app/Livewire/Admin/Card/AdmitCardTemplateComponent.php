@@ -106,11 +106,6 @@ class AdmitCardTemplateComponent extends Component
         $this->showViewModal = true;
     }
 
-    /**
-     * Deletes a template file from disk. This is the single source of truth
-     * for removing admit card template logos — used both on replace and on
-     * record delete, so file location logic never diverges again.
-     */
     private function deleteOldFile(?string $path): void
     {
         if (!$path) {
@@ -128,10 +123,9 @@ class AdmitCardTemplateComponent extends Component
     {
         $this->validate();
 
-        // Upload new logo first (filesystem op, outside the DB transaction).
         $newLogoPath = null;
         if ($this->logo) {
-            $newLogoPath = \App\Helpers\TenantFileHelper::store($this->logo, 'cards');
+            $newLogoPath = $this->logo->store('templates/logos', 'public');
         }
 
         $oldLogoPath = $this->existingLogo;
@@ -175,9 +169,9 @@ class AdmitCardTemplateComponent extends Component
         } catch (Throwable $e) {
             DB::rollBack();
 
-            // Roll back the newly uploaded file since the DB save failed.
+            // Roll back the newly uploaded file since DB save failed.
             if ($newLogoPath) {
-                $this->deleteOldFile($newLogoPath);
+                Storage::disk('public')->delete($newLogoPath);
             }
 
             $this->dispatch('toast', type: 'error', message: 'Something went wrong. Template could not be saved.');

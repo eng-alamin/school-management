@@ -15,8 +15,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
             $table->string('hall_no')->nullable();
-            $table->string('no_of_seat')->nullable();
+            $table->unsignedInteger('no_of_seat')->nullable();
             $table->timestamps();
+
+            $table->unique(['institution_id', 'hall_no'], 'exam_halls_institution_hall_no_unique');
         });
     }
 

@@ -102,7 +102,7 @@
                         @forelse($allowances as $row)
                         <tr>
                             <td>{{ $row['name'] }}</td>
-                            <td class="text-end">৳{{ number_format($row['amount'], 2) }}</td>
+                            <td class="text-end">৳{{ number_format($row['amount'], 0) }}</td>
                         </tr>
                         @empty
                         <tr>
@@ -127,7 +127,7 @@
                         @forelse($deductions as $row)
                         <tr>
                             <td>{{ $row['name'] }}</td>
-                            <td class="text-end">৳{{ number_format($row['amount'], 2) }}</td>
+                            <td class="text-end">৳{{ number_format($row['amount'], 0) }}</td>
                         </tr>
                         @empty
                         <tr>
@@ -147,31 +147,31 @@
             <div class="ps-summary">
                 <div class="ps-summary-row">
                     <span class="ps-sum-label">Basic Salary :</span>
-                    <span class="ps-sum-value">৳{{ number_format($payment['basic_salary'] ?? 0, 2) }}</span>
+                    <span class="ps-sum-value">৳{{ number_format($payment['basic_salary'] ?? 0, 0) }}</span>
                 </div>
                 <div class="ps-summary-row">
                     <span class="ps-sum-label">Total Allowance :</span>
-                    <span class="ps-sum-value">৳{{ number_format($payment['total_allowance'] ?? 0, 2) }}</span>
+                    <span class="ps-sum-value">৳{{ number_format($payment['total_allowance'] ?? 0, 0) }}</span>
                 </div>
                 @if(($payment['overtime_amount'] ?? 0) > 0)
                 <div class="ps-summary-row">
                     <span class="ps-sum-label">Overtime Amount :</span>
-                    <span class="ps-sum-value">৳{{ number_format($payment['overtime_amount'], 2) }}</span>
+                    <span class="ps-sum-value">৳{{ number_format($payment['overtime_amount'], 0) }}</span>
                 </div>
                 @endif
                 <div class="ps-summary-row">
                     <span class="ps-sum-label">Total Deduction :</span>
-                    <span class="ps-sum-value">৳{{ number_format($payment['total_deduction'] ?? 0, 2) }}</span>
+                    <span class="ps-sum-value">৳{{ number_format($payment['total_deduction'] ?? 0, 0) }}</span>
                 </div>
                 @if(($payment['advance_deduction'] ?? 0) > 0)
                 <div class="ps-summary-row">
                     <span class="ps-sum-label">Advance Deduction :</span>
-                    <span class="ps-sum-value">৳{{ number_format($payment['advance_deduction'], 2) }}</span>
+                    <span class="ps-sum-value">৳{{ number_format($payment['advance_deduction'], 0) }}</span>
                 </div>
                 @endif
                 <div class="ps-summary-row ps-net-row">
                     <span class="ps-sum-label">Net Salary :</span>
-                    <span class="ps-sum-value ps-net-value">৳{{ number_format($payment['net_salary'] ?? 0, 2) }}</span>
+                    <span class="ps-sum-value ps-net-value">৳{{ number_format($payment['net_salary'] ?? 0, 0) }}</span>
                 </div>
                 <div class="ps-words">
                     {{ $this->numberToWords((float) ($payment['net_salary'] ?? 0)) }}

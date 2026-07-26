@@ -41,7 +41,8 @@
                     <thead>
                         <tr>
                             <th>SL</th>
-                            <th>Employee</th>
+                            <th>Staff ID</th>
+                            <th>Name</th>
                             <th>Advance Date</th>
                             <th>Amount</th>
                             <th>Installment</th>
@@ -54,19 +55,20 @@
                         @forelse($advances as $i => $advance)
                             <tr>
                                 <td class="text-muted">{{ $advances->firstItem() + $i }}</td>
+                                <td><a class="text-primary" href="{{ route('admin.employee.view', ['id' => $advance->employee->id]) }}" target="_blank">{{ $advance->employee->employee_id ?? '—' }}</a></td>
                                 <td>{{ $advance->employee->name ?? 'N/A' }}</td>
                                 <td>{{ $advance->advance_date->format('d M, Y') }}</td>
-                                <td>${{ number_format($advance->amount, 2) }}</td>
+                                <td>৳{{ number_format($advance->amount, 0) }}</td>
                                 <td>
                                     @if($advance->installment_amount)
-                                        ${{ number_format($advance->installment_amount, 2) }} / month
+                                        ৳{{ number_format($advance->installment_amount, 0) }} / month
                                     @else
                                         <span class="text-muted">Full (next payment)</span>
                                     @endif
                                 </td>
                                 <td>
                                     <span style="font-weight:600;{{ $advance->remaining_amount > 0 ? 'color:#d97706' : 'color:#16a34a' }}">
-                                        ${{ number_format($advance->remaining_amount, 2) }}
+                                        ৳{{ number_format($advance->remaining_amount, 0) }}
                                     </span>
                                 </td>
                                 <td>

@@ -3,11 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-// use App\Traits\BelongsToInstitution;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Institution extends Model
 {
-    // use BelongsToInstitution;
+    use SoftDeletes;
     
     protected $guarded = [];
 
@@ -19,16 +19,6 @@ class Institution extends Model
         'facilities'                     => 'array',
     ];
 
-    // ৳15,000 format
-    public function formatCurrency(float $amount): string
-    {
-        $formatted = number_format($amount);
-
-        return $this->symbol_position === 'prefix'
-            ? $this->currency_symbol . $formatted
-            : $formatted . $this->currency_symbol;
-    }
-
     // Friday → true/false
     public function isWeekend(string $day): bool
     {
@@ -38,10 +28,15 @@ class Institution extends Model
     // Registration number generate
     public function generateRegNo(int $lastNumber): string
     {
-        $number = str_pad($lastNumber + 1, $this->register_no_digit, '0', STR_PAD_LEFT);
-
+        $number = str_pad(
+            (string) ($lastNumber + 1),
+            $this->registration_digit_length,
+            '0',
+            STR_PAD_LEFT
+        );
+ 
         return $this->enable_registration_prefix
-            ? $this->institution_code_prefix . $number
+            ? $this->registration_code_prefix . $number
             : $number;
     }
 

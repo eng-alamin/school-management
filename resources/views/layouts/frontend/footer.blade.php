@@ -32,27 +32,27 @@
             </h6>
             <ul class="list-unstyled small">
                 <li class="mb-1">
-                <a href="#"
-                    ><span class="lang-bn">আমাদের সম্পর্কে</span
-                    ><span class="lang-en">About Us</span></a
+                <a href="{{ route('admission.online') }}"
+                    ><span class="lang-bn">অনলাইন ভর্তি</span
+                    ><span class="lang-en">Online Admission</span></a
                 >
                 </li>
                 <li class="mb-1">
-                <a href="#"
-                    ><span class="lang-bn">ব্লগ</span
-                    ><span class="lang-en">Blog</span></a
+                <a href="{{ route('find.institution') }}"
+                    ><span class="lang-bn">প্রতিষ্ঠান খুঁজুন</span
+                    ><span class="lang-en">Find Institution</span></a
                 >
                 </li>
                 <li class="mb-1">
-                <a href="#"
-                    ><span class="lang-bn">ক্যারিয়ার</span
-                    ><span class="lang-en">Careers</span></a
+                <a href="{{ route('teacher.registration') }}"
+                    ><span class="lang-bn">শিক্ষক নিবন্ধন</span
+                    ><span class="lang-en">Teacher Registration</span></a
                 >
                 </li>
                 <li class="mb-1">
-                <a href="#"
-                    ><span class="lang-bn">প্রেস</span
-                    ><span class="lang-en">Press</span></a
+                <a href="{{ route('institution.registration') }}"
+                    ><span class="lang-bn">প্রতিষ্ঠান নিবন্ধন</span
+                    ><span class="lang-en">Institution sRegistration</span></a
                 >
                 </li>
             </ul>

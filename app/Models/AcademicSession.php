@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\BelongsToInstitution;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class AcademicSession extends Model
 {
     use BelongsToInstitution;
+    use SoftDeletes;
+
     protected $guarded = [];
 
     public function enrollments()
@@ -17,6 +20,6 @@ class AcademicSession extends Model
 
     public function scopeActive($query)
     {
-        return $query->where('is_active', true);
+        return $query->where('is_current', true);
     }
 }

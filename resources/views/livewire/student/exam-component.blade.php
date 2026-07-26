@@ -143,7 +143,7 @@
                     <div class="modal-footer">
                         <button class="btn btn-light" wire:click="$set('showViewModal',false)">Close</button>
                         <button class="btn btn-primary" type="button" onclick="printScheduleDetails()">
-                            <i class="bi bi-printer me-1"></i>Print
+                            Print
                         </button>
                     </div>
                 </div>

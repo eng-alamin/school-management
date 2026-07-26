@@ -16,6 +16,8 @@ return new class extends Migration
             $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
             $table->string('name');
             $table->timestamps();
+
+            $table->unique(['institution_id', 'name'], 'inventory_categories_institution_name_unique');
         });
     }
 

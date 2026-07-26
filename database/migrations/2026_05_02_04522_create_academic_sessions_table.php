@@ -20,6 +20,13 @@ return new class extends Migration
             $table->boolean('is_current')->default(true);
             $table->timestamps();
             $table->softDeletes();
+
+            $table->index(['institution_id', 'is_current', 'deleted_at'], 'academic_sessions_institution_current_idx');
+
+            $table->unique(
+                ['institution_id', 'name', 'deleted_at'],
+                'academic_sessions_institution_name_unique'
+            );
         });
     }
 

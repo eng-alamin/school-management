@@ -21,7 +21,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->softDeletes();
-            $table->unique(['institution_id', 'code'], 'unique_fee_type');
+            $table->unique(['institution_id', 'code', 'deleted_at'], 'unique_fee_type');
         });
     }
 

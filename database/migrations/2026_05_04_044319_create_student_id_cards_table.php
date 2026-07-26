@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
             $table->foreignId('template_id')->nullable()->constrained('id_card_templates')->nullOnDelete();
-            $table->string('student_id')->unique();
-            
+            $table->string('student_id');
+
             $table->string('institute_name')->nullable();
             $table->string('institute_address')->nullable();
 
@@ -31,7 +31,7 @@ return new class extends Migration
             $table->string('email')->nullable();
             $table->text('address')->nullable();
             $table->string('photo')->nullable();
-            
+
             $table->string('session')->nullable();
             $table->string('register_no')->nullable();
             $table->string('roll_no')->nullable();
@@ -45,6 +45,8 @@ return new class extends Migration
             $table->enum('status', ['active', 'inactive', 'expired'])->default('active');
             $table->timestamps();
             $table->softDeletes();
+
+            $table->unique(['institution_id', 'student_id', 'deleted_at'], 'student_id_cards_institution_student_unique');
         });
     }
 

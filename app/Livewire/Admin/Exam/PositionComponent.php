@@ -132,6 +132,10 @@ class PositionComponent extends Component
 
         $this->alreadyGenerated = $existingPositions->isNotEmpty();
 
+        if ($this->alreadyGenerated) {
+            $this->dispatch('toast', type: 'info', message: 'This position has already been generated.');
+        }
+
         $currentExam = $examSetup;
 
         $computed = [];
@@ -164,7 +168,7 @@ class PositionComponent extends Component
 
             $computed[$student->id] = [
                 'student_name'       => $student->name,
-                'register_no'        => $student->register_no,
+                'registration_no'        => $student->registration_no,
                 'roll_no'            => $student->roll_no,
                 'class_name'         => $student->class->name ?? '',
                 'section_name'       => $student->section->name ?? '',

@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('ai_chat_messages', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('institution_id');
-            $table->unsignedBigInteger('user_id');
+            $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->string('session_id', 64);
             $table->enum('role', ['user', 'assistant']);
             $table->longText('message');

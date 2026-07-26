@@ -1,4 +1,4 @@
-<div class="aicb-wrapper">
+<div class="aicb-wrapper no-print">
 
     {{-- Floating toggle button --}}
     <button type="button" class="aicb-fab" wire:click="toggleChat" title="AI Assistant">

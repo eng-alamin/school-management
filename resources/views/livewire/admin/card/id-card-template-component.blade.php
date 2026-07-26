@@ -246,7 +246,7 @@
                         <button type="button" class="btn btn-light" wire:click="$set('showModal',false)">Cancel</button>
                         <button type="button" class="btn btn-primary" wire:click="save" wire:loading.attr="disabled">
                             <span wire:loading wire:target="save" class="spinner-border spinner-border-sm me-1"></span>
-                            {{ $editId ? 'Update' : 'Create' }} Template
+                            {{ $editId ? 'Update' : 'Save' }}
                         </button>
                     </div>
                 </div>
@@ -306,7 +306,7 @@
                     <div class="modal-footer">
                         <button class="btn btn-light" wire:click="$set('showViewModal',false)">Close</button>
                         <button class="btn btn-primary" wire:click="openEdit({{ $viewRecord->id }}); $set('showViewModal',false)">
-                            <i class="bi bi-pencil me-1"></i>Edit
+                            Edit
                         </button>
                     </div>
                 </div>

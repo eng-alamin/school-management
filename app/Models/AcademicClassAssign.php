@@ -22,18 +22,20 @@ class AcademicClassAssign extends Model
         return $this->belongsTo(AcademicSection::class, 'section_id');
     }
 
-    public function sections()
-    {
-        return $this->hasMany(AcademicSection::class, 'class_id');
-    }
+    // Remove 
+    // public function sections()
+    // {
+    //     return $this->hasMany(AcademicSection::class, 'class_id');
+    // }
 
     public function details(): HasMany
     {
         return $this->hasMany(AcademicClassAssignDetail::class, 'academic_class_assign_id');
     }
 
-    public function teacherAssign()
-    {
-        return $this->hasOne(AcademicTeacherAssign::class, 'class_id', 'class_id')->where('section_id', $this->section_id);
-    }
+    // Remove 
+    // public function teacherAssign()
+    // {
+    //     return $this->hasOne(AcademicTeacherAssign::class, 'class_id', 'class_id')->where('section_id', $this->section_id);
+    // }
 }

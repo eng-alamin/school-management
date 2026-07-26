@@ -17,6 +17,14 @@ return new class extends Migration
             $table->string('name');
             $table->integer('numeric')->nullable();
             $table->timestamps();
+            $table->softDeletes();
+
+            $table->index(['institution_id', 'deleted_at'], 'academic_classes_institution_idx');
+
+            $table->unique(
+                ['institution_id', 'name', 'deleted_at'],
+                'academic_classes_institution_name_unique'
+            );
         });
     }
 

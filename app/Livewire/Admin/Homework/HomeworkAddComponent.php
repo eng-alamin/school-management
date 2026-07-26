@@ -7,7 +7,6 @@ use Livewire\WithFileUploads;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
 use App\Models\Homework;
 use App\Models\AcademicClass;
 use App\Models\AcademicSection;
@@ -16,7 +15,7 @@ use App\Models\AcademicClassAssign;
 use App\Models\Employee;
 use App\Models\Student;
 use App\Models\User;
-use App\Services\NotificationService;
+use App\Services\HomeworkNotificationService;
 
 class HomeworkAddComponent extends Component
 {
@@ -87,6 +86,21 @@ class HomeworkAddComponent extends Component
         $sectionId = ($value && $value !== 'all') ? $value : null;
 
         $this->loadSubjects($this->class_id, $sectionId);
+    }
+
+    // ── "Publish Later" টগল হলে status ফিল্ড সাথে সাথে sync রাখা ──
+    // Checked হলে জোর করে draft; unchecked হলে ইউজার আগে যা সিলেক্ট করেছিল সেটাই থাকবে
+    // (draft ছিল যদি, তাহলে published-এ ফিরিয়ে দিই যাতে ফর্ম বিভ্রান্তিকর না হয়)।
+    public function updatedPublishedLater($value): void
+    {
+        if ($value) {
+            $this->status = 'draft';
+        } else {
+            $this->schedule_date = null;
+            if ($this->status === 'draft') {
+                $this->status = 'published';
+            }
+        }
     }
 
     protected function loadSubjects($class_id, $section_id = null): void
@@ -192,6 +206,13 @@ class HomeworkAddComponent extends Component
             'status'          => ['required', Rule::in(['draft', 'published', 'closed'])],
         ]);
 
+        // ── Tamper-proof guard: "Publish Later" চেক করা থাকলে status অবশ্যই draft হবে,
+        // যতই client-side থেকে অন্য কিছু আসুক। এটাই আসল বাগ ফিক্স —
+        // আগে এই guard না থাকায় status='published' থেকে গেলে Homework সাথে সাথেই
+        // "published" দেখাত অথচ notification স্কিপ হয়ে যেত, এবং schedule_date-এ
+        // কখনো actual publish হতো না (কারণ তা প্রসেস করার কোনো job ছিল না)। ──
+        $status = $this->published_later ? 'draft' : $this->status;
+
         $attachmentPath = null;
 
         try {
@@ -204,7 +225,7 @@ class HomeworkAddComponent extends Component
                 ? $this->section_id
                 : null;
 
-            $homework = DB::transaction(function () use ($sectionId, $attachmentPath) {
+            $homework = DB::transaction(function () use ($sectionId, $attachmentPath, $status) {
                 $homework = Homework::create([
                     'institution_id'  => institution()->id,
                     'class_id'        => $this->class_id,
@@ -219,7 +240,7 @@ class HomeworkAddComponent extends Component
                     'schedule_date'   => $this->schedule_date,
                     'attachment'      => $attachmentPath,
                     'send_sms'        => $this->send_sms,
-                    'status'          => $this->status,
+                    'status'          => $status,
                 ]);
 
                 activity()
@@ -230,9 +251,10 @@ class HomeworkAddComponent extends Component
             });
 
             // ── Notification: শুধু published homework-এর ক্ষেত্রেই এখনই notify করব ──
-            // draft হলে এখনো কেউ দেখবে না, closed practically create হয় না, তাই safe check।
+            // draft/scheduled হলে এখনো কেউ দেখবে না; সময় হলে ProcessScheduledHomeworks
+            // command (প্রতি মিনিটে scheduler দিয়ে চলবে) সেটাকে publish করে notify করবে।
             if ($homework->status === 'published' && !$homework->published_later) {
-                $this->notifyStudentsAndGuardians($homework);
+                HomeworkNotificationService::notifyStudentsAndGuardians($homework);
             }
 
             $this->dispatch('toast', type: 'success', message: 'Homework created successfully!');
@@ -246,102 +268,6 @@ class HomeworkAddComponent extends Component
 
             $this->dispatch('toast', type: 'error', message: 'Creation failed: ' . $e->getMessage());
             report($e);
-        }
-    }
-
-    // ──────────────────────────────────────────
-    // Notification: homework-এর class/section-এর সব student + তাদের guardian-দের পাঠানো
-    // (DB transaction commit হওয়ার পর কল হয়, যাতে notification fail হলেও homework save rollback না হয়)
-    // ──────────────────────────────────────────
-    private function notifyStudentsAndGuardians(Homework $homework): void
-    {
-        try {
-            // class_id / section_id "students" টেবিলে থাকে, "users" টেবিলে না —
-            // তাই Student model থেকে query শুরু করে, তারপর linked User account বের করতে হবে।
-            $studentsQuery = Student::with(['user', 'guardians.user'])
-                ->where('institution_id', institution()->id)
-                ->where('class_id', $homework->class_id);
-
-            if ($homework->section_id) {
-                $studentsQuery->where('section_id', $homework->section_id);
-            }
-
-            $students = $studentsQuery->get();
-
-            if ($students->isEmpty()) {
-                return;
-            }
-
-            $subjectName = optional($homework->subject)->name ?? '';
-            $dueDate     = $homework->submission_date instanceof \Carbon\Carbon
-                ? $homework->submission_date->format('d M Y')
-                : \Carbon\Carbon::parse($homework->submission_date)->format('d M Y');
-
-            $title   = 'New Homework: ' . $homework->title;
-            $message = ($subjectName ? "{$subjectName} বিষয়ে " : '')
-                . "নতুন Homework দেওয়া হয়েছে। জমা দেওয়ার শেষ তারিখ: {$dueDate}।";
-
-            $data = [
-                'icon' => 'assignment',
-                'url'  => '#',
-                // 'url'  => route('admin.homework.index'),
-            ];
-
-            // ── প্রতিটা student-এর নিজস্ব login User account (থাকলে) ──
-            $studentUsers = collect();
-
-            foreach ($students as $student) {
-                $studentUser = $student->user;
-
-                if ($studentUser instanceof User && $studentUser->is_active) {
-                    $studentUsers->push($studentUser);
-                } else {
-                    Log::warning('Homework notification skipped: student has no active linked User account.', [
-                        'homework_id' => $homework->id,
-                        'student_id'  => $student->id,
-                    ]);
-                }
-            }
-
-            $studentUsers = $studentUsers->unique('id');
-
-            if ($studentUsers->isNotEmpty()) {
-                NotificationService::sendToMany($studentUsers, 'homework', $title, $message, $data);
-            }
-
-            // ── প্রতিটা student-এর guardian(s)-কে notify করা ──
-            $guardianUsers = collect();
-
-            foreach ($students as $student) {
-                foreach ($student->guardians as $guardian) {
-                    // Guardian-এর সাথে যুক্ত login User account থাকলে সেটাই notify হবে।
-                    // না থাকলে (শুধু contact info হিসেবে guardian থাকলে) ApplicationComponent-এর
-                    // pattern অনুযায়ী skip করে log করি, ভুল model-এ notification পাঠানো ঠেকাতে।
-                    $guardianUser = $guardian->user;
-
-                    if ($guardianUser instanceof User) {
-                        $guardianUsers->push($guardianUser);
-                    } else {
-                        Log::warning('Homework notification skipped: guardian has no linked User account.', [
-                            'homework_id' => $homework->id,
-                            'student_id'  => $student->id,
-                            'guardian_id' => $guardian->id,
-                        ]);
-                    }
-                }
-            }
-
-            $guardianUsers = $guardianUsers->unique('id');
-
-            if ($guardianUsers->isNotEmpty()) {
-                NotificationService::sendToMany($guardianUsers, 'homework', $title, $message, $data);
-            }
-        } catch (\Throwable $e) {
-            // Notification ব্যর্থ হলেও homework save সফল থাকবে — শুধু log করে রাখি।
-            Log::warning('Homework notification failed.', [
-                'homework_id' => $homework->id,
-                'error'       => $e->getMessage(),
-            ]);
         }
     }
 

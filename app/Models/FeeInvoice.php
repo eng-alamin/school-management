@@ -8,6 +8,8 @@ use App\Traits\BelongsToInstitution;
 class FeeInvoice extends Model
 {
     use BelongsToInstitution;
+    use SoftDeletes;
+
     protected $guarded = [];
 
     protected $casts = [
@@ -27,10 +29,11 @@ class FeeInvoice extends Model
         return $this->belongsTo(Student::class);
     }
 
-    public function class()
-    {
-        return $this->belongsTo(AcademicClass::class, 'class_id');
-    }
+    // Remove 
+    // public function class()
+    // {
+    //     return $this->belongsTo(AcademicClass::class, 'class_id');
+    // }
 
     public function section()
     {

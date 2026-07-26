@@ -163,7 +163,13 @@ class OnlineAdmissionComponent extends Component
         }
 
         $this->guardian_user_id = $userId;
-        $this->guardianSearch = $guardian->name . ' (' . ($guardian->mobile ?? $guardian->email ?? '') . ')';
+
+        $contact = $guardian->mobile
+            ? substr($guardian->mobile, 0, 4) . '******' . substr($guardian->mobile, -3)
+            : ($guardian->email ?? '');
+
+        $this->guardianSearch = $guardian->name . ' (' . $contact . ')';
+
 
         // ── Display/summary-er jonno guardian-er details form field-eo
         // bhorat kore rakhi, jate Step 5 review ebong Admission row-e
@@ -264,10 +270,6 @@ class OnlineAdmissionComponent extends Component
             'guardian_mother_name' => 'nullable|string|max:255',
             'guardian_occupation'  => 'nullable|string|max:255',
             'guardian_mobile'      => !$this->guardian_exists ? 'required|regex:/^01[3-9][0-9]{8}$/' : 'nullable',
-            // ── Existing guardian select korle tar email age theke i users
-            // table e ache, tai unique check dorkar nai (nijer email-eri
-            // songe conflict hobe). Notun guardian hole email required +
-            // unique — duplicate account toiri thekhano jonno. ──
             'guardian_email'       => !$this->guardian_exists
                 ? 'required|email|unique:users,email'
                 : 'nullable|email',
@@ -549,13 +551,7 @@ class OnlineAdmissionComponent extends Component
 
         $guardianResults = collect();
 
-        // ── Guardian search — GLOBAL (kono institution filter na), karon
-        // ekjon Guardian-er sontanra ALADA ALADA school-e porte pare.
-        // withoutGlobalScopes() diye InstitutionScope bypass kora hocche,
-        // tarpor Institution-shohokare (with('institution')) dekhano hocche
-        // jate user bujhte pare guardian ta age kon school-e chilo.
-        // unique('user_id') diye ekI guardian-er multiple Institution row
-        // thakle o list-e ekbar-i dekhabe. ──
+
         if ($this->guardian_exists && !$this->guardian_user_id && strlen($this->guardianSearch) > 0) {
             $guardianResults = Guardian::withoutGlobalScopes()
                 ->with('institution')

@@ -380,18 +380,20 @@
                     <span class="material-icons-round text-danger" style="font-size:18px;">campaign</span>
                     Recent Notices
                 </div>
-                <a href="#" class="dash-view-all">View all</a>
+                <a href="{{route('admin.notices')}}" class="dash-view-all">View all</a>
             </div>
 
             @forelse($recentNotices as $notice)
-                <a href="#" class="dash-notice-row text-decoration-none">
+                <button type="button"
+                        wire:click="openViewNotice({{ $notice->id }})"
+                        class="dash-notice-row dash-notice-row-btn w-100 border-0 bg-transparent text-start">
                     <div class="flex-grow-1 min-w-0">
                         <p class="mb-0 text-dark text-truncate" style="font-size:13px;font-weight:500;">
                             {{ $notice->title }}
                         </p>
                     </div>
                     <span class="material-icons-round text-secondary" style="font-size:18px;">chevron_right</span>
-                </a>
+                </button>
             @empty
                 <p class="text-secondary text-center py-2 mb-0" style="font-size:13px;">No recent notices</p>
             @endforelse
@@ -424,6 +426,101 @@
     </div>
 
     </div>{{-- /wire:loading.remove wrapper --}}
+
+    {{-- ═══════════════════════════════════════════════════════════════════
+         VIEW NOTICE MODAL (NoticeComponent view-modal pattern reused here)
+    ═══════════════════════════════════════════════════════════════════ --}}
+    @if($showViewNoticeModal && $viewRecord)
+        <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.5);">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Notice Details</h5>
+                        <button class="btn-close" wire:click="closeViewNoticeModal"></button>
+                    </div>
+                    <div class="modal-body">
+
+                        {{-- Priority banner --}}
+                        @php
+                            $priorityColors = [
+                                'urgent' => '#dc2626',
+                                'high'   => '#d97706',
+                                'medium' => '#2563eb',
+                                'low'    => '#6b7280',
+                            ];
+                            $bannerColor = $priorityColors[$viewRecord->priority] ?? '#2563eb';
+                        @endphp
+                        <div style="border-left:4px solid {{ $bannerColor }};padding:12px 16px;background:#f8f9fa;border-radius:0 8px 8px 0;margin-bottom:16px;">
+                            <div style="font-size:.7rem;font-weight:600;color:{{ $bannerColor }};text-transform:uppercase;letter-spacing:.05em;">
+                                {{ ucfirst($viewRecord->priority) }} Priority
+                            </div>
+                            <div style="font-weight:700;font-size:.95rem;margin-top:4px;">{{ $viewRecord->title }}</div>
+                        </div>
+
+                        {{-- Description --}}
+                        <div style="font-size:.875rem;line-height:1.6;color:#374151;margin-bottom:16px;">
+                            {!! nl2br(e($viewRecord->description)) !!}
+                        </div>
+
+                        {{-- Attachment --}}
+                        @if($viewRecord->attachment)
+                            <div class="d-flex align-items-center gap-2 p-2 mb-3" style="background:#f0f7ff;border-radius:8px;border:1px solid #bfdbfe;">
+                                <span class="material-icons-round text-primary" style="font-size:1.1rem;">attach_file</span>
+                                <span style="font-size:.8rem;flex:1;">{{ $viewRecord->attachment_name }}</span>
+                                <a href="{{ Storage::url($viewRecord->attachment) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <span class="material-icons-round" style="font-size:.85rem;vertical-align:middle;">download</span> Download
+                                </a>
+                            </div>
+                        @endif
+
+                        <table class="table table-sm">
+                            <tr>
+                                <th class="text-muted" style="width:40%">Audience</th>
+                                <td>{{ ucfirst($viewRecord->audience === 'all' ? 'Everyone' : $viewRecord->audience) }}</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Publish Date</th>
+                                <td>{{ $viewRecord->published_at->format('d M Y') }}</td>
+                            </tr>
+                            @if($viewRecord->expires_at)
+                            <tr>
+                                <th class="text-muted">Expiry Date</th>
+                                <td class="{{ $viewRecord->is_expired ? 'text-danger' : '' }}">
+                                    {{ $viewRecord->expires_at->format('d M Y') }}
+                                    @if($viewRecord->is_expired)
+                                        <span class="badge bg-danger-subtle text-danger ms-1" style="font-size:.65rem;">Expired</span>
+                                    @endif
+                                </td>
+                            </tr>
+                            @endif
+                            <tr>
+                                <th class="text-muted">Status</th>
+                                <td>
+                                    <span class="badge rounded-pill {{ $viewRecord->status === 'active' ? 'badge-active' : 'badge-inactive' }}">
+                                        {{ $viewRecord->status === 'active' ? 'Active' : 'Inactive' }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Created By</th>
+                                <td>{{ $viewRecord->creator->name ?? '—' }}</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Created</th>
+                                <td>{{ $viewRecord->created_at->format('d M Y') }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-light" wire:click="closeViewNoticeModal">Close</button>
+                        <a href="{{ route('admin.notices') }}" class="btn btn-light">
+                            <i class="bi bi-megaphone me-1"></i>Go to Notice Board
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
 
 </div>
 
@@ -583,6 +680,15 @@
         margin-bottom: 0;
     }
 
+    .dash-notice-row-btn {
+        cursor: pointer;
+        transition: background .15s;
+    }
+
+    .dash-notice-row-btn:hover {
+        background: var(--pink-light, #fce7f3);
+    }
+
     .inv-badge {
         display: inline-block;
         padding: 3px 10px;
@@ -623,6 +729,10 @@
         justify-content: center;
         flex-shrink: 0;
     }
+
+    /* ── Notice View Modal badges ────────────────────────────────── */
+    .badge-active   { background: rgba(34,197,94,.12);  color: #16a34a; }
+    .badge-inactive { background: rgba(107,114,128,.12); color: #6b7280; }
 
     /* ── Responsive tweaks ───────────────────────────────────────── */
     @media (min-width: 768px) {

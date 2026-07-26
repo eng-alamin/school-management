@@ -26,12 +26,16 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->timestamp('last_login_at')->nullable();
             $table->string('last_login_ip', 45)->nullable();
-            $table->softDeletes();
             $table->rememberToken();
             $table->timestamps();
+            $table->softDeletes();
+            
+            $table->index(['institution_id', 'role', 'is_active'], 'users_institution_role_active_idx');
 
-            $table->index('role');
-            $table->index('is_active');
+            $table->unique(['username', 'deleted_at'], 'users_username_deleted_at_unique');
+            $table->unique(['phone', 'deleted_at'], 'users_phone_deleted_at_unique');
+            $table->unique(['email', 'deleted_at'], 'users_email_deleted_at_unique');
+
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

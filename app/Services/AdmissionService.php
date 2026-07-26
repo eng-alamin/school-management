@@ -168,7 +168,7 @@ class AdmissionService
      * kore — jate approval email-e dekhano jay.
      *
      * @return array{student: Student, credentials: array{
-     *     student: array{username: string, email: ?string, password: string},
+     *     student: array{username: string, email: ?string, password: string, has_email: bool},
      *     guardian: array{username: string, email: string, password: ?string, is_new: bool}
      * }}
      */
@@ -332,9 +332,6 @@ class AdmissionService
         $plainPassword = Str::random(10);
         $username      = $admission->guardian_email;
 
-        // NOTE: assumes the default Laravel 12 User model casts 'password' => 'hashed',
-        // so the plain value is hashed automatically on save. If your User model does
-        // NOT have that cast, wrap this with Hash::make($plainPassword) instead.
         $guardianUser = User::create([
             'institution_id' => $admission->institution_id,
             'name'            => $admission->guardian_name ?? $admission->applicant_name . ' Guardian',
@@ -385,7 +382,16 @@ class AdmissionService
      * password chilo jeta diye login kora jeto na, ekhon student nijeo
      * login credential pabe.
      *
-     * @return array{student: Student, credentials: array{username: string, email: ?string, password: string}}
+     * NOTE (Bug fix): $admission->email khali/null hote pare (Admission form-e
+     * optional field). Age eta directly User::create()-e pass kora hocche
+     * chilo — jodi `users.email` column-e UNIQUE constraint thake, tahole
+     * porer email-bihin student approve korar shomoy duplicate '' (empty
+     * string) diye DB error dite pare. Tai ekhon empty hole `null` pathano
+     * hocche, jeta MySQL-e UNIQUE constraint violate kore na (multiple NULLs
+     * allowed), ebong credentials array-e `has_email` flag-o add kora hoyeche
+     * jate caller (Mail pathanor code) safely check korte pare.
+     *
+     * @return array{student: Student, credentials: array{username: string, email: ?string, password: string, has_email: bool}}
      */
     private function createStudent(Admission $admission, Guardian $guardian): array
     {
@@ -408,11 +414,14 @@ class AdmissionService
 
         $studentPlainPassword = Str::random(8);
 
+        $hasStudentEmail = !empty($admission->email);
+        $studentEmail    = $hasStudentEmail ? $admission->email : null;
+
         $studentUser = User::create([
             'institution_id' => $institutionId,
             'name'            => $admission->applicant_name,
             'username'        => $studentId,
-            'email'           => $admission->email,
+            'email'           => $studentEmail,
             'password'        => $studentPlainPassword,
             'role'            => 'student',
             'is_verified'     => true,
@@ -433,7 +442,7 @@ class AdmissionService
             'dob'                    => $admission->dob,
             'religion'               => $admission->religion,
             'mobile'                 => $admission->mobile,
-            'email'                  => $admission->email,
+            'email'                  => $studentEmail,
             'present_address'        => $admission->present_address,
             'permanent_address'      => $admission->permanent_address,
             'photo'                  => $admission->photo,
@@ -444,9 +453,14 @@ class AdmissionService
         return [
             'student' => $student,
             'credentials' => [
-                'username' => $studentId,
-                'email'    => $admission->email,
-                'password' => $studentPlainPassword,
+                'username'  => $studentId,
+                'email'     => $studentEmail,
+                'password'  => $studentPlainPassword,
+                // Guardian email always exists (enforced in findOrCreateGuardian()),
+                // but student email is optional on the admission form. The caller
+                // (mail-sending code) MUST check this flag before mailing the
+                // student — sending to a null/empty email will throw in the Mail layer.
+                'has_email' => $hasStudentEmail,
             ],
         ];
     }

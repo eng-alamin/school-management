@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('user_id')->unique()->constrained()->cascadeOnDelete();
  
             // Academic Details
-            $table->string('employee_id')->unique();
+            $table->string('employee_id');
             $table->date('joining_date')->nullable();
             $table->foreignId('designation_id')->nullable()->constrained('employee_designations')->nullOnDelete();
             $table->foreignId('department_id')->nullable()->constrained('employee_departments')->nullOnDelete();
@@ -49,6 +49,11 @@ return new class extends Migration
             $table->string('account_no')->nullable();
  
             $table->timestamps();
+            $table->softDeletes();
+            
+            $table->unique(['user_id', 'deleted_at'], 'employees_user_id_deleted_at_unique');
+            $table->unique(['institution_id', 'employee_id', 'deleted_at'],'employees_institution_employee_id_unique');
+            $table->index(['institution_id', 'status', 'deleted_at'], 'employees_institution_status_idx');
         });
     }
 

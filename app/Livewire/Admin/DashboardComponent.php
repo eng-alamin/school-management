@@ -3,8 +3,10 @@
 namespace App\Livewire\Admin;
 
 use Livewire\Component;
+use App\Models\Notice;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Carbon;
 
 class DashboardComponent extends Component
@@ -63,6 +65,10 @@ class DashboardComponent extends Component
     // ── Filters ────────────────────────────────────────────────────────────
     public ?int $currentSessionId = null;
 
+    // ── Notice View Modal ─────────────────────────────────────────────────
+    public bool $showViewNoticeModal = false;
+    public ?Notice $viewRecord = null;
+
     // ── Dynamic Trend (% Change) — প্রতিটার সাথে ['percent'=>, 'direction'=>'up'/'down'] থাকবে ──
     public array $trendStudents    = ['percent' => 0, 'direction' => 'up'];
     public array $trendStaffs      = ['percent' => 0, 'direction' => 'up'];
@@ -76,8 +82,24 @@ class DashboardComponent extends Component
 
     public function mount(): void
     {
-        $institutionId = auth()->user()->institution_id;
+        $this->loadDashboardData();
+    }
 
+    /**
+     * Dashboard এর সব stat/list ডাটা cache থেকে load করে properties এ assign করে।
+     *
+     * IMPORTANT: এই মেথড mount() ছাড়াও render() থেকেও call হয়। কারণ এখানকার
+     * অনেক property (recentInvoices, recentPayments, recentActivities ইত্যাদি)
+     * raw DB::table()->get() থেকে আসা stdClass-এর Collection — Livewire এই ধরনের
+     * plain stdClass object সঠিকভাবে serialize/hydrate করতে পারে না (শুধু Eloquent
+     * Model বা array support করে)। ফলে mount()-এ একবার set করলে, পরবর্তী যেকোনো
+     * Livewire action (যেমন openView) এর পর hydration এ এই properties খালি হয়ে
+     * "background data reset" হয়ে যেত। প্রতি render() এ cache থেকে re-assign করায়
+     * ডাটা সবসময় সঠিক থাকে, আর Cache::remember() এর কারণে extra DB hit ও হয় না।
+     */
+    private function loadDashboardData(): void
+    {
+        $institutionId = auth()->user()->institution_id;
 
         $data = Cache::remember(
             "admin_dashboard:{$institutionId}",
@@ -88,6 +110,26 @@ class DashboardComponent extends Component
         foreach ($data as $property => $value) {
             $this->{$property} = $value;
         }
+    }
+
+    /**
+     * Recent Notices list-এ click করলে View Modal ওপেন করে।
+     * institution_id scope defense-in-depth হিসেবে explicit রাখা হলো,
+     * যদিও Notice model-এ global scope আছে।
+     */
+    public function openViewNotice(int $id): void
+    {
+        $this->viewRecord = Notice::with('creator')
+            ->where('institution_id', auth()->user()->institution_id)
+            ->findOrFail($id);
+
+        $this->showViewNoticeModal = true;
+    }
+
+    public function closeViewNoticeModal(): void
+    {
+        $this->showViewNoticeModal = false;
+        $this->viewRecord    = null;
     }
 
     /**
@@ -466,6 +508,8 @@ class DashboardComponent extends Component
 
     public function render()
     {
+        $this->loadDashboardData();
+
         return view('livewire.admin.dashboard-component')
             ->layout('layouts.admin.app', [
                 'title' => 'Dashboard | ' . institution()->name,

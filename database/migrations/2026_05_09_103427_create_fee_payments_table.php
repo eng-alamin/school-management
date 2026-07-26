@@ -22,6 +22,9 @@ return new class extends Migration
             $table->string('payment_method')->default('cash');
             $table->text('remarks')->nullable();
             $table->timestamps();
+            $table->softDeletes();
+
+            $table->index(['institution_id', 'payment_date'], 'fee_payments_institution_date_idx');
         });
     }
 

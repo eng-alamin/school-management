@@ -8,6 +8,7 @@ use App\Traits\BelongsToInstitution;
 class FeeInvoiceItem extends Model
 {
     use BelongsToInstitution;
+    
     protected $guarded = [];
     
     protected $casts = [
@@ -24,24 +25,27 @@ class FeeInvoiceItem extends Model
 
     public function feeInvoice()
     {
-        return $this->belongsTo(FeeInvoice::class);
-    }
-
-    public function invoice()
-    {
         return $this->belongsTo(FeeInvoice::class, 'fee_invoice_id');
     }
 
-    // This item এর জন্য সব payment
-    public function itemPayments()
-    {
-        return $this->hasMany(FeePayment::class, 'fee_invoice_item_id');
-    }
+    // Remove
+    // public function itemPayments()
+    // {
+    //     return $this->hasMany(FeePayment::class, 'fee_invoice_item_id');
+    // }
 
     // Total paid for this specific item
     public function getTotalPaidAttribute(): float
     {
-        return (float) $this->itemPayments()->sum('paid_amount');
+        throw new \RuntimeException(
+            'FeeInvoiceItem::total_paid is not implemented: fee_payments has '
+            . 'no per-item column. Use FeeInvoice::payments() for invoice-level '
+            . 'paid totals, or add a fee_invoice_item_id column to fee_payments '
+            . 'first if per-item tracking is actually required.'
+        );
+        
+        // remove
+        // return (float) $this->itemPayments()->sum('paid_amount');
     }
 
     // Remaining balance

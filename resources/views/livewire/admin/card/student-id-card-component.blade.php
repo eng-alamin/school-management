@@ -22,7 +22,6 @@
                 </div>
                 @error('filterClass') <span class="text-danger small">{{ $message }}</span> @enderror
             </div>
-
             {{-- Section --}}
             <div class="col-md-4">
                 <div class="input-group input-group-outline">
@@ -39,7 +38,6 @@
                     </select>
                 </div>
             </div>
-
             {{-- Template --}}
             <div class="col-md-4">
                 <div class="input-group input-group-outline">
@@ -53,7 +51,6 @@
                 </div>
                 @error('filterTemplate') <span class="text-danger small">{{ $message }}</span> @enderror
             </div>
-
             {{-- Filter Button --}}
             <div class="col-md-12 text-center">
                 <button wire:click="applyFilter"
@@ -69,7 +66,6 @@
                     </span>
                 </button>
             </div>
-
         </div>
 
         @if($hasFiltered)
@@ -132,12 +128,12 @@
                         </thead>
                         <tbody>
                             @forelse($students as $i => $student)
-                            <tr wire:key="student-row-{{ $student->id }}">
+                            <tr wire:key="student-row-{{ $student->student_id }}">
                                 <td class="check-col">
                                         <input type="checkbox"
                                             class="red-check"
                                             wire:model.live="selectedIds"
-                                            value="{{ $student->id }}">
+                                            value="{{ $student->student_id }}">
                                     </td>
                                 <td class="text-muted">{{ $i + 1 }}</td>
                                 <td>
@@ -154,7 +150,7 @@
                                 <td>{{$student->register_no}}</td>
                                 <td>{{$student->roll_no}}</td>
                                 <td>{{$student->mobile}}</td>
-                                
+
                             </tr>
                             @empty
                             <tr>
@@ -168,7 +164,6 @@
                     </table>
                 </div>
             </div>
-        
         @else
             <div class="gen-empty">
                 <i class="bi bi-funnel"></i>
@@ -176,6 +171,11 @@
             </div>
         @endif
     </div>
+
+    @php
+        $tmplW = $selectedTemplate?->card_width ?: '85.6mm';
+        $tmplH = $selectedTemplate?->card_height ?: '54mm';
+    @endphp
 
     {{-- ===== PRINT PREVIEW MODAL ===== --}}
     @if($showPrintPreview)
@@ -194,7 +194,7 @@
                     <div style="display:flex;flex-wrap:wrap;justify-content:flex-start;gap:16px;">
                         @foreach($printCards as $card)
                         @php $tmpl = $selectedTemplate; @endphp
-                        <div class="id-card-print" style="background:{{ $tmpl?->background_color ?? '#fff' }};color:{{ $tmpl?->text_color ?? '#000' }};">
+                        <div class="id-card-print" style="width:{{ $tmplW }};height:{{ $tmplH }};background:{{ $tmpl?->background_color ?? '#fff' }};color:{{ $tmpl?->text_color ?? '#000' }};">
                             {{-- Header Band --}}
                             <div style="background:{{ $tmpl?->accent_color ?? '#007bff' }};padding:12px 14px;text-align:center;">
                                 @if($tmpl?->logo_path)
@@ -232,7 +232,7 @@
                                         {{ $card['name'] }}
                                     </div>
                                     <div style="font-size:.68rem;color:{{ $tmpl?->accent_color ?? '#007bff' }};font-weight:600;margin-bottom:6px;background:rgba(0,0,0,.05);display:inline-block;padding:1px 6px;border-radius:3px;">
-                                        {{ $card['register_no'] ?? $card['student_id'] }}
+                                        {{ $card['student_id'] ?? '—' }}
                                     </div>
                                     <table style="font-size:.68rem;width:100%;border-collapse:collapse;color:{{ $tmpl?->text_color ?? '#000' }};">
                                         @if(!empty($card['class']))
@@ -263,6 +263,18 @@
                                 </div>
                             </div>
 
+                            {{-- Barcode / QR Code --}}
+                            @if(($tmpl?->show_barcode) || ($tmpl?->show_qrcode))
+                            <div style="padding:4px 14px 0;display:flex;align-items:center;justify-content:center;gap:10px;">
+                                @if($tmpl?->show_barcode)
+                                    <svg class="gen-barcode" data-value="{{ $card['register_no'] ?? $card['student_id'] }}"></svg>
+                                @endif
+                                @if($tmpl?->show_qrcode)
+                                    <canvas class="gen-qrcode" data-value="{{ $card['register_no'] ?? $card['student_id'] }}" width="56" height="56"></canvas>
+                                @endif
+                            </div>
+                            @endif
+
                             {{-- Footer --}}
                             <div style="padding:8px 14px;border-top:1px solid rgba(0,0,0,.08);display:flex;justify-content:space-between;align-items:center;font-size:.65rem;color:rgba(0,0,0,.5);">
                                 <span>
@@ -292,6 +304,12 @@
     <div class="print-section">
         <style>
             @media print {
+                /* Force browsers to print backgrounds / gradients / colors (Chrome, Edge, Firefox, Safari) */
+                html, body, * {
+                    -webkit-print-color-adjust: exact !important;
+                    print-color-adjust: exact !important;
+                    color-adjust: exact !important;
+                }
                 body { background: #fff !important; }
                 .no-print {display: none !important; }
                 .print-section { display: block !important; }
@@ -301,31 +319,82 @@
         <div class="print-cards-grid">
             @foreach($printCards as $card)
             @php $tmpl = $selectedTemplate; @endphp
-            <div class="id-card-print" style="background:{{ $tmpl?->background_color ?? '#fff' }};color:{{ $tmpl?->text_color ?? '#000' }};">
+            <div class="id-card-print" style="width:{{ $tmplW }};height:{{ $tmplH }};background:{{ $tmpl?->background_color ?? '#fff' }};color:{{ $tmpl?->text_color ?? '#000' }};">
                 <div style="background:{{ $tmpl?->accent_color ?? '#007bff' }};padding:12px 14px;text-align:center;">
+                    @if($tmpl?->logo_path)
+                        <img src="{{ asset('storage/' . $tmpl->logo_path) }}" height="28" style="margin-bottom:4px;">
+                    @else
+                        <i class="bi bi-mortarboard" style="font-size:1.4rem;color:rgba(255,255,255,.8);display:block;margin-bottom:2px;"></i>
+                    @endif
                     <div style="color:#fff;font-weight:700;font-size:.78rem;">{{ $tmpl?->header_text ?: (institution()->name ?? 'Institute') }}</div>
                     <div style="color:rgba(255,255,255,.7);font-size:.62rem;">STUDENT ID CARD</div>
                 </div>
+                
+                {{-- Body --}}
                 <div style="padding:12px 14px;display:flex;gap:10px;">
-                    @if(!empty($card['photo']))
-                        <img src="{{ asset('storage/' . $card['photo']) }}"
-                            style="width:72px;height:88px;object-fit:cover;border-radius:6px;border:2px solid {{ $tmpl?->accent_color ?? '#007bff' }};">
-                    @else
-                        <div style="width:72px;height:88px;border-radius:6px;background:rgba(0,0,0,.06);
-                                    display:flex;align-items:center;justify-content:center;
-                                    border:2px solid {{ $tmpl?->accent_color ?? '#007bff' }};">
-                            <i class="bi bi-person" style="font-size:2rem;opacity:.3;color:{{ $tmpl?->text_color ?? '#000' }};"></i>
-                        </div>
+                   {{-- Photo --}}
+                    @if($tmpl?->show_photo ?? true)
+                    <div style="flex-shrink:0;">
+                        @if(!empty($card['photo']))
+                            <img src="{{ asset('storage/' . $card['photo']) }}"
+                                style="width:72px;height:88px;object-fit:cover;border-radius:6px;border:2px solid {{ $tmpl?->accent_color ?? '#007bff' }};">
+                        @else
+                            <div style="width:72px;height:88px;border-radius:6px;background:rgba(0,0,0,.06);
+                                        display:flex;align-items:center;justify-content:center;
+                                        border:2px solid {{ $tmpl?->accent_color ?? '#007bff' }};">
+                                <i class="bi bi-person" style="font-size:2rem;opacity:.3;color:{{ $tmpl?->text_color ?? '#000' }};"></i>
+                            </div>
+                        @endif
+                    </div>
                     @endif
-                    <div style="flex:1;">
-                        <div style="font-weight:700;font-size:.85rem;">{{ $card['name'] }}</div>
-                        <div style="font-size:.7rem;margin-bottom:4px;">{{ $card['register_no'] ?? $card['student_id'] }}</div>
-                        <div style="font-size:.68rem;">Class: {{ $card['class'] }}</div>
-                        <div style="font-size:.68rem;">Roll: {{ $card['roll_no'] }}</div>
-                        <div style="font-size:.68rem;">Mobile: {{ $card['mobile'] }}</div>
-                        <div style="font-size:.68rem;color:red;">Blood: {{ $card['blood_group'] }}</div>
+                    {{-- Info --}}
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-weight:700;font-size:.85rem;line-height:1.2;margin-bottom:4px;color:{{ $tmpl?->text_color ?? '#000' }};">
+                            {{ $card['name'] }}
+                        </div>
+                        <div style="font-size:.68rem;color:{{ $tmpl?->accent_color ?? '#007bff' }};font-weight:600;margin-bottom:6px;background:rgba(0,0,0,.05);display:inline-block;padding:1px 6px;border-radius:3px;">
+                            {{ $card['register_no'] ?? $card['student_id'] }}
+                        </div>
+                        <table style="font-size:.68rem;width:100%;border-collapse:collapse;color:{{ $tmpl?->text_color ?? '#000' }};">
+                            @if(!empty($card['class']))
+                            <tr>
+                                <td style="color:rgba(0,0,0,.5);padding:1px 0;width:45%;">Class:</td>
+                                <td style="font-weight:500;">{{ $card['class'] }} {{ $card['section'] ? '- '.$card['section'] : '' }}</td>
+                            </tr>
+                            @endif
+                            @if(!empty($card['roll_no']))
+                            <tr>
+                                <td style="color:rgba(0,0,0,.5);padding:1px 0;">Roll:</td>
+                                <td style="font-weight:500;">{{ $card['roll_no'] }}</td>
+                            </tr>
+                            @endif
+                            @if(!empty($card['mobile']))
+                            <tr>
+                                <td style="color:rgba(0,0,0,.5);padding:1px 0;">Mobile:</td>
+                                <td>{{ $card['mobile'] }}</td>
+                            </tr>
+                            @endif
+                            @if(!empty($card['blood_group']))
+                            <tr>
+                                <td style="color:rgba(0,0,0,.5);padding:1px 0;">Blood:</td>
+                                <td style="color:{{ $tmpl?->accent_color ?? '#dc3545' }};font-weight:700;">{{ $card['blood_group'] }}</td>
+                            </tr>
+                            @endif
+                        </table>
                     </div>
                 </div>
+
+                @if(($tmpl?->show_barcode) || ($tmpl?->show_qrcode))
+                <div style="padding:4px 14px 0;display:flex;align-items:center;justify-content:center;gap:10px;">
+                    @if($tmpl?->show_barcode)
+                        <svg class="gen-barcode" data-value="{{ $card['register_no'] ?? $card['student_id'] }}"></svg>
+                    @endif
+                    @if($tmpl?->show_qrcode)
+                        <canvas class="gen-qrcode" data-value="{{ $card['register_no'] ?? $card['student_id'] }}" width="56" height="56"></canvas>
+                    @endif
+                </div>
+                @endif
+
                 <div style="padding:6px 14px;border-top:1px solid #e5e7eb;font-size:.65rem;color:#6b7280;display:flex;justify-content:space-between;">
                     <span>Valid: {{ !empty($card['expiry_date']) ? \Carbon\Carbon::parse($card['expiry_date'])->format('d M Y') : '' }}</span>
                     <span>{{ $tmpl?->footer_text ?: '' }}</span>
@@ -473,7 +542,6 @@
 
     /* ID Card Print Preview */
     .id-card-print {
-        width: 325px;
         border-radius: 12px;
         overflow: hidden;
         box-shadow: 0 4px 20px rgba(0,0,0,.2);
@@ -481,6 +549,9 @@
         break-inside: avoid;
         display: inline-block;
         margin: 8px;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        color-adjust: exact;
     }
 
     @media print {
@@ -500,8 +571,44 @@
 
 
 @push('scripts')
+{{-- CDN libraries for Barcode & QR Code rendering (client-side, no composer package required) --}}
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script>
+    // Render barcode (svg.gen-barcode) and QR code (canvas.gen-qrcode) elements inside the given root
+    function renderIdCardCodes(root) {
+        if (!root) return;
+
+        if (window.JsBarcode) {
+            root.querySelectorAll('svg.gen-barcode').forEach(function (svg) {
+                var value = svg.dataset.value || '';
+                if (!value) return;
+                try {
+                    JsBarcode(svg, value, {
+                        format: 'CODE128',
+                        displayValue: false,
+                        height: 30,
+                        width: 1.4,
+                        margin: 0,
+                    });
+                } catch (e) {
+                    // invalid value for barcode symbology - skip silently
+                }
+            });
+        }
+
+        if (window.QRCode) {
+            root.querySelectorAll('canvas.gen-qrcode').forEach(function (canvas) {
+                var value = canvas.dataset.value || '';
+                if (!value) return;
+                window.QRCode.toCanvas(canvas, value, { width: 56, margin: 0 }, function () {});
+            });
+        }
+    }
+
     document.addEventListener('livewire:initialized', () => {
+        renderIdCardCodes(document);
+
         Livewire.hook('morph.updated', ({ el }) => {
             setTimeout(() => {
                 el.querySelectorAll('.input-group-outline .form-select').forEach(function(select) {
@@ -528,6 +635,8 @@
                         group.classList.toggle('is-filled', !!input.value.trim());
                     });
                 });
+
+                renderIdCardCodes(el);
             }, 0);
         });
     });

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
             $table->foreignId('template_id')->nullable()->constrained('id_card_templates')->nullOnDelete();
-            $table->string('employee_id')->unique();
+            $table->string('employee_id');
            
             $table->string('institute_name')->nullable();
             $table->string('institute_address')->nullable();
@@ -41,6 +41,8 @@ return new class extends Migration
             $table->enum('status', ['active', 'inactive', 'suspended'])->default('active');
             $table->timestamps();
             $table->softDeletes();
+
+            $table->unique(['institution_id', 'employee_id', 'deleted_at'], 'employee_id_cards_institution_employee_unique');
         });
     }
 

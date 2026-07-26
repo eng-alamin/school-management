@@ -102,12 +102,12 @@
                         </thead>
                         <tbody>
                             @forelse($employees as $i => $employee)
-                            <tr wire:key="employee-row-{{ $employee->id }}">
+                            <tr wire:key="employee-row-{{ $employee->employee_id }}">
                                 <td class="check-col">
                                         <input type="checkbox"
                                             class="red-check"
                                             wire:model.live="selectedIds"
-                                            value="{{ $employee->id }}">
+                                            value="{{ $employee->employee_id }}">
                                     </td>
                                 <td class="text-muted">{{ $i + 1 }}</td>
                                 <td>
@@ -148,6 +148,14 @@
         @endif
     </div>
 
+    @php
+        // FIX: previously the card size was hardcoded in CSS (width: 325px, no height)
+        // and never read from the selected template. Now we compute it exactly like
+        // the Student ID Card component does, and apply it inline below.
+        $tmplW = $selectedTemplate?->card_width ?: '325px';
+        $tmplH = $selectedTemplate?->card_height ?: '204px';
+    @endphp
+
     {{-- ===== PRINT PREVIEW MODAL ===== --}}
     @if($showPrintPreview)
     <div class="modal fade show d-block no-print" tabindex="-1" style="background:rgba(0,0,0,.75);">
@@ -165,7 +173,7 @@
                     <div style="display:flex;flex-wrap:wrap;justify-content:flex-start;gap:16px;">
                         @foreach($printCards as $card)
                         @php $tmpl = $selectedTemplate; @endphp
-                        <div class="id-card-print" style="background:{{ $tmpl?->background_color ?? '#fff' }};color:{{ $tmpl?->text_color ?? '#000' }};">
+                        <div class="id-card-print" style="width:{{ $tmplW }};height:{{ $tmplH }};background:{{ $tmpl?->background_color ?? '#fff' }};color:{{ $tmpl?->text_color ?? '#000' }};">
                             {{-- Header Band --}}
                             <div style="background:{{ $tmpl?->accent_color ?? '#007bff' }};padding:12px 14px;text-align:center;">
                                 @if($tmpl?->logo_path)
@@ -203,7 +211,7 @@
                                         {{ $card['name'] }}
                                     </div>
                                     <div style="font-size:.68rem;color:{{ $tmpl?->accent_color ?? '#007bff' }};font-weight:600;margin-bottom:6px;background:rgba(0,0,0,.05);display:inline-block;padding:1px 6px;border-radius:3px;">
-                                        {{ $card['employee_id'] }}
+                                        {{ $card['employee_id'] ?? '' }}
                                     </div>
                                     <table style="font-size:.68rem;width:100%;border-collapse:collapse;color:{{ $tmpl?->text_color ?? '#000' }};">
                                         @if(!empty($card['designation']))
@@ -234,6 +242,20 @@
                                 </div>
                             </div>
 
+                            {{-- Barcode / QR Code --}}
+                            {{-- FIX: previously entirely missing — show_barcode / show_qrcode template
+                                 toggles had no effect at all. Now rendered exactly like Student cards. --}}
+                            @if(($tmpl?->show_barcode) || ($tmpl?->show_qrcode))
+                            <div style="padding:4px 14px 0;display:flex;align-items:center;justify-content:center;gap:10px;">
+                                @if($tmpl?->show_barcode)
+                                    <svg class="gen-barcode" data-value="{{ $card['employee_id'] }}"></svg>
+                                @endif
+                                @if($tmpl?->show_qrcode)
+                                    <canvas class="gen-qrcode" data-value="{{ $card['employee_id'] }}" width="56" height="56"></canvas>
+                                @endif
+                            </div>
+                            @endif
+
                             {{-- Footer --}}
                             <div style="padding:8px 14px;border-top:1px solid rgba(0,0,0,.08);display:flex;justify-content:space-between;align-items:center;font-size:.65rem;color:rgba(0,0,0,.5);">
                                 <span>
@@ -263,6 +285,13 @@
     <div class="print-section">
         <style>
             @media print {
+                /* FIX: this rule was missing entirely — without it, browsers strip
+                   background colors / gradients from the print output by default. */
+                html, body, * {
+                    -webkit-print-color-adjust: exact !important;
+                    print-color-adjust: exact !important;
+                    color-adjust: exact !important;
+                }
                 body { background: #fff !important; }
                 .no-print {display: none !important; }
                 .print-section { display: block !important; }
@@ -272,31 +301,60 @@
         <div class="print-cards-grid">
             @foreach($printCards as $card)
             @php $tmpl = $selectedTemplate; @endphp
-            <div class="id-card-print" style="background:{{ $tmpl?->background_color ?? '#fff' }};color:{{ $tmpl?->text_color ?? '#000' }};">
+            <div class="id-card-print" style="width:{{ $tmplW }};height:{{ $tmplH }};background:{{ $tmpl?->background_color ?? '#fff' }};color:{{ $tmpl?->text_color ?? '#000' }};">
                 <div style="background:{{ $tmpl?->accent_color ?? '#007bff' }};padding:12px 14px;text-align:center;">
+                    @if($tmpl?->logo_path)
+                        <img src="{{ asset('storage/' . $tmpl->logo_path) }}" height="28" style="margin-bottom:4px;">
+                    @else
+                        <i class="bi bi-mortarboard" style="font-size:1.4rem;color:rgba(255,255,255,.8);display:block;margin-bottom:2px;"></i>
+                    @endif
                     <div style="color:#fff;font-weight:700;font-size:.78rem;">{{ $tmpl?->header_text ?: (institution()->name ?? 'Institute') }}</div>
                     <div style="color:rgba(255,255,255,.7);font-size:.62rem;">EMPLOYEE ID CARD</div>
                 </div>
                 <div style="padding:12px 14px;display:flex;gap:10px;">
-                     @if(!empty($card['photo']))
-                        <img src="{{ asset('storage/' . $card['photo']) }}"
-                            style="width:72px;height:88px;object-fit:cover;border-radius:6px;border:2px solid {{ $tmpl?->accent_color ?? '#007bff' }};">
-                    @else
-                        <div style="width:72px;height:88px;border-radius:6px;background:rgba(0,0,0,.06);
-                                    display:flex;align-items:center;justify-content:center;
-                                    border:2px solid {{ $tmpl?->accent_color ?? '#007bff' }};">
-                            <i class="bi bi-person" style="font-size:2rem;opacity:.3;color:{{ $tmpl?->text_color ?? '#000' }};"></i>
-                        </div>
+                    {{-- FIX: show_photo toggle was ignored here in print output (always rendered) --}}
+                    @if($tmpl?->show_photo ?? true)
+                        @if(!empty($card['photo']))
+                            <img src="{{ asset('storage/' . $card['photo']) }}"
+                                style="width:72px;height:88px;object-fit:cover;border-radius:6px;border:2px solid {{ $tmpl?->accent_color ?? '#007bff' }};">
+                        @else
+                            <div style="width:72px;height:88px;border-radius:6px;background:rgba(0,0,0,.06);
+                                        display:flex;align-items:center;justify-content:center;
+                                        border:2px solid {{ $tmpl?->accent_color ?? '#007bff' }};">
+                                <i class="bi bi-person" style="font-size:2rem;opacity:.3;color:{{ $tmpl?->text_color ?? '#000' }};"></i>
+                            </div>
+                        @endif
                     @endif
                     <div style="flex:1;">
-                        <div style="font-weight:700;font-size:.85rem;">{{ $card['name'] }}</div>
-                        <div style="font-size:.7rem;margin-bottom:4px;">{{ $card['employee_id'] }}</div>
+                        <div style="font-weight:700;font-size:.85rem;">{{ $card['name'] ?? '' }}</div>
+                        <div style="font-size:.7rem;margin-bottom:4px;">{{ $card['employee_id'] ?? '' }}</div>
+                        @if(!empty($card['designation']))
                         <div style="font-size:.68rem;">Designation: {{ $card['designation'] }}</div>
+                        @endif
+                        @if(!empty($card['department']))
                         <div style="font-size:.68rem;">Department: {{ $card['department'] }}</div>
+                        @endif
+                        @if(!empty($card['mobile']))
                         <div style="font-size:.68rem;">Mobile: {{ $card['mobile'] }}</div>
-                        <div style="font-size:.68rem;color:red;">Blood: {{ $card['blood_group'] }}</div>
+                        @endif
+                        @if(!empty($card['blood_group']))
+                        <div style="font-size:.68rem;color:{{ $tmpl?->accent_color ?? '#dc3545' }};">Blood: {{ $card['blood_group'] }}</div>
+                        @endif
                     </div>
                 </div>
+
+                {{-- FIX: barcode/QR were entirely missing from print output --}}
+                @if(($tmpl?->show_barcode) || ($tmpl?->show_qrcode))
+                <div style="padding:4px 14px 0;display:flex;align-items:center;justify-content:center;gap:10px;">
+                    @if($tmpl?->show_barcode)
+                        <svg class="gen-barcode" data-value="{{ $card['employee_id'] }}"></svg>
+                    @endif
+                    @if($tmpl?->show_qrcode)
+                        <canvas class="gen-qrcode" data-value="{{ $card['employee_id'] }}" width="56" height="56"></canvas>
+                    @endif
+                </div>
+                @endif
+
                 <div style="padding:6px 14px;border-top:1px solid #e5e7eb;font-size:.65rem;color:#6b7280;display:flex;justify-content:space-between;">
                     <span>Valid: {{ !empty($card['expiry_date']) ? \Carbon\Carbon::parse($card['expiry_date'])->format('d M Y') : '' }}</span>
                     <span>{{ $tmpl?->footer_text ?: '' }}</span>
@@ -467,8 +525,9 @@
     .gen-empty i { font-size: 3rem; display: block; margin-bottom: 12px; }
 
     /* ID Card Print Preview */
+    /* FIX: removed hardcoded width:325px — width/height now come from inline
+       style bound to the selected template's card_width/card_height. */
     .id-card-print {
-        width: 325px;
         border-radius: 12px;
         overflow: hidden;
         box-shadow: 0 4px 20px rgba(0,0,0,.2);
@@ -476,6 +535,9 @@
         break-inside: avoid;
         display: inline-block;
         margin: 8px;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        color-adjust: exact;
     }
 
     @media print {
@@ -491,4 +553,52 @@
         .gen-section-body .row > div { margin-bottom: 12px; }
     }
 </style>
+@endpush
+
+@push('scripts')
+{{-- FIX: barcode/QR rendering libraries + init script were entirely missing.
+     These are the same CDN libs used by the Student ID Card module. --}}
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script>
+    function renderEmployeeIdCardCodes(root) {
+        if (!root) return;
+
+        if (window.JsBarcode) {
+            root.querySelectorAll('svg.gen-barcode').forEach(function (svg) {
+                var value = svg.dataset.value || '';
+                if (!value) return;
+                try {
+                    JsBarcode(svg, value, {
+                        format: 'CODE128',
+                        displayValue: false,
+                        height: 30,
+                        width: 1.4,
+                        margin: 0,
+                    });
+                } catch (e) {
+                    // invalid value for barcode symbology - skip silently
+                }
+            });
+        }
+
+        if (window.QRCode) {
+            root.querySelectorAll('canvas.gen-qrcode').forEach(function (canvas) {
+                var value = canvas.dataset.value || '';
+                if (!value) return;
+                window.QRCode.toCanvas(canvas, value, { width: 56, margin: 0 }, function () {});
+            });
+        }
+    }
+
+    document.addEventListener('livewire:initialized', () => {
+        renderEmployeeIdCardCodes(document);
+
+        Livewire.hook('morph.updated', ({ el }) => {
+            setTimeout(() => {
+                renderEmployeeIdCardCodes(el);
+            }, 0);
+        });
+    });
+</script>
 @endpush

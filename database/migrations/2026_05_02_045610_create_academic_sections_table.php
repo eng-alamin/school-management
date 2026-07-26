@@ -15,8 +15,16 @@ return new class extends Migration
             $table->id();
             $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
             $table->string('name');
-            $table->string('capacity')->nullable();
+            $table->unsignedInteger('capacity')->nullable();
             $table->timestamps();
+            $table->softDeletes();
+
+            $table->index(['institution_id', 'deleted_at'], 'academic_sections_institution_idx');
+
+            $table->unique(
+                ['institution_id', 'name', 'deleted_at'],
+                'academic_sections_institution_name_unique'
+            );
         });
     }
 

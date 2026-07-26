@@ -120,7 +120,7 @@
             <!-- Attachment -->
             <div class="col-12">
                 <label style="font-size:.73rem;font-weight:600;color:var(--muted);display:block;margin-bottom:8px">
-                    Attachment
+                    Attachment <span class="req">*</span>
                 </label>
                 <div class="photo-upload-box">
                     <span class="material-icons-round">attach_file</span>

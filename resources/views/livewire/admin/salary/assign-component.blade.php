@@ -101,7 +101,7 @@
                         @forelse($filteredEmployees as $i => $employee)
                         <tr wire:key="employee-{{ $employee['id'] }}">
                             <td>{{ $i + 1 }}</td>
-                            <td>{{ $employee['employee_id'] ?? '—' }}</td>
+                            <td><a class="text-primary" href="{{ route('admin.employee.view', ['id' => $employee['id']]) }}" target="_blank">{{ $employee['employee_id'] ?? '—' }}</a></td>
                             <td>{{ $employee['name'] }}</td>
                             <td>{{ $employee['designation']['name'] ?? '—' }}</td>
                             <td>{{ $employee['department']['name'] ?? '—' }}</td>

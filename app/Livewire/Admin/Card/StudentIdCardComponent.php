@@ -83,7 +83,7 @@ class StudentIdCardComponent extends Component
     public function updatedSelectAll(bool $value): void
     {
         $this->selectedIds = $value
-            ? $this->getStudents()->pluck('id')->map(fn($id) => (string) $id)->toArray()
+            ? $this->getStudents()->pluck('student_id')->map(fn($sid) => (string) $sid)->toArray()
             : [];
     }
 
@@ -146,7 +146,7 @@ class StudentIdCardComponent extends Component
         ]);
 
         $students = Student::with(['class', 'section', 'group'])
-            ->whereIn('id', $this->selectedIds)
+            ->whereIn('student_id', $this->selectedIds)
             ->get();
 
         if ($students->isEmpty()) {
@@ -154,55 +154,64 @@ class StudentIdCardComponent extends Component
             return;
         }
 
-        $institutionId = institution()->id;
-        $data = [];
-
-        foreach ($students as $student) {
-            $data[] = [
-                'institution_id' => $institutionId,
-                'student_id'     => $student->id,
-                'issue_date'     => $this->print_date,
-                'expiry_date'    => $this->expiry_date,
-                'template_id'    => $this->filterTemplate,
-                'name'           => $student->name,
-                'gender'         => $student->gender,
-                'blood_group'    => $student->full_blood_group,
-                'dob'            => $student->dob,
-                'religion'       => $student->religion,
-                'mobile'         => $student->mobile,
-                'address'        => $student->present_address,
-                'photo'          => $student->photo,
-                'session'        => $student->academic_year,
-                'register_no'    => $student->register_no,
-                'roll_no'        => $student->roll_no,
-                'class'          => $student->class?->name,
-                'section'        => $student->section?->name,
-                'group'          => $student->group?->name,
-                'created_at'     => now(),
-                'updated_at'     => now(),
-            ];
-        }
+        $institution   = institution();
+        $institutionId = $institution->id;
 
         DB::beginTransaction();
         try {
-            StudentIdCard::upsert(
-                $data,
-                ['student_id'],
-                [
-                    'institution_id', 'issue_date', 'expiry_date', 'template_id',
-                    'name', 'gender', 'blood_group', 'dob', 'religion',
-                    'mobile', 'address', 'photo', 'session',
-                    'register_no', 'roll_no', 'class', 'section', 'group',
-                    'updated_at',
-                ]
-            );
+            $cards = collect();
 
-            $cards = StudentIdCard::with('template')
-                ->where('institution_id', $institutionId)
-                ->whereIn('student_id', $this->selectedIds)
-                ->get();
+            foreach ($students as $student) {
+                $payload = [
+                    'institution_id'     => $institutionId,
+                    'template_id'        => $this->filterTemplate,
+                    'institute_name'     => $institution->name,
+                    'institute_address'  => $institution->address ?? null,
+                    'issue_date'         => $this->print_date,
+                    'expiry_date'        => $this->expiry_date,
+                    'name'               => $student->name,
+                    'father_name'        => $student->father_name ?? null,
+                    'mother_name'        => $student->mother_name ?? null,
+                    'gender'             => $student->gender,
+                    'blood_group'        => $student->full_blood_group,
+                    'dob'                => $student->dob,
+                    'religion'           => $student->religion,
+                    'mobile'             => $student->mobile,
+                    'email'              => $student->email ?? null,
+                    'address'            => $student->present_address,
+                    'photo'              => $student->photo,
+                    'session'            => $student->academic_year,
+                    'register_no'        => $student->register_no,
+                    'roll_no'            => $student->roll_no,
+                    'class'              => $student->class?->name,
+                    'section'            => $student->section?->name,
+                    'group'              => $student->group?->name,
+                ];
 
-            activity()->log('Generated '.$cards->count().' student ID card(s)');
+                $card = StudentIdCard::withTrashed()
+                    ->where('institution_id', $institutionId)
+                    ->where('student_id', $student->student_id)
+                    ->first();
+
+                if ($card) {
+                    $card->fill($payload);
+                    if ($card->trashed()) {
+                        $card->restore();
+                    }
+                    $card->save();
+                } else {
+                    $card = StudentIdCard::create(array_merge($payload, [
+                        'student_id' => $student->student_id,
+                    ]));
+                }
+
+                activity()
+                    ->performedOn($card)
+                    ->causedBy(auth()->user())
+                    ->log('Generated/updated ID card for student: '.$student->name);
+
+                $cards->push($card->load('template'));
+            }
 
             DB::commit();
         } catch (Throwable $e) {

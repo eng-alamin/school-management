@@ -20,13 +20,18 @@ return new class extends Migration
             $table->string('father_name')->nullable();
             $table->string('mother_name')->nullable();
             $table->string('occupation')->nullable();
-            $table->string('income')->nullable();    
+            $table->string('income')->nullable();
             $table->string('education')->nullable();
             $table->string('mobile')->nullable();
             $table->string('email')->nullable();
             $table->text('address')->nullable();
             $table->string('photo')->nullable();
             $table->timestamps();
+            $table->softDeletes();
+ 
+            $table->unique(['user_id', 'deleted_at'], 'guardians_user_id_deleted_at_unique');
+ 
+            $table->index(['institution_id'], 'guardians_institution_idx');
         });
     }
 

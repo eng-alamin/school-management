@@ -122,53 +122,75 @@
                 </thead>
                 <tbody>
                     @foreach($employees as $employee)
-                    <tr wire:key="emp-{{ $employee->id }}">
-                        <td>{{ $employee->employee_id ?? '—' }}</td>
-                        <td>{{ $employee->name }}</td>
-                        <td>{{ $employee->designation?->name ?? '—' }}</td>
-                        <td>{{ $employee->department?->name ?? '—' }}</td>
-                        <td>{{ $employee->mobile ?? '—' }}</td>
+                        @php
+                            // FIX: Existence of a salary_payments row (salary_payment_id) is the
+                            // reliable signal — NOT salary_status, which is null both when no
+                            // row exists AND (theoretically) when a row exists with a null status.
+                            $recordExists = !is_null($employee->salary_payment_id);
+                        @endphp
+                        <tr wire:key="emp-{{ $employee->id }}">
+                            <td><a class="text-primary" href="{{ route('admin.employee.view', ['id' => $employee->id]) }}" target="_blank">{{ $employee['employee_id'] ?? '—' }}</a></td>
+                            <td>{{ $employee->name }}</td>
+                            <td>{{ $employee->designation?->name ?? '—' }}</td>
+                            <td>{{ $employee->department?->name ?? '—' }}</td>
+                            <td>{{ $employee->mobile ?? '—' }}</td>
 
-                        {{-- Salary Grade (from salary_assigns via subquery) --}}
-                        <td>{{ $employee->sa_grade ?? '—' }}</td>
+                            {{-- Salary Grade (from salary_assigns via subquery) --}}
+                            <td>{{ $employee->sa_grade ?? '—' }}</td>
 
-                        {{-- Basic Salary: paid amount if paid, else assign amount --}}
-                        <td>
-                            @if($employee->salary_basic)
-                                ৳{{ number_format($employee->salary_basic, 2) }}
-                            @elseif($employee->sa_basic)
-                                ৳{{ number_format($employee->sa_basic, 2) }}
-                            @else
-                                —
-                            @endif
-                        </td>
+                            {{-- Basic Salary: paid amount if a payment row exists, else assign amount --}}
+                            <td>
+                                @if($recordExists && $employee->salary_basic)
+                                    ৳{{ number_format($employee->salary_basic, 2) }}
+                                @elseif($employee->sa_basic)
+                                    ৳{{ number_format($employee->sa_basic, 2) }}
+                                @else
+                                    —
+                                @endif
+                            </td>
 
-                        {{-- Status Badge --}}
-                        <td>
-                            @if(($employee->salary_status ?? '') === 'paid')
-                                <span class="status-badge status-paid">Salary Paid</span>
-                            @elseif(($employee->salary_status ?? '') === 'partial')
-                                <span class="status-badge status-partial">Partial</span>
-                            @else
-                                <span class="status-badge status-unpaid">Salary Unpaid</span>
-                            @endif
-                        </td>
+                            {{-- Status Badge --}}
+                            <td>
+                                @if($recordExists)
+                                    @if($employee->salary_status === 'paid')
+                                        <span class="status-badge status-paid">Salary Paid</span>
+                                    @elseif($employee->salary_status === 'partial')
+                                        <span class="status-badge status-partial">Partial</span>
+                                    @else
+                                        <span class="status-badge status-unpaid">Salary Unpaid</span>
+                                    @endif
+                                @elseif($isSelectedMonthPast)
+                                    {{-- Past month, no salary_payments row was ever generated for it --}}
+                                    <span class="status-badge status-nodata">No Data Found</span>
+                                @else
+                                    {{-- Current/future month, payroll hasn't been run yet --}}
+                                    <span class="status-badge status-pending">Invoice Not Generated Yet</span>
+                                @endif
+                            </td>
 
-                        {{-- Actions --}}
-                        <td>
-                            @if(($employee->salary_status ?? '') === 'paid')
-                                <a class="action-btn btn-payslip" href="{{ route('admin.salary.invoice-payment', ['id' => $employee->id, 'month' => $this->month]) }}" target="_blank">
-                                    <span class="material-icons-round" style="font-size:14px;vertical-align:middle">visibility</span>
-                                    Payslip
-                                </a>
-                            @else
-                                <a class="action-btn btn-paynow" href="{{ route('admin.salary.add-payment', ['id' => $employee->id, 'month' => $this->month]) }}" target="_blank">
-                                    <span class="material-icons-round" style="font-size:14px;vertical-align:middle">credit_card</span>
-                                    Pay Now
-                                </a>
-                            @endif
-                        </td>
-                    </tr>
+                            {{-- Actions --}}
+                            <td>
+                                @if($recordExists && $employee->salary_status === 'paid')
+                                    <a class="action-btn btn-payslip" href="{{ route('admin.salary.invoice-payment', ['id' => $employee->id, 'month' => $this->month]) }}" target="_blank">
+                                        <span class="material-icons-round" style="font-size:14px;vertical-align:middle">visibility</span>
+                                        Payslip
+                                    </a>
+                                @elseif($recordExists)
+                                    <a class="action-btn btn-paynow" href="{{ route('admin.salary.add-payment', ['id' => $employee->id, 'month' => $this->month]) }}" target="_blank">
+                                        <span class="material-icons-round" style="font-size:14px;vertical-align:middle">credit_card</span>
+                                        Pay Now
+                                    </a>
+                                @elseif($isSelectedMonthPast)
+                                    {{-- Nothing to act on for a past month that was never processed --}}
+                                    <span class="text-muted" style="font-size:12px">—</span>
+                                @else
+                                    <a class="action-btn btn-paynow" href="{{ route('admin.salary.add-payment', ['id' => $employee->id, 'month' => $this->month]) }}" target="_blank">
+                                        <span class="material-icons-round" style="font-size:14px;vertical-align:middle">credit_card</span>
+                                        Generate &amp; Pay
+                                    </a>
+                                @endif
+                            </td>
+                        </tr>
                     @endforeach
                 </tbody>
             </table>
@@ -218,6 +240,8 @@
     .status-paid    { color: #16a34a; border-color: #16a34a; background: rgba(22,163,74,.08); }
     .status-unpaid  { color: #2563eb; border-color: #2563eb; background: rgba(37,99,235,.08); }
     .status-partial { color: #d97706; border-color: #d97706; background: rgba(217,119,6,.08);  }
+    .status-nodata  { color: #6b7280; border-color: #6b7280; background: rgba(107,114,128,.08); }
+    .status-pending { color: #7c3aed; border-color: #7c3aed; background: rgba(124,58,237,.08);  }
 
     /* ── Action buttons ── */
     .action-btn {
