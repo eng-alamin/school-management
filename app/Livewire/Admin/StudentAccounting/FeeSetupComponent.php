@@ -29,8 +29,6 @@ class FeeSetupComponent extends Component
 
     public function loadData()
     {
-        // Only classes that are actually assigned (via AcademicClassAssign) are shown here —
-        // matches project convention: classes are sourced via AcademicClassAssign, not AcademicClass directly
         $this->classes = AcademicClassAssign::with('class')
             ->get()
             ->pluck('class')
@@ -41,7 +39,7 @@ class FeeSetupComponent extends Component
 
         $this->feeTypes = FeeType::query()
             ->where('status', true)
-            ->orderBy('name')
+            ->orderBy('id')
             ->get();
 
         $existing = FeeSetup::query()

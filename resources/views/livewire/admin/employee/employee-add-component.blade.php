@@ -32,7 +32,7 @@
                 <div class="col-md-6">
                     <div class="input-group input-group-outline" wire:ignore>
                         <label class="form-label"><span id="emp-add-lbl-joining-date">Joining Date</span> <span class="req">*</span></label>
-                        <input type="date" wire:model="joining_date" class="form-control">
+                        <input type="date" wire:model="joining_date" data-dp-value="{{ $joining_date }}" class="form-control">
                     </div>
                     @error('joining_date') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>

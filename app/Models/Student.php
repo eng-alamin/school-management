@@ -35,17 +35,32 @@ class Student extends Model
             ->withTimestamps();
     }
 
+    // pore class() remove korbo
     public function class()
     {
         return $this->belongsTo(AcademicClass::class, 'class_id');
     }
+    public function academicClass()
+    {
+        return $this->belongsTo(AcademicClass::class, 'class_id');
+    }
 
+    // pore section() remove korbo
     public function section()
     {
         return $this->belongsTo(AcademicSection::class, 'section_id');
     }
+    public function academicSection()
+    {
+        return $this->belongsTo(AcademicSection::class, 'section_id');
+    }
 
+    // pore group() remove korbo
     public function group()
+    {
+        return $this->belongsTo(AcademicGroup::class, 'group_id');
+    }
+    public function academicGroup()
     {
         return $this->belongsTo(AcademicGroup::class, 'group_id');
     }

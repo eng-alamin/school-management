@@ -47,15 +47,13 @@ class StudentPromotionComponent extends Component
         $this->selectedStudents = $value ? array_keys($this->students) : [];
     }
 
-    // ── শুধু সেই Class গুলো, যেগুলোর জন্য AcademicClassAssign তৈরি করা আছে ──
     public function getAvailableClasses()
     {
         return AcademicClass::whereIn('id', AcademicClassAssign::distinct()->pluck('class_id'))
-            ->orderBy('name')
+            ->orderBy('id')
             ->get();
     }
 
-    // ── নির্বাচিত Class এর জন্য যেসব Section Assign করা আছে ──
     public function getAvailableSections(?string $classId)
     {
         if (!$classId) {
@@ -86,7 +84,7 @@ class StudentPromotionComponent extends Component
             ->get();
 
         if ($students->isEmpty()) {
-            $this->dispatch('toast', type: 'error', message: 'এই Class/Section এ কোনো Student পাওয়া যায়নি।');
+            $this->dispatch('toast', type: 'error', message: 'No students found in this class/section.');
             return;
         }
 
@@ -168,7 +166,7 @@ class StudentPromotionComponent extends Component
         $activeSession = AcademicSession::where('is_current', true)->first();
 
         if (!$activeSession) {
-            $this->dispatch('toast', type: 'error', message: 'কোনো Active Academic Session পাওয়া যায়নি। আগে একটি সেশন Active করুন।');
+            $this->dispatch('toast', type: 'error', message: 'No active academic sessions found. Please activate a session first.');
             return;
         }
 
@@ -304,7 +302,7 @@ class StudentPromotionComponent extends Component
 
     public function render()
     {
-        $sessions = AcademicSession::orderBy('name')->get();
+        $sessions = AcademicSession::orderBy('id')->get();
 
         return view('livewire.admin.academic.student-promotion-component')
             ->with('classes', $this->getAvailableClasses())

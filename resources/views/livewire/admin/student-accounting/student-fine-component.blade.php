@@ -4,7 +4,7 @@
 
         <div class="mat-card-header header-pink-gradient">
             <h5 id="cardHeaderTitleAllsections">Student Fine</h5>
-            <p id="cardHeaderSubtitle">Absent, Indiscipline সহ যেকোনো কারণে Student Fine যোগ করুন।</p>
+            <p id="cardHeaderSubtitle">Add Student Fine for any reason including Absent, Indiscipline.</p>
         </div>
 
         <div class="card-header border-0">
@@ -283,29 +283,6 @@
 
 @push('styles')
     <style>
-        :root {
-            --primary: rgba(33, 37, 41);
-            --primary-light: rgba(239,84,84,.12);
-        }
-        .card { border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
-        .card-header { background: #fff; border-bottom: 1px solid var(--border); border-radius: 12px 12px 0 0 !important; padding: 16px 20px; }
-        .table th { font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); border-bottom: 2px solid var(--border); }
-        .table td { vertical-align: middle; font-size: .875rem; }
-        .table > :not(caption) > * > * { padding: .7rem 1rem; }
-        .badge-active   { background: rgba(34,197,94,.12);  color: #16a34a; }
-        .badge-inactive { background: rgba(107,114,128,.12); color: #6b7280; }
-        .modal-title { font-weight: 600; font-size: 1rem; }
-        .form-label { font-size: .8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
-        .form-control, .form-select {
-            border-radius: 8px; border: 1px solid var(--border);
-            font-size: .875rem; padding: .45rem .75rem;
-            transition: border-color .2s, box-shadow .2s;
-        }
-        .form-control:focus, .form-select:focus {
-            border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light);
-        }
-        .btn-sm { font-size: .78rem; padding: .3rem .65rem; border-radius: 6px; }
-
         .fine-amount-highlight {
             background: linear-gradient(135deg, #fafafa, #f2f2f2);
             border: 1px solid var(--border);

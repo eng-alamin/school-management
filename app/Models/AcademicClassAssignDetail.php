@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class AcademicClassAssignDetail extends Model
 {
     use BelongsToInstitution;
-    
+
     protected $guarded = [];
 
     public function subject(): BelongsTo
@@ -23,7 +23,7 @@ class AcademicClassAssignDetail extends Model
     }
 
     public function classAssign(): BelongsTo
-        {
-            return $this->belongsTo(AcademicClassAssign::class, 'academic_class_assign_id');
-        }
+    {
+        return $this->belongsTo(AcademicClassAssign::class, 'academic_class_assign_id');
+    }
 }

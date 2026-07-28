@@ -14,6 +14,7 @@ use App\Models\FeeSetup;
 use App\Models\FeeInvoice;
 use App\Models\FeeInvoiceItem;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\QueryException;
 
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
@@ -62,14 +63,10 @@ class StudentAddComponent extends Component
     public $remarks;
 
     public bool $guardian_exists = false;
-
-    // ── New / Existing student flag ──
     public bool $is_new_student = true;
 
-    // ── Class -> Section dependent dropdown (academic_class_assigns theke) ──
     public array $availableSections = [];
 
-    // ── STEP 1: Fee Confirmation Modal ──
     public bool $showFeeModal = false;
     public array $feeItems = [];
     public array $selectedFees = [
@@ -132,7 +129,7 @@ class StudentAddComponent extends Component
 
         $prefix = ($inst->enable_student_id_prefix && $inst->student_id_code_prefix)
             ? $inst->student_id_code_prefix
-            : 'SCH' . str_pad($institutionId, 2, '0', STR_PAD_LEFT);
+            : 'STD' . str_pad($institutionId, 2, '0', STR_PAD_LEFT);
 
         $year = now()->format('y');
 
@@ -192,6 +189,38 @@ class StudentAddComponent extends Component
         $this->generateRollNo($value);
     }
 
+    public function updatedGuardianExists($value): void
+    {
+        if ($value) {
+            // Existing guardian select kora hocche -> new-guardian fields clear
+            $this->reset([
+                'guardian_name',
+                'guardian_relation',
+                'guardian_father_name',
+                'guardian_mother_name',
+                'guardian_occupation',
+                'guardian_income',
+                'guardian_education',
+                'guardian_mobile',
+                'guardian_email',
+                'guardian_address',
+                'guardian_username',
+                'guardian_password',
+                'guardian_photo_upload',
+            ]);
+        } else {
+            // Notun guardian create kora hocche -> existing guardian_id clear
+            $this->reset(['guardian_id']);
+        }
+
+        $this->resetValidation([
+            'guardian_id',
+            'guardian_name',
+            'guardian_relation',
+            'guardian_username',
+        ]);
+    }
+
     public function rules()
     {
         return [
@@ -212,11 +241,22 @@ class StudentAddComponent extends Component
             'guardian_name'     => !$this->guardian_exists ? 'required' : 'nullable',
             'guardian_relation' => !$this->guardian_exists ? 'required' : 'nullable',
 
-            'guardian_username' => !$this->guardian_exists ? 'required|unique:users,username' : 'nullable',
+            'guardian_username' => !$this->guardian_exists
+                ? ['required', 'unique:users,username', 'different:username']
+                : 'nullable',
 
             'guardian_photo_upload' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
 
             'is_new_student' => 'boolean',
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'guardian_username.unique'   => 'This guardian username is already taken. Please choose a different one.',
+            'guardian_username.different'=> 'Guardian username must be different from student username.',
+            'username.unique'            => 'This student username is already taken. Please choose a different one.',
         ];
     }
 
@@ -249,6 +289,9 @@ class StudentAddComponent extends Component
     protected function failedValidation($validator)
     {
         $this->dispatch('validation-failed');
+
+        throw (new ValidationException($validator))
+            ->errorBag($this->getErrorBag());
     }
 
     public function updated($propertyName)
@@ -256,16 +299,12 @@ class StudentAddComponent extends Component
         if (str_starts_with($propertyName, 'selectedFees')) {
             return;
         }
-        $this->validateOnly($propertyName, $this->rules());
+        $this->validateOnly($propertyName, $this->rules(), $this->messages());
     }
 
-    /**
-     * STEP 1: "Save" button e click korle - direct save na kore
-     * age form validate kore, fee_setups theke fee load kore Fee Confirm Modal dekhabe.
-     */
     public function openFeeConfirmModal()
     {
-        $this->validate($this->rules());
+        $this->validate($this->rules(), $this->messages());
 
         if (!$this->is_new_student) {
             $this->save();
@@ -354,18 +393,12 @@ class StudentAddComponent extends Component
         $this->showFeeModal = false;
     }
 
-    /**
-     * STEP 1 Confirm & Save -> Student + Invoice create.
-     * Invoice toiri hole (new student + fee selected) StudentPaymentCollectComponent
-     * page-e redirect kora hoy (invoice id shoho). Invoice na thakle form reset kore dey.
-     */
     public function save()
     {
         DB::beginTransaction();
 
         try {
-
-            $this->validate($this->rules());
+            $this->validate($this->rules(), $this->messages());
 
             $institutionId = auth()->user()->institution_id;
 
@@ -389,16 +422,13 @@ class StudentAddComponent extends Component
                 ? $this->guardian_photo_upload->store('guardians', 'public')
                 : null;
 
-            // ── Race-condition safety: lock kore last student dhore
-            // student_id ke re-verify/re-generate kora hocche, preview-e generate
-            // kora value use na kore ekhane lock-safe kora holo ──
             $inst = institution();
             $stdDigit     = (int) ($inst->student_id_digit_length ?? 6);
             $stdStartFrom = (int) ($inst->student_id_start_from ?? 1);
 
             $stdPrefix = ($inst->enable_student_id_prefix && $inst->student_id_code_prefix)
                 ? $inst->student_id_code_prefix
-                : 'SCH' . str_pad($institutionId, 2, '0', STR_PAD_LEFT);
+                : 'STD' . str_pad($institutionId, 2, '0', STR_PAD_LEFT);
 
             $year = now()->format('y');
 
@@ -534,6 +564,44 @@ class StudentAddComponent extends Component
             $this->dispatch('date-updated', date: $this->admission_date);
             $this->dispatch('date-updated', date: $this->dob);
             $this->dispatch('toast', type: 'success', message: 'Student created successfully!');
+
+        } catch (ValidationException $e) {
+
+            DB::rollBack();
+            $this->showFeeModal = false;
+            throw $e;
+
+        } catch (QueryException $e) {
+
+            DB::rollBack();
+
+            // ── FIX: raw DB duplicate-key error (1062) ke user-friendly
+            // validation error e convert kora holo, raw 500 exception dekhano
+            // hobe na. Kon field e duplicate hoyeche seta message theke detect
+            // kora hocche ──
+            if ((int) $e->getCode() === 23000 || str_contains($e->getMessage(), '1062')) {
+
+                $this->showFeeModal = false;
+
+                if (str_contains($e->getMessage(), 'users_username_unique')) {
+                    $this->addError('username', 'This username is already taken. Please choose a different one.');
+                    $this->addError('guardian_username', 'This username is already taken. Please choose a different one.');
+                } elseif (str_contains($e->getMessage(), 'students_registration_no')) {
+                    $this->addError('registration_no', 'This registration number is already used. Please refresh and try again.');
+                } elseif (str_contains($e->getMessage(), 'students_student_id')) {
+                    $this->addError('student_id', 'This student ID is already used. Please refresh and try again.');
+                } else {
+                    $this->addError('name', 'A duplicate entry was found. Please check your input and try again.');
+                }
+
+                $this->dispatch('validation-failed');
+                $this->dispatch('toast', type: 'error', message: 'Duplicate data found. Please check the highlighted fields.');
+
+                return;
+            }
+
+            $this->dispatch('toast', type: 'error', message: 'Something went wrong!');
+            throw $e;
 
         } catch (\Throwable $e) {
 

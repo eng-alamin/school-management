@@ -1,144 +1,146 @@
-{{-- Teacher Schedule --}}
+<div>
 
-<div class="mat-card" style="padding-top:28px">
+    <div class="card">
 
-    <!-- floating header -->
-    <div class="mat-card-header header-pink-gradient">
-        <h5 id="cardHeaderTitleAllschedules">Teacher Schedule</h5>
-        <p id="cardHeaderSubtitle">View weekly class schedule assigned to a specific teacher.</p>
-    </div>
+        <div class="mat-card-header header-pink-gradient">
+            <h5 id="cardHeaderTitleAllschedules">Teacher Schedule</h5>
+            <p id="cardHeaderSubtitle">View weekly class schedule assigned to a specific teacher.</p>
+        </div>
 
-    <div id="teacherSchedulePrintable">
+        <div id="teacherSchedulePrintable">
 
-        <div class="row g-4 p-5 no-print">
+            <div class="row g-4 p-5 no-print">
 
-            {{-- Teacher Select --}}
-            <div class="col-md-8 offset-md-2">
-                <div class="input-group input-group-outline" wire:ignore>
-                    <label class="form-label">Teacher</label>
-                    <select wire:model="teacher_id" class="form-select">
-                        <option value="">Select Teacher</option>
-                        @foreach ($teachers as $t)
-                            <option value="{{ $t->id }}">{{ $t->name }}</option>
-                        @endforeach
-                    </select>
+                {{-- Teacher Select --}}
+                <div class="col-md-8 offset-md-2">
+                    <div class="input-group input-group-outline" wire:ignore>
+                        <label class="form-label">Teacher</label>
+                        <select wire:model="teacher_id" class="form-select">
+                            <option value="">Select Teacher</option>
+                            @foreach ($teachers as $t)
+                                <option value="{{ $t->id }}">{{ $t->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @error('teacher_id') <span class="text-danger small">{{ $message }}</span> @enderror
                 </div>
-                @error('teacher_id') <span class="text-danger small">{{ $message }}</span> @enderror
+
+                <div class="col-md-8 offset-md-2 text-center">
+                    <button wire:click="filter" class="btn-pink w-100 d-flex justify-content-center align-items-center" type="button">
+                        <span wire:loading wire:target="filter" class="spinner-border spinner-border-sm me-2"></span>
+                        View Schedule
+                    </button>
+                </div>
+
             </div>
 
-            <div class="col-md-8 offset-md-2 text-center">
-                <button wire:click="filter" class="btn-pink w-100 d-flex justify-content-center align-items-center" type="button">
-                    <span wire:loading wire:target="filter" class="spinner-border spinner-border-sm me-2"></span>
-                    View Schedule
+            {{-- Print-only header (teacher name), shown only inside print window --}}
+            <div class="print-only-header" style="display:none">
+                <h2>Teacher Schedule</h2>
+                @if($teacher_id)
+                    <p>
+                        Teacher:
+                        {{ optional($teachers->firstWhere('id', (int) $teacher_id))->name }}
+                    </p>
+                @endif
+            </div>
+
+            @if($hasSchedule)
+            <div id="sched-grid-wrap">
+                <table id="sched-grid" role="grid">
+                    <thead>
+                        <tr class="sched-thead-row">
+                            <th scope="col">
+                                <div class="sched-th-in sched-th-time-hdr">
+                                    <span class="sched-th-day">Period</span>
+                                </div>
+                            </th>
+                            @foreach($days as $day)
+                            <th scope="col">
+                                <div class="sched-th-in">
+                                    <span class="sched-th-day">{{ $day }}</span>
+                                </div>
+                            </th>
+                            @endforeach
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($scheduleGrid as $periodIndex => $row)
+                        <tr>
+                            {{-- Period column --}}
+                            <td class="sched-td-per">
+                                <div class="sched-per-inner">
+                                    <span class="sched-per-num">{{ $periodIndex + 1 }}</span>
+                                    @if($row['start_time'] && $row['end_time'])
+                                    <span class="sched-per-time">
+                                        {{ \Carbon\Carbon::createFromFormat('H:i', $row['start_time'])->format('g:i A') }}
+                                        –
+                                        {{ \Carbon\Carbon::createFromFormat('H:i', $row['end_time'])->format('g:i A') }}
+                                    </span>
+                                    @endif
+                                </div>
+                            </td>
+
+                            {{-- Each day cell --}}
+                            @foreach($days as $day)
+                            @php $item = $row[$day] ?? null; @endphp
+                            <td class="sched-td-cell {{ $item ? 'sched-c--science' : 'sched-c--empty' }}">
+                                <div class="sched-cell-in">
+                                    @if($item)
+                                        <div>
+                                            <span class="sched-subj-name">{{ $item['subject'] }}</span>
+                                        </div>
+                                        <div>
+                                            <span class="sched-tchr-name">
+                                                {{ $item['class'] }}
+                                                @if(!empty($item['section']))
+                                                    · {{ $item['section'] }}
+                                                @endif
+                                            </span>
+                                            @if(!empty($item['class_room']))
+                                                <span class="sched-room-tag">{{ $item['class_room'] }}</span>
+                                            @endif
+                                        </div>
+                                    @else
+                                        <span style="color:var(--ink-faint);font-size:.7rem">—</span>
+                                    @endif
+                                </div>
+                            </td>
+                            @endforeach
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="{{ count($days) + 1 }}" class="text-center p-4" style="color:var(--ink-faint)">
+                                No schedule found for this teacher.
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 px-5 pb-4 no-print">
+                <button type="button"
+                        class="btn btn-dark btn-sm"
+                        onclick="printTeacherSchedule()"
+                        @if(!$hasSchedule) disabled @endif>
+                    <span class="material-icons-round align-middle" style="font-size:1rem;">print</span>
+                    Print
                 </button>
             </div>
-
-        </div>
-
-        {{-- Print-only header (teacher name), shown only inside print window --}}
-        <div class="print-only-header" style="display:none">
-            <h2>Teacher Schedule</h2>
-            @if($teacher_id)
-                <p>
-                    Teacher:
-                    {{ optional($teachers->firstWhere('id', (int) $teacher_id))->name }}
-                </p>
-            @endif
-        </div>
-
-        @if($hasSchedule)
-        <div id="sched-grid-wrap">
-            <table id="sched-grid" role="grid">
-                <thead>
-                    <tr class="sched-thead-row">
-                        <th scope="col">
-                            <div class="sched-th-in sched-th-time-hdr">
-                                <span class="sched-th-day">Period</span>
-                            </div>
-                        </th>
-                        @foreach($days as $day)
-                        <th scope="col">
-                            <div class="sched-th-in">
-                                <span class="sched-th-day">{{ $day }}</span>
-                            </div>
-                        </th>
-                        @endforeach
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($scheduleGrid as $periodIndex => $row)
-                    <tr>
-                        {{-- Period column --}}
-                        <td class="sched-td-per">
-                            <div class="sched-per-inner">
-                                <span class="sched-per-num">{{ $periodIndex + 1 }}</span>
-                                @if($row['start_time'] && $row['end_time'])
-                                <span class="sched-per-time">
-                                    {{ \Carbon\Carbon::createFromFormat('H:i', $row['start_time'])->format('g:i A') }}
-                                    –
-                                    {{ \Carbon\Carbon::createFromFormat('H:i', $row['end_time'])->format('g:i A') }}
-                                </span>
-                                @endif
-                            </div>
-                        </td>
-
-                        {{-- Each day cell --}}
-                        @foreach($days as $day)
-                        @php $item = $row[$day] ?? null; @endphp
-                        <td class="sched-td-cell {{ $item ? 'sched-c--science' : 'sched-c--empty' }}">
-                            <div class="sched-cell-in">
-                                @if($item)
-                                    <div>
-                                        <span class="sched-subj-name">{{ $item['subject'] }}</span>
-                                    </div>
-                                    <div>
-                                        <span class="sched-tchr-name">
-                                            {{ $item['class'] }}
-                                            @if(!empty($item['section']))
-                                                · {{ $item['section'] }}
-                                            @endif
-                                        </span>
-                                        @if(!empty($item['class_room']))
-                                            <span class="sched-room-tag">{{ $item['class_room'] }}</span>
-                                        @endif
-                                    </div>
-                                @else
-                                    <span style="color:var(--ink-faint);font-size:.7rem">—</span>
-                                @endif
-                            </div>
-                        </td>
-                        @endforeach
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="{{ count($days) + 1 }}" class="text-center p-4" style="color:var(--ink-faint)">
-                            No schedule found for this teacher.
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-
-        <div class="d-flex justify-content-end gap-2 px-5 pb-4 no-print">
-            <button type="button"
-                    class="btn btn-dark btn-sm"
-                    onclick="printTeacherSchedule()"
-                    @if(!$hasSchedule) disabled @endif>
-                <span class="material-icons-round align-middle" style="font-size:1rem;">print</span>
-                Print
-            </button>
-        </div>
-        @elseif($teacher_id)
-            <div class="px-5 pb-4 no-print">
-                <div class="alert alert-warning py-2 mb-0" style="font-size:.82rem">
-                    <span class="material-icons-round" style="font-size:16px;vertical-align:middle">info</span>
-                    এই teacher এর কোনো schedule পাওয়া যায়নি।
+            @elseif($teacher_id)
+                <div class="px-5 pb-4 no-print">
+                    <div class="alert alert-warning py-2 mb-0" style="font-size:.82rem">
+                        <span class="material-icons-round" style="font-size:16px;vertical-align:middle">info</span>
+                        এই teacher এর কোনো schedule পাওয়া যায়নি।
+                    </div>
                 </div>
-            </div>
-        @endif
+            @endif
+
+        </div>
 
     </div>
+    
 </div>
 
 @push('styles')

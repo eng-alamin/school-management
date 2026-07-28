@@ -1,5 +1,4 @@
 <div>
-
     <div class="card">
 
       <div class="mat-card-header header-pink-gradient">
@@ -52,11 +51,13 @@
                             <td class="text-muted">{{ $schedules->firstItem() + $i }}</td>
                             <td>{{ $setup->name }}</td>
                             <td>
+                                {{-- FIX: class/section relation নাম ভুল ছিল — real relation
+                                     academicClass/academicSection ব্যবহার করা হলো --}}
                                 @if($setup->classAssign)
                                     <span class="badge bg-info-subtle text-dark">
-                                        {{ $setup->classAssign->class->name ?? '—' }}
-                                        @if($setup->classAssign->section)
-                                            - {{ $setup->classAssign->section->name }}
+                                        {{ $setup->classAssign->academicClass->name ?? '—' }}
+                                        @if($setup->classAssign->academicSection)
+                                            - {{ $setup->classAssign->academicSection->name }}
                                         @endif
                                     </span>
                                 @else
@@ -118,10 +119,12 @@
                                     <tr>
                                         <th colspan="5" class="text-center">
                                             <h6 class="mb-0">Exam : {{ $viewRecord->name }}</h6>
+                                            {{-- FIX: class/section relation নাম ভুল ছিল — real relation
+                                                 academicClass/academicSection ব্যবহার করা হলো --}}
                                             <p class="mb-0">
-                                                {{ $viewRecord->classAssign->class->name ?? '—' }}
-                                                @if($viewRecord->classAssign->section)
-                                                    ({{ $viewRecord->classAssign->section->name }})
+                                                {{ $viewRecord->classAssign->academicClass->name ?? '—' }}
+                                                @if($viewRecord->classAssign->academicSection)
+                                                    ({{ $viewRecord->classAssign->academicSection->name }})
                                                 @endif
                                             </p>
                                         </th>
@@ -135,8 +138,8 @@
                                     <th id="th-hall-room" class="text-muted">Class Room</th>
                                 </tr>
                                 @forelse($viewRecord->schedules as $sched)
-                                    <tr>
-                                        <td>{{ $sched->examSetupDetail->classAssignDetail->subject->name ?? '—' }}</td>  {{-- ✅ ঠিক --}}
+                                    <tr wire:key="sched-view-{{ $sched->id }}">
+                                        <td>{{ $sched->examSetupDetail->classAssignDetail->subject->name ?? '—' }}</td>
                                         <td>{{ $sched->exam_date?->format('d M Y') }}</td>
                                         <td>{{ \Carbon\Carbon::parse($sched->start_time)->format('h:i A') }}</td>
                                         <td>{{ \Carbon\Carbon::parse($sched->end_time)->format('h:i A') }}</td>
@@ -152,7 +155,7 @@
                     </div>
                     <div class="modal-footer">
                         <button class="btn btn-light" wire:click="$set('showViewModal',false)">Close</button>
-                        <button class="btn btn-primary" type="button" onclick="printScheduleDetails()">
+                        <button type="button" onclick="printScheduleDetails()" class="btn bg-dark text-white">
                             <i class="bi bi-printer me-1"></i>Print
                         </button>
                     </div>
@@ -189,59 +192,11 @@
 
 @push('styles')
     <style>
-        :root {
-            --primary: rgba(33, 37, 41);
-            --primary-light: rgba(239,84,84,.12);
-        }
-
-        .card { border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
-        .card-header { background: #fff; border-bottom: 1px solid var(--border); border-radius: 12px 12px 0 0 !important; padding: 16px 20px; }
-        .card-header .card-title { font-size: .95rem; font-weight: 600; margin: 0; }
-
-        .table th { font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); border-bottom: 2px solid var(--border); }
-        .table td { vertical-align: middle; font-size: .875rem; }
-        .table > :not(caption) > * > * { padding: .7rem 1rem; }
-
-        .modal-header { border-bottom: 1px solid var(--border); }
-        .modal-footer { border-top: 1px solid var(--border); }
-        .modal-title { font-weight: 600; font-size: 1rem; }
-
-        .form-label { font-size: .8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
-        .form-control, .form-select {
-            border-radius: 8px; border: 1px solid var(--border);
-            font-size: .875rem; padding: .45rem .75rem;
-            transition: border-color .2s, box-shadow .2s;
-        }
-        .form-control:focus, .form-select:focus {
-            border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light);
-        }
-
-        .btn-primary { background: var(--primary); border-color: var(--primary); }
-        .btn-primary:hover, .btn-primary:focus { background: #d63e3e; border-color: #d63e3e; }
-        .btn-sm { font-size: .78rem; padding: .3rem .65rem; border-radius: 6px; }
-        .btn-icon { width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 7px; }
-
         @media print {
             .sidebar, .topbar, .no-print { display: none !important; }
             .main-content { margin: 0; padding: 0; }
             .print-area { display: block !important; }
         }
-
-        .alert { border-radius: 10px; font-size: .875rem; }
-
-        .custom-pagination { display: flex; gap: 8px; align-items: center; }
-        .custom-pagination li { list-style: none; }
-        .custom-pagination button {
-            min-width: 38px; height: 38px; border-radius: 10px;
-            border: 1px solid #e0e0e0; background: #f5f5f5; color: #444;
-            font-weight: 600; cursor: pointer; transition: all .2s ease;
-        }
-        .custom-pagination button:hover { background: #eee; }
-        .custom-pagination button.active {
-            background: linear-gradient(195deg, #ec407a, #d81b60);
-            color: #fff; border: none; box-shadow: 0 4px 12px rgba(216,27,96,.4);
-        }
-        .custom-pagination button:disabled { opacity: .5; cursor: not-allowed; }
     </style>
 @endpush
 

@@ -314,50 +314,6 @@
 
 @push('styles')
     <style>
-        :root {
-            --primary: rgba(33, 37, 41);
-            --primary-light: rgba(239,84,84,.12);
-        }
-
-        .card { border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
-        .card-header { background: #fff; border-bottom: 1px solid var(--border); border-radius: 12px 12px 0 0 !important; padding: 16px 20px; }
-
-        .table th { font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); border-bottom: 2px solid var(--border); }
-        .table td { vertical-align: middle; font-size: .875rem; }
-        .table > :not(caption) > * > * { padding: .7rem 1rem; }
-
-        .badge-active   { background: rgba(34,197,94,.12);  color: #16a34a; }
-        .badge-inactive { background: rgba(107,114,128,.12); color: #6b7280; }
-        .badge-used     { background: rgba(59,130,246,.12);  color: #2563eb; }
-
-        .modal-title { font-weight: 600; font-size: 1rem; }
-
-        .form-label { font-size: .8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
-        .form-control, .form-select {
-            border-radius: 8px; border: 1px solid var(--border);
-            font-size: .875rem; padding: .45rem .75rem;
-            transition: border-color .2s, box-shadow .2s;
-        }
-        .form-control:focus, .form-select:focus {
-            border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light);
-        }
-        .form-check-input:checked { background-color: var(--primary); border-color: var(--primary); }
-        .btn-sm { font-size: .78rem; padding: .3rem .65rem; border-radius: 6px; }
-
-        .custom-pagination { display: flex; gap: 8px; align-items: center; }
-        .custom-pagination li { list-style: none; }
-        .custom-pagination button {
-            min-width: 38px; height: 38px; border-radius: 10px;
-            border: 1px solid #e0e0e0; background: #f5f5f5;
-            color: #444; font-weight: 600; cursor: pointer; transition: all .2s ease;
-        }
-        .custom-pagination button:hover { background: #eee; }
-        .custom-pagination button.active {
-            background: linear-gradient(195deg, #ec407a, #d81b60);
-            color: #fff; border: none; box-shadow: 0 4px 12px rgba(216,27,96,.4);
-        }
-        .custom-pagination button:disabled { opacity: .5; cursor: not-allowed; }
-
         /* ── Fee Fine View Modal ── */
         .fine-view-icon {
             width: 44px; height: 44px; border-radius: 10px;

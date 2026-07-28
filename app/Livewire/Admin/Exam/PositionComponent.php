@@ -10,6 +10,7 @@ use App\Models\ExamEntry;
 use App\Models\ExamPosition;
 use App\Models\Student;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PositionComponent extends Component
 {
@@ -52,12 +53,14 @@ class PositionComponent extends Component
             return;
         }
 
-        $examSetup = ExamSetup::with('classAssign.class', 'classAssign.section')
+        // ✅ Fix: academicClass()/academicSection() relation names ব্যবহার করা হলো
+        // (পুরনো class()/section() নাম আর কোথাও নেই, তাই আগে এখানে সবসময় "—" দেখাত)
+        $examSetup = ExamSetup::with('classAssign.academicClass', 'classAssign.academicSection')
             ->find($this->exam_setup_id);
 
         $this->selectedClassLabel = $examSetup
-            ? ($examSetup->classAssign->class->name ?? '—') .
-              ($examSetup->classAssign->section ? ' - ' . $examSetup->classAssign->section->name : '')
+            ? ($examSetup->classAssign->academicClass->name ?? '—') .
+              ($examSetup->classAssign->academicSection ? ' - ' . $examSetup->classAssign->academicSection->name : '')
             : null;
     }
 
@@ -88,6 +91,14 @@ class PositionComponent extends Component
             return;
         }
 
+        // ✅ Fix: cross-session tampering guard — exam_setup_id ট্যাম্পার করে অন্য
+        // academic_session_id এর exam পাঠানো হলে ধরা পড়বে।
+        if ((int) $examSetup->academic_session_id !== (int) $this->academic_session_id) {
+            $this->dispatch('toast', type: 'error', message: 'নির্বাচিত Exam টি এই Academic Session এর সাথে মিলছে না।');
+            $this->resetResults();
+            return;
+        }
+
         $this->resolvedClassAssignId = $examSetup->classAssign->id;
         $this->resolvedClassId       = $examSetup->classAssign->class_id;
         $this->resolvedSectionId     = $examSetup->classAssign->section_id;
@@ -102,7 +113,8 @@ class PositionComponent extends Component
         $detailIds = $details->pluck('id');
         $fullMarkTotal = $details->sum('full_mark');
 
-        $students = Student::with('class', 'section')
+        // ✅ Fix: academicClass/academicSection relation নাম
+        $students = Student::with('academicClass', 'academicSection')
             ->where('class_id', $this->resolvedClassId)
             ->when($this->resolvedSectionId, function ($q) {
                 $q->where('section_id', $this->resolvedSectionId);
@@ -156,8 +168,12 @@ class PositionComponent extends Component
                 $result = $percentage >= 33 ? 'pass' : 'fail'; // adjust threshold as needed
             }
 
+            // ✅ Fix: একই class_assign (একই class+section+exam-series) এর মধ্যেই
+            // আগের position খোঁজা হচ্ছে — আগে শুধু session + সময় দিয়ে filter হতো,
+            // যেটা ভুল class/exam থেকে position টেনে আনতে পারত।
             $previousPosition = ExamPosition::where('student_id', $student->id)
                 ->where('academic_session_id', $this->academic_session_id)
+                ->where('academic_class_assign_id', $this->resolvedClassAssignId)
                 ->whereHas('examSetup', function ($q) use ($currentExam) {
                     $q->where('created_at', '<', $currentExam->created_at);
                 })
@@ -167,20 +183,21 @@ class PositionComponent extends Component
             $existing = $existingPositions->get($student->id);
 
             $computed[$student->id] = [
-                'student_name'       => $student->name,
-                'registration_no'        => $student->registration_no,
-                'roll_no'            => $student->roll_no,
-                'class_name'         => $student->class->name ?? '',
-                'section_name'       => $student->section->name ?? '',
-                'total_obtained'     => $totalObtained,
-                'total_full_mark'    => $fullMarkTotal,
-                'percentage'         => $percentage,
-                'result'             => $result,
-                'previous_position'  => $previousPosition,
-                'position'           => $existing->position ?? null,
-                'principal_comment'  => $existing->principal_comment ?? null,
-                'teacher_comment'    => $existing->teacher_comment ?? null,
-                'all_registered'     => $allRegistered,
+                'student_name'      => $student->name,
+                'registration_no'   => $student->registration_no,
+                'roll_no'           => $student->roll_no,
+                // ✅ Fix: academicClass/academicSection
+                'class_name'        => $student->academicClass->name ?? '',
+                'section_name'      => $student->academicSection->name ?? '',
+                'total_obtained'    => $totalObtained,
+                'total_full_mark'   => $fullMarkTotal,
+                'percentage'        => $percentage,
+                'result'            => $result,
+                'previous_position' => $previousPosition,
+                'position'          => $existing->position ?? null,
+                'principal_comment' => $existing->principal_comment ?? null,
+                'teacher_comment'   => $existing->teacher_comment ?? null,
+                'all_registered'    => $allRegistered,
             ];
         }
 
@@ -202,6 +219,11 @@ class PositionComponent extends Component
 
     public function save(): void
     {
+        if (!$this->hasResults || !$this->resolvedClassAssignId || empty($this->rows)) {
+            $this->dispatch('toast', type: 'error', message: 'দয়া করে আগে Filter করুন।');
+            return;
+        }
+
         $rules = [];
         foreach ($this->rows as $studentId => $row) {
             $rules["rows.{$studentId}.position"] = 'required|integer|min:1';
@@ -211,16 +233,21 @@ class PositionComponent extends Component
             'rows.*.position' => 'Position',
         ]);
 
+        $institutionId = institution()->id;
+
         DB::beginTransaction();
         try {
             foreach ($this->rows as $studentId => $row) {
                 ExamPosition::updateOrCreate(
                     [
-                        'exam_setup_id'             => $this->exam_setup_id,
-                        'academic_class_assign_id'  => $this->resolvedClassAssignId,
-                        'student_id'                => $studentId,
+                        'exam_setup_id'            => $this->exam_setup_id,
+                        'academic_class_assign_id' => $this->resolvedClassAssignId,
+                        'student_id'               => $studentId,
                     ],
                     [
+                        // ✅ Fix: institution_id explicit set করা হলো
+                        // (Exam module এর প্রতিটা টেবিলেই এই bug repeat হয়েছিল)
+                        'institution_id'      => $institutionId,
                         'academic_session_id' => $this->academic_session_id,
                         'total_obtained'      => $row['total_obtained'],
                         'total_full_mark'     => $row['total_full_mark'],
@@ -237,7 +264,7 @@ class PositionComponent extends Component
             DB::commit();
         } catch (\Throwable $e) {
             DB::rollBack();
-            \Log::error('ExamPosition save failed: ' . $e->getMessage());
+            Log::error('ExamPosition save failed: ' . $e->getMessage());
             $this->dispatch('toast', type: 'error', message: 'Something went wrong!');
             return;
         }
@@ -250,8 +277,9 @@ class PositionComponent extends Component
     {
         $academicSessions = AcademicSession::orderByDesc('id')->get();
 
+        // ✅ Fix: academicClass/academicSection relation নাম
         $exams = $this->academic_session_id
-            ? ExamSetup::with('classAssign.class', 'classAssign.section')
+            ? ExamSetup::with('classAssign.academicClass', 'classAssign.academicSection')
                 ->where('academic_session_id', $this->academic_session_id)
                 ->whereHas('details')
                 ->orderBy('name')

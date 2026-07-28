@@ -57,6 +57,9 @@
                             <th id="th-numeric" wire:click="sortBy('numeric')" style="cursor:pointer">
                                 Numeric @if($sortField === 'numeric') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
+                            <th id="th-has-section" wire:click="sortBy('has_section')" style="cursor:pointer">
+                                Has Section @if($sortField === 'has_section') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
+                            </th>
                             <th id="th-section">Section</th>
                             <th id="th-actions">Actions</th>
                         </tr>
@@ -68,13 +71,24 @@
                             <td>{{ $class->name }}</td>
                             <td>{{ $class->numeric ?? '—' }}</td>
                             <td>
-                                @forelse($class->sections as $section)
-                                    <span class="badge bg-primary">
-                                        {{ $section->name }}
-                                    </span>
-                                @empty
-                                    —
-                                @endforelse
+                                @if($class->has_section)
+                                    <span class="badge bg-success">Yes</span>
+                                @else
+                                    <span class="badge bg-secondary">No</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if($class->has_section)
+                                    @forelse($class->sections as $section)
+                                        <span class="badge bg-primary">
+                                            {{ $section->name }}
+                                        </span>
+                                    @empty
+                                        —
+                                    @endforelse
+                                @else
+                                    <span class="text-muted">N/A</span>
+                                @endif
                             </td>
                             <td>
                                 <div class="d-flex gap-1">
@@ -89,7 +103,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="5" class="text-center py-5 text-muted">
+                            <td colspan="6" class="text-center py-5 text-muted">
                                 <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
                                 No classes found. <a href="#" wire:click.prevent="openCreate">Create one now</a>.
                             </td>
@@ -129,6 +143,21 @@
                                 @error('numeric') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                             <div class="col-md-12">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="hasSectionSwitch" wire:model.live="hasSection">
+                                    <label class="form-check-label form-label mb-0" for="hasSectionSwitch">
+                                        This class has sections
+                                    </label>
+                                </div>
+                                @if($editId && !$hasSection)
+                                    <small class="text-warning d-block mt-1">
+                                        <i class="bi bi-exclamation-triangle"></i>
+                                        Turning this off will remove all section assignments for this class.
+                                    </small>
+                                @endif
+                            </div>
+                            @if($hasSection)
+                            <div class="col-md-12">
                                 <div wire:ignore>
                                     <label class="form-label">Section</label>
                                     <select class="form-select w-100 selectpicker @error('sectionIds') is-invalid @enderror" wire:model.defer="sectionIds" multiple title="Select Section...">
@@ -139,7 +168,8 @@
                                     @error('sectionIds') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                             </div>
-                            
+                            @endif
+
                         </div>
                     </div>
                     <div class="modal-footer border-0">
@@ -163,15 +193,23 @@
                         <div style="width:56px;height:56px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
                             <i class="bi bi-exclamation-triangle text-danger" style="font-size:1.5rem;"></i>
                         </div>
-                        <h6 class="fw-700">Delete Class?</h6>
-                        <p class="text-muted small">This action cannot be undone.</p>
+
+                        @if($deleteBlockedMessage)
+                            <h6 class="fw-700">Cannot Delete</h6>
+                            <p class="text-danger small">{{ $deleteBlockedMessage }}</p>
+                        @else
+                            <h6 class="fw-700">Delete Class?</h6>
+                            <p class="text-muted small">This action cannot be undone.</p>
+                        @endif
                     </div>
                     <div class="modal-footer justify-content-center border-0 pt-0">
                         <button class="btn btn-light btn-sm" wire:click="$set('confirmDelete', false)">Cancel</button>
-                        <button class="btn btn-danger btn-sm" wire:click="deleteRecord">
-                            <span wire:loading wire:target="deleteRecord" class="spinner-border spinner-border-sm me-1"></span>
-                            Delete
-                        </button>
+                        @if(! $deleteBlockedMessage)
+                            <button class="btn btn-danger btn-sm" wire:click="deleteRecord">
+                                <span wire:loading wire:target="deleteRecord" class="spinner-border spinner-border-sm me-1"></span>
+                                Delete
+                            </button>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -212,6 +250,46 @@
     {{-- selectpicker --}}
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.0/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
+    {{-- <script>
+        document.addEventListener('livewire:init', function () {
+
+            function refreshPicker() {
+                $('.selectpicker').selectpicker('refresh');
+            }
+
+            function initPicker() {
+                $('.selectpicker').selectpicker();
+            }
+
+            // initial load
+            setTimeout(() => {
+                initPicker();
+            }, 300);
+
+            // Livewire 3 fix: use 'commit' hook instead of deprecated 'message.processed'
+            Livewire.hook('commit', ({ succeed }) => {
+                succeed(() => {
+                    setTimeout(() => {
+                        refreshPicker();
+                    }, 50);
+                });
+            });
+
+            // NOTE: No manual @this.set('sectionIds', ...) here on purpose.
+            // wire:model.defer already listens to the native <select>'s change
+            // event, and bootstrap-select fires that same native event when a
+            // user picks an option. Adding a manual @this.set() on top of that
+            // caused duplicate/racing network requests, so it has been removed.
+
+            // 🔥 THIS IS THE MOST IMPORTANT FIX
+            Livewire.on('showModalChanged', () => {
+                setTimeout(() => {
+                    initPicker();
+                }, 300);
+            });
+
+        });
+    </script> --}}
     <script>
         // $('.selectpicker').selectpicker();
         document.addEventListener('livewire:init', function () {
@@ -222,31 +300,26 @@
 
             function initPicker() {
                 $('.selectpicker').selectpicker();
-                // refreshPicker();
             }
 
             // initial load
             setTimeout(() => {
                 initPicker();
-            }, 300);
+            }, 50);
 
-            // Livewire update fix
-            Livewire.hook('message.processed', () => {
-                setTimeout(() => {
-                    refreshPicker();
-                }, 50);
-            });
-
-            // sync value
-            $(document).on('changed.bs.select', '.selectpicker', function () {
-                @this.set('sectionIds', $(this).val());
+            Livewire.hook('commit', ({ succeed }) => {
+                succeed(() => {
+                    setTimeout(() => {
+                        initPicker();
+                    }, 50);
+                });
             });
 
             // 🔥 THIS IS THE MOST IMPORTANT FIX
             Livewire.on('showModalChanged', () => {
                 setTimeout(() => {
                     initPicker();
-                }, 300);
+                }, 50);
             });
 
         });

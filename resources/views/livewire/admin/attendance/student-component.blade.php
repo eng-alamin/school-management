@@ -1,22 +1,23 @@
-<div class="mat-card" style="padding-top:28px">
+<div>
+    <div class="card">
 
     {{-- Floating Header --}}
     <div class="mat-card-header header-pink-gradient">
-        <h5><span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">event_note</span>Student Attendance</h5>
+        <h5>Student Attendance</h5>
         <p>Mark or update student attendance</p>
     </div>
 
     {{-- Select Ground --}}
     <div class="form-section" style="padding-top:40px; padding-bottom:20px">
         <div class="section-heading">
-            <span class="material-icons-round">tune</span> Select Ground
+            <span class="material-icons-round">school</span> Select Ground
         </div>
         <div class="row g-4">
 
             {{-- Class --}}
             <div class="col-md-4">
                 <div class="input-group input-group-outline">
-                    <label class="form-label">Class</label>
+                    <label class="form-label">Class <span class="text-danger">*</span></label>
                     <select wire:model.live="filterClass" class="form-select">
                         <option value="">Select Class</option>
                         @foreach ($classes as $item)
@@ -27,21 +28,36 @@
                 @error('filterClass') <span class="text-danger small">{{ $message }}</span> @enderror
             </div>
 
-            {{-- Section --}}
+            {{-- Section: class-e section thakle "All Section" soho required dropdown,
+                 na thakle same dropdown disabled thakbe --}}
             <div class="col-md-4">
                 <div class="input-group input-group-outline">
-                    <label class="form-label">Section</label>
-                    <select wire:model.live="filterSection" class="form-select"
-                        {{ empty($sections) ? 'disabled' : '' }}>
-                        <option value="">{{ !$filterClass ? 'Select Class First' : 'Select Section' }}</option>
-                        @if(!empty($sections))
+                    <label class="form-label">
+                        Section
+                        @if($selectedClassHasSection)
+                            <span class="text-danger">*</span>
+                        @endif
+                    </label>
+                    <select
+                        wire:model.live="filterSection"
+                        class="form-select @error('filterSection') is-invalid @enderror"
+                        @disabled(!$filterClass || !$selectedClassHasSection)
+                    >
+                        @if(!$filterClass)
+                            <option value="">Select class first</option>
+                        @elseif(!$selectedClassHasSection)
+                            <option value="">N/A — this class has no sections</option>
+                        @else
+                            <option value="">Select Section</option>
+                            {{-- ✅ "All Section" — select korle ei class-er sob section-er data eksathe dekhabe --}}
                             <option value="all">All Section</option>
-                            @foreach ($sections as $item)
-                                <option value="{{ $item->id }}">{{ $item->name }}</option>
+                            @foreach($availableSections as $s)
+                                <option value="{{ $s['id'] }}">{{ $s['name'] }}</option>
                             @endforeach
                         @endif
                     </select>
                 </div>
+                @error('filterSection') <span class="text-danger small">{{ $message }}</span> @enderror
             </div>
 
             {{-- Date --}}
@@ -76,19 +92,19 @@
     {{-- Attendance Table --}}
     @if($hasAttendance)
     <div class="form-section">
-        <div class="section-heading">
-            <span class="material-icons-round">groups</span> Students Attendance
+        <div class="section-heading d-flex align-items-center justify-content-between">
+            <span>Students Attendance</span>
+            <span class="att-count-badge">{{ count($data) }} student(s)</span>
         </div>
 
         <div class="table-responsive mt-3">
-            <table class="schedule-table">
+            <table class="table table-hover mb-0">
                 <thead>
                     <tr>
                         <th id="th-sl">SL</th>
                         <th id="th-name">Name</th>
                         <th id="th-section">Section</th>
                         <th id="th-roll">Roll</th>
-                        <th id="th-register-no">Register No</th>
                         <th id="th-status">Status</th>
                         <th id="th-remark">Remarks</th>
                     </tr>
@@ -96,28 +112,38 @@
                 <tbody>
                     @foreach($data as $index => $item)
                     <tr wire:key="student-att-{{ $index }}">
-                        <td>{{ $index + 1 }}</td>
-                        <td>{{ $item['name'] }}</td>
-                        <td>{{ $item['section_name'] }}</td>
-                        <td>{{ $item['roll_no'] }}</td>
-                        <td>{{ $item['register_no'] }}</td>
+                        <td class="text-muted fw-500">{{ $index + 1 }}</td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <img src="{{ $item['photo'] ? asset('storage/' . $item['photo']) : asset('assets/img/boy.jpg') }}"
+                                    style="width:36px;height:36px;border-radius:8px;object-fit:cover;" alt="">
+                                <span>
+                                    <span class="fw-600 d-block" style="font-size:.85rem">{{ $item['name'] }}</span>
+                                    <span class="fs-8 fw-bold">{{ $item['student_id'] }}</span>
+                                </span>
+                            </div>
+                        </td>
+                        {{-- ✅ Fix: khali section_name er khetre 'All Section' na, '—' dekhano hocche
+                             (age eta ekjon individual student er row-e bhul bhabe "All Section" dekhato) --}}
+                        <td><span class="att-section-pill">{{ $item['section_name'] ?: '—' }}</span></td>
+                        <td class="fw-500">{{ $item['roll_no'] }}</td>
                         <td>
                             <div class="status-group">
-                                <label>
+                                <label class="status-opt status-opt--present">
                                     <input type="radio" wire:model="data.{{ $index }}.status" value="present">
-                                    <span class="text-success">Present</span>
+                                    <span><span class="material-icons-round status-ic">check_circle</span>Present</span>
                                 </label>
-                                <label>
+                                <label class="status-opt status-opt--absent">
                                     <input type="radio" wire:model="data.{{ $index }}.status" value="absent">
-                                    <span class="text-danger">Absent</span>
+                                    <span><span class="material-icons-round status-ic">cancel</span>Absent</span>
                                 </label>
-                                <label>
+                                <label class="status-opt status-opt--late">
                                     <input type="radio" wire:model="data.{{ $index }}.status" value="late">
-                                    <span class="text-warning">Late</span>
+                                    <span><span class="material-icons-round status-ic">schedule</span>Late</span>
                                 </label>
-                                <label>
+                                <label class="status-opt status-opt--leave">
                                     <input type="radio" wire:model="data.{{ $index }}.status" value="leave">
-                                    <span class="text-info">Leave</span>
+                                    <span><span class="material-icons-round status-ic">event_busy</span>Leave</span>
                                 </label>
                             </div>
                         </td>
@@ -143,7 +169,7 @@
                 wire:click="save"
                 wire:loading.attr="disabled"
                 wire:target="save">
-            <span wire:loading.remove wire:target="save">
+            <span wire:loading.remove wire:target="save" style="display: inline-flex;align-items: center;gap: 6px">
                 <span class="material-icons-round">save</span> Save
             </span>
             <span wire:loading wire:target="save">
@@ -154,50 +180,88 @@
     @endif
 
 </div>
+</div>
 
 @push('styles')
 <style>
-    .schedule-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 13px;
-    }
-    .schedule-table thead th {
-        padding: 10px 10px;
-        text-align: left;
-        font-weight: 600;
-        font-size: 12px;
-        color: #aaa;
-        white-space: nowrap;
-    }
-    .schedule-table tbody td {
-        padding: 7px 8px;
-        vertical-align: middle;
-    }
     .schedule-input {
-        border: 1px solid #3d3d3d;
-        padding: 6px 10px;
-        border-radius: 4px;
+        border: 1px solid #e0e0e0;
+        padding: 7px 11px;
+        border-radius: 6px;
         font-size: 12px;
         outline: none;
         width: 100%;
-        transition: border-color 0.2s;
+        transition: border-color .2s, box-shadow .2s;
+        background: #fafafa;
     }
     .schedule-input:focus {
         border-color: #e05252;
+        box-shadow: 0 0 0 3px rgba(224,82,82,.12);
+        background: #fff;
     }
+
+    /* ── Attendance count badge ── */
+    .att-count-badge {
+        font-size: .72rem;
+        font-weight: 600;
+        color: #6a6a6a;
+        background: #f2f2f2;
+        padding: 4px 12px;
+        border-radius: 20px;
+    }
+
+    /* ── Section pill ── */
+    .att-section-pill {
+        font-size: .7rem;
+        font-weight: 600;
+        color: #4a4a4a;
+        background: #f0f0f0;
+        padding: 3px 10px;
+        border-radius: 20px;
+        white-space: nowrap;
+    }
+
+    /* ── Status radio -> pill button ── */
     .status-group {
         display: flex;
-        gap: 10px;
+        gap: 6px;
         flex-wrap: wrap;
     }
-    .status-group label {
-        display: flex;
+    .status-opt {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        cursor: pointer;
+        margin: 0;
+    }
+    .status-opt input {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .status-opt span {
+        display: inline-flex;
         align-items: center;
         gap: 4px;
-        cursor: pointer;
-        font-size: 12px;
+        font-size: .72rem;
+        font-weight: 600;
+        padding: 6px 11px;
+        border-radius: 20px;
+        border: 1px solid #e5e5e5;
+        color: #999;
+        background: #fff;
+        transition: all .15s;
+        white-space: nowrap;
     }
+    .status-ic { font-size: 15px !important; }
+
+    .status-opt:hover span { border-color: #ccc; }
+
+    .status-opt--present input:checked + span { background: #e8f8ee; border-color: #34c759; color: #1a9c46; }
+    .status-opt--absent  input:checked + span { background: #fdecec; border-color: #e0524f; color: #c0362f; }
+    .status-opt--late    input:checked + span { background: #fff6e0; border-color: #e0a52f; color: #9c6d05; }
+    .status-opt--leave   input:checked + span { background: #e8f3fd; border-color: #3f9ce0; color: #1a6ea6; }
 </style>
 @endpush
 

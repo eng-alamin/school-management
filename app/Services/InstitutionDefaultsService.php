@@ -13,6 +13,7 @@ use App\Models\AcademicSession;
 use App\Models\AcademicSection;
 use App\Models\AcademicSubject;
 use App\Models\AcademicClass;
+use App\Models\AcademicClassSection;
 use App\Models\AcademicClassAssign;
 use App\Models\AcademicClassAssignDetail;
 use App\Models\ExamTerm;
@@ -41,6 +42,7 @@ class InstitutionDefaultsService
         self::createAcademicSections($institution);
         self::createAcademicSubjects($institution);
         self::createAcademicClasses($institution);
+        self::assignSectionsToClasses($institution);
         self::createAcademicAssigns($institution);
 
         self::createExamTerms($institution);
@@ -219,54 +221,95 @@ class InstitutionDefaultsService
     private static function createAcademicClasses(Institution $institution): void
     {
         $classes = [
-            'Play' => 0,
-            'Nursery' => 1,
-            'KG' => 2,
-            'Class 1' => 3,
-            'Class 2' => 4,
-            'Class 3' => 5,
-            'Class 4' => 6,
-            'Class 5' => 7,
-            'Class 6' => 8,
-            'Class 7' => 9,
-            'Class 8' => 10,
-            'Class 9' => 11,
-            'Class 10' => 12,
-            'Class 11' => 13,
-            'Class 12' => 14,
+            ['name' => 'Play',     'numeric' => 0,  'has_section' => false],
+            ['name' => 'Nursery',  'numeric' => 0,  'has_section' => false],
+            ['name' => 'KG',       'numeric' => 0,  'has_section' => false],
+
+            ['name' => 'Class 1',  'numeric' => 1,  'has_section' => false],
+            ['name' => 'Class 2',  'numeric' => 2,  'has_section' => false],
+            ['name' => 'Class 3',  'numeric' => 3,  'has_section' => false],
+            ['name' => 'Class 4',  'numeric' => 4,  'has_section' => false],
+            ['name' => 'Class 5',  'numeric' => 5,  'has_section' => false],
+
+            ['name' => 'Class 6',  'numeric' => 6,  'has_section' => true],
+            ['name' => 'Class 7',  'numeric' => 7,  'has_section' => true],
+            ['name' => 'Class 8',  'numeric' => 8,  'has_section' => true],
+            ['name' => 'Class 9',  'numeric' => 9,  'has_section' => true],
+            ['name' => 'Class 10', 'numeric' => 10, 'has_section' => true],
+            ['name' => 'Class 11', 'numeric' => 11, 'has_section' => true],
+            ['name' => 'Class 12', 'numeric' => 12, 'has_section' => true],
         ];
 
-        foreach ($classes as $name => $numeric) {
-            AcademicClass::firstOrCreate(
+        foreach ($classes as $class) {
+            AcademicClass::updateOrCreate(
                 [
                     'institution_id' => $institution->id,
-                    'name' => $name,
+                    'name' => $class['name'],
                 ],
                 [
-                    'numeric' => $numeric,
+                    'numeric' => $class['numeric'],
+                    'has_section' => $class['has_section'],
                 ]
             );
         }
     }
-    private static function createAcademicAssigns(Institution $institution): void
+    private static function assignSectionsToClasses(Institution $institution): void
     {
-        $classes = AcademicClass::where('institution_id', $institution->id)->get();
-        $sections = AcademicSection::where('institution_id', $institution->id)->take(2)->get();
-        $subjects = AcademicSubject::where('institution_id', $institution->id)->take(3)->get();
+        $sections = AcademicSection::where('institution_id', $institution->id)
+            ->whereIn('name', ['A', 'B'])
+            ->get();
+
+        $classes = AcademicClass::where('institution_id', $institution->id)
+            ->where('has_section', true)
+            ->get();
 
         foreach ($classes as $class) {
             foreach ($sections as $section) {
+                AcademicClassSection::firstOrCreate([
+                    'institution_id' => $institution->id,
+                    'class_id'       => $class->id,
+                    'section_id'     => $section->id,
+                ]);
+            }
+        }
+    }
+    private static function createAcademicAssigns(Institution $institution): void
+    {
+        $subjects = AcademicSubject::where('institution_id', $institution->id)->take(3)->get();
+        $classes = AcademicClass::with('sections')->where('institution_id', $institution->id)->get();
+
+        foreach ($classes as $class) {
+            // যেসব class-এর section নেই
+            if (! $class->has_section) {
                 $classAssign = AcademicClassAssign::firstOrCreate([
                     'institution_id' => $institution->id,
-                    'class_id' => $class->id,
-                    'section_id' => $section->id,
+                    'class_id'       => $class->id,
+                    'section_id'     => null,
+                ]);
+                foreach ($subjects as $subject) {
+                    AcademicClassAssignDetail::firstOrCreate([
+                        'institution_id'            => $institution->id,
+                        'academic_class_assign_id'  => $classAssign->id,
+                        'subject_id'                => $subject->id,
+                    ]);
+                }
+                continue;
+            }
+
+            // যেসব class-এর section আছে
+            foreach ($class->sections as $section) {
+
+                $classAssign = AcademicClassAssign::firstOrCreate([
+                    'institution_id' => $institution->id,
+                    'class_id'       => $class->id,
+                    'section_id'     => $section->id,
                 ]);
 
                 foreach ($subjects as $subject) {
                     AcademicClassAssignDetail::firstOrCreate([
-                        'institution_id' => $institution->id,
-                        'academic_class_assign_id' => $classAssign->id,
-                        'subject_id' => $subject->id,
+                        'institution_id'            => $institution->id,
+                        'academic_class_assign_id'  => $classAssign->id,
+                        'subject_id'                => $subject->id,
                     ]);
                 }
             }

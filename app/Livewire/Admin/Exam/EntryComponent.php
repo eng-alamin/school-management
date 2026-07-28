@@ -39,12 +39,13 @@ class EntryComponent extends Component
             return;
         }
 
-        $examSetup = ExamSetup::with('classAssign.class', 'classAssign.section')
+        // (আগের সেশনের সিদ্ধান্ত অনুযায়ী)।
+        $examSetup = ExamSetup::with('classAssign.academicClass', 'classAssign.academicSection')
             ->find($this->exam_setup_id);
 
         $this->selectedClassLabel = $examSetup
-            ? ($examSetup->classAssign->class->name ?? '—') .
-              ($examSetup->classAssign->section ? ' - ' . $examSetup->classAssign->section->name : '')
+            ? ($examSetup->classAssign->academicClass->name ?? '—') .
+              ($examSetup->classAssign->academicSection ? ' - ' . $examSetup->classAssign->academicSection->name : '')
             : null;
     }
 
@@ -75,6 +76,17 @@ class EntryComponent extends Component
 
         $this->selectedDetail = ExamSetupDetail::with('classAssignDetail.subject')
             ->find($this->exam_setup_detail_id);
+
+        if (!$this->selectedDetail) {
+            $this->dispatch('toast', type: 'error', message: 'Subject detail পাওয়া যায়নি।');
+            return;
+        }
+
+        if ($this->selectedDetail->exam_setup_id != $this->exam_setup_id) {
+            $this->dispatch('toast', type: 'error', message: 'Subject টি নির্বাচিত Exam এর সাথে মিলছে না।');
+            $this->resetResults();
+            return;
+        }
 
         $examSetup = ExamSetup::with('classAssign')->find($this->exam_setup_id);
 
@@ -119,7 +131,17 @@ class EntryComponent extends Component
 
     public function save(): void
     {
+        if (!$this->hasResults || !$this->selectedDetail || empty($this->students)) {
+            $this->dispatch('toast', type: 'error', message: 'দয়া করে আগে Filter করুন।');
+            return;
+        }
+
         $detail = $this->selectedDetail;
+
+        $allowedStudentIds = $this->students->pluck('id')->all();
+        $this->entries      = collect($this->entries)
+            ->only($allowedStudentIds)
+            ->all();
 
         $rules = [];
         foreach ($this->entries as $studentId => $row) {
@@ -144,6 +166,8 @@ class EntryComponent extends Component
             'entries.*.mcq_obtained'       => 'MCQ Mark',
         ]);
 
+        $institutionId = institution()->id;
+
         DB::beginTransaction();
         try {
             foreach ($this->entries as $studentId => $row) {
@@ -161,6 +185,7 @@ class EntryComponent extends Component
                         'student_id'            => $studentId,
                     ],
                     [
+                        'institution_id'      => $institutionId,
                         'exam_setup_id'       => $this->exam_setup_id,
                         'is_absent'           => $isAbsent,
                         'practical_obtained'  => $practical,
@@ -183,8 +208,7 @@ class EntryComponent extends Component
 
     public function render()
     {
-        // শুধু সেই Exam Setup গুলো দেখাবো যাদের subject আছে
-        $exams = ExamSetup::with('classAssign.class', 'classAssign.section')
+        $exams = ExamSetup::with('classAssign.academicClass', 'classAssign.academicSection')
             ->whereHas('details')
             ->orderBy('name')
             ->get();

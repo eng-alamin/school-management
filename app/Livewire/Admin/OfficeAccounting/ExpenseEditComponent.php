@@ -124,6 +124,7 @@ class ExpenseEditComponent extends Component
             $this->remove_attachment = false;
 
             $this->dispatch('toast', type: 'success', message: 'Expense updated successfully!');
+            $this->redirect(route('admin.office-accounting.expense.list'), navigate: true);
 
         } catch (\Throwable $e) {
             DB::rollBack();

@@ -1,372 +1,373 @@
-<div class="mat-card" style="padding-top:28px">
+<div>
+    <div class="card">
 
-    <!-- Floating Header -->
-    <div class="mat-card-header header-pink-gradient">
-        <h5 id="sale-edit-title">
-            Edit Sale
-        </h5>
-        <p id="sale-edit-subtitle">Update existing sale bill record</p>
-    </div>
+        <!-- Floating Header -->
+        <div class="mat-card-header header-pink-gradient">
+            <h5 id="sale-edit-title">
+                Edit Sale
+            </h5>
+            <p id="sale-edit-subtitle">Update existing sale bill record</p>
+        </div>
 
-    <!-- ══ SALE DETAILS ══ -->
-    <div class="form-section">
-        <div class="row g-3 g-md-4">
+        <!-- ══ SALE DETAILS ══ -->
+        <div class="form-section">
+            <div class="row g-3 g-md-4">
 
-            <!-- Role -->
-            <div class="col-12 col-md-6">
-                <div class="input-group input-group-outline" wire:ignore>
-                    <label class="form-label">Role <span class="req">*</span></label>
-                    <select wire:model.live="role" class="form-select">
-                        <option value="">Select</option>
-                        <option value="student">Student</option>
-                        <option value="teacher">Teacher</option>
-                        <option value="staff">Staff</option>
-                        <option value="other">Other</option>
-                    </select>
-                </div>
-                @error('role') <span class="text-danger">{{ $message }}</span> @enderror
-            </div>
-
-            <!-- Class (only when role = student) -->
-            @if($role === 'student')
+                <!-- Role -->
                 <div class="col-12 col-md-6">
                     <div class="input-group input-group-outline" wire:ignore>
-                        <label class="form-label">Class <span class="req">*</span></label>
-                        <select wire:model.live="class_id" class="form-select">
+                        <label class="form-label">Role <span class="req">*</span></label>
+                        <select wire:model.live="role" class="form-select">
                             <option value="">Select</option>
-                            @foreach($classes as $class)
-                                <option value="{{ $class->id }}">{{ $class->name }}</option>
+                            <option value="student">Student</option>
+                            <option value="teacher">Teacher</option>
+                            <option value="staff">Staff</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    @error('role') <span class="text-danger">{{ $message }}</span> @enderror
+                </div>
+
+                <!-- Class (only when role = student) -->
+                @if($role === 'student')
+                    <div class="col-12 col-md-6">
+                        <div class="input-group input-group-outline" wire:ignore>
+                            <label class="form-label">Class <span class="req">*</span></label>
+                            <select wire:model.live="class_id" class="form-select">
+                                <option value="">Select</option>
+                                @foreach($classes as $class)
+                                    <option value="{{ $class->id }}">{{ $class->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @error('class_id') <span class="text-danger">{{ $message }}</span> @enderror
+                    </div>
+                @endif
+
+                <!-- Sale To (saleable_id) -->
+                <div class="col-12 col-md-6">
+                    <div class="input-group input-group-outline">
+                        <label class="form-label">Sale To <span class="req">*</span></label>
+                        <select wire:model="saleable_id" class="form-select">
+                            <option value="">Select</option>
+                            @foreach($saleables as $saleable)
+                                @if($role === 'student')
+                                    <option value="{{ $saleable->id }}">{{ $saleable->name }}</option>
+                                @else
+                                    <option value="{{ $saleable->id }}">{{ $saleable->name }}</option>
+                                @endif
                             @endforeach
                         </select>
                     </div>
-                    @error('class_id') <span class="text-danger">{{ $message }}</span> @enderror
+                    @error('saleable_id') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
-            @endif
 
-            <!-- Sale To (saleable_id) -->
-            <div class="col-12 col-md-6">
-                <div class="input-group input-group-outline">
-                    <label class="form-label">Sale To <span class="req">*</span></label>
-                    <select wire:model="saleable_id" class="form-select">
-                        <option value="">Select</option>
-                        @foreach($saleables as $saleable)
-                            @if($role === 'student')
-                                <option value="{{ $saleable->id }}">{{ $saleable->name }}</option>
-                            @else
-                                <option value="{{ $saleable->id }}">{{ $saleable->name }}</option>
-                            @endif
-                        @endforeach
-                    </select>
+                <!-- Bill No -->
+                <div class="col-12 col-md-6">
+                    <div class="input-group input-group-outline">
+                        <label class="form-label">Bill No <span class="req">*</span></label>
+                        <input type="text"
+                            wire:model="bill_no"
+                            class="form-control"
+                            placeholder=" "
+                            onfocus="focused(this)"
+                            onfocusout="defocused(this)">
+                    </div>
+                    @error('bill_no') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
-                @error('saleable_id') <span class="text-danger">{{ $message }}</span> @enderror
+
+                <!-- Date -->
+                <div class="col-12 col-md-6">
+                    <div class="input-group input-group-outline" wire:ignore>
+                        <label class="form-label">Date <span class="req">*</span></label>
+                        <input type="date"
+                            wire:model="date"
+                            data-dp-value="{{ $date }}"
+                            class="form-control">
+                    </div>
+                    @error('date') <span class="text-danger">{{ $message }}</span> @enderror
+                </div>
+
             </div>
-
-            <!-- Bill No -->
-            <div class="col-12 col-md-6">
-                <div class="input-group input-group-outline">
-                    <label class="form-label">Bill No <span class="req">*</span></label>
-                    <input type="text"
-                           wire:model="bill_no"
-                           class="form-control"
-                           placeholder=" "
-                           onfocus="focused(this)"
-                           onfocusout="defocused(this)">
-                </div>
-                @error('bill_no') <span class="text-danger">{{ $message }}</span> @enderror
-            </div>
-
-            <!-- Date -->
-            <div class="col-12 col-md-6">
-                <div class="input-group input-group-outline" wire:ignore>
-                    <label class="form-label">Date <span class="req">*</span></label>
-                    <input type="date"
-                           wire:model="date"
-                           data-dp-value="{{ $date }}"
-                           class="form-control">
-                </div>
-                @error('date') <span class="text-danger">{{ $message }}</span> @enderror
-            </div>
-
         </div>
-    </div>
 
-    <!-- ══ SALE ITEMS ══ -->
-    <div class="form-section" style="margin-top:8px">
+        <!-- ══ SALE ITEMS ══ -->
+        <div class="form-section" style="margin-top:8px">
 
-        @error('items') <span class="text-danger d-block mb-2">{{ $message }}</span> @enderror
+            @error('items') <span class="text-danger d-block mb-2">{{ $message }}</span> @enderror
 
-        <!-- Items Table -->
-        <div class="table-responsive">
-            <table style="width:100%;min-width:820px;border-collapse:collapse;font-size:.82rem">
-                <thead>
-                    <tr style="border-bottom:2px solid var(--border,#e9ecef)">
-                        <th id="sedit-th-category" style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Category <span class="req">*</span></th>
-                        <th id="sedit-th-product" style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Product <span class="req">*</span></th>
-                        <th id="sedit-th-unit-price" style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Unit Price</th>
-                        <th id="sedit-th-qty" style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Quantity <span class="req">*</span></th>
-                        <th id="sedit-th-discount" style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Discount</th>
-                        <th id="sedit-th-total" style="padding:8px 10px;text-align:right;color:var(--muted);font-weight:600;white-space:nowrap">Total Price</th>
-                        <th style="padding:8px 10px;text-align:center;color:var(--muted);font-weight:600"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($items as $index => $item)
-                        <tr style="border-bottom:1px solid var(--border,#f0f0f0)">
+            <!-- Items Table -->
+            <div class="table-responsive">
+                <table style="width:100%;min-width:820px;border-collapse:collapse;font-size:.82rem">
+                    <thead>
+                        <tr style="border-bottom:2px solid var(--border,#e9ecef)">
+                            <th id="sedit-th-category" style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Category <span class="req">*</span></th>
+                            <th id="sedit-th-product" style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Product <span class="req">*</span></th>
+                            <th id="sedit-th-unit-price" style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Unit Price</th>
+                            <th id="sedit-th-qty" style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Quantity <span class="req">*</span></th>
+                            <th id="sedit-th-discount" style="padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;white-space:nowrap">Discount</th>
+                            <th id="sedit-th-total" style="padding:8px 10px;text-align:right;color:var(--muted);font-weight:600;white-space:nowrap">Total Price</th>
+                            <th style="padding:8px 10px;text-align:center;color:var(--muted);font-weight:600"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($items as $index => $item)
+                            <tr style="border-bottom:1px solid var(--border,#f0f0f0)">
 
-                            <!-- Category -->
-                            <td style="padding:6px 10px;min-width:200px">
-                                <div class="input-group input-group-outline" wire:ignore.self style="margin-bottom:0">
-                                    <select wire:model.live="items.{{ $index }}.category_id" class="form-select">
-                                        <option value="" disabled>Select category</option>
-                                        @foreach($categories as $category)
-                                            <option value="{{ $category->id }}"
-                                                {{ (string)($item['category_id'] ?? '') === (string)$category->id ? 'selected' : '' }}>
-                                                {{ $category->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                @error("items.{$index}.category_id") <span class="text-danger" style="font-size:.72rem">{{ $message }}</span> @enderror
-                            </td>
-
-                            <!-- Product (filtered by category) -->
-                            <td style="padding:6px 10px;min-width:180px">
-                                <div class="input-group input-group-outline" wire:ignore.self style="margin-bottom:0">
-                                    <select wire:model.live="items.{{ $index }}.product_id" class="form-select">
-                                        <option value="">
-                                            {{ empty($item['category_id']) ? 'First Select The Category' : 'Select' }}
-                                        </option>
-                                        @if(!empty($item['category_id']))
-                                            @foreach($categories->find($item['category_id'])?->products ?? [] as $product)
-                                                <option value="{{ $product->id }}"
-                                                    {{ (string)($item['product_id'] ?? '') === (string)$product->id ? 'selected' : '' }}>
-                                                    {{ $product->name }}
+                                <!-- Category -->
+                                <td style="padding:6px 10px;min-width:200px">
+                                    <div class="input-group input-group-outline" wire:ignore.self style="margin-bottom:0">
+                                        <select wire:model.live="items.{{ $index }}.category_id" class="form-select">
+                                            <option value="" disabled>Select category</option>
+                                            @foreach($categories as $category)
+                                                <option value="{{ $category->id }}"
+                                                    {{ (string)($item['category_id'] ?? '') === (string)$category->id ? 'selected' : '' }}>
+                                                    {{ $category->name }}
                                                 </option>
                                             @endforeach
-                                        @endif
-                                    </select>
-                                </div>
-                                @error("items.{$index}.product_id") <span class="text-danger" style="font-size:.72rem">{{ $message }}</span> @enderror
-                            </td>
+                                        </select>
+                                    </div>
+                                    @error("items.{$index}.category_id") <span class="text-danger" style="font-size:.72rem">{{ $message }}</span> @enderror
+                                </td>
 
-                            <!-- Unit Price -->
-                            <td style="padding:6px 10px;min-width: 100px; width: 140px;">
-                                <div class="input-group input-group-outline" style="margin-bottom:0">
-                                    <input type="number"
-                                           wire:model.live="items.{{ $index }}.unit_price"
-                                           class="form-control form-control-sm"
-                                           style="font-size:.8rem"
-                                           placeholder="0.00"
-                                           min="0"
-                                           step="0.01"
-                                           onfocus="focused(this)"
-                                           onfocusout="defocused(this)">
-                                </div>
-                                @error("items.{$index}.unit_price") <span class="text-danger" style="font-size:.72rem">{{ $message }}</span> @enderror
-                            </td>
+                                <!-- Product (filtered by category) -->
+                                <td style="padding:6px 10px;min-width:180px">
+                                    <div class="input-group input-group-outline" wire:ignore.self style="margin-bottom:0">
+                                        <select wire:model.live="items.{{ $index }}.product_id" class="form-select">
+                                            <option value="">
+                                                {{ empty($item['category_id']) ? 'First Select The Category' : 'Select' }}
+                                            </option>
+                                            @if(!empty($item['category_id']))
+                                                @foreach($categories->find($item['category_id'])?->products ?? [] as $product)
+                                                    <option value="{{ $product->id }}"
+                                                        {{ (string)($item['product_id'] ?? '') === (string)$product->id ? 'selected' : '' }}>
+                                                        {{ $product->name }}
+                                                    </option>
+                                                @endforeach
+                                            @endif
+                                        </select>
+                                    </div>
+                                    @error("items.{$index}.product_id") <span class="text-danger" style="font-size:.72rem">{{ $message }}</span> @enderror
+                                </td>
 
-                            <!-- Quantity -->
-                            <td style="padding:6px 10px;min-width: 100px; width: 140px;">
-                                <div class="input-group input-group-outline" style="margin-bottom:0">
-                                    <input type="number"
-                                           wire:model.live="items.{{ $index }}.quantity"
-                                           class="form-control form-control-sm"
-                                           style="font-size:.8rem"
-                                           placeholder="1"
-                                           min="1"
-                                           step="1"
-                                           onfocus="focused(this)"
-                                           onfocusout="defocused(this)">
-                                </div>
-                                @error("items.{$index}.quantity") <span class="text-danger" style="font-size:.72rem">{{ $message }}</span> @enderror
-                            </td>
+                                <!-- Unit Price -->
+                                <td style="padding:6px 10px;min-width: 100px; width: 140px;">
+                                    <div class="input-group input-group-outline" style="margin-bottom:0">
+                                        <input type="number"
+                                            wire:model.live="items.{{ $index }}.unit_price"
+                                            class="form-control form-control-sm"
+                                            style="font-size:.8rem"
+                                            placeholder="0.00"
+                                            min="0"
+                                            step="0.01"
+                                            onfocus="focused(this)"
+                                            onfocusout="defocused(this)">
+                                    </div>
+                                    @error("items.{$index}.unit_price") <span class="text-danger" style="font-size:.72rem">{{ $message }}</span> @enderror
+                                </td>
 
-                            <!-- Discount -->
-                            <td style="padding:6px 10px;min-width: 100px; width: 140px;">
-                                <div class="input-group input-group-outline" style="margin-bottom:0">
-                                    <input type="number"
-                                           wire:model.live="items.{{ $index }}.discount"
-                                           class="form-control form-control-sm"
-                                           style="font-size:.8rem"
-                                           placeholder="0"
-                                           min="0"
-                                           step="0.01"
-                                           onfocus="focused(this)"
-                                           onfocusout="defocused(this)">
-                                </div>
-                                @error("items.{$index}.discount") <span class="text-danger" style="font-size:.72rem">{{ $message }}</span> @enderror
-                            </td>
+                                <!-- Quantity -->
+                                <td style="padding:6px 10px;min-width: 100px; width: 140px;">
+                                    <div class="input-group input-group-outline" style="margin-bottom:0">
+                                        <input type="number"
+                                            wire:model.live="items.{{ $index }}.quantity"
+                                            class="form-control form-control-sm"
+                                            style="font-size:.8rem"
+                                            placeholder="1"
+                                            min="1"
+                                            step="1"
+                                            onfocus="focused(this)"
+                                            onfocusout="defocused(this)">
+                                    </div>
+                                    @error("items.{$index}.quantity") <span class="text-danger" style="font-size:.72rem">{{ $message }}</span> @enderror
+                                </td>
 
-                            <!-- Total Price (read-only) -->
-                            <td style="padding:10px 10px;text-align:right;font-weight:600;white-space:nowrap">
-                                {{ number_format($item['total_price'] ?? 0, 2) }}
-                            </td>
+                                <!-- Discount -->
+                                <td style="padding:6px 10px;min-width: 100px; width: 140px;">
+                                    <div class="input-group input-group-outline" style="margin-bottom:0">
+                                        <input type="number"
+                                            wire:model.live="items.{{ $index }}.discount"
+                                            class="form-control form-control-sm"
+                                            style="font-size:.8rem"
+                                            placeholder="0"
+                                            min="0"
+                                            step="0.01"
+                                            onfocus="focused(this)"
+                                            onfocusout="defocused(this)">
+                                    </div>
+                                    @error("items.{$index}.discount") <span class="text-danger" style="font-size:.72rem">{{ $message }}</span> @enderror
+                                </td>
 
-                            <!-- Remove -->
-                            <td style="padding:6px 10px;text-align:center">
-                                @if(count($items) > 1)
-                                    <button type="button"
-                                            wire:click="removeItem({{ $index }})"
-                                            style="background:none;border:none;cursor:pointer;color:#e74c3c;padding:4px"
-                                            title="Remove">
-                                        <span class="material-icons-round" style="font-size:18px">delete_outline</span>
-                                    </button>
-                                @endif
-                            </td>
+                                <!-- Total Price (read-only) -->
+                                <td style="padding:10px 10px;text-align:right;font-weight:600;white-space:nowrap">
+                                    {{ number_format($item['total_price'] ?? 0, 2) }}
+                                </td>
 
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="7" style="padding:24px;text-align:center;color:var(--muted)">
-                                No items added yet.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                                <!-- Remove -->
+                                <td style="padding:6px 10px;text-align:center">
+                                    @if(count($items) > 1)
+                                        <button type="button"
+                                                wire:click="removeItem({{ $index }})"
+                                                style="background:none;border:none;cursor:pointer;color:#e74c3c;padding:4px"
+                                                title="Remove">
+                                            <span class="material-icons-round" style="font-size:18px">delete_outline</span>
+                                        </button>
+                                    @endif
+                                </td>
+
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="7" style="padding:24px;text-align:center;color:var(--muted)">
+                                    No items added yet.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Add Rows button -->
+            <div style="margin-top:12px">
+                <button class="btn-outline"
+                        type="button"
+                        wire:click="addItem"
+                        style="padding:5px 14px;font-size:.78rem">
+                    <span class="material-icons-round" style="font-size:15px">add</span>
+                    Add Rows
+                </button>
+            </div>
+
         </div>
 
-        <!-- Add Rows button -->
-        <div style="margin-top:12px">
-            <button class="btn-outline"
-                    type="button"
-                    wire:click="addItem"
-                    style="padding:5px 14px;font-size:.78rem">
-                <span class="material-icons-round" style="font-size:15px">add</span>
-                Add Rows
-            </button>
-        </div>
+        <!-- ══ BILL SUMMARY ══ -->
+        <div class="form-section" style="margin-top:8px">
+            <div class="row justify-content-end">
+                <div class="col-12 col-md-8 col-lg-6">
 
-    </div>
+                    <div style="border:1px solid var(--border,#e9ecef);border-radius:12px;padding:20px;background:var(--card-bg,#fff)" class="p-md-4">
+                        <h6 style="font-weight:700;font-size:.9rem;margin-bottom:20px">
+                            <span class="material-icons-round" style="font-size:16px;vertical-align:middle;margin-right:6px;color:var(--muted)">receipt_long</span>
+                            Bill Summary
+                        </h6>
 
-    <!-- ══ BILL SUMMARY ══ -->
-    <div class="form-section" style="margin-top:8px">
-        <div class="row justify-content-end">
-            <div class="col-12 col-md-8 col-lg-6">
-
-                <div style="border:1px solid var(--border,#e9ecef);border-radius:12px;padding:20px;background:var(--card-bg,#fff)" class="p-md-4">
-                    <h6 style="font-weight:700;font-size:.9rem;margin-bottom:20px">
-                        <span class="material-icons-round" style="font-size:16px;vertical-align:middle;margin-right:6px;color:var(--muted)">receipt_long</span>
-                        Bill Summary
-                    </h6>
-
-                    <!-- Sub Total -->
-                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2" style="margin-bottom:14px">
-                        <span style="font-size:.83rem;color:var(--muted);font-weight:600">Sub Total</span>
-                        <div class="d-flex align-items-center gap-2">
-                            <span style="font-size:.8rem;color:var(--muted);font-weight:600">৳</span>
-                            <div style="background:var(--input-bg,#f8f9fa);border:1px solid var(--border,#e9ecef);border-radius:8px;padding:6px 12px;min-width:140px;text-align:right;font-size:.83rem;font-weight:600">
-                                {{ number_format($sub_total, 2) }}
+                        <!-- Sub Total -->
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2" style="margin-bottom:14px">
+                            <span style="font-size:.83rem;color:var(--muted);font-weight:600">Sub Total</span>
+                            <div class="d-flex align-items-center gap-2">
+                                <span style="font-size:.8rem;color:var(--muted);font-weight:600">৳</span>
+                                <div style="background:var(--input-bg,#f8f9fa);border:1px solid var(--border,#e9ecef);border-radius:8px;padding:6px 12px;min-width:140px;text-align:right;font-size:.83rem;font-weight:600">
+                                    {{ number_format($sub_total, 2) }}
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Discount -->
-                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2" style="margin-bottom:14px">
-                        <span style="font-size:.83rem;color:var(--muted);font-weight:600">Discount ( - )</span>
-                        <div class="d-flex align-items-center gap-2">
-                            <span style="font-size:.8rem;color:var(--muted);font-weight:600">৳</span>
-                            <div style="background:var(--input-bg,#f8f9fa);border:1px solid var(--border,#e9ecef);border-radius:8px;padding:6px 12px;min-width:140px;text-align:right;font-size:.83rem;font-weight:600">
-                                {{ number_format($total_discount, 2) }}
+                        <!-- Discount -->
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2" style="margin-bottom:14px">
+                            <span style="font-size:.83rem;color:var(--muted);font-weight:600">Discount ( - )</span>
+                            <div class="d-flex align-items-center gap-2">
+                                <span style="font-size:.8rem;color:var(--muted);font-weight:600">৳</span>
+                                <div style="background:var(--input-bg,#f8f9fa);border:1px solid var(--border,#e9ecef);border-radius:8px;padding:6px 12px;min-width:140px;text-align:right;font-size:.83rem;font-weight:600">
+                                    {{ number_format($total_discount, 2) }}
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Net Payable -->
-                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2" style="margin-bottom:14px;padding-top:10px;border-top:1px solid var(--border,#e9ecef)">
-                        <span style="font-size:.85rem;font-weight:700">Net Payable</span>
-                        <div class="d-flex align-items-center gap-2">
-                            <span style="font-size:.8rem;color:var(--muted);font-weight:600">৳</span>
-                            <div style="background:var(--input-bg,#f8f9fa);border:1px solid var(--border,#e9ecef);border-radius:8px;padding:6px 12px;min-width:140px;text-align:right;font-size:.85rem;font-weight:700;color:var(--primary,#e91e8c)">
-                                {{ number_format($net_payable, 2) }}
+                        <!-- Net Payable -->
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2" style="margin-bottom:14px;padding-top:10px;border-top:1px solid var(--border,#e9ecef)">
+                            <span style="font-size:.85rem;font-weight:700">Net Payable</span>
+                            <div class="d-flex align-items-center gap-2">
+                                <span style="font-size:.8rem;color:var(--muted);font-weight:600">৳</span>
+                                <div style="background:var(--input-bg,#f8f9fa);border:1px solid var(--border,#e9ecef);border-radius:8px;padding:6px 12px;min-width:140px;text-align:right;font-size:.85rem;font-weight:700;color:var(--primary,#e91e8c)">
+                                    {{ number_format($net_payable, 2) }}
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Received Amount -->
-                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2" style="margin-bottom:14px">
-                        <span style="font-size:.83rem;color:var(--muted);font-weight:600">Received Amount</span>
-                        <div class="input-group input-group-outline" style="max-width:220px;width:100%;margin-bottom:0">
-                            <input type="number"
-                                   wire:model.live="received_amount"
-                                   class="form-control form-control-sm"
-                                   style="font-size:.82rem;text-align:right"
-                                   placeholder="Enter Payment Amount"
-                                   min="0"
-                                   step="0.01"
-                                   onfocus="focused(this)"
-                                   onfocusout="defocused(this)">
+                        <!-- Received Amount -->
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2" style="margin-bottom:14px">
+                            <span style="font-size:.83rem;color:var(--muted);font-weight:600">Received Amount</span>
+                            <div class="input-group input-group-outline" style="max-width:220px;width:100%;margin-bottom:0">
+                                <input type="number"
+                                    wire:model.live="received_amount"
+                                    class="form-control form-control-sm"
+                                    style="font-size:.82rem;text-align:right"
+                                    placeholder="Enter Payment Amount"
+                                    min="0"
+                                    step="0.01"
+                                    onfocus="focused(this)"
+                                    onfocusout="defocused(this)">
+                            </div>
                         </div>
-                    </div>
-                    @error('received_amount') <div class="text-danger text-end mb-2" style="font-size:.75rem">{{ $message }}</div> @enderror
+                        @error('received_amount') <div class="text-danger text-end mb-2" style="font-size:.75rem">{{ $message }}</div> @enderror
 
-                    <!-- Pay Via -->
-                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2" style="margin-bottom:14px">
-                        <span style="font-size:.83rem;color:var(--muted);font-weight:600">Pay Via</span>
-                        <div class="input-group input-group-outline" wire:ignore style="max-width:220px;width:100%;margin-bottom:0">
-                            <select wire:model="pay_via" class="form-select form-select-sm" style="font-size:.82rem">
-                                <option value="">Select</option>
-                                <option value="cash">Cash</option>
-                                <option value="bank">Bank Transfer</option>
-                                <option value="card">Card</option>
-                                <option value="mobile_banking">Mobile Banking</option>
-                                <option value="cheque">Cheque</option>
-                            </select>
+                        <!-- Pay Via -->
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2" style="margin-bottom:14px">
+                            <span style="font-size:.83rem;color:var(--muted);font-weight:600">Pay Via</span>
+                            <div class="input-group input-group-outline" wire:ignore style="max-width:220px;width:100%;margin-bottom:0">
+                                <select wire:model="pay_via" class="form-select form-select-sm" style="font-size:.82rem">
+                                    <option value="">Select</option>
+                                    <option value="cash">Cash</option>
+                                    <option value="bank">Bank Transfer</option>
+                                    <option value="card">Card</option>
+                                    <option value="mobile_banking">Mobile Banking</option>
+                                    <option value="cheque">Cheque</option>
+                                </select>
+                            </div>
                         </div>
-                    </div>
-                    @error('pay_via') <div class="text-danger text-end mb-2" style="font-size:.75rem">{{ $message }}</div> @enderror
+                        @error('pay_via') <div class="text-danger text-end mb-2" style="font-size:.75rem">{{ $message }}</div> @enderror
 
-                    <!-- Remarks -->
-                    <div class="d-flex flex-wrap align-items-start justify-content-between gap-2" style="margin-bottom:4px">
-                        <span style="font-size:.83rem;color:var(--muted);font-weight:600;padding-top:8px">Remarks</span>
-                        <div class="input-group input-group-outline" style="max-width:220px;width:100%;margin-bottom:0">
-                            <textarea wire:model="remarks"
-                                      class="form-control form-control-sm"
-                                      style="font-size:.82rem;min-height:60px;resize:none"
-                                      placeholder="Write Your Remarks"
-                                      onfocus="focused(this)"
-                                      onfocusout="defocused(this)"></textarea>
+                        <!-- Remarks -->
+                        <div class="d-flex flex-wrap align-items-start justify-content-between gap-2" style="margin-bottom:4px">
+                            <span style="font-size:.83rem;color:var(--muted);font-weight:600;padding-top:8px">Remarks</span>
+                            <div class="input-group input-group-outline" style="max-width:220px;width:100%;margin-bottom:0">
+                                <textarea wire:model="remarks"
+                                        class="form-control form-control-sm"
+                                        style="font-size:.82rem;min-height:60px;resize:none"
+                                        placeholder="Write Your Remarks"
+                                        onfocus="focused(this)"
+                                        onfocusout="defocused(this)"></textarea>
+                            </div>
                         </div>
+                        @error('remarks') <div class="text-danger text-end mb-2" style="font-size:.75rem">{{ $message }}</div> @enderror
+
                     </div>
-                    @error('remarks') <div class="text-danger text-end mb-2" style="font-size:.75rem">{{ $message }}</div> @enderror
 
                 </div>
-
             </div>
         </div>
-    </div>
 
-    <!-- FORM FOOTER -->
-    <div class="form-footer">
+        <!-- FORM FOOTER -->
+        <div class="form-footer">
 
-        <a href="{{ route('admin.inventory.sale.list') }}"
-           class="btn-outline">
-            <span class="material-icons-round" style="font-size:16px">arrow_back</span>
-            Back
-        </a>
+            <a href="{{ route('admin.inventory.sale.list') }}"
+            class="btn-outline">
+                <span class="material-icons-round" style="font-size:16px">arrow_back</span>
+                Back
+            </a>
 
-        <button class="btn-pink"
-                type="button"
-                wire:click="save"
-                wire:loading.attr="disabled"
-                wire:target="save">
+            <button class="btn-pink"
+                    type="button"
+                    wire:click="save"
+                    wire:loading.attr="disabled"
+                    wire:target="save">
 
-            <span wire:loading.remove wire:target="save" style="display: inline-flex;align-items: center;gap: 6px">
-                <span class="material-icons-round">save</span>
-                Update
-            </span>
-
-            <span wire:loading wire:target="save">
-                <span class="material-icons-round"
-                      style="font-size:16px;animation:spin .7s linear infinite">
-                    sync
+                <span wire:loading.remove wire:target="save" style="display: inline-flex;align-items: center;gap: 6px">
+                    <span class="material-icons-round">save</span>
+                    Update
                 </span>
-                Updating...
-            </span>
 
-        </button>
+                <span wire:loading wire:target="save">
+                    <span class="material-icons-round"
+                        style="font-size:16px;animation:spin .7s linear infinite">
+                        sync
+                    </span>
+                    Updating...
+                </span>
+
+            </button>
+        </div>
     </div>
-
 </div>
 
 

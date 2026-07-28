@@ -67,7 +67,6 @@ class RegistrationPaymentController extends Controller
                 'institution_type' => $data['institution_type'] ?? '',
                 'email'            => $data['email'],
                 'phone'            => $data['phone'],
-                'timezone'         => $data['timezone'] ?? 'Asia/Dhaka',
                 'admin_name'       => $data['admin_name'],
                 'admin_email'      => $data['admin_email'],
                 'password'         => $data['password'],
@@ -156,7 +155,6 @@ class RegistrationPaymentController extends Controller
                     'type'     => $meta['institution_type'] ?? null,
                     'email'    => $meta['email'],
                     'phone'    => $meta['phone'],
-                    'timezone' => $meta['timezone'],
                     'status'   => true,
                 ]);
 
@@ -293,7 +291,6 @@ class RegistrationPaymentController extends Controller
             'institution_type' => $meta['institution_type'] ?? null,
             'email'             => $meta['email'] ?? null,
             'phone'             => $meta['phone'] ?? null,
-            'timezone'          => $meta['timezone'] ?? 'Asia/Dhaka',
             'admin_name'        => $meta['admin_name'] ?? null,
             'admin_email'       => $meta['admin_email'] ?? null,
             'password'          => $meta['password'] ?? null,

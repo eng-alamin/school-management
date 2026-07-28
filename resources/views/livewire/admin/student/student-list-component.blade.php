@@ -4,7 +4,6 @@
 
         <div class="mat-card-header header-pink-gradient">
             <h5 id="cardHeaderTitleAllStudents">
-                <span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">groups</span>
                 All Students
             </h5>
             <p id="cardHeaderSubtitle">Manage students, filter by class and section.</p>
@@ -80,7 +79,6 @@
             </div>
         </div>
 
-        {{-- ===== TABLE (always visible, live-filtered) ===== --}}
         <div class="card-body pt-0" id="printArea">
             <div class="table-responsive">
                 <table class="table table-hover mb-0" id="studentTable">

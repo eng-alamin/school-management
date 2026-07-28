@@ -5,34 +5,38 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\BelongsToInstitution;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class AcademicClass extends Model
 {
     use BelongsToInstitution;
     use SoftDeletes;
-    
+
     protected $guarded = [];
 
-    public function section()
-    {
-        return $this->belongsTo(AcademicSection::class, 'section_id');
-    }
+    protected $casts = [
+        'has_section' => 'boolean',
+    ];
 
-    public function sections()
+    /**
+     * Sections that are valid/allowed for this class (static mapping).
+     */
+    public function sections(): BelongsToMany
     {
         return $this->belongsToMany(
             AcademicSection::class,
             'academic_class_sections',
             'class_id',
             'section_id'
-        );
+        )->withPivot('institution_id');
     }
 
-
-    // Remove 
-    // public function feeInvoices()
-    // {
-    //     return $this->hasMany(FeeInvoice::class);
-    // }
-
+    /**
+     * Session-wise class + section assignments (actual usage records).
+     */
+    public function classAssigns(): HasMany
+    {
+        return $this->hasMany(AcademicClassAssign::class, 'class_id');
+    }
 }

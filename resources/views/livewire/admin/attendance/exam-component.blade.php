@@ -1,15 +1,16 @@
-<div class="mat-card" style="padding-top:28px">
+<div>
+    <div class="card">
 
     {{-- Floating Header --}}
     <div class="mat-card-header header-pink-gradient">
-        <h5><span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">event_note</span>Exam Attendance</h5>
+        <h5>Exam Attendance</h5>
         <p>Create or update exam attendance</p>
     </div>
 
     {{-- Select Ground --}}
     <div class="form-section" style="padding-top:40px; padding-bottom:20px">
         <div class="section-heading">
-            <span class="material-icons-round">tune</span> Select Ground
+            <span class="material-icons-round">school</span> Select Ground
         </div>
         <div class="row g-4">
 
@@ -23,8 +24,8 @@
                             <option value="{{ $item->id }}">
                                 {{ $item->name }}
                                 @if($item->classAssign)
-                                    — {{ $item->classAssign->class->name ?? '' }}
-                                    @if($item->classAssign->section) ({{ $item->classAssign->section->name }}) @endif
+                                    — {{ $item->classAssign->academicClass->name ?? '' }}
+                                    @if($item->classAssign->academicSection) ({{ $item->classAssign->academicSection->name }}) @endif
                                 @endif
                             </option>
                         @endforeach
@@ -47,16 +48,33 @@
                 @error('filterClass') <span class="text-danger small">{{ $message }}</span> @enderror
             </div>
 
-            {{-- Section --}}
+            {{-- Section: class-e section thakle "All Section" soho required dropdown,
+                 na thakle same dropdown disabled thakbe (StudentComponent-er sathe consistent) --}}
             <div class="col-md-3">
                 <div wire:ignore.self class="input-group input-group-outline">
-                    <label class="form-label">Section</label>
-                    <select wire:model.live="filterSection" class="form-select">
-                        <option value="">Select Section</option>
-                        <option value="all">All Section</option>
-                        @foreach ($sections as $item)
-                            <option value="{{ $item->id }}">{{ $item->name }}</option>
-                        @endforeach
+                    <label class="form-label">
+                        Section
+                        @if($selectedClassHasSection)
+                            <span class="text-danger">*</span>
+                        @endif
+                    </label>
+                    <select
+                        wire:model.live="filterSection"
+                        class="form-select @error('filterSection') is-invalid @enderror"
+                        @disabled(!$filterClass || !$selectedClassHasSection)
+                    >
+                        @if(!$filterClass)
+                            <option value="">Select class first</option>
+                        @elseif(!$selectedClassHasSection)
+                            <option value="">N/A — this class has no sections</option>
+                        @else
+                            <option value="">Select Section</option>
+                            {{-- ✅ "All Section" — select korle ei class-er sob section-er data eksathe dekhabe --}}
+                            <option value="all">All Section</option>
+                            @foreach($availableSections as $s)
+                                <option value="{{ $s['id'] }}">{{ $s['name'] }}</option>
+                            @endforeach
+                        @endif
                     </select>
                 </div>
                 @error('filterSection') <span class="text-danger small">{{ $message }}</span> @enderror
@@ -66,8 +84,8 @@
             <div class="col-md-3">
                 <div wire:ignore.self class="input-group input-group-outline">
                     <label class="form-label">Subject</label>
-                    <select wire:model="filterSubject" class="form-select">
-                        <option value="">Select Subject</option>
+                    <select wire:model="filterSubject" class="form-select" @disabled(empty($subjects))>
+                        <option value="">{{ empty($subjects) ? 'No subject available' : 'Select Subject' }}</option>
                         @foreach ($subjects as $item)
                             <option value="{{ $item->id }}">{{ $item->name }}</option>
                         @endforeach
@@ -122,7 +140,8 @@
                     <tr wire:key="exam-att-{{ $index }}">
                         <td>{{ $index + 1 }}</td>
                         <td>{{ $item['name'] }}</td>
-                        <td>{{ $item['section_name'] }}</td>
+                        {{-- ✅ Fix: khali section_name er khetre '—' dekhano hocche (StudentComponent-er sathe consistent) --}}
+                        <td>{{ $item['section_name'] ?: '—' }}</td>
                         <td>{{ $item['roll_no'] }}</td>
                         <td>{{ $item['register_no'] }}</td>
                         <td>
@@ -278,24 +297,6 @@
     .schedule-number::-webkit-inner-spin-button {
         -webkit-appearance: none;
     }
-    /* .schedule-remove-btn {
-        background: transparent;
-        border: 1px solid #3d3d3d;
-        color: #e05252;
-        border-radius: 4px;
-        padding: 5px 7px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        transition: background 0.15s, border-color 0.15s;
-    }
-    .schedule-remove-btn:hover {
-        background: #3a2020;
-        border-color: #e05252;
-    }
-    .schedule-remove-btn .material-icons-round {
-        font-size: 16px;
-    } */
 </style>
 @endpush
 

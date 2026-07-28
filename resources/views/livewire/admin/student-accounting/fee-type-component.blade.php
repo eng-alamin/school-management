@@ -75,9 +75,16 @@
                             </td>
                             <td>
                                 <div class="d-flex gap-1">
-                                    <button class="act-btn edit" title="Edit" wire:click="openEdit({{ $feeType->id }})">
-                                        <span class="material-icons-round">drive_file_rename_outline</span>
-                                    </button>
+                                    @if(!in_array($feeType->code, ['monthly_fee', 'admission_fee', 'registration_fee']))
+                                        <button class="act-btn edit" title="Edit" wire:click="openEdit({{ $feeType->id }})">
+                                            <span class="material-icons-round">drive_file_rename_outline</span>
+                                        </button>
+                                    @else
+                                        <button class="act-btn edit" title="System Default - Delete করা যাবে না" disabled style="opacity:.35;cursor:not-allowed">
+                                            <span class="material-icons-round">lock</span>
+                                        </button>
+                                    @endif
+
                                     @if(!in_array($feeType->code, ['monthly_fee', 'admission_fee', 'registration_fee']))
                                         <button class="act-btn delete" title="Delete" wire:click="confirmDeleteRecord({{ $feeType->id }})">
                                             <span class="material-icons-round">delete</span>
@@ -185,70 +192,3 @@
         </div>
     @endif
 </div>
-
-
-@push('styles')
-    <style>
-        :root {
-            --primary: rgba(33, 37, 41);
-            --primary-light: rgba(239,84,84,.12);
-        }
-
-        .card { border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
-        .card-header { background: #fff; border-bottom: 1px solid var(--border); border-radius: 12px 12px 0 0 !important; padding: 16px 20px; }
-        .card-header .card-title { font-size: .95rem; font-weight: 600; margin: 0; }
-
-        .table th { font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); border-bottom: 2px solid var(--border); }
-        .table td { vertical-align: middle; font-size: .875rem; }
-        .table > :not(caption) > * > * { padding: .7rem 1rem; }
-
-        .badge-active { background: rgba(34,197,94,.12); color: #16a34a; }
-        .badge-inactive { background: rgba(107,114,128,.12); color: #6b7280; }
-        .badge-expired, .badge-cancelled, .badge-suspended { background: rgba(239,68,68,.12); color: #dc2626; }
-        .badge-used { background: rgba(59,130,246,.12); color: #2563eb; }
-
-        .avatar { width: 38px; height: 38px; border-radius: 8px; object-fit: cover; }
-        .avatar-placeholder {
-            width: 38px; height: 38px; border-radius: 8px;
-            background: var(--primary-light); color: var(--primary);
-            display: inline-flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: .875rem;
-        }
-
-        .modal-header { border-bottom: 1px solid var(--border); }
-        .modal-footer { border-top: 1px solid var(--border); }
-        .modal-title { font-weight: 600; font-size: 1rem; }
-
-        .form-label { font-size: .8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
-        .form-control, .form-select {
-            border-radius: 8px; border: 1px solid var(--border);
-            font-size: .875rem; padding: .45rem .75rem;
-            transition: border-color .2s, box-shadow .2s;
-        }
-        .form-control:focus, .form-select:focus {
-            border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light);
-        }
-        .form-check-input:checked { background-color: var(--primary); border-color: var(--primary); }
-
-        .btn-primary { background: var(--primary); border-color: var(--primary); }
-        .btn-primary:hover, .btn-primary:focus { background: #d63e3e; border-color: #d63e3e; }
-        .btn-sm { font-size: .78rem; padding: .3rem .65rem; border-radius: 6px; }
-        .btn-icon { width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 7px; }
-
-        .alert { border-radius: 10px; font-size: .875rem; }
-
-        .custom-pagination { display: flex; gap: 8px; align-items: center; }
-        .custom-pagination li { list-style: none; }
-        .custom-pagination button {
-            min-width: 38px; height: 38px; border-radius: 10px;
-            border: 1px solid #e0e0e0; background: #f5f5f5;
-            color: #444; font-weight: 600; cursor: pointer; transition: all .2s ease;
-        }
-        .custom-pagination button:hover { background: #eee; }
-        .custom-pagination button.active {
-            background: linear-gradient(195deg, #ec407a, #d81b60);
-            color: #fff; border: none; box-shadow: 0 4px 12px rgba(216,27,96,.4);
-        }
-        .custom-pagination button:disabled { opacity: .5; cursor: not-allowed; }
-    </style>
-@endpush

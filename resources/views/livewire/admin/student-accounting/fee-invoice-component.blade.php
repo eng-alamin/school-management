@@ -3,7 +3,7 @@
 
         {{-- Floating Header --}}
         <div class="mat-card-header header-pink-gradient">
-            <h5><span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">receipt_long</span>Fee Invoices</h5>
+            <h5>Fee Invoices</h5>
             <p>View and manage student fee invoices by class and section</p>
         </div>
 

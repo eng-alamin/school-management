@@ -21,7 +21,6 @@ class InstitutionRegistrationComponent extends Component
     public string $institution_type = '';
     public string $phone = '';
     public string $email = '';
-    public string $timezone = 'Asia/Dhaka';
     public $logo;
 
     // Step 2 — Admin Account
@@ -42,7 +41,6 @@ class InstitutionRegistrationComponent extends Component
         $this->institution_type = $pending['institution_type'] ?? '';
         $this->email            = $pending['email'] ?? '';
         $this->phone            = $pending['phone'] ?? '';
-        $this->timezone         = $pending['timezone'] ?? 'Asia/Dhaka';
         $this->admin_name       = $pending['admin_name'] ?? '';
         $this->admin_email      = $pending['admin_email'] ?? '';
         $this->password         = $pending['password'] ?? 1234;
@@ -126,7 +124,6 @@ class InstitutionRegistrationComponent extends Component
                 'institution_type' => $this->institution_type,
                 'email'       => $this->email,
                 'phone'       => $this->phone,
-                'timezone'    => $this->timezone,
                 'admin_name'  => $this->admin_name,
                 'admin_email' => $this->admin_email,
                 'password'    => $this->password,
@@ -149,7 +146,6 @@ class InstitutionRegistrationComponent extends Component
                 'type'     => $this->institution_type,
                 'email'    => $this->email,
                 'phone'    => $this->phone,
-                'timezone' => $this->timezone,
                 'status'   => true,
             ]);
 

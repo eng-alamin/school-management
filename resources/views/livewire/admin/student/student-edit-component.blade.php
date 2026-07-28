@@ -3,7 +3,7 @@
 
         <!-- Floating Header -->
         <div class="mat-card-header header-pink-gradient">
-            <h5><span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">edit</span>Edit Student</h5>
+            <h5>Edit Student</h5>
             <p>Update student information</p>
         </div>
 

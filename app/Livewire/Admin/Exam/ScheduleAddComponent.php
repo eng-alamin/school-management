@@ -6,6 +6,7 @@ use Livewire\Component;
 use App\Models\ExamSchedule;
 use App\Models\ExamSetup;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class ScheduleAddComponent extends Component
 {
@@ -34,8 +35,8 @@ class ScheduleAddComponent extends Component
         }
 
         $examSetup = ExamSetup::with([
-            'classAssign.class',
-            'classAssign.section',
+            'classAssign.academicClass',
+            'classAssign.academicSection',
             'details.classAssignDetail.subject',
         ])->find($this->filterExam);
 
@@ -49,8 +50,7 @@ class ScheduleAddComponent extends Component
             return;
         }
 
-        $this->selectedClassLabel = ($examSetup->classAssign->class->name ?? '—')
-            . ($examSetup->classAssign->section ? ' - ' . $examSetup->classAssign->section->name : '');
+        $this->selectedClassLabel = $this->buildClassLabel($examSetup);
 
         // existing schedules load করো (edit case)
         $existingSchedules = ExamSchedule::where('exam_setup_id', $examSetup->id)
@@ -81,21 +81,30 @@ class ScheduleAddComponent extends Component
     public function save(): void
     {
         $this->validate([
-            'filterExam' => 'required|exists:exam_setups,id',
+            // FIX (IDOR): plain 'exists' rule Eloquent global scope বাইপাস করে raw
+            // DB query চালায় — তাই institution_id দিয়ে explicit scope করা হলো,
+            // নাহলে অন্য institution-এর exam_setup id পাঠিয়েও validation পাশ হয়ে যেত।
+            'filterExam' => [
+                'required',
+                Rule::exists('exam_setups', 'id')->where('institution_id', institution()->id),
+            ],
 
             'rows.*.exam_date'   => 'required|date',
             'rows.*.start_time'  => [
                 'required',
                 'date_format:H:i',
                 function ($attribute, $value, $fail) {
-                    $this->failIfSameDateTimeClash($attribute, $value, $fail, 'start_time', 'Starting Time');
+                    $this->failIfOverlap($attribute, $value, $fail);
                 },
             ],
+            // FIX: আগে end_time শুধু format check হতো, start_time এর চেয়ে পরে
+            // আছে কিনা সেটা validate হতো না — এখন 'after:rows.*.start_time' দিয়ে
+            // সেই ভুল ঠেকানো হচ্ছে।
             'rows.*.end_time'    => [
                 'required',
                 'date_format:H:i',
                 function ($attribute, $value, $fail) {
-                    $this->failIfSameDateTimeClash($attribute, $value, $fail, 'end_time', 'Ending Time');
+                    $this->failIfEndBeforeStart($attribute, $value, $fail);
                 },
             ],
             'rows.*.class_room'  => 'nullable|string|max:100',
@@ -116,12 +125,15 @@ class ScheduleAddComponent extends Component
                         'exam_setup_detail_id' => $row['exam_setup_detail_id'],
                     ],
                     [
-                        'exam_date'    => $row['exam_date'],
-                        'start_time'   => $row['start_time'],
-                        'end_time'     => $row['end_time'],
-                        'class_room'   => $row['class_room'] ?: null,
-                        'remarks'      => $row['remarks'] ?: null,
-                        'is_published' => $row['is_published'] ?? false,
+                        // FIX: institution_id মিসিং ছিল — established pattern অনুযায়ী
+                        // এটা NOT NULL কলাম, explicit সেট করা লাগবে।
+                        'institution_id' => institution()->id,
+                        'exam_date'       => $row['exam_date'],
+                        'start_time'      => $row['start_time'],
+                        'end_time'        => $row['end_time'],
+                        'class_room'      => $row['class_room'] ?: null,
+                        'remarks'         => $row['remarks'] ?: null,
+                        'is_published'    => $row['is_published'] ?? false,
                     ]
                 );
             }
@@ -136,23 +148,78 @@ class ScheduleAddComponent extends Component
         $this->dispatch('toast', type: 'success', message: 'Exam schedule saved successfully!');
     }
 
-    // একই Exam এর মধ্যে একই তারিখ ও একই সময়ে দুইটা subject clash করছে কিনা চেক করে
-    private function failIfSameDateTimeClash($attribute, $value, $fail, string $field, string $label): void
+    /**
+     * একই তারিখে দুইটা subject-এর সময় overlap করছে কিনা চেক করে।
+     *
+     * FIX: আগে শুধু exact start_time == start_time বা end_time == end_time মিলিয়ে
+     * clash ধরা হতো — তাই 10:00–12:00 আর 11:00–13:00 (আসলে overlap করছে)
+     * ধরা পড়ত না, কারণ দুটোরই start/end আলাদা। এখন প্রকৃত সময়-পরিসীমা
+     * (range) তুলনা করে overlap ধরা হচ্ছে।
+     */
+    private function failIfOverlap($attribute, $value, $fail): void
     {
-        if (!preg_match('/^rows\.(\d+)\.' . $field . '$/', $attribute, $matches)) return;
+        if (!preg_match('/^rows\.(\d+)\.start_time$/', $attribute, $matches)) return;
 
         $currentIndex = (int) $matches[1];
-        $currentDate  = $this->rows[$currentIndex]['exam_date'] ?? null;
+        $this->checkOverlapForIndex($currentIndex, $fail);
+    }
 
-        if (!$currentDate || !$value) return;
+    private function failIfEndBeforeStart($attribute, $value, $fail): void
+    {
+        if (!preg_match('/^rows\.(\d+)\.end_time$/', $attribute, $matches)) return;
+
+        $currentIndex = (int) $matches[1];
+        $start = $this->rows[$currentIndex]['start_time'] ?? null;
+
+        if ($start && $value && $value <= $start) {
+            $fail('Ending Time অবশ্যই Starting Time এর পরে হতে হবে।');
+            return;
+        }
+
+        $this->checkOverlapForIndex($currentIndex, $fail);
+    }
+
+    private function checkOverlapForIndex(int $currentIndex, callable $fail): void
+    {
+        $current = $this->rows[$currentIndex] ?? null;
+        $date    = $current['exam_date'] ?? null;
+        $start   = $current['start_time'] ?? null;
+        $end     = $current['end_time'] ?? null;
+
+        if (!$date || !$start || !$end) return;
 
         foreach ($this->rows as $index => $row) {
             if ($index === $currentIndex) continue;
-            if (($row['exam_date'] ?? null) === $currentDate && ($row[$field] ?? null) === $value) {
-                $fail("Same date-e {$label} alada hote hobe.");
+            if (($row['exam_date'] ?? null) !== $date) continue;
+
+            $otherStart = $row['start_time'] ?? null;
+            $otherEnd   = $row['end_time'] ?? null;
+            if (!$otherStart || !$otherEnd) continue;
+
+            // দুইটা time-range overlap করে যদি: start1 < end2 AND start2 < end1
+            if ($start < $otherEnd && $otherStart < $end) {
+                $fail("Same date-e {$row['subject_name']} এর সময়ের সাথে overlap করছে।");
                 return;
             }
         }
+    }
+
+    /**
+     * ExamSetup theke ClassAssign er human-readable label banay.
+     *
+     * FIX: class/section relation naam bhul chilo (model-e nai) — real relation
+     * academicClass/academicSection babohar kora holo. Section na thakle
+     * "All Section" er moto placeholder text na dekhiye shudhu class name dekhano hocche.
+     */
+    private function buildClassLabel(ExamSetup $examSetup): string
+    {
+        $className = $examSetup->classAssign->academicClass->name ?? '—';
+
+        if ($examSetup->classAssign->academicSection) {
+            return $className . ' - ' . $examSetup->classAssign->academicSection->name;
+        }
+
+        return $className;
     }
 
     public function resetForm(): void
@@ -167,7 +234,7 @@ class ScheduleAddComponent extends Component
     public function render()
     {
         return view('livewire.admin.exam.schedule-add-component')
-            ->with('exams', ExamSetup::with('classAssign.class', 'classAssign.section')
+            ->with('exams', ExamSetup::with('classAssign.academicClass', 'classAssign.academicSection')
                 ->orderBy('name')
                 ->get())
             ->layout('layouts.admin.app', [

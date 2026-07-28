@@ -5,10 +5,10 @@ namespace App\Livewire\Admin\Academic;
 use Livewire\Component;
 use App\Models\AcademicClassSchedule;
 use App\Models\AcademicClassAssign;
-use App\Models\AcademicSubject;
 use App\Models\AcademicClass;
 use App\Models\AcademicSection;
-use App\Models\User;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Log;
 
 class ClassScheduleCreateComponent extends Component
 {
@@ -20,11 +20,14 @@ class ClassScheduleCreateComponent extends Component
     public $hasSchedule = false;
     public $schedule_id;
 
-    // ekhon shudhu subject na, subject + tar default teacher_id o thakbe
+    // subject list, each entry: id, name, default_teacher_id
     public array $availableSubjects = [];
 
     // class+section er shob possible teacher (dropdown er jonno)
     public array $availableTeachers = [];
+
+    // Selected class-er has_section flag. True hole section select kora required.
+    public bool $selectedClassHasSection = true;
 
     public function mount()
     {
@@ -33,8 +36,13 @@ class ClassScheduleCreateComponent extends Component
 
     public function getAvailableClasses()
     {
-        return AcademicClass::whereIn('id', AcademicClassAssign::distinct()->pluck('class_id'))
-            ->orderBy('name')
+        $institutionId = institution()->id;
+
+        return AcademicClass::where('institution_id', $institutionId)
+            ->whereIn('id', AcademicClassAssign::where('institution_id', $institutionId)
+                ->distinct()
+                ->pluck('class_id'))
+            ->orderBy('id')
             ->get();
     }
 
@@ -42,24 +50,44 @@ class ClassScheduleCreateComponent extends Component
     {
         if (!$this->filterClass) return collect();
 
-        return AcademicSection::whereIn('id',
-            AcademicClassAssign::where('class_id', $this->filterClass)
-                ->whereNotNull('section_id')
-                ->pluck('section_id')
-        )->orderBy('name')->get();
+        $institutionId = institution()->id;
+
+        return AcademicSection::where('institution_id', $institutionId)
+            ->whereIn('id',
+                AcademicClassAssign::where('institution_id', $institutionId)
+                    ->where('class_id', $this->filterClass)
+                    ->whereNotNull('section_id')
+                    ->pluck('section_id')
+            )->orderBy('name')->get();
     }
 
     public function updatedFilterClass()
     {
-        $this->filterSection      = '';
-        $this->availableSubjects  = [];
-        $this->availableTeachers  = [];
-        $this->hasSchedule        = false;
-        $this->data                = [];
+        $this->filterSection           = '';
+        $this->availableSubjects       = [];
+        $this->availableTeachers       = [];
+        $this->hasSchedule             = false;
+        $this->data                    = [];
+        $this->selectedClassHasSection = false;
 
         if (!$this->filterClass) return;
 
-        $this->loadSubjects($this->filterClass, null);
+        $institutionId = institution()->id;
+
+        // Defense-in-depth: institution_id explicitly check kora holo (IDOR protection)
+        $class = AcademicClass::where('institution_id', $institutionId)
+            ->find($this->filterClass);
+
+        if (!$class) {
+            $this->filterClass = '';
+            return;
+        }
+
+        $this->selectedClassHasSection = (bool) $class->has_section;
+
+        if (!$this->selectedClassHasSection) {
+            $this->loadSubjects($this->filterClass, null);
+        }
     }
 
     public function updatedFilterSection()
@@ -71,21 +99,15 @@ class ClassScheduleCreateComponent extends Component
 
         if (!$this->filterClass || !$this->filterSection) return;
 
-        if ($this->filterSection === 'all') {
-            $details = \App\Models\AcademicClassAssignDetail::with(['subject', 'teacher'])
-                ->whereHas('classAssign', fn($q) => $q->where('class_id', $this->filterClass))
-                ->get();
-
-            $this->buildSubjectsAndTeachers($details);
-            return;
-        }
-
         $this->loadSubjects($this->filterClass, $this->filterSection);
     }
 
     protected function loadSubjects($class_id, $section_id = null): void
     {
+        $institutionId = institution()->id;
+
         $query = AcademicClassAssign::with('details.subject', 'details.teacher')
+            ->where('institution_id', $institutionId)
             ->where('class_id', $class_id);
 
         if ($section_id) {
@@ -102,8 +124,9 @@ class ClassScheduleCreateComponent extends Component
     }
 
     /**
-     * AcademicClassAssignDetail collection theke availableSubjects (with default teacher)
-     * ar availableTeachers (unique list) build kore
+     * AcademicClassAssignDetail collection theke availableSubjects (with default teacher_id)
+     * ar availableTeachers (unique list) build kore. Sob id-based (name-based na),
+     * jate future e subject/teacher rename hole purono schedule bhul na dekhay.
      */
     protected function buildSubjectsAndTeachers($details): void
     {
@@ -111,9 +134,9 @@ class ClassScheduleCreateComponent extends Component
             ->filter(fn($d) => $d->subject)
             ->unique('subject_id')
             ->map(fn($d) => [
-                'id'              => $d->subject->id,
-                'name'            => $d->subject->name,
-                'default_teacher' => $d->teacher->name ?? '',
+                'id'                 => $d->subject->id,
+                'name'               => $d->subject->name,
+                'default_teacher_id' => $d->teacher->id ?? null,
             ])
             ->values()
             ->toArray();
@@ -131,21 +154,33 @@ class ClassScheduleCreateComponent extends Component
 
     public function filter()
     {
-        if (!$this->filterClass) {
-            $this->dispatch('toast', type: 'error', message: 'Please select a class.');
-            return;
-        }
+        $institutionId = institution()->id;
 
-        if (!$this->filterDay) {
-            $this->dispatch('toast', type: 'error', message: 'Please select a day.');
-            return;
-        }
+        $allowedSectionIds = $this->getAvailableSections()->pluck('id')->toArray();
+
+        $this->validate([
+            'filterClass' => [
+                'required',
+                Rule::exists('academic_classes', 'id')
+                    ->where(fn ($q) => $q->where('institution_id', $institutionId)),
+            ],
+            'filterSection' => [
+                Rule::requiredIf($this->selectedClassHasSection),
+                Rule::in($allowedSectionIds),
+            ],
+            'filterDay' => 'required|string|max:20',
+        ], [
+            'filterSection.required' => 'This class has sections. Please select a section.',
+            'filterSection.in'       => 'Selected section is not valid for this class.',
+        ]);
 
         $sectionId = ($this->filterSection && $this->filterSection !== 'all')
             ? $this->filterSection
             : null;
 
-        $schedule = AcademicClassSchedule::where('class_id', $this->filterClass)
+        // Defense-in-depth: institution_id explicitly check kora holo (IDOR protection)
+        $schedule = AcademicClassSchedule::where('institution_id', $institutionId)
+            ->where('class_id', $this->filterClass)
             ->where('section_id', $sectionId)
             ->where('day', $this->filterDay)
             ->first();
@@ -160,10 +195,10 @@ class ClassScheduleCreateComponent extends Component
             $subjectCount = count($this->availableSubjects);
             $rows         = $subjectCount > 0 ? $subjectCount : 1;
 
-            // subject select korar shathe shathei tar default teacher o auto-fill hoye jabe
+            // subject select korar shathe shathei tar default teacher_id o auto-fill hoye jabe
             $this->data = array_map(fn($i) => [
-                'subject'    => $this->availableSubjects[$i]['name'] ?? '',
-                'teacher'    => $this->availableSubjects[$i]['default_teacher'] ?? '',
+                'subject_id' => $this->availableSubjects[$i]['id'] ?? '',
+                'teacher_id' => $this->availableSubjects[$i]['default_teacher_id'] ?? '',
                 'start_time' => '09:00',
                 'end_time'   => '10:00',
                 'class_room' => '',
@@ -174,18 +209,18 @@ class ClassScheduleCreateComponent extends Component
     }
 
     /**
-     * Subject change hole, oi subject er jonno assign kora teacher ke
+     * Subject change hole, oi subject er jonno assign kora teacher_id ke
      * automatically data row e boshiye dao
      */
     public function updatedData($value, $key)
     {
-        if (str_ends_with($key, '.subject')) {
+        if (str_ends_with($key, '.subject_id')) {
             $index = explode('.', $key)[0];
 
-            $subject = collect($this->availableSubjects)->firstWhere('name', $value);
+            $subject = collect($this->availableSubjects)->firstWhere('id', (int) $value);
 
-            if ($subject && !empty($subject['default_teacher'])) {
-                $this->data[$index]['teacher'] = $subject['default_teacher'];
+            if ($subject && !empty($subject['default_teacher_id'])) {
+                $this->data[$index]['teacher_id'] = $subject['default_teacher_id'];
             }
         }
     }
@@ -193,8 +228,8 @@ class ClassScheduleCreateComponent extends Component
     public function addRow()
     {
         $this->data[] = [
-            'subject'    => '',
-            'teacher'    => '',
+            'subject_id' => '',
+            'teacher_id' => '',
             'start_time' => '09:00',
             'end_time'   => '10:00',
             'class_room' => '',
@@ -211,28 +246,49 @@ class ClassScheduleCreateComponent extends Component
 
     public function resetForm()
     {
-        $this->filterClass       = '';
-        $this->filterSection     = '';
-        $this->filterDay         = 'Sunday';
-        $this->data              = [];
-        $this->hasSchedule       = false;
-        $this->schedule_id       = null;
-        $this->availableSubjects = [];
-        $this->availableTeachers = [];
+        $this->filterClass             = '';
+        $this->filterSection           = '';
+        $this->filterDay               = 'Sunday';
+        $this->data                    = [];
+        $this->hasSchedule             = false;
+        $this->schedule_id             = null;
+        $this->availableSubjects       = [];
+        $this->availableTeachers       = [];
+        $this->selectedClassHasSection = false;
         $this->resetValidation();
     }
 
     public function save()
     {
+        $institutionId = institution()->id;
+
+        // Tampering thekano: submit kora subject_id / teacher_id shudhu
+        // ei class-er jonno allowed list-er modheyi thakte hobe
+        $allowedSubjectIds = collect($this->availableSubjects)->pluck('id')->toArray();
+        $allowedTeacherIds = collect($this->availableTeachers)->pluck('id')->toArray();
+        $allowedSectionIds = $this->getAvailableSections()->pluck('id')->toArray();
+
         $this->validate([
-            'filterClass'       => 'required|exists:academic_classes,id',
-            'filterSection'     => 'nullable',
+            'filterClass' => [
+                'required',
+                Rule::exists('academic_classes', 'id')
+                    ->where(fn ($q) => $q->where('institution_id', $institutionId)),
+            ],
+            'filterSection' => [
+                Rule::requiredIf($this->selectedClassHasSection),
+                Rule::in($allowedSectionIds),
+            ],
             'filterDay'         => 'required|string|max:20',
-            'data.*.subject'    => 'required',
-            'data.*.teacher'    => 'required',
+            'data.*.subject_id' => ['required', Rule::in($allowedSubjectIds)],
+            'data.*.teacher_id' => ['required', Rule::in($allowedTeacherIds)],
             'data.*.start_time' => 'required|date_format:H:i',
             'data.*.end_time'   => 'required|date_format:H:i|after:data.*.start_time',
             'data.*.class_room' => 'nullable|string|max:100',
+        ], [
+            'filterSection.required' => 'This class has sections. Please select a section.',
+            'filterSection.in'       => 'Selected section is not valid for this class.',
+            'data.*.subject_id.in'   => 'Selected subject is not assigned to this class.',
+            'data.*.teacher_id.in'   => 'Selected teacher is not assigned to this class.',
         ]);
 
         try {
@@ -242,9 +298,10 @@ class ClassScheduleCreateComponent extends Component
 
             AcademicClassSchedule::updateOrCreate(
                 [
-                    'class_id'   => $this->filterClass,
-                    'section_id' => $sectionId,
-                    'day'        => $this->filterDay,
+                    'institution_id' => $institutionId,
+                    'class_id'       => $this->filterClass,
+                    'section_id'     => $sectionId,
+                    'day'            => $this->filterDay,
                 ],
                 [
                     'data' => $this->data,
@@ -254,7 +311,13 @@ class ClassScheduleCreateComponent extends Component
             $this->dispatch('toast', type: 'success', message: 'Class schedule saved successfully!');
 
         } catch (\Exception $e) {
-            $this->dispatch('toast', type: 'error', message: 'Creation failed: ' . $e->getMessage());
+            Log::error('Class schedule save failed', [
+                'institution_id' => $institutionId,
+                'class_id'       => $this->filterClass,
+                'error'          => $e->getMessage(),
+            ]);
+
+            $this->dispatch('toast', type: 'error', message: 'Something went wrong while saving the schedule. Please try again.');
         }
     }
 

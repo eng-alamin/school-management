@@ -5,7 +5,9 @@ namespace App\Livewire\Admin\Academic;
 use Livewire\Component;
 use App\Models\AcademicClassSchedule;
 use App\Models\AcademicClassAssignDetail;
+use App\Models\AcademicSubject;
 use App\Models\User;
+use Illuminate\Validation\Rule;
 
 class TeacherScheduleComponent extends Component
 {
@@ -17,16 +19,24 @@ class TeacherScheduleComponent extends Component
 
     public function filter(): void
     {
+        $institutionId = institution()->id;
+
         $this->validate([
-            'teacher_id' => 'required|exists:users,id',
+            'teacher_id' => [
+                'required',
+                Rule::exists('users', 'id')
+                    ->where(fn ($q) => $q->where('institution_id', $institutionId)
+                        ->where('role', User::ROLE_TEACHER)),
+            ],
         ]);
 
         $this->hasSchedule  = false;
         $this->scheduleGrid = [];
 
         // এই teacher যে class+section এ assign আছে সেগুলো বের করো
-        // academic_class_assign_details.teacher_id দিয়ে
+        // academic_class_assign_details.teacher_id দিয়ে (defense-in-depth: institution_id explicit)
         $assignDetails = AcademicClassAssignDetail::with('classAssign')
+            ->where('institution_id', $institutionId)
             ->where('teacher_id', $this->teacher_id)
             ->get();
 
@@ -44,37 +54,57 @@ class TeacherScheduleComponent extends Component
             ->unique(fn($p) => $p['class_id'] . '-' . $p['section_id'])
             ->values();
 
-        // Teacher এর নাম বের করো (schedule JSON এ teacher নাম string হিসেবে আছে)
-        $teacher = User::find($this->teacher_id);
-        $teacherName = $teacher?->name ?? '';
+        if ($classSectionPairs->isEmpty()) {
+            return;
+        }
+
+        $classIds = $classSectionPairs->pluck('class_id')->unique()->values();
+
+        // Ekbare shob relevant class-er schedule load kora holo (N+1 thekano)
+        $schedules = AcademicClassSchedule::with(['academicClass', 'academicSection'])
+            ->where('institution_id', $institutionId)
+            ->whereIn('class_id', $classIds)
+            ->get()
+            ->filter(function ($schedule) use ($classSectionPairs) {
+                return $classSectionPairs->contains(
+                    fn($p) => $p['class_id'] == $schedule->class_id && $p['section_id'] == $schedule->section_id
+                );
+            });
+
+        if ($schedules->isEmpty()) {
+            return;
+        }
+
+        // Schedule-e thaka shob subject_id ekbare resolve kore name map banano holo
+        $subjectIds = $schedules
+            ->flatMap(fn($s) => collect($s->data ?? [])->pluck('subject_id'))
+            ->filter()
+            ->unique();
+
+        $subjectNames = AcademicSubject::where('institution_id', $institutionId)
+            ->whereIn('id', $subjectIds)
+            ->pluck('name', 'id');
 
         $allRows = collect();
 
-        foreach ($classSectionPairs as $pair) {
-            $schedules = AcademicClassSchedule::with(['class', 'section'])
-                ->where('class_id', $pair['class_id'])
-                ->where('section_id', $pair['section_id'])
-                ->get();
+        foreach ($schedules as $schedule) {
+            foreach ($schedule->data ?? [] as $period) {
+                // teacher_id diye direct match kora holo (name string matching er bodole)
+                $periodTeacherId = $period['teacher_id'] ?? null;
 
-            foreach ($schedules as $schedule) {
-                foreach ($schedule->data ?? [] as $period) {
-                    // JSON এ teacher নাম match করো
-                    $periodTeacher = $period['teacher'] ?? '';
-                    if (strcasecmp(trim($periodTeacher), trim($teacherName)) !== 0) {
-                        continue;
-                    }
-
-                    $allRows->push([
-                        'day'        => $schedule->day,
-                        'class'      => $schedule->class?->name   ?? '—',
-                        'section'    => $schedule->section?->name ?? '',
-                        'subject'    => $period['subject']    ?? '—',
-                        'teacher'    => $period['teacher']    ?? '—',
-                        'start_time' => $period['start_time'] ?? null,
-                        'end_time'   => $period['end_time']   ?? null,
-                        'class_room' => $period['class_room'] ?? null,
-                    ]);
+                if ((int) $periodTeacherId !== (int) $this->teacher_id) {
+                    continue;
                 }
+
+                $allRows->push([
+                    'day'        => $schedule->day,
+                    'class'      => $schedule->academicClass?->name ?? '—',
+                    'section'    => $schedule->academicSection?->name ?? '',
+                    'subject'    => $subjectNames[$period['subject_id'] ?? null] ?? '—',
+                    'start_time' => $period['start_time'] ?? null,
+                    'end_time'   => $period['end_time']   ?? null,
+                    'class_room' => $period['class_room'] ?? null,
+                ]);
             }
         }
 
@@ -112,7 +142,7 @@ class TeacherScheduleComponent extends Component
     public function render()
     {
         // Teacher role এর সব user
-        $teachers = User::where('role', 'teacher')
+        $teachers = User::where('role', User::ROLE_TEACHER)
             ->where('institution_id', institution()->id)
             ->orderBy('name')
             ->get(['id', 'name']);

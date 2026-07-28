@@ -3,7 +3,7 @@
 
         <!-- floating header -->
         <div class="mat-card-header header-pink-gradient">
-            <h5><span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">payments</span>Collect Payment</h5>
+            <h5>Collect Payment</h5>
             <p>Invoice #{{ $createdInvoiceNo }} — {{ $invoice->student->name }}</p>
         </div>
 
@@ -45,9 +45,6 @@
                 </table>
             </div>
 
-            {{-- ══ BUG FIX: due_amount 0 hoye gele (fully paid) form field ar
-                 confirm button dekhano hobe na — age eta dekhato kintu submit korle
-                 confusing validation error asto (max:0, min:0.01) ══ --}}
             @if($createdInvoiceDue <= 0)
                 <div class="alert alert-success d-flex align-items-center gap-2" style="border-radius:10px">
                     <span class="material-icons-round">check_circle</span>

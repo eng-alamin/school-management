@@ -61,12 +61,15 @@
                         <tr wire:key="setup-{{ $setup->id }}">
                             <td class="text-muted">{{ $setups->firstItem() + $i }}</td>
                             <td><strong>{{ $setup->name }}</strong></td>
-                            <td>
+                             <td>
+                                {{-- FIX: class/section relation নাম ছিল না — real relation
+                                     academicClass/academicSection ব্যবহার করা হলো।
+                                     Section না থাকলে "All Section" না দেখিয়ে শুধু class name দেখানো হচ্ছে। --}}
                                 @if($setup->classAssign)
                                     <span class="badge bg-info-subtle text-dark">
-                                        {{ $setup->classAssign->class->name ?? '—' }}
-                                        @if($setup->classAssign->section)
-                                            - {{ $setup->classAssign->section->name }}
+                                        {{ $setup->classAssign->academicClass->name ?? '—' }}
+                                        @if($setup->classAssign->academicSection)
+                                            - {{ $setup->classAssign->academicSection->name }}
                                         @endif
                                     </span>
                                 @else
@@ -236,13 +239,16 @@
                                                     <td class="fw-500">{{ $subject['subject_name'] }}</td>
                                                     <td>
                                                         <input type="number" min="0"
-                                                               class="form-control form-control-sm"
+                                                               class="form-control form-control-sm @error('subjects.'.$detailId.'.full_mark') is-invalid @enderror"
                                                                wire:model.defer="subjects.{{ $detailId }}.full_mark">
                                                     </td>
                                                     <td>
                                                         <input type="number" min="0"
-                                                               class="form-control form-control-sm"
+                                                               class="form-control form-control-sm @error('subjects.'.$detailId.'.pass_mark') is-invalid @enderror"
                                                                wire:model.defer="subjects.{{ $detailId }}.pass_mark">
+                                                        @error('subjects.'.$detailId.'.pass_mark')
+                                                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                        @enderror
                                                     </td>
                                                     <td>
                                                         <input type="number" min="0"
@@ -357,10 +363,13 @@
                         <div class="row g-2 mb-3">
                             <div class="col-md-3">
                                 <small class="text-muted d-block">Class</small>
+                                {{-- FIX: class/section relation নাম ছিল না — real relation
+                                     academicClass/academicSection ব্যবহার করা হলো।
+                                     Section না থাকলে "All Section" না দেখিয়ে শুধু class name দেখানো হচ্ছে। --}}
                                 <strong>
-                                    {{ $viewRecord->classAssign->class->name ?? 'N/A' }}
-                                    @if($viewRecord->classAssign->section ?? null)
-                                        - {{ $viewRecord->classAssign->section->name }}
+                                    {{ $viewRecord->classAssign->academicClass->name ?? 'N/A' }}
+                                    @if($viewRecord->classAssign->academicSection)
+                                        - {{ $viewRecord->classAssign->academicSection->name }}
                                     @endif
                                 </strong>
                             </div>
@@ -447,20 +456,6 @@
 
 @push('styles')
 <style>
-    :root {
-        --primary: rgba(33, 37, 41);
-        --primary-light: rgba(239,84,84,.12);
-    }
-    .card { border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
-    .card-header { background: #fff; border-bottom: 1px solid var(--border); border-radius: 12px 12px 0 0 !important; padding: 16px 20px; }
-    .table th { font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); border-bottom: 2px solid var(--border); }
-    .table td { vertical-align: middle; font-size: .875rem; }
-    .table > :not(caption) > * > * { padding: .6rem .8rem; }
-    .form-label { font-size: .8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
-    .form-control, .form-select { border-radius: 8px; border: 1px solid var(--border); font-size: .875rem; padding: .45rem .75rem; }
-    .form-control:focus, .form-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
-    .fw-500 { font-weight: 500; }
-
     /* Bulk checkbox grid */
     .class-checkbox-grid {
         display: grid;

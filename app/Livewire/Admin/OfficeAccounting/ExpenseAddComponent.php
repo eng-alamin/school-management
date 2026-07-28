@@ -94,6 +94,7 @@ class ExpenseAddComponent extends Component
 
             $this->dispatch('toast', type: 'success', message: 'Expense created successfully!');
             $this->resetForm();
+            $this->redirect(route('admin.office-accounting.expense.list'), navigate: true);
 
         } catch (\Throwable $e) {
             DB::rollBack();

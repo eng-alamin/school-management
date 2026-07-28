@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
             $table->string('name');
             $table->integer('numeric')->nullable();
+            $table->boolean('has_section')->default(true);
             $table->timestamps();
             $table->softDeletes();
 

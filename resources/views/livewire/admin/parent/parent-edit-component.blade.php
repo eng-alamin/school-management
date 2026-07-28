@@ -3,9 +3,6 @@
         <!-- Floating Header -->
         <div class="mat-card-header header-pink-gradient">
             <h5>
-                <span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">
-                    badge
-                </span>
                 Parent Registration
             </h5>
             <p>Update existing parent record</p>

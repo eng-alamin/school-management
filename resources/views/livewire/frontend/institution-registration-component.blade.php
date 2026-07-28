@@ -642,13 +642,6 @@
                                                 </div>
                                                 <div class="summary-value">{{ $admin_email }}</div>
                                             </div>
-                                            <div class="summary-item">
-                                                <div class="summary-label">
-                                                    <span class="lang-bn">টাইমজোন</span>
-                                                    <span class="lang-en">Timezone</span>
-                                                </div>
-                                                <div class="summary-value">{{ $timezone }}</div>
-                                            </div>
                                         </div>
 
                                     </div>

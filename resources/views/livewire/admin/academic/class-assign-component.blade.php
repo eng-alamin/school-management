@@ -37,9 +37,30 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th id="th-sl">SL</th>
-                            <th id="th-class">Class</th>
-                            <th id="th-section">Section</th>
+                            <th id="th-sl" wire:click="sortBy('id')" style="cursor:pointer">
+                                SL
+                                @if($sortField === 'id')
+                                    <span class="material-icons-round" style="font-size:14px;vertical-align:middle">
+                                        {{ $sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                                    </span>
+                                @endif
+                            </th>
+                            <th id="th-class" wire:click="sortBy('class_name')" style="cursor:pointer">
+                                Class
+                                @if($sortField === 'class_name')
+                                    <span class="material-icons-round" style="font-size:14px;vertical-align:middle">
+                                        {{ $sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                                    </span>
+                                @endif
+                            </th>
+                            <th id="th-section" wire:click="sortBy('section_name')" style="cursor:pointer">
+                                Section
+                                @if($sortField === 'section_name')
+                                    <span class="material-icons-round" style="font-size:14px;vertical-align:middle">
+                                        {{ $sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                                    </span>
+                                @endif
+                            </th>
                             <th id="th-subject">Subjects &amp; Teachers</th>
                             <th id="th-actions">Actions</th>
                         </tr>
@@ -48,8 +69,10 @@
                         @forelse($assigns as $i => $assign)
                         <tr>
                             <td class="text-muted">{{ $assigns->firstItem() + $i }}</td>
-                            <td>{{ $assign->class?->name ?? 'all' }}</td>
-                            <td>{{ $assign->section?->name ?? 'all' }}</td>
+                            <td>{{ $assign->academicClass?->name ?? '—' }}</td>
+                            <td>
+                                {{ $assign->section?->name ?? 'N/A' }}
+                            </td>
                             <td>
                                 @if($assign->details->isNotEmpty())
                                     <div class="d-flex flex-column gap-1">
@@ -65,7 +88,7 @@
                                         @endforeach
                                     </div>
                                 @else
-                                    <span class="text-muted">all</span>
+                                    <span class="text-muted">No subjects assigned</span>
                                 @endif
                             </td>
                             <td>
@@ -123,21 +146,28 @@
                                 @error('class_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
 
-                            {{-- Section dependent on class --}}
+                            {{-- Section dependent on class; class-e section thakle required, na thakle hide --}}
                             <div class="col-md-6">
-                                <label class="form-label">Section <span class="text-danger">*</span></label>
-                                <select class="form-select @error('section_id') is-invalid @enderror" wire:model.defer="section_id" @disabled(empty($availableSections))>
-                                    <option value="">{{ empty($availableSections) ? 'Select class first' : 'Select Section' }}</option>
-                                    @foreach($availableSections as $s)
-                                        <option value="{{ $s['id'] }}">{{ $s['name'] }}</option>
-                                    @endforeach
-                                </select>
-                                @error('section_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                @if($selectedClassHasSection)
+                                    <label class="form-label">Section <span class="text-danger">*</span></label>
+                                    <select class="form-select @error('section_id') is-invalid @enderror" wire:model.defer="section_id" @disabled(!$class_id)>
+                                        <option value="">
+                                            {{ !$class_id ? 'Select class first' : 'Select Section' }}
+                                        </option>
+                                        @foreach($availableSections as $s)
+                                            <option value="{{ $s['id'] }}">{{ $s['name'] }}</option>
+                                        @endforeach
+                                    </select>
+                                    @error('section_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                @else
+                                    <label class="form-label">Section</label>
+                                    <input type="text" class="form-control" value="N/A — this class has no sections" disabled>
+                                @endif
                             </div>
 
                             {{-- Subjects + Teacher (checkbox list, ekhane e select o kora jabe) --}}
                             <div class="col-md-12">
-                                <label class="form-label">Assign Subjects &amp; Teachers</label>
+                                <label class="form-label">Assign Subjects &amp; Teachers <span class="text-danger">*</span></label>
                                 <div class="border rounded p-2" style="max-height:320px;overflow-y:auto;">
                                     @forelse($subjects as $subjectId => $subjectName)
                                         <div class="row g-2 align-items-center py-2 {{ !$loop->last ? 'border-bottom' : '' }}">
@@ -157,10 +187,10 @@
                                             </div>
                                             <div class="col-6">
                                                 <select
-                                                    class="form-select form-select-sm"
-                                                    wire:model.defer="teacher_array.{{ $subjectId }}"
+                                                    class="form-select form-select-sm @error('subject_array.' . $loop->index) is-invalid @enderror"
+                                                    wire:model.live="teacher_array.{{ $subjectId }}"
                                                     @disabled(!in_array($subjectId, $subject_array))>
-                                                    <option value="">No teacher</option>
+                                                    <option value="">Select teacher</option>
                                                     @foreach($teachers as $teacherId => $teacherName)
                                                         <option value="{{ $teacherId }}">{{ $teacherName }}</option>
                                                     @endforeach

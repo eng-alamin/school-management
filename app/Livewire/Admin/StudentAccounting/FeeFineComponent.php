@@ -302,7 +302,7 @@ class FeeFineComponent extends Component
             ->pluck('class')
             ->filter()
             ->unique('id')
-            ->sortBy('name')
+            ->sortBy('id')
             ->values();
 
         $viewFine = $this->viewId

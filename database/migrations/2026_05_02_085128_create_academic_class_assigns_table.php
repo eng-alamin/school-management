@@ -18,12 +18,9 @@ return new class extends Migration
             $table->foreignId('class_id')->constrained('academic_classes')->cascadeOnDelete();
             $table->foreignId('section_id')->nullable()->constrained('academic_sections')->nullOnDelete();
             $table->timestamps();
+
         });
 
-        // The generated column and the unique index that depends on it must be
-        // added AFTER the table physically exists. Running these statements
-        // inside the Schema::create() closure fails because the table has not
-        // been created yet at the point the closure runs.
         DB::statement("
             ALTER TABLE academic_class_assigns
             ADD COLUMN section_id_for_unique BIGINT UNSIGNED

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\BelongsToInstitution;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class FeeInvoice extends Model
 {

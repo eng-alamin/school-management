@@ -275,7 +275,7 @@ class HomeworkAddComponent extends Component
     {
         $classes = AcademicClass::where('institution_id', institution()->id)
             ->whereIn('id', AcademicClassAssign::where('institution_id', institution()->id)->distinct()->pluck('class_id'))
-            ->orderBy('name')
+            ->orderBy('id')
             ->get();
 
         $teachers = User::where('institution_id', institution()->id)

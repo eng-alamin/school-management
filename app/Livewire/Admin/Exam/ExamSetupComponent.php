@@ -10,6 +10,7 @@ use App\Models\ExamSetupDetail;
 use App\Models\AcademicClassAssign;
 use App\Models\AcademicSession;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Livewire\WithPagination;
 
 class ExamSetupComponent extends Component
@@ -17,6 +18,10 @@ class ExamSetupComponent extends Component
     use WithPagination;
 
     protected string $paginationTheme = 'bootstrap';
+
+    // Sort column allowlist — direct Livewire method call দিয়ে arbitrary column
+    // পাঠিয়ে orderBy() manipulate করা ঠেকানোর জন্য (ClassComponent pattern অনুসরণ করা হয়েছে)
+    private const SORTABLE_FIELDS = ['id', 'name'];
 
     // List
     public string $search        = '';
@@ -55,25 +60,39 @@ class ExamSetupComponent extends Component
 
     protected function rules(): array
     {
+        $institutionId = institution()->id;
+
         $common = [
             'name'         => 'required|string|max:255',
-            'exam_term_id' => 'nullable|exists:exam_terms,id',
-            'exam_type_id' => 'nullable|exists:exam_types,id',
+            // exists rule Eloquent global scope বাইপাস করে (raw DB query),
+            // তাই institution_id দিয়ে explicit scope করা হলো — নাহলে অন্য
+            // institution-এর term/type id পাস করেও validation পাশ হয়ে যেত (IDOR)।
+            'exam_term_id' => [
+                'nullable',
+                Rule::exists('exam_terms', 'id')->where('institution_id', $institutionId),
+            ],
+            'exam_type_id' => [
+                'nullable',
+                Rule::exists('exam_types', 'id')->where('institution_id', $institutionId),
+            ],
             'remarks'      => 'nullable|string',
             'is_published' => 'boolean',
         ];
 
         if ($this->editId) {
             return $common + [
-                'academic_class_assign_id' => 'required|exists:academic_class_assigns,id',
+                'academic_class_assign_id' => [
+                    'required',
+                    Rule::exists('academic_class_assigns', 'id')->where('institution_id', $institutionId),
+                ],
             ];
         }
 
         return $common + [
             'selectedClassAssignIds'   => 'required|array|min:1',
-            'selectedClassAssignIds.*' => 'exists:academic_class_assigns,id',
+            'selectedClassAssignIds.*' => Rule::exists('academic_class_assigns', 'id')->where('institution_id', $institutionId),
             'default_full_mark'        => 'required|numeric|min:0',
-            'default_pass_mark'        => 'required|numeric|min:0',
+            'default_pass_mark'        => 'required|numeric|min:0|lte:default_full_mark',
             'default_written_mark'     => 'nullable|numeric|min:0',
             'default_mcq_mark'         => 'nullable|numeric|min:0',
             'default_practical_mark'   => 'nullable|numeric|min:0',
@@ -83,7 +102,31 @@ class ExamSetupComponent extends Component
     protected $messages = [
         'selectedClassAssignIds.required' => 'Select at least one class.',
         'selectedClassAssignIds.min'      => 'Select at least one class.',
+        'default_pass_mark.lte'           => 'Pass mark cannot be greater than full mark.',
     ];
+
+    /**
+     * প্রতিটা subject row-এর pass_mark যেন full_mark এর চেয়ে বেশি না হয়
+     * (edit mode-এর dynamic subjects array-এর জন্য rules() এ static rule লেখা যায় না,
+     * তাই withValidator দিয়ে অতিরিক্ত check করা হচ্ছে)।
+     */
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            if ($this->editId) {
+                foreach ($this->subjects as $detailId => $row) {
+                    $full = (float) ($row['full_mark'] ?? 0);
+                    $pass = (float) ($row['pass_mark'] ?? 0);
+                    if ($pass > $full) {
+                        $validator->errors()->add(
+                            "subjects.{$detailId}.pass_mark",
+                            "Pass mark cannot be greater than full mark for {$row['subject_name']}."
+                        );
+                    }
+                }
+            }
+        });
+    }
 
     public function updatingSearch(): void
     {
@@ -146,8 +189,15 @@ class ExamSetupComponent extends Component
 
     public function sortBy(string $field): void
     {
+        // Allowlist check — না থাকলে silently ignore করে দেওয়া হচ্ছে,
+        // যাতে সরাসরি Livewire component call করে arbitrary column দিয়ে
+        // orderBy() manipulate করা না যায়।
+        if (!in_array($field, self::SORTABLE_FIELDS, true)) {
+            return;
+        }
+
+        $this->sortDirection = ($this->sortField === $field && $this->sortDirection === 'asc') ? 'desc' : 'asc';
         $this->sortField     = $field;
-        $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
         $this->resetPage();
     }
 
@@ -175,9 +225,11 @@ class ExamSetupComponent extends Component
 
     public function openView(int $id): void
     {
+        // FIX: 'class'/'section' নামে কোনো relation model-এ নাই — real relation
+        // নাম হলো academicClass/academicSection।
         $this->viewRecord    = ExamSetup::with([
             'term', 'type',
-            'classAssign.class', 'classAssign.section',
+            'classAssign.academicClass', 'classAssign.academicSection',
             'details.classAssignDetail.subject',
         ])->findOrFail($id);
         $this->showViewModal = true;
@@ -188,9 +240,23 @@ class ExamSetupComponent extends Component
         $this->validate();
 
         $currentSession = AcademicSession::where('is_current', true)->first();
+        $institutionId  = institution()->id;
 
         // ══════════════ EDIT MODE (single class) ══════════════
         if ($this->editId) {
+            // Duplicate prevention: একই class+term+type combo-তে অন্য কোনো
+            // setup ইতিমধ্যে আছে কিনা (নিজেকে বাদ দিয়ে)
+            $duplicate = ExamSetup::where('academic_class_assign_id', $this->academic_class_assign_id)
+                ->where('exam_term_id', $this->exam_term_id)
+                ->where('exam_type_id', $this->exam_type_id)
+                ->where('id', '!=', $this->editId)
+                ->exists();
+
+            if ($duplicate) {
+                $this->addError('academic_class_assign_id', 'এই Class + Term + Type combination-এ ইতিমধ্যে একটি Exam Setup আছে।');
+                return;
+            }
+
             DB::beginTransaction();
             try {
                 $record = ExamSetup::findOrFail($this->editId);
@@ -209,14 +275,17 @@ class ExamSetupComponent extends Component
                 $serial = 1;
                 foreach ($this->subjects as $detailId => $marks) {
                     ExamSetupDetail::create([
-                        'exam_setup_id'                   => $record->id,
-                        'academic_class_assign_detail_id' => $detailId,
+                        // FIX: institution_id ছিল না — NOT NULL কলামের জন্য
+                        // insert fail করতে পারত, বা cross-tenant row তৈরি হতে পারত।
+                        'institution_id'                   => $institutionId,
+                        'exam_setup_id'                    => $record->id,
+                        'academic_class_assign_detail_id'  => $detailId,
                         'full_mark'                        => $marks['full_mark']      ?? 100,
                         'pass_mark'                        => $marks['pass_mark']      ?? 33,
                         'written_mark'                     => $marks['written_mark']   ?? 0,
-                        'mcq_mark'                          => $marks['mcq_mark']       ?? 0,
-                        'practical_mark'                    => $marks['practical_mark'] ?? 0,
-                        'serial'                            => $serial++,
+                        'mcq_mark'                         => $marks['mcq_mark']       ?? 0,
+                        'practical_mark'                   => $marks['practical_mark'] ?? 0,
+                        'serial'                           => $serial++,
                     ]);
                 }
 
@@ -243,21 +312,38 @@ class ExamSetupComponent extends Component
         // ══════════════ CREATE MODE (bulk, multi-class) ══════════════
         DB::beginTransaction();
         try {
-            $createdCount = 0;
-            $skipped      = [];
+            $createdCount   = 0;
+            $skippedNoSubj  = [];
+            $skippedDup     = [];
 
-            $assigns = AcademicClassAssign::with(['details', 'class', 'section'])
+            // FIX: 'class'/'section' এর বদলে real relation নাম academicClass/academicSection
+            $assigns = AcademicClassAssign::with(['details', 'academicClass', 'academicSection'])
                 ->whereIn('id', $this->selectedClassAssignIds)
                 ->get();
 
+            // Duplicate prevention: এই term+type-এ কোন কোন class assign এর জন্য
+            // আগে থেকেই setup আছে তা একসাথে বের করা হচ্ছে (N+1 এড়াতে)
+            $existingSetupClassAssignIds = ExamSetup::where('exam_term_id', $this->exam_term_id)
+                ->where('exam_type_id', $this->exam_type_id)
+                ->whereIn('academic_class_assign_id', $this->selectedClassAssignIds)
+                ->pluck('academic_class_assign_id')
+                ->all();
+
             foreach ($assigns as $assign) {
+                if (in_array($assign->id, $existingSetupClassAssignIds, true)) {
+                    $skippedDup[] = $this->buildClassLabel($assign);
+                    continue; // এই class+term+type এর জন্য setup আগে থেকেই আছে
+                }
+
                 if ($assign->details->isEmpty()) {
-                    $label = ($assign->class->name ?? 'Unknown') . ($assign->section ? ' - ' . $assign->section->name : '');
-                    $skipped[] = $label;
+                    $skippedNoSubj[] = $this->buildClassLabel($assign);
                     continue; // এই class এ কোনো subject assign করা নেই, তাই skip
                 }
 
                 $record = ExamSetup::create([
+                    // FIX: institution_id ছিল না — bulk create-এ প্রতিটা row
+                    // NOT NULL constraint এ fail করত অথবা cross-tenant leak হতো।
+                    'institution_id'           => $institutionId,
                     'name'                     => $this->name,
                     'academic_session_id'      => $currentSession?->id,
                     'academic_class_assign_id' => $assign->id,
@@ -270,14 +356,16 @@ class ExamSetupComponent extends Component
                 $serial = 1;
                 foreach ($assign->details as $detail) {
                     ExamSetupDetail::create([
-                        'exam_setup_id'                   => $record->id,
-                        'academic_class_assign_detail_id' => $detail->id,
+                        // FIX: institution_id ছিল না
+                        'institution_id'                   => $institutionId,
+                        'exam_setup_id'                    => $record->id,
+                        'academic_class_assign_detail_id'  => $detail->id,
                         'full_mark'                        => $this->default_full_mark,
                         'pass_mark'                        => $this->default_pass_mark,
                         'written_mark'                     => $this->default_written_mark,
-                        'mcq_mark'                          => $this->default_mcq_mark,
-                        'practical_mark'                    => $this->default_practical_mark,
-                        'serial'                            => $serial++,
+                        'mcq_mark'                         => $this->default_mcq_mark,
+                        'practical_mark'                   => $this->default_practical_mark,
+                        'serial'                           => $serial++,
                     ]);
                 }
 
@@ -299,8 +387,11 @@ class ExamSetupComponent extends Component
         }
 
         $message = "{$createdCount}টি Exam Setup তৈরি হয়েছে!";
-        if (!empty($skipped)) {
-            $message .= ' (Subject না থাকায় বাদ পড়েছে: ' . implode(', ', $skipped) . ')';
+        if (!empty($skippedNoSubj)) {
+            $message .= ' | Subject না থাকায় বাদ পড়েছে: ' . implode(', ', $skippedNoSubj);
+        }
+        if (!empty($skippedDup)) {
+            $message .= ' | আগে থেকেই Setup থাকায় বাদ পড়েছে: ' . implode(', ', $skippedDup);
         }
 
         $this->dispatch('toast', type: 'success', message: $message);
@@ -372,6 +463,28 @@ class ExamSetupComponent extends Component
         $this->dispatch('toast', type: 'success', message: 'Data deleted successfully!');
     }
 
+    /**
+     * Build a human-readable label for a Class Assign.
+     * section_id null থাকা মানে এই class-এর জন্য section প্রযোজ্যই না
+     * (has_section = false), তাই এখানে কোনো placeholder টেক্সট ("All Section")
+     * দেখানো হয় না — শুধু section থাকলেই তা label-এ যোগ হয়।
+     *
+     * FIX: আগে $assign->class / $assign->section ব্যবহার হচ্ছিল যা model-এ
+     * অস্তিত্বহীন relation — real relation নাম academicClass/academicSection।
+     */
+    private function buildClassLabel(AcademicClassAssign $assign): string
+    {
+        $label = $assign->academicClass->name ?? 'Unknown';
+
+        // যে class-এ section নেই, সেখানে "All Section" এর মতো ভুয়া টেক্সট
+        // না দেখিয়ে শুধু class name দেখানো হচ্ছে। Section থাকলে তবেই জোড়া লাগবে।
+        if ($assign->academicSection) {
+            $label .= ' - ' . $assign->academicSection->name;
+        }
+
+        return $label;
+    }
+
     private function resetForm(): void
     {
         $this->reset([
@@ -388,21 +501,17 @@ class ExamSetupComponent extends Component
         $terms = ExamTerm::pluck('name', 'id');
         $types = ExamType::pluck('name', 'id');
 
-        $classAssigns = AcademicClassAssign::with(['class', 'section', 'details'])
+        $classAssigns = AcademicClassAssign::with(['academicClass', 'academicSection', 'details'])
             ->get()
             ->map(function ($assign) {
-                $label = $assign->class->name ?? 'Unknown';
-                if ($assign->section) {
-                    $label .= ' - ' . $assign->section->name;
-                }
                 return [
                     'id'            => $assign->id,
-                    'label'         => $label,
+                    'label'         => $this->buildClassLabel($assign),
                     'subject_count' => $assign->details->count(),
                 ];
             });
 
-        $setups = ExamSetup::with(['term', 'type', 'classAssign.class', 'classAssign.section', 'details'])
+        $setups = ExamSetup::with(['term', 'type', 'classAssign.academicClass', 'classAssign.academicSection', 'details'])
             ->when($this->search, fn($q) => $q->where('name', 'like', "%{$this->search}%"))
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
