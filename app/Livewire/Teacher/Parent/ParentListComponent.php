@@ -29,6 +29,12 @@ class ParentListComponent extends Component
     public function deleteRecord(): void
     {
         try {
+            // NOTE: only the institution-scoped Guardian row is removed here.
+            // The linked User login is intentionally left untouched, because
+            // that login is global and may still be a guardian at other
+            // institutions (see App\Services\AdmissionService::findOrCreateGuardian
+            // and the project's Guardian architecture notes) — cascading a
+            // User delete from here would lock that person out everywhere.
             Guardian::findOrFail($this->deleteId)->delete();
             $this->confirmDelete = false;
             $this->deleteId      = null;

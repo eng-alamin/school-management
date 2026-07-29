@@ -70,7 +70,12 @@ class ParentEditComponent extends Component
             'income' => 'nullable|numeric',
             'education' => 'nullable|string|max:255',
             'mobile' => 'required|string|max:20',
-            'email' => 'nullable|email',
+
+            // BUG FIX: users.email has a UNIQUE constraint. Without this rule
+            // (ignoring this guardian's own user), changing the email to one
+            // already used by another user threw a raw, unhandled
+            // QueryException at update() time instead of a friendly message.
+            'email' => ['nullable', 'email', Rule::unique('users', 'email')->ignore($this->userId)],
 
             'photo_upload' => 'nullable|image|max:2048',
 

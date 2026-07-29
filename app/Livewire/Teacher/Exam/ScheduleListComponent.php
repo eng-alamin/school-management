@@ -41,13 +41,24 @@ class ScheduleListComponent extends Component
 
     public function openView(int $id): void
     {
-        $this->viewRecord    = ExamSetup::with([
+        // render()-এ যে scoping আছে (শুধু published + teacher-এর নিজের
+        // class/section-এর exam), openView()-এ সেই একই scoping না থাকলে
+        // teacher URL/id ম্যানিপুলেট করে অন্য class-এর বা এখনো unpublished
+        // exam setup-ও দেখতে পারত। তাই এখানে একই condition বসানো হলো।
+        $assignIds = $this->getTeacherClassAssignIds();
+
+        $this->viewRecord = ExamSetup::with([
             'term',
             'type',
             'details.classAssignDetail.subject',
             'details.classAssignDetail.classAssign.class',
             'details.classAssignDetail.classAssign.section',
-        ])->findOrFail($id);
+        ])
+            ->where('is_published', true)
+            ->whereHas('details.classAssignDetail', function ($q) use ($assignIds) {
+                $q->whereIn('academic_class_assign_id', $assignIds);
+            })
+            ->findOrFail($id);
 
         $this->showViewModal = true;
     }

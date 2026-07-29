@@ -382,7 +382,9 @@ Route::middleware(['auth', 'role:admin', 'billing.check'])->group(function () {
     Route::get('attendance/students', \App\Livewire\Admin\Attendance\StudentComponent::class)->name('admin.attendance.students');
     Route::get('attendance/employees', \App\Livewire\Admin\Attendance\EmployeeComponent::class)->name('admin.attendance.employees');
     Route::get('attendance/exams', \App\Livewire\Admin\Attendance\ExamComponent::class)->name('admin.attendance.exams');
-
+    Route::get('attendance/duty-assign', \App\Livewire\Admin\Attendance\AttendanceDutyAssignComponent::class)->name('admin.attendance.duty-assign');
+    Route::get('attendance/exam-duty-assign', \App\Livewire\Admin\Attendance\ExamDutyAssignComponent::class)->name('admin.attendance.exam-duty-assign');
+    
     // Event
     Route::get('event/types', \App\Livewire\Admin\Event\TypeComponent::class)->name('admin.event.types');
     Route::get('event/add', \App\Livewire\Admin\Event\AddComponent::class)->name('admin.event.add');

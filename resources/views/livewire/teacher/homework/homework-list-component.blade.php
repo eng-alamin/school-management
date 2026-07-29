@@ -3,7 +3,7 @@
     <div class="card">
 
         <div class="mat-card-header header-pink-gradient">
-            <h5><span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">assignment</span>All Homeworks</h5>
+            <h5>All Homeworks</h5>
             <p>Manage homework records, view details, and organize easily.</p>
         </div>
 

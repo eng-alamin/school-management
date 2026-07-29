@@ -5,6 +5,7 @@ namespace App\Livewire\Teacher\Leave;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\Storage;
 use App\Models\LeaveApplication;
 use App\Models\LeaveCategory;
 use App\Models\User;
@@ -113,10 +114,13 @@ class ApplyLeaveComponent extends Component
     // ──────────────────────────────────────────
     public function openEdit(int $id): void
     {
-        $record = LeaveApplication::findOrFail($id);
+        $record = LeaveApplication::find($id);
 
         // শুধু নিজের এবং pending/cancelled application edit করা যাবে
-        if ($record->applicable_id !== auth()->id() || !in_array($record->status, ['pending', 'cancelled'])) {
+        if (!$record
+            || $record->applicable_id !== auth()->id()
+            || $record->applicable_type !== User::class
+            || !in_array($record->status, ['pending', 'cancelled'])) {
             session()->flash('error', 'You cannot edit this application.');
             return;
         }
@@ -138,7 +142,14 @@ class ApplyLeaveComponent extends Component
     // ──────────────────────────────────────────
     public function openDetail(int $id): void
     {
-        $record    = LeaveApplication::with(['leaveCategory', 'approvedByUser'])->findOrFail($id);
+        // Ownership check: age eikhane kono check chilo na, tai je-kono
+        // teacher/student-er leave application-er detail — reason, approval
+        // note shoho — dekha jeto shudhu id guess kore (IDOR). Ekhon shudhu
+        // nijer application-er detail e dekha jabe.
+        $record = LeaveApplication::with(['leaveCategory', 'approvedByUser'])
+            ->where('applicable_id', auth()->id())
+            ->where('applicable_type', User::class)
+            ->findOrFail($id);
 
         $this->detail = [
             'id'             => $record->id,
@@ -166,6 +177,29 @@ class ApplyLeaveComponent extends Component
     {
         $this->validate();
 
+        // Re-verify ownership + editable status on the server, exactly like
+        // openEdit() does. openEdit() only guards the *button click* that
+        // opens the modal — editId is a public Livewire property, so without
+        // this check here, a tampered request could still update someone
+        // else's application, or push an already approved/rejected
+        // application back to 'pending' behind the admin's back.
+        $existing = null;
+        if ($this->editId) {
+            $existing = LeaveApplication::where('applicable_id', auth()->id())
+                ->where('applicable_type', User::class)
+                ->whereIn('status', ['pending', 'cancelled'])
+                ->find($this->editId);
+
+            if (!$existing) {
+                session()->flash('error', 'You cannot edit this application.');
+                $this->showModal = false;
+                $this->resetForm();
+                return;
+            }
+        }
+
+        $oldFilePath = $existing->document_path ?? null;
+
         $filePath = $this->document_path;
         if ($this->attachment) {
             $filePath = $this->attachment->store('leave-attachments', 'public');
@@ -184,12 +218,17 @@ class ApplyLeaveComponent extends Component
             'status'            => 'pending',
         ];
 
-        if ($this->editId) {
-            LeaveApplication::findOrFail($this->editId)->update($data);
+        if ($existing) {
+            $existing->update($data);
             session()->flash('success', 'Leave application updated successfully!');
         } else {
             LeaveApplication::create($data);
             session()->flash('success', 'Leave application submitted successfully!');
+        }
+
+        // Clean up the replaced file only after the save succeeded.
+        if ($this->attachment && $oldFilePath && $oldFilePath !== $filePath) {
+            Storage::disk('public')->delete($oldFilePath);
         }
 
         $this->showModal = false;
@@ -201,10 +240,13 @@ class ApplyLeaveComponent extends Component
     // ──────────────────────────────────────────
     public function confirmDeleteRecord(int $id): void
     {
-        $record = LeaveApplication::findOrFail($id);
+        $record = LeaveApplication::find($id);
 
         // শুধু নিজের এবং pending/cancelled application delete করা যাবে
-        if ($record->applicable_id !== auth()->id() || !in_array($record->status, ['pending', 'cancelled'])) {
+        if (!$record
+            || $record->applicable_id !== auth()->id()
+            || $record->applicable_type !== User::class
+            || !in_array($record->status, ['pending', 'cancelled'])) {
             session()->flash('error', 'You can only delete pending or cancelled applications.');
             return;
         }
@@ -215,13 +257,21 @@ class ApplyLeaveComponent extends Component
 
     public function deleteRecord(): void
     {
-        $record = LeaveApplication::findOrFail($this->deleteId);
+        $record = LeaveApplication::find($this->deleteId);
 
         // Double-check before delete
-        if ($record->applicable_id !== auth()->id() || !in_array($record->status, ['pending', 'cancelled'])) {
+        if (!$record
+            || $record->applicable_id !== auth()->id()
+            || $record->applicable_type !== User::class
+            || !in_array($record->status, ['pending', 'cancelled'])) {
             session()->flash('error', 'You can only delete pending or cancelled applications.');
             $this->confirmDelete = false;
+            $this->deleteId      = null;
             return;
+        }
+
+        if ($record->document_path) {
+            Storage::disk('public')->delete($record->document_path);
         }
 
         $record->delete();

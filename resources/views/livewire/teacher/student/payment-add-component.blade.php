@@ -8,7 +8,7 @@
             </span>
             Add Payment
         </h5>
-        <p>Create new payment record</p>
+        <p>Collect payment against a student invoice</p>
     </div>
 
     <div class="container-xl mt-4">
@@ -22,30 +22,21 @@
         <div class="col-md-6 offset-md-1">
             <div class="row g-4">
 
-                {{-- Fees Type --}}
+                {{-- Invoice --}}
                 <div class="col-md-12">
                     <div class="input-group input-group-outline" wire:ignore>
-                        <label class="form-label">Fees Type <span class="req">*</span></label>
-                        <select wire:model.live="fee_invoice_item_id" class="form-select">
+                        <label class="form-label">Invoice <span class="req">*</span></label>
+                        <select wire:model.live="invoice_id" class="form-select">
                             <option value="">Select</option>
                             @foreach($invoices as $invoice)
-                                @php
-                                    $unpaid = $invoice->items->filter(fn($i) => !$i->is_paid);
-                                @endphp
-                                @if($unpaid->isNotEmpty())
-                                    <optgroup label="{{ $invoice->invoice_no }}">
-                                        @foreach($unpaid as $item)
-                                            <option value="{{ $item->id }}">
-                                                {{ $item->fee_type_name }}
-                                                (Due: {{ number_format($item->remaining, 2) }})
-                                            </option>
-                                        @endforeach
-                                    </optgroup>
-                                @endif
+                                <option value="{{ $invoice->id }}">
+                                    {{ $invoice->invoice_no }}
+                                    (Due: {{ number_format($invoice->due_amount, 2) }})
+                                </option>
                             @endforeach
                         </select>
                     </div>
-                    @error('fee_invoice_item_id') <span class="text-danger small">{{ $message }}</span> @enderror
+                    @error('invoice_id') <span class="text-danger small">{{ $message }}</span> @enderror
                 </div>
 
                 {{-- Date --}}
@@ -69,35 +60,10 @@
                                onfocus="focused(this)"
                                onfocusout="defocused(this)">
                     </div>
+                    @if($due_amount > 0)
+                        <small class="text-muted">Due: {{ number_format($due_amount, 2) }}</small>
+                    @endif
                     @error('amount') <span class="text-danger small">{{ $message }}</span> @enderror
-                </div>
-
-                {{-- Discount --}}
-                <div class="col-md-12">
-                    <div class="input-group input-group-outline">
-                        <label class="form-label">Discount</label>
-                        <input type="number" step="0.01" min="0"
-                               wire:model.live="discount"
-                               class="form-control"
-                               placeholder=" "
-                               onfocus="focused(this)"
-                               onfocusout="defocused(this)">
-                    </div>
-                    @error('discount') <span class="text-danger small">{{ $message }}</span> @enderror
-                </div>
-
-                {{-- Fine --}}
-                <div class="col-md-12">
-                    <div class="input-group input-group-outline">
-                        <label class="form-label">Fine</label>
-                        <input type="number" step="0.01" min="0"
-                               wire:model.live="fine"
-                               class="form-control"
-                               placeholder=" "
-                               onfocus="focused(this)"
-                               onfocusout="defocused(this)">
-                    </div>
-                    @error('fine') <span class="text-danger small">{{ $message }}</span> @enderror
                 </div>
 
                 {{-- Payment Method --}}
@@ -105,12 +71,11 @@
                     <div class="input-group input-group-outline" wire:ignore>
                         <label class="form-label">Payment Method <span class="req">*</span></label>
                         <select wire:model="payment_method" class="form-select">
-                            <option value="">Select</option>
                             <option value="cash">Cash</option>
+                            <option value="bkash">bKash</option>
+                            <option value="nagad">Nagad</option>
                             <option value="bank">Bank</option>
                             <option value="cheque">Cheque</option>
-                            <option value="online">Online</option>
-                            <option value="other">Other</option>
                         </select>
                     </div>
                     @error('payment_method') <span class="text-danger small">{{ $message }}</span> @enderror
@@ -119,7 +84,7 @@
                 {{-- Account --}}
                 <div class="col-md-12">
                     <div class="input-group input-group-outline" wire:ignore>
-                        <label class="form-label">Account <span class="req">*</span></label>
+                        <label class="form-label">Account</label>
                         <select wire:model="office_account_id" class="form-select">
                             <option value="">Select</option>
                             @foreach($officeAccounts as $account)
@@ -163,27 +128,18 @@
             </div>
         </div>
 
-        {{-- Right Column - Empty for now --}}
+        {{-- Right Column - Payment Summary --}}
         <div class="col-md-4">
-            {{-- Paid Amount (calculated) --}}
-            @if($amount || $discount || $fine)
+            @if($invoice_id)
             <div class="col-md-12">
                 <div class="pay-summary">
                     <div class="pay-summary-row">
-                        <span>Amount</span>
-                        <span>${{ number_format((float)$amount, 2) }}</span>
-                    </div>
-                    <div class="pay-summary-row">
-                        <span>Discount</span>
-                        <span>- ${{ number_format((float)$discount, 2) }}</span>
-                    </div>
-                    <div class="pay-summary-row">
-                        <span>Fine</span>
-                        <span>+ ${{ number_format((float)$fine, 2) }}</span>
+                        <span>Due Amount</span>
+                        <span>{{ number_format((float) $due_amount, 2) }}</span>
                     </div>
                     <div class="pay-summary-row total">
-                        <span>Paid Amount</span>
-                        <span>${{ number_format((float)$amount - (float)$discount + (float)$fine, 2) }}</span>
+                        <span>Amount to Pay</span>
+                        <span>{{ number_format((float) $amount, 2) }}</span>
                     </div>
                 </div>
             </div>

@@ -160,6 +160,8 @@
             <li class="nav2-item"><a href="{{route('admin.attendance.students') }}" class="nav2-link {{ str_contains(request()->url(), 'attendance/students') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-attendance-student">Student</span></a></li>
             <li class="nav2-item"><a href="{{route('admin.attendance.employees') }}" class="nav2-link {{ str_contains(request()->url(), 'attendance/employees') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-attendance-employee">Employee</span></a></li>
             <li class="nav2-item"><a href="{{route('admin.attendance.exams') }}" class="nav2-link {{ str_contains(request()->url(), 'attendance/exams') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-attendance-exam">Exam</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.attendance.duty-assign') }}" class="nav2-link {{ str_contains(request()->url(), 'attendance/duty-assign') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-attendance-duty-assign">Attendance Duty Assign</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.attendance.exam-duty-assign') }}" class="nav2-link {{ str_contains(request()->url(), 'attendance/exam-duty-assign') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-exam-duty-assign">Exam Duty Assign</span></a></li>
           </ul>
         </div>
       </li>

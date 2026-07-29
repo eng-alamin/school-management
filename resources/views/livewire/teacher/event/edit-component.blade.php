@@ -27,17 +27,14 @@
                 <div class="col-md-6">
                     <div class="input-group input-group-outline" wire:ignore>
                         <label class="form-label">Type <span class="req">*</span></label>
-                        <select wire:model="type" class="form-select">
+                        <select wire:model="event_type_id" class="form-select">
                             <option value="">Select</option>
-                            <option value="Independent Day">Independent Day</option>
-                            <option value="Sports Day">Sports Day</option>
-                            <option value="Cultural Program">Cultural Program</option>
-                            <option value="Exam">Exam</option>
-                            <option value="Holiday">Holiday</option>
-                            <option value="Other">Other</option>
+                            @foreach($eventTypes as $eventType)
+                                <option value="{{ $eventType->id }}">{{ $eventType->name }}</option>
+                            @endforeach
                         </select>
                     </div>
-                    @error('type') <span class="text-danger">{{ $message }}</span> @enderror
+                    @error('event_type_id') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
 
                 <!-- Audience -->

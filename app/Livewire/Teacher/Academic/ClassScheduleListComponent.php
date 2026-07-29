@@ -35,14 +35,24 @@ class ClassScheduleListComponent extends Component
 
         $assigns = $details->pluck('classAssign')->filter()->unique('id');
 
+        // NOTE (bug fix — N+1 avoidance): the old code ran one
+        // AcademicClassSchedule query PER assign inside the foreach below.
+        // A teacher with many class/section assignments meant one query per
+        // assignment on every page load. Fetch every relevant schedule row
+        // in a single query, then group them in memory for O(1) lookup.
+        $classIds = $assigns->pluck('class_id')->unique()->values();
+
+        $schedulesByAssign = AcademicClassSchedule::whereIn('class_id', $classIds)
+            ->get()
+            ->groupBy(fn($s) => $s->class_id . ':' . ($s->section_id ?? 'null'));
+
         $allRows = collect();
 
         foreach ($assigns as $assign) {
             $mySubjects = $mySubjectsByAssign[$assign->id] ?? collect();
 
-            $schedules = AcademicClassSchedule::where('class_id', $assign->class_id)
-                ->where('section_id', $assign->section_id)
-                ->get();
+            $key = $assign->class_id . ':' . ($assign->section_id ?? 'null');
+            $schedules = $schedulesByAssign[$key] ?? collect();
 
             foreach ($schedules as $schedule) {
                 foreach ($schedule->data ?? [] as $period) {
@@ -51,13 +61,19 @@ class ClassScheduleListComponent extends Component
                         continue;
                     }
 
+                    // Skip malformed period entries instead of letting a bad
+                    // start_time/end_time blow up the schedule grid later.
+                    if (empty($period['start_time']) || empty($period['end_time'])) {
+                        continue;
+                    }
+
                     $allRows->push([
                         'day'        => $schedule->day,
                         'class'      => $assign->class?->name ?? '—',
                         'section'    => $assign->section?->name ?? '—',
                         'subject'    => $period['subject']    ?? '—',
-                        'start_time' => $period['start_time'] ?? null,
-                        'end_time'   => $period['end_time']   ?? null,
+                        'start_time' => $period['start_time'],
+                        'end_time'   => $period['end_time'],
                         'class_room' => $period['class_room'] ?? null,
                     ]);
                 }

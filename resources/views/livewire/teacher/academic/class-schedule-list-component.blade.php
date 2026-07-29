@@ -43,11 +43,14 @@
                     <td class="sched-td-per">
                         <div class="sched-per-inner">
                             <span class="sched-per-num">{{ $periodIndex + 1 }}</span>
-                            @if(!empty($row['start_time']))
+                            @if(!empty($row['start_time']) && !empty($row['end_time']))
                             <span class="sched-per-time">
-                                {{ \Carbon\Carbon::createFromFormat('H:i', $row['start_time'])->format('g:i A') }}
+                                {{-- Carbon::parse() (instead of the old createFromFormat('H:i', ...))
+                                     tolerates both "H:i" and "H:i:s" — createFromFormat threw a fatal
+                                     error whenever a time value included seconds. --}}
+                                {{ \Carbon\Carbon::parse($row['start_time'])->format('g:i A') }}
                                 –
-                                {{ \Carbon\Carbon::createFromFormat('H:i', $row['end_time'])->format('g:i A') }}
+                                {{ \Carbon\Carbon::parse($row['end_time'])->format('g:i A') }}
                             </span>
                             @endif
                         </div>

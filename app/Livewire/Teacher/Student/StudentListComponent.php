@@ -8,6 +8,7 @@ use App\Models\Student;
 use App\Models\AcademicClass;
 use App\Models\AcademicSection;
 use App\Models\AcademicClassAssign;
+use Illuminate\Support\Facades\DB;
 
 class StudentListComponent extends Component
 {
@@ -81,13 +82,21 @@ class StudentListComponent extends Component
 
     public function deleteRecord(): void
     {
+        DB::beginTransaction();
+
         try {
             $student = Student::findOrFail($this->deleteId);
+
             $student->user()->delete();
+            $student->delete();
+
+            DB::commit();
+
             $this->confirmDelete = false;
             $this->deleteId      = null;
             $this->dispatch('toast', type: 'success', message: 'Student deleted successfully!');
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            DB::rollBack();
             $this->dispatch('toast', type: 'error', message: 'Delete failed: ' . $e->getMessage());
         }
     }

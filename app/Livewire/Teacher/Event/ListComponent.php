@@ -18,6 +18,10 @@ class ListComponent extends Component
     public string $sortField = 'id';
     public string $sortDirection = 'asc';
 
+    // Fields sortBy() is allowed to touch — keeps the wire:click payload from
+    // being used to sort by an arbitrary/unindexed or unrelated column.
+    private const SORTABLE_FIELDS = ['id', 'title', 'date_from', 'date_to', 'created_at'];
+
     // Delete
     public bool $confirmDelete = false;
     public ?int $deleteId = null;
@@ -29,6 +33,10 @@ class ListComponent extends Component
 
     public function sortBy(string $field): void
     {
+        if (!in_array($field, self::SORTABLE_FIELDS, true)) {
+            return;
+        }
+
         if ($this->sortField === $field) {
             $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
         } else {
@@ -47,6 +55,8 @@ class ListComponent extends Component
 
     public function deleteRecord(): void
     {
+        // Global institution scope on the Event model (BelongsToInstitution)
+        // already keeps this to the current institution's events.
         $record = Event::findOrFail($this->deleteId);
         $record->delete();
         $this->confirmDelete = false;

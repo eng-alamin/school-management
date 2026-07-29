@@ -4,15 +4,19 @@ namespace App\Livewire\Teacher\Student;
 
 use Livewire\Component;
 use App\Models\Student;
-use App\Models\FeeAllocation;
 use App\Models\FeeInvoice;
-use App\Models\FeeInvoiceItem;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class StudentInvoiceComponent extends Component
 {
     public $student;
-    public $feeAllocations;
-    public $invoiceItemsMap = []; // fee_group_item_id => FeeInvoiceItem
+
+    /** @var \Illuminate\Support\Collection Flat list of the student's invoices — used for checkbox/select-all logic */
+    public $invoices;
+
+    /** @var array Invoices grouped by academic session, for the accordion-style display */
+    public array $invoicesBySession = [];
 
     public array $selectedIds = [];
     public bool  $selectAll   = false;
@@ -28,65 +32,114 @@ class StudentInvoiceComponent extends Component
             'user',
         ])->findOrFail($id);
 
-        $this->loadAllocations();
+        $this->loadInvoices();
     }
 
-    private function loadAllocations(): void
+    private function loadInvoices(): void
     {
-        $this->feeAllocations = FeeAllocation::with([
-                'feeGroup.items.feeType',
-            ])
+        // BUG FIX (critical): this used to be FeeAllocation::with('feeGroup.items.feeType')
+        // — the fee_allocations / fee_group_items tables no longer exist. The
+        // fee module now works at Invoice + Invoice Item level (fee_setups →
+        // fee_invoice_items), same as the already-working Admin panel.
+        $this->invoices = FeeInvoice::with(['items.feeSetup.feeType'])
             ->where('student_id', $this->student->id)
+            ->orderByDesc('invoice_date')
             ->get();
 
-        // FeeInvoiceItem গুলো fee_group_item_id দিয়ে map করো
-        $allGroupItemIds = $this->feeAllocations
-            ->flatMap(fn($a) => $a->feeGroup->items->pluck('id'))
-            ->toArray();
+        $this->groupInvoicesBySession();
+    }
 
-        $invoiceItems = FeeInvoiceItem::with('itemPayments')
-            ->whereIn('fee_group_item_id', $allGroupItemIds)
-            ->whereHas('invoice', fn($q) =>
-                $q->where('student_id', $this->student->id)
-            )
-            ->get()
-            ->keyBy('fee_group_item_id');
+    /**
+     * Groups invoices by academic_sessions (matched by invoice_date falling
+     * inside a session's start_date/end_date range), so the blade can show
+     * them under session-year headers instead of one long flat table.
+     */
+    private function groupInvoicesBySession(): void
+    {
+        $sessions = DB::table('academic_sessions')
+            ->where('institution_id', institution()->id)
+            ->orderByDesc('start_date')
+            ->get();
 
-        $this->invoiceItemsMap = $invoiceItems;
+        $grouped = [];
+
+        foreach ($sessions as $session) {
+            $sessionInvoices = $this->invoices->filter(function ($invoice) use ($session) {
+                if (!$session->start_date || !$session->end_date) {
+                    return false;
+                }
+
+                $invoiceDate = Carbon::parse($invoice->invoice_date);
+
+                return $invoiceDate->betweenIncluded(
+                    Carbon::parse($session->start_date),
+                    Carbon::parse($session->end_date)
+                );
+            })->values();
+
+            if ($sessionInvoices->isNotEmpty()) {
+                $grouped[] = [
+                    'session'  => $session,
+                    'invoices' => $sessionInvoices,
+                ];
+            }
+        }
+
+        $matchedIds = collect($grouped)->flatMap(fn ($g) => $g['invoices']->pluck('id'));
+        $unmatched  = $this->invoices->whereNotIn('id', $matchedIds)->values();
+
+        if ($unmatched->isNotEmpty()) {
+            $grouped[] = [
+                'session'  => (object) ['id' => 0, 'name' => 'Others'],
+                'invoices' => $unmatched,
+            ];
+        }
+
+        $this->invoicesBySession = $grouped;
     }
 
     public function updatedSelectAll(bool $value): void
     {
-        if ($value) {
-            $ids = [];
-            foreach ($this->feeAllocations as $allocation) {
-                foreach ($allocation->feeGroup->items as $item) {
-                    $ids[] = $item->id;
-                }
-            }
-            $this->selectedIds = $ids;
-        } else {
-            $this->selectedIds = [];
-        }
+        $this->selectedIds = $value
+            ? $this->invoices->pluck('id')->toArray()
+            : [];
     }
 
     public function updatedSelectedIds(): void
     {
-        $total = $this->feeAllocations->sum(
-            fn($a) => $a->feeGroup->items->count()
-        );
-        $this->selectAll = count($this->selectedIds) === $total && $total > 0;
+        $this->selectAll = $this->invoices->count() > 0
+            && count($this->selectedIds) === $this->invoices->count();
     }
 
-    public function collectSelected(): void
+    /**
+     * Redirects to the Payment Add page for this student. If exactly one
+     * unpaid invoice was selected, its id is passed along via query string
+     * so the payment form can preselect it.
+     */
+    public function collectSelected()
     {
         if (empty($this->selectedIds)) {
-            $this->dispatch('toast', type: 'error', message: 'No fee selected.');
+            $this->dispatch('toast', type: 'error', message: 'No invoice selected.');
             return;
         }
 
-        // Payment page এ redirect
-        $this->redirect(route('teacher.student.payment.add', $this->student->id));
+        $selectedWithDue = $this->invoices
+            ->whereIn('id', $this->selectedIds)
+            ->filter(fn ($invoice) => (float) $invoice->due_amount > 0)
+            ->values();
+
+        if ($selectedWithDue->isEmpty()) {
+            $this->dispatch('toast', type: 'error', message: 'Selected invoice(s) have no due amount.');
+            return;
+        }
+
+        $params = ['id' => $this->student->id];
+
+        if ($selectedWithDue->count() === 1) {
+            $params['invoice_id'] = $selectedWithDue->first()->id;
+        }
+
+        return $this->redirect(route('teacher.student.payment.add', $params));
     }
 
     public function render()

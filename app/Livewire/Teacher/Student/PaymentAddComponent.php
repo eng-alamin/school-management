@@ -4,151 +4,165 @@ namespace App\Livewire\Teacher\Student;
 
 use Livewire\Component;
 use App\Models\Student;
-use App\Models\FeePayment;
-use App\Models\FeeAllocation;
-use App\Models\OfficeAccount;
 use App\Models\FeeInvoice;
-use App\Models\FeeInvoiceItem;
-use App\Services\NotificationService;
+use App\Models\FeePayment;
+use App\Models\OfficeAccount;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class PaymentAddComponent extends Component
 {
     public $student;
 
-    // Form
-    public $fee_invoice_item_id = null;
-    public $payment_date        = '';
-    public $amount              = '0';
-    public $discount            = '0';
-    public $fine                = '0.00';
-    public $payment_method      = 'cash';
-    public $office_account_id   = null;
-    public $remarks             = '';
+    /** @var \Illuminate\Support\Collection Student's unpaid/partial invoices, for the dropdown */
+    public $invoices;
 
-    // Dynamic
-    public $invoiceItems = [];
+    // Form
+    public $invoice_id      = null;
+    public $due_amount      = 0;
+    public $payment_date    = '';
+    public $amount          = 0;
+    public $payment_method  = 'cash';
+    public $office_account_id = null;
+    public $remarks         = '';
+
+    public function mount(int $id): void
+    {
+        $this->student = Student::with(['class', 'section', 'guardians'])->findOrFail($id);
+
+        $this->payment_date = now()->format('Y-m-d');
+
+        $this->loadInvoices();
+
+        // Optional preselect coming from the Invoice page ("Selected Fees
+        // Collect"). This is a query-string value (?invoice_id=), not a
+        // route segment, so it's read via request() rather than a mount()
+        // parameter.
+        $preselectedInvoiceId = (int) request()->query('invoice_id', 0);
+
+        if ($preselectedInvoiceId && $this->invoices->firstWhere('id', $preselectedInvoiceId)) {
+            $this->invoice_id = $preselectedInvoiceId;
+            $this->updatedInvoiceId();
+        }
+
+        $this->dispatch('date-updated', date: $this->payment_date);
+    }
+
+    private function loadInvoices(): void
+    {
+        // BUG FIX (critical): FeeInvoiceItem / fee_invoice_item_id-based
+        // lookup removed. Payments are collected against a FeeInvoice as a
+        // whole (fee_payments has no per-item column), same as the Admin panel.
+        $this->invoices = FeeInvoice::where('student_id', $this->student->id)
+            ->where('payment_status', '!=', 'paid')
+            ->orderByDesc('invoice_date')
+            ->get();
+    }
+
+    public function updatedInvoiceId(): void
+    {
+        $invoice = $this->invoice_id
+            ? $this->invoices->firstWhere('id', $this->invoice_id)
+            : null;
+
+        $this->due_amount = $invoice ? round((float) $invoice->due_amount, 2) : 0;
+        $this->amount     = $this->due_amount;
+    }
 
     protected function rules(): array
     {
         return [
-            'fee_invoice_item_id' => 'required|exists:fee_invoice_items,id',
-            'payment_date'        => 'required|date',
-            'amount'              => 'required|numeric|min:0',
-            'discount'            => 'nullable|numeric|min:0',
-            'fine'                => 'nullable|numeric|min:0',
-            'payment_method'      => 'required|in:cash,bank,cheque,online,other',
-            'office_account_id'   => 'required|exists:office_accounts,id',
-            'remarks'             => 'nullable|string',
+            'invoice_id'        => 'required|exists:fee_invoices,id',
+            'payment_date'      => 'required|date',
+            'amount'            => 'required|numeric|min:0.01|max:' . max($this->due_amount, 0.01),
+            'payment_method'    => 'required|in:cash,bkash,nagad,bank,cheque',
+            'office_account_id' => 'nullable|exists:office_accounts,id',
+            'remarks'           => 'nullable|string|max:255',
         ];
     }
 
-    public function mount($id): void
+    public function updated($propertyName): void
     {
-        $this->payment_date = now()->format('Y-m-d');
-
-        $this->student = Student::with([
-            'class',
-            'section',
-            'guardians',
-        ])->findOrFail($id);
+        $this->validateOnly($propertyName, $this->rules());
     }
 
-    public function updatedFeeInvoiceItemId(): void
+    protected function failedValidation($validator)
     {
-        if ($this->fee_invoice_item_id) {
-            $invoiceItem  = FeeInvoiceItem::with('itemPayments')->find($this->fee_invoice_item_id);
-            $this->amount = $invoiceItem?->remaining ?? '0';
-        } else {
-            $this->amount = '0';
-        }
-    }
-
-    public function getPaidAmountProperty(): float
-    {
-        return (float) $this->amount
-             - (float) $this->discount
-             + (float) $this->fine;
+        $this->dispatch('validation-failed');
     }
 
     public function save(): void
     {
         $this->validate();
 
-        $invoiceItem = FeeInvoiceItem::with([
-            'invoice',
-            'feeGroupItem',
-            'itemPayments',
-        ])->findOrFail($this->fee_invoice_item_id);
+        DB::beginTransaction();
 
-        $net = (float) $invoiceItem->amount
-             - (float) $invoiceItem->discount_amount
-             + (float) $invoiceItem->fine_amount;
+        try {
+            $institutionId = auth()->user()->institution_id;
 
-        $paidAmount = $this->getPaidAmountProperty();
+            // ── Re-fetch with lock so two simultaneous submits for the same
+            // invoice can't both collect payment past the actual due amount.
+            $invoice = FeeInvoice::where('id', $this->invoice_id)
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        $status = match(true) {
-            $paidAmount <= 0    => 'unpaid',
-            $paidAmount >= $net => 'paid',
-            default             => 'partial',
-        };
+            abort_if(
+                $invoice->institution_id !== $institutionId || $invoice->student_id !== $this->student->id,
+                403,
+                'Unauthorized access to this invoice.'
+            );
 
-        FeePayment::create([
-            'student_id'          => $this->student->id,
-            'fee_allocation_id'   => $invoiceItem->invoice->fee_allocation_id,
-            'fee_invoice_item_id' => $this->fee_invoice_item_id,
-            'fee_group_item_id'   => $invoiceItem->fee_group_item_id,
-            'office_account_id'   => $this->office_account_id,
-            'payment_date'        => $this->payment_date,
-            'amount'              => $this->amount,
-            'discount'            => $this->discount ?: 0,
-            'fine'                => $this->fine ?: 0,
-            'paid_amount'         => $paidAmount,
-            'payment_method'      => $this->payment_method,
-            'payment_status'      => $status,
-            'remarks'             => $this->remarks ?: null,
-        ]);
+            if ((float) $this->amount > (float) $invoice->due_amount) {
+                throw ValidationException::withMessages([
+                    'amount' => 'Amount cannot be greater than the current due amount ('
+                        . number_format($invoice->due_amount, 2) . ').',
+                ]);
+            }
 
-        // Invoice totals recalculate
-        $invoiceItem->invoice->recalculate();
+            FeePayment::create([
+                'student_id'        => $this->student->id,
+                'fee_invoice_id'    => $invoice->id,
+                'office_account_id' => $this->office_account_id ?: null,
+                'payment_date'      => $this->payment_date,
+                'amount'            => $this->amount,
+                'payment_method'    => $this->payment_method,
+                'remarks'           => $this->remarks ?: null,
+            ]);
 
-        // NotificationService::feePaid($user, $paidAmount);
+            // Recalculates paid_amount / due_amount / payment_status from the sum of payments.
+            $invoice->recalculate();
 
-        $this->dispatch('toast', type: 'success', message: 'Payment saved successfully!');
-        $this->resetForm();
+            DB::commit();
+
+            $this->dispatch('toast', type: 'success', message: 'Payment saved successfully!');
+            $this->resetForm();
+
+        } catch (ValidationException $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            $this->dispatch('toast', type: 'error', message: 'Something went wrong!');
+            throw $e;
+        }
     }
 
     private function resetForm(): void
     {
-        $this->reset([
-            'fee_invoice_item_id', 'discount',
-            'fine', 'payment_method',
-            'office_account_id', 'remarks',
-        ]);
-        $this->amount       = '0';
-        $this->payment_date = now()->format('Y-m-d');
+        $this->reset(['invoice_id', 'due_amount', 'office_account_id', 'remarks']);
+        $this->amount         = 0;
+        $this->payment_method = 'cash';
+        $this->payment_date   = now()->format('Y-m-d');
         $this->resetValidation();
+        $this->loadInvoices();
     }
 
     public function render()
     {
-        $invoices = FeeInvoice::where('student_id', $this->student->id)
-            ->with([
-                'items.feeGroupItem.feeType',
-                'items.itemPayments',
-            ])
-            ->get();
-
-        // Fully paid items বাদ দাও
-        $this->invoiceItems = $invoices
-            ->pluck('items')
-            ->flatten()
-            ->filter(fn($item) => !$item->is_paid)
-            ->values();
-
         $officeAccounts = OfficeAccount::orderBy('name')->get();
 
         return view('livewire.teacher.student.payment-add-component')
-            ->with(['invoices' => $invoices, 'officeAccounts' => $officeAccounts])
+            ->with('officeAccounts', $officeAccounts)
             ->layout('layouts.teacher.app', [
                 'title' => 'Payment Add | ' . institution()->name,
             ]);

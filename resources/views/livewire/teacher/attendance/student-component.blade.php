@@ -1,158 +1,171 @@
-<div class="mat-card" style="padding-top:28px">
+<div>
+    <div class="card">
 
-    {{-- Floating Header --}}
-    <div class="mat-card-header header-pink-gradient">
-        <h5><span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">event_note</span>Student Attendance</h5>
-        <p>Mark or update student attendance</p>
-    </div>
-
-    {{-- Select Ground --}}
-    <div class="form-section" style="padding-top:40px; padding-bottom:20px">
-        <div class="section-heading">
-            <span class="material-icons-round">tune</span> Select Ground
+        {{-- Floating Header --}}
+        <div class="mat-card-header header-pink-gradient">
+            <h5>Student Attendance</h5>
+            <p>Mark or update student attendance</p>
         </div>
-        <div class="row g-4">
 
-            {{-- Class --}}
-            <div class="col-md-4">
-                <div class="input-group input-group-outline">
-                    <label class="form-label">Class</label>
-                    <select wire:model.live="filterClass" class="form-select">
-                        <option value="">Select Class</option>
-                        @foreach ($classes as $item)
-                            <option value="{{ $item->id }}">{{ $item->name }}</option>
-                        @endforeach
-                    </select>
+        @if($classes->isEmpty())
+            {{-- Ekhono kono class/section attendance duty hisebe assign kora hoyni --}}
+            <div class="form-section" style="padding-top:40px; padding-bottom:20px">
+                <div class="text-center py-5 text-muted">
+                    <span class="material-icons-round" style="font-size:40px;opacity:.3;display:block;margin-bottom:8px">assignment_late</span>
+                    No attendance duty has been assigned to you yet.<br>
+                    <small>Please contact your admin for a class/section attendance assignment.</small>
                 </div>
-                @error('filterClass') <span class="text-danger small">{{ $message }}</span> @enderror
+            </div>
+        @else
+            {{-- Select Ground --}}
+            <div class="form-section" style="padding-top:40px; padding-bottom:20px">
+                <div class="section-heading">
+                    <span class="material-icons-round">tune</span> Select Ground
+                </div>
+                <div class="row g-4">
+
+                    {{-- Class (shudhu amake assign kora class-gulo dekhabe) --}}
+                    <div class="col-md-4">
+                        <div class="input-group input-group-outline">
+                            <label class="form-label">Class</label>
+                            <select wire:model.live="filterClass" class="form-select">
+                                <option value="">Select Class</option>
+                                @foreach ($classes as $item)
+                                    <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @error('filterClass') <span class="text-danger small">{{ $message }}</span> @enderror
+                    </div>
+
+                    {{-- Section (shudhu amake assign kora section-gulo dekhabe) --}}
+                    <div class="col-md-4">
+                        <div class="input-group input-group-outline">
+                            <label class="form-label">Section</label>
+                            <select wire:model.live="filterSection" class="form-select"
+                                {{ $sections->isEmpty() ? 'disabled' : '' }}>
+                                <option value="">{{ !$filterClass ? 'Select Class First' : ($sections->isEmpty() ? 'No Section' : 'Select Section') }}</option>
+                                @if($sections->isNotEmpty())
+                                    <option value="all">All Sections</option>
+                                    @foreach ($sections as $item)
+                                        <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                    @endforeach
+                                @endif
+                            </select>
+                        </div>
+                    </div>
+
+                    {{-- Date --}}
+                    <div class="col-md-4">
+                        <div class="input-group input-group-outline" wire:ignore>
+                            <label class="form-label">Date</label>
+                            <input wire:model="filterDate" type="date" class="form-control" data-dp-value="{{ $filterDate }}"
+                                onfocus="focused(this)" onfocusout="defocused(this)">
+                        </div>
+                        @error('filterDate') <span class="text-danger small">{{ $message }}</span> @enderror
+                    </div>
+
+                    {{-- Filter Button --}}
+                    <div class="col-md-12 text-center">
+                        <button wire:click="filter"
+                                wire:loading.attr="disabled"
+                                wire:target="filter"
+                                class="btn-pink w-100 d-flex justify-content-center align-items-center"
+                                type="button">
+                            <span wire:loading.remove wire:target="filter">
+                                <span class="material-icons-round" style="font-size:16px;vertical-align:middle;margin-right:4px">filter_alt</span> Filter
+                            </span>
+                            <span wire:loading wire:target="filter">
+                                <span class="material-icons-round" style="font-size:16px;animation:spin .7s linear infinite">sync</span> Filtering...
+                            </span>
+                        </button>
+                    </div>
+
+                </div>
             </div>
 
-            {{-- Section --}}
-            <div class="col-md-4">
-                <div class="input-group input-group-outline">
-                    <label class="form-label">Section</label>
-                    <select wire:model.live="filterSection" class="form-select"
-                        {{ empty($sections) ? 'disabled' : '' }}>
-                        <option value="">{{ !$filterClass ? 'Select Class First' : 'Select Section' }}</option>
-                        @if(!empty($sections))
-                            <option value="all">All Section</option>
-                            @foreach ($sections as $item)
-                                <option value="{{ $item->id }}">{{ $item->name }}</option>
+            {{-- Attendance Table --}}
+            @if($hasAttendance)
+            <div class="form-section">
+                <div class="section-heading">
+                    <span class="material-icons-round">groups</span> Students Attendance
+                </div>
+
+                <div class="table-responsive mt-3">
+                    <table class="schedule-table">
+                        <thead>
+                            <tr>
+                                <th>SL</th>
+                                <th>Name</th>
+                                <th>Section</th>
+                                <th>Roll</th>
+                                <th>Register No</th>
+                                <th>Status</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($data as $index => $item)
+                            <tr wire:key="student-att-{{ $index }}">
+                                <td>{{ $index + 1 }}</td>
+                                <td>{{ $item['name'] }}</td>
+                                <td>{{ $item['section_name'] }}</td>
+                                <td>{{ $item['roll_no'] }}</td>
+                                <td>{{ $item['register_no'] }}</td>
+                                <td>
+                                    <div class="status-group">
+                                        <label>
+                                            <input type="radio" wire:model="data.{{ $index }}.status" value="present">
+                                            <span class="text-success">Present</span>
+                                        </label>
+                                        <label>
+                                            <input type="radio" wire:model="data.{{ $index }}.status" value="absent">
+                                            <span class="text-danger">Absent</span>
+                                        </label>
+                                        <label>
+                                            <input type="radio" wire:model="data.{{ $index }}.status" value="late">
+                                            <span class="text-warning">Late</span>
+                                        </label>
+                                        <label>
+                                            <input type="radio" wire:model="data.{{ $index }}.status" value="leave">
+                                            <span class="text-info">Leave</span>
+                                        </label>
+                                    </div>
+                                </td>
+                                <td>
+                                    <input type="text"
+                                        wire:model="data.{{ $index }}.remarks"
+                                        class="schedule-input"
+                                        placeholder="Remarks">
+                                </td>
+                            </tr>
                             @endforeach
-                        @endif
-                    </select>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
-            {{-- Date --}}
-            <div class="col-md-4">
-                <div class="input-group input-group-outline" wire:ignore>
-                    <label class="form-label">Date</label>
-                    <input wire:model="filterDate" type="date" class="form-control" data-dp-value="{{ $filterDate }}"
-                        onfocus="focused(this)" onfocusout="defocused(this)">
-                </div>
-                @error('filterDate') <span class="text-danger small">{{ $message }}</span> @enderror
-            </div>
-
-            {{-- Filter Button --}}
-            <div class="col-md-12 text-center">
-                <button wire:click="filter"
+            {{-- Footer --}}
+            <div class="form-footer">
+                <button class="btn-outline" type="button" wire:click="resetForm">
+                    <span class="material-icons-round" style="font-size:16px">refresh</span> Reset
+                </button>
+                <button class="btn-pink" type="button"
+                        wire:click="save"
                         wire:loading.attr="disabled"
-                        wire:target="filter"
-                        class="btn-pink w-100 d-flex justify-content-center align-items-center"
-                        type="button">
-                    <span wire:loading.remove wire:target="filter">
-                        <span class="material-icons-round" style="font-size:16px;vertical-align:middle;margin-right:4px">filter_alt</span> Filter
+                        wire:target="save">
+                    <span wire:loading.remove wire:target="save">
+                        <span class="material-icons-round">save</span> Save
                     </span>
-                    <span wire:loading wire:target="filter">
-                        <span class="material-icons-round" style="font-size:16px;animation:spin .7s linear infinite">sync</span> Filtering...
+                    <span wire:loading wire:target="save">
+                        <span class="material-icons-round" style="font-size:16px;animation:spin .7s linear infinite">sync</span> Saving...
                     </span>
                 </button>
             </div>
+            @endif
+        @endif
 
-        </div>
     </div>
-
-    {{-- Attendance Table --}}
-    @if($hasAttendance)
-    <div class="form-section">
-        <div class="section-heading">
-            <span class="material-icons-round">groups</span> Students Attendance
-        </div>
-
-        <div class="table-responsive mt-3">
-            <table class="schedule-table">
-                <thead>
-                    <tr>
-                        <th>SL</th>
-                        <th>Name</th>
-                        <th>Section</th>
-                        <th>Roll</th>
-                        <th>Register No</th>
-                        <th>Status</th>
-                        <th>Remarks</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($data as $index => $item)
-                    <tr wire:key="student-att-{{ $index }}">
-                        <td>{{ $index + 1 }}</td>
-                        <td>{{ $item['name'] }}</td>
-                        <td>{{ $item['section_name'] }}</td>
-                        <td>{{ $item['roll_no'] }}</td>
-                        <td>{{ $item['register_no'] }}</td>
-                        <td>
-                            <div class="status-group">
-                                <label>
-                                    <input type="radio" wire:model="data.{{ $index }}.status" value="present">
-                                    <span class="text-success">Present</span>
-                                </label>
-                                <label>
-                                    <input type="radio" wire:model="data.{{ $index }}.status" value="absent">
-                                    <span class="text-danger">Absent</span>
-                                </label>
-                                <label>
-                                    <input type="radio" wire:model="data.{{ $index }}.status" value="late">
-                                    <span class="text-warning">Late</span>
-                                </label>
-                                <label>
-                                    <input type="radio" wire:model="data.{{ $index }}.status" value="leave">
-                                    <span class="text-info">Leave</span>
-                                </label>
-                            </div>
-                        </td>
-                        <td>
-                            <input type="text"
-                                wire:model="data.{{ $index }}.remarks"
-                                class="schedule-input"
-                                placeholder="Remarks">
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    {{-- Footer --}}
-    <div class="form-footer">
-        <button class="btn-outline" type="button" wire:click="resetForm">
-            <span class="material-icons-round" style="font-size:16px">refresh</span> Reset
-        </button>
-        <button class="btn-pink" type="button"
-                wire:click="save"
-                wire:loading.attr="disabled"
-                wire:target="save">
-            <span wire:loading.remove wire:target="save">
-                <span class="material-icons-round">save</span> Save
-            </span>
-            <span wire:loading wire:target="save">
-                <span class="material-icons-round" style="font-size:16px;animation:spin .7s linear infinite">sync</span> Saving...
-            </span>
-        </button>
-    </div>
-    @endif
-
 </div>
 
 @push('styles')

@@ -10,6 +10,7 @@ use App\Models\AcademicSession;
 use App\Models\AcademicClass;
 use App\Models\AcademicSection;
 use App\Models\AcademicGroup;
+use App\Services\StudentIdGeneratorService;
 use Illuminate\Support\Facades\DB;
 
 use Illuminate\Validation\ValidationException;
@@ -41,7 +42,7 @@ class StudentAddComponent extends Component
     public $student_photo_upload;
 
     public $username;
-    public $password; 
+    public $password;
 
     public $guardian_id;
     public $guardian_name, $guardian_relation;
@@ -70,9 +71,7 @@ class StudentAddComponent extends Component
         $this->gender = 'male';
 
         $this->dispatch('date-updated', date: $this->admission_date);
-        $this->dispatch('date-updated', date: $this->dob);
     }
-
 
     public function rules()
     {
@@ -93,7 +92,7 @@ class StudentAddComponent extends Component
             'guardian_name'     => !$this->guardian_exists ? 'required' : 'nullable',
             'guardian_relation' => !$this->guardian_exists ? 'required' : 'nullable',
             'guardian_mobile'   => !$this->guardian_exists ? 'required' : 'nullable',
-            
+
             'guardian_username' => !$this->guardian_exists ? 'required|unique:users,username' : 'nullable',
 
             'guardian_photo_upload'       => 'nullable',
@@ -123,18 +122,20 @@ class StudentAddComponent extends Component
 
             $this->validate($this->rules());
 
+            $institutionId = auth()->user()->institution_id;
+
             // ── Default password
             $userPassword = $this->password ?: '1234';
 
             // ── Create Student User
             $user = User::create([
-                'institution_id' => auth()->user()->institution_id,
+                'institution_id' => $institutionId,
                 'role'     => 'student',
                 'name'     => $this->name,
                 'username' => $this->username,
                 'email'    => $this->email,
                 'password' => $userPassword,
-                'is_verified' => TRUE,
+                'is_verified' => true,
             ]);
 
             // ── Upload Photos
@@ -146,21 +147,9 @@ class StudentAddComponent extends Component
                 ? $this->guardian_photo_upload->store('guardians', 'public')
                 : null;
 
-            // ── Generate Student ID (SAFE - avoid duplicate)
-            $institutionId = auth()->user()->institution_id;
-            $institutionCode = 'SCH' . str_pad($institutionId, 2, '0', STR_PAD_LEFT);
             $year = now()->format('y');
-
-            $lastStudent = Student::where('institution_id', $institutionId)
-                ->lockForUpdate()
-                ->orderByDesc('id')
-                ->first();
-
-            $serial = $lastStudent
-                ? ((int) substr($lastStudent->student_id, -6)) + 1
-                : 1;
-
-            $studentId = $institutionCode . $year . str_pad($serial, 6, '0', STR_PAD_LEFT);
+            $idGenerator = new StudentIdGeneratorService();
+            $studentId   = $idGenerator->generateStudentId($institutionId, $year);
 
             // ── Create Student
             $student = Student::create([
@@ -196,8 +185,8 @@ class StudentAddComponent extends Component
 
                 $student->guardians()->syncWithoutDetaching([
                     $this->guardian_id => [
-                        'institution_id' => auth()->user()->institution_id
-                    ]
+                        'institution_id' => $institutionId,
+                    ],
                 ]);
 
             } else {
@@ -205,13 +194,13 @@ class StudentAddComponent extends Component
                 $guardianPassword = $this->guardian_password ?: '1234';
 
                 $userGuardian = User::create([
-                    'institution_id' => auth()->user()->institution_id,
+                    'institution_id' => $institutionId,
                     'role'     => 'parent',
                     'name'     => $this->guardian_name,
                     'username' => $this->guardian_username,
                     'email'    => $this->guardian_email,
                     'password' => $guardianPassword,
-                    'is_verified' => TRUE,
+                    'is_verified' => true,
                 ]);
 
                 $guardian = Guardian::create([
@@ -230,7 +219,7 @@ class StudentAddComponent extends Component
                 ]);
 
                 $student->guardians()->attach($guardian->id, [
-                    'institution_id' => auth()->user()->institution_id
+                    'institution_id' => $institutionId,
                 ]);
             }
 
@@ -239,7 +228,6 @@ class StudentAddComponent extends Component
             $this->resetForm();
 
             $this->dispatch('date-updated', date: $this->admission_date);
-            $this->dispatch('date-updated', date: $this->dob);
 
             $this->dispatch('toast', type: 'success', message: 'Student created successfully!');
 
@@ -251,14 +239,14 @@ class StudentAddComponent extends Component
             throw $e;
         }
     }
-    
+
     public function render()
     {
         $sessions = AcademicSession::orderBy('name')->get();
         $classes = AcademicClass::orderBy('id')->get();
         $sections = AcademicSection::orderBy('name')->get();
         $groups = AcademicGroup::orderBy('name')->get();
-        $guardians = Guardian::all();
+        $guardians = Guardian::orderBy('name')->get();
 
         return view('livewire.teacher.student.student-add-component')
         ->with('sessions', $sessions)

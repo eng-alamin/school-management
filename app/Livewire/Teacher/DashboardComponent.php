@@ -6,6 +6,8 @@ use Livewire\Component;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
 use App\Models\User;
+use App\Models\ExamSchedule;
+use App\Models\AcademicClassAssignDetail;
 
 class DashboardComponent extends Component
 {
@@ -92,24 +94,30 @@ class DashboardComponent extends Component
 
         $this->myTotalClasses = $myAssigns->count();
 
+        // NOTE (bug fix — DRY / duplicate query): the old code ran this exact
+        // "which students belong to my classes" lookup TWICE — once here
+        // (just to get a count) and again below (to get the actual ids for
+        // attendance/birthdays/chart). Both used byte-identical dynamic
+        // where-closures. Now it's built once and reused everywhere.
+        $myStudentIds = collect();
+
         if ($myAssigns->isNotEmpty()) {
+            $myStudentIds = DB::table('students')
+                ->where('institution_id', $schoolId)
+                ->where(function ($q) use ($myAssigns) {
+                    foreach ($myAssigns as $assign) {
+                        $q->orWhere(function ($inner) use ($assign) {
+                            $inner->where('class_id', $assign->class_id);
 
-            $studentQuery = DB::table('students')
-                ->where('institution_id', $schoolId);
+                            if (!empty($assign->section_id)) {
+                                $inner->where('section_id', $assign->section_id);
+                            }
+                        });
+                    }
+                })
+                ->pluck('id');
 
-            $studentQuery->where(function ($q) use ($myAssigns) {
-                foreach ($myAssigns as $assign) {
-                    $q->orWhere(function ($inner) use ($assign) {
-                        $inner->where('class_id', $assign->class_id);
-
-                        if (!empty($assign->section_id)) {
-                            $inner->where('section_id', $assign->section_id);
-                        }
-                    });
-                }
-            });
-
-            $this->myTotalStudents = $studentQuery->count();
+            $this->myTotalStudents = $myStudentIds->count();
         }
 
         // ── My Attendance Today ────────────────────────────────────────────
@@ -126,22 +134,7 @@ class DashboardComponent extends Component
         $this->myAttendanceToday = $myAttendance ?? null;
 
         // ── My Students Attendance Today ───────────────────────────────────
-        if ($myAssigns->isNotEmpty()) {
-
-            $myStudentIds = DB::table('students')
-                ->where('institution_id', $schoolId)
-                ->where(function ($q) use ($myAssigns) {
-                    foreach ($myAssigns as $assign) {
-                        $q->orWhere(function ($inner) use ($assign) {
-                            $inner->where('class_id', $assign->class_id);
-
-                            if (!empty($assign->section_id)) {
-                                $inner->where('section_id', $assign->section_id);
-                            }
-                        });
-                    }
-                })
-                ->pluck('id');
+        if ($myStudentIds->isNotEmpty()) {
 
             $totalMarked = DB::table('attendances')
                 ->where('institution_id', $schoolId)
@@ -190,6 +183,42 @@ class DashboardComponent extends Component
             ->limit(5)
             ->get();
 
+        // ── My Homework ─────────────────────────────────────────────────────
+        // NOTE (bug fix): $myTotalHomework / $myPendingHomework were declared
+        // as public properties but never actually assigned anywhere — the
+        // dashboard cards always showed 0 regardless of real data.
+        // "Pending" = still open for students to submit (published + the
+        // submission deadline hasn't passed yet).
+        $this->myTotalHomework = DB::table('homeworks')
+            ->where('institution_id', $schoolId)
+            ->where('teacher_id', $this->teacherId)
+            ->count();
+
+        $this->myPendingHomework = DB::table('homeworks')
+            ->where('institution_id', $schoolId)
+            ->where('teacher_id', $this->teacherId)
+            ->where('status', 'published')
+            ->whereDate('submission_date', '>=', $today)
+            ->count();
+
+        // ── Upcoming Exams ───────────────────────────────────────────────────
+        // NOTE (bug fix): $upcomingExams was declared but never assigned —
+        // always 0. Count published exam schedules, on/after today, for the
+        // subjects this teacher actually teaches (same
+        // AcademicClassAssignDetail scoping used by the Exam module).
+        $myAssignIds = AcademicClassAssignDetail::where('teacher_id', $this->teacherId)
+            ->pluck('academic_class_assign_id');
+
+        $this->upcomingExams = ExamSchedule::where('institution_id', $schoolId)
+            ->where('is_published', true)
+            ->where('exam_date', '>=', $today)
+            ->whereHas('examSetup', fn($q) => $q->where('is_published', true))
+            ->whereHas(
+                'examSetupDetail.classAssignDetail',
+                fn($q) => $q->whereIn('academic_class_assign_id', $myAssignIds)
+            )
+            ->count();
+
         // ── Notices & Messages ─────────────────────────────────────────────
         $this->activeNotices = DB::table('notices')
             ->where('institution_id', $schoolId)
@@ -201,6 +230,7 @@ class DashboardComponent extends Component
             ->count();
 
         $this->unreadMessages = DB::table('messages')
+            ->where('institution_id', $schoolId)
             ->where('receiver_id', $this->teacherId)
             ->where('is_read', false)
             ->where('is_trashed_by_receiver', false)
@@ -208,10 +238,19 @@ class DashboardComponent extends Component
             ->count();
 
         // ── Recent Notices ─────────────────────────────────────────────────
+        // NOTE (bug fix): this used to skip the published_at/expires_at
+        // check that $activeNotices above already applies — a notice
+        // scheduled for the future, or one that already expired, could show
+        // up in the "recent notices" widget before/after it should be
+        // visible to teachers.
         $this->recentNotices = DB::table('notices')
             ->where('institution_id', $schoolId)
             ->where('status', 'active')
+            ->where('published_at', '<=', $today)
             ->where(function ($q) use ($today) {
+                $q->whereNull('expires_at')->orWhere('expires_at', '>=', $today);
+            })
+            ->where(function ($q) {
                 $q->whereNull('audience')
                   ->orWhere('audience', 'all')
                   ->orWhere('audience', 'teacher');
@@ -224,6 +263,7 @@ class DashboardComponent extends Component
         // ── Recent Messages ────────────────────────────────────────────────
         $this->recentMessages = DB::table('messages as m')
             ->join('users as u', 'u.id', '=', 'm.sender_id')
+            ->where('m.institution_id', $schoolId)
             ->where('m.receiver_id', $this->teacherId)
             ->where('m.is_deleted_by_receiver', false)
             ->select('m.id', 'u.name as sender_name', 'm.subject', 'm.is_read', 'm.created_at')
@@ -233,6 +273,7 @@ class DashboardComponent extends Component
 
         // ── Recent Activities ──────────────────────────────────────────────
         $this->recentActivities = DB::table('activity_log')
+            ->where('institution_id', $schoolId)
             ->where('causer_id', $this->teacherId)
             ->orderByDesc('created_at')
             ->limit(5)
@@ -245,13 +286,9 @@ class DashboardComponent extends Component
             });
 
         // ── Today's Birthdays (students from my classes + teachers) ───────
-        $myStudentIdsForBirthday = isset($myStudentIds) && $myStudentIds->isNotEmpty()
-            ? $myStudentIds
-            : collect();
-
-        $studentBirthdays = $myStudentIdsForBirthday->isNotEmpty()
+        $studentBirthdays = $myStudentIds->isNotEmpty()
             ? DB::table('students')
-                ->whereIn('id', $myStudentIdsForBirthday)
+                ->whereIn('id', $myStudentIds)
                 ->whereRaw("DATE_FORMAT(dob, '%m-%d') = ?", [$todayMD])
                 ->select('name', DB::raw("'Student' as role"))
                 ->get()
@@ -266,11 +303,11 @@ class DashboardComponent extends Component
         $this->todayBirthdays = $studentBirthdays->merge($teacherBirthdays)->take(5);
 
         // ── Monthly Student Attendance Chart (my students, last 6 months) ──
-        if ($myAssigns->isNotEmpty() && isset($myStudentIds) && $myStudentIds->isNotEmpty()) {
+        if ($myStudentIds->isNotEmpty()) {
             $this->monthlyAttendanceChart = DB::table('attendances')
                 ->where('institution_id', $schoolId)
                 ->where('type', 'student')
-                ->whereIn('attendable_id', $myStudentIds ?? [])
+                ->whereIn('attendable_id', $myStudentIds)
                 ->where('date', '>=', Carbon::now()->subMonths(5)->startOfMonth())
                 ->selectRaw("
                     DATE_FORMAT(date, '%Y-%m') as month,

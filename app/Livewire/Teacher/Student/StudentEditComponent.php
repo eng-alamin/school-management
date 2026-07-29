@@ -62,6 +62,8 @@ class StudentEditComponent extends Component
     public $guardian_username;
     public $guardian_password;
 
+    public $guardianUserId;
+
     public $previous_institution;
     public $qualification;
     public $remarks;
@@ -71,7 +73,7 @@ class StudentEditComponent extends Component
     public function mount($id)
     {
         $this->studentId = $id;
-        $this->student   = Student::with('user', 'guardians')->findOrFail($id);
+        $this->student   = Student::with('user', 'guardians.user')->findOrFail($id);
 
         $this->userId = $this->student->user_id;
 
@@ -100,12 +102,26 @@ class StudentEditComponent extends Component
         // Login
         $this->username = $this->student->user->username;
 
-        // Guardian — existing guardian থাকলে pre-fill
         $this->guardian = $this->student->guardians->first();
+
         if ($this->guardian) {
             $this->guardian_exists = true;
             $this->guardian_id     = $this->guardian->id;
             $this->guardian_photo  = $this->guardian->photo;
+
+            $this->guardianUserId = $this->guardian->user_id;
+
+            $this->guardian_name        = $this->guardian->name;
+            $this->guardian_relation    = $this->guardian->relation;
+            $this->guardian_father_name = $this->guardian->father_name;
+            $this->guardian_mother_name = $this->guardian->mother_name;
+            $this->guardian_occupation  = $this->guardian->occupation;
+            $this->guardian_income      = $this->guardian->income;
+            $this->guardian_education   = $this->guardian->education;
+            $this->guardian_mobile      = $this->guardian->mobile;
+            $this->guardian_email       = $this->guardian->email;
+            $this->guardian_address     = $this->guardian->address;
+            $this->guardian_username    = $this->guardian->user->username ?? null;
         }
 
         // Previous Institution
@@ -136,7 +152,9 @@ class StudentEditComponent extends Component
             'guardian_relation' => !$this->guardian_exists ? 'required' : 'nullable',
             'guardian_mobile'   => !$this->guardian_exists ? 'required' : 'nullable',
 
-            'guardian_username' => !$this->guardian_exists ? ['required', Rule::unique('users', 'username')->ignore($this->userId)] : 'nullable',
+            'guardian_username' => !$this->guardian_exists
+                ? ['required', Rule::unique('users', 'username')->ignore($this->guardianUserId)]
+                : 'nullable',
 
             'guardian_photo_upload'       => 'nullable',
         ];
@@ -159,6 +177,8 @@ class StudentEditComponent extends Component
         try {
 
             $this->validate($this->rules());
+
+            $institutionId = auth()->user()->institution_id;
 
             // ── Student user update ──────────────────────────────
             $userData = [
@@ -212,22 +232,63 @@ class StudentEditComponent extends Component
 
                 $this->student->guardians()->sync([
                     $this->guardian_id => [
-                        'institution_id' => auth()->user()->institution_id
-                    ]
+                        'institution_id' => $institutionId,
+                    ],
+                ]);
+
+            } elseif ($this->guardian) {
+                $guardianUserData = [
+                    'name'     => $this->guardian_name,
+                    'username' => $this->guardian_username,
+                    'email'    => $this->guardian_email,
+                ];
+
+                if (!empty($this->guardian_password)) {
+                    $guardianUserData['password'] = $this->guardian_password;
+                }
+
+                User::findOrFail($this->guardian->user_id)->update($guardianUserData);
+
+                $guardianData = [
+                    'name'        => $this->guardian_name,
+                    'relation'    => $this->guardian_relation,
+                    'father_name' => $this->guardian_father_name,
+                    'mother_name' => $this->guardian_mother_name,
+                    'occupation'  => $this->guardian_occupation,
+                    'income'      => $this->guardian_income,
+                    'education'   => $this->guardian_education,
+                    'mobile'      => $this->guardian_mobile,
+                    'email'       => $this->guardian_email,
+                    'address'     => $this->guardian_address,
+                ];
+
+                if ($this->guardian_photo_upload) {
+                    $guardianData['photo'] = $this->guardian_photo_upload->store('guardians', 'public');
+                }
+
+                $this->guardian->update($guardianData);
+
+                $this->student->guardians()->sync([
+                    $this->guardian->id => [
+                        'institution_id' => $institutionId,
+                    ],
                 ]);
 
             } else {
 
+                // ── Student had NO guardian at all before — create a brand new one ──
                 $guardianPassword = !empty($this->guardian_password)
                     ? $this->guardian_password
                     : '1234';
 
                 $userGuardian = User::create([
+                    'institution_id' => $institutionId,
                     'role'     => 'parent',
                     'name'     => $this->guardian_name,
                     'username' => $this->guardian_username,
                     'email'    => $this->guardian_email,
                     'password' => $guardianPassword,
+                    'is_verified' => true,
                 ]);
 
                 $guardianData = [
@@ -252,9 +313,13 @@ class StudentEditComponent extends Component
 
                 $this->student->guardians()->sync([
                     $guardian->id => [
-                        'institution_id' => auth()->user()->institution_id
-                    ]
+                        'institution_id' => $institutionId,
+                    ],
                 ]);
+
+                // Track it now, so a second submit in the same session updates in place too.
+                $this->guardian       = $guardian;
+                $this->guardianUserId = $userGuardian->id;
             }
 
             DB::commit();
