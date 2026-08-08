@@ -20,6 +20,9 @@ class StudentIdCardComponent extends Component
     public ?int   $filterTemplate = null;
     public bool   $hasFiltered    = false;
 
+    // ── Class-level section-support flag (academic_classes.has_section) ──
+    public bool $classHasSection = true;
+
     // ── Date fields ──
     public string $print_date  = '';
     public string $expiry_date = '';
@@ -41,34 +44,66 @@ class StudentIdCardComponent extends Component
     // ── Available Classes ──
     public function getAvailableClasses()
     {
-        return AcademicClass::whereIn(
+        $institutionId = auth()->user()->institution_id;
+
+        return AcademicClass::where('institution_id', $institutionId)
+            ->whereIn(
                 'id',
-                AcademicClassAssign::select('class_id')->distinct()
+                AcademicClassAssign::where('institution_id', $institutionId)->select('class_id')->distinct()
             )
-            ->orderBy('name')
             ->get();
     }
 
-    // ── Available Sections ──
+    /**
+     * Returns the valid sections for the selected class per the static
+     * academic_class_sections mapping. Returns an empty collection when
+     * the class has has_section = false, so the "All Section" / section
+     * dropdown correctly disappears for section-less classes.
+     */
     public function getAvailableSections()
     {
-        if (!$this->filterClass) return collect();
+        if (!$this->filterClass || !$this->classHasSection) {
+            return collect();
+        }
 
-        return AcademicSection::whereIn(
-                'id',
-                AcademicClassAssign::where('class_id', $this->filterClass)->select('section_id')
-            )
-            ->orderBy('name')
-            ->get();
+        $institutionId = auth()->user()->institution_id;
+
+        $class = AcademicClass::with('sections')
+            ->where('institution_id', $institutionId)
+            ->find($this->filterClass);
+
+        if (!$class || !$class->has_section) {
+            return collect();
+        }
+
+        return $class->sections->sortBy('name')->values();
+    }
+
+    /**
+     * Resolves academic_classes.has_section for a given class id, scoped to
+     * the current institution. Defaults to true when the class can't be
+     * found, to avoid silently widening the student query.
+     */
+    private function resolveClassHasSection(?string $classId): bool
+    {
+        if (!$classId) {
+            return true;
+        }
+
+        $institutionId = auth()->user()->institution_id;
+        $class = AcademicClass::where('institution_id', $institutionId)->find($classId);
+
+        return $class ? (bool) $class->has_section : true;
     }
 
     // ── Class changed ──
     public function updatedFilterClass(): void
     {
-        $this->filterSection = '';
-        $this->selectedIds   = [];
-        $this->selectAll     = false;
-        $this->hasFiltered   = false;
+        $this->filterSection    = '';
+        $this->selectedIds      = [];
+        $this->selectAll        = false;
+        $this->hasFiltered      = false;
+        $this->classHasSection  = $this->resolveClassHasSection($this->filterClass);
     }
 
     // ── Section changed ──
@@ -123,12 +158,13 @@ class StudentIdCardComponent extends Component
     // ── Reset ──
     public function resetFilter(): void
     {
-        $this->filterClass    = '';
-        $this->filterSection  = '';
-        $this->filterTemplate = null;
-        $this->hasFiltered    = false;
-        $this->selectedIds    = [];
-        $this->selectAll      = false;
+        $this->filterClass      = '';
+        $this->filterSection    = '';
+        $this->filterTemplate   = null;
+        $this->hasFiltered      = false;
+        $this->selectedIds      = [];
+        $this->selectAll        = false;
+        $this->classHasSection  = true;
         $this->resetValidation();
     }
 
@@ -145,7 +181,10 @@ class StudentIdCardComponent extends Component
             'expiry_date' => 'required|date|after_or_equal:print_date',
         ]);
 
+        $institutionId = auth()->user()->institution_id;
+
         $students = Student::with(['class', 'section', 'group'])
+            ->where('institution_id', $institutionId)
             ->whereIn('student_id', $this->selectedIds)
             ->get();
 
@@ -155,7 +194,6 @@ class StudentIdCardComponent extends Component
         }
 
         $institution   = institution();
-        $institutionId = $institution->id;
 
         DB::beginTransaction();
         try {
@@ -231,10 +269,19 @@ class StudentIdCardComponent extends Component
     {
         if (!$this->filterClass) return collect();
 
+        $institutionId = auth()->user()->institution_id;
+
+        // ── Class-e section support na thakle, section filter kokhono
+        // apply kora jabe na — even if a stray filterSection value exists ──
+        $sectionFilterActive = $this->classHasSection
+            && $this->filterSection
+            && $this->filterSection !== 'all';
+
         return Student::with(['class', 'section', 'group'])
+            ->where('institution_id', $institutionId)
             ->where('class_id', $this->filterClass)
             ->when(
-                $this->filterSection && $this->filterSection !== 'all',
+                $sectionFilterActive,
                 fn($q) => $q->where('section_id', $this->filterSection)
             )
             ->orderBy('section_id')
@@ -244,16 +291,21 @@ class StudentIdCardComponent extends Component
 
     public function render()
     {
+        $institutionId = auth()->user()->institution_id;
+
         $students         = $this->hasFiltered ? $this->getStudents() : collect();
         $selectedTemplate = $this->filterTemplate
-            ? IdCardTemplate::find($this->filterTemplate)
+            ? IdCardTemplate::where('institution_id', $institutionId)->find($this->filterTemplate)
             : null;
 
         return view('livewire.admin.card.student-id-card-component')
             ->with([
                 'classes'          => $this->getAvailableClasses(),
                 'sections'         => $this->getAvailableSections(),
-                'templates'        => IdCardTemplate::where('is_active', true)->where('type', '!=', 'employee')->get(),
+                'templates'        => IdCardTemplate::where('institution_id', $institutionId)
+                                        ->where('is_active', true)
+                                        ->where('type', '!=', 'employee')
+                                        ->get(),
                 'students'         => $students,
                 'selectedTemplate' => $selectedTemplate,
             ])

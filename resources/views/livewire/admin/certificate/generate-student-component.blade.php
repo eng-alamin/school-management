@@ -25,21 +25,30 @@
                 @error('filterClass') <span class="text-danger small">{{ $message }}</span> @enderror
             </div>
 
-            {{-- Section --}}
+            {{-- Section — class-e section thakle select, na thakle N/A --}}
             <div class="col-md-4">
-                <div class="input-group input-group-outline">
-                    <label class="form-label">Section</label>
-                    <select wire:model.live="filterSection" class="form-select"
-                        {{ empty($sections) ? 'disabled' : '' }}>
-                        <option value="">{{ !$filterClass ? 'Select Class First' : 'Select Section' }}</option>
-                        @if(!empty($sections))
-                            <option value="all">All Section</option>
-                            @foreach ($sections as $item)
-                                <option value="{{ $item->id }}">{{ $item->name }}</option>
-                            @endforeach
-                        @endif
-                    </select>
-                </div>
+                @if($filterClassHasSection)
+                    <div class="input-group input-group-outline">
+                        <label class="form-label">Section</label>
+                        <select wire:model.live="filterSection" class="form-select"
+                            {{ !$filterClass ? 'disabled' : '' }}>
+                            <option value="">{{ !$filterClass ? 'Select Class First' : 'Select Section' }}</option>
+                            @if(!empty($sections))
+                                @if(count($sections) > 1)
+                                    <option value="all">All Section</option>
+                                @endif
+                                @foreach ($sections as $item)
+                                    <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                @endforeach
+                            @endif
+                        </select>
+                    </div>
+                @else
+                    <div class="input-group input-group-outline">
+                        <label class="form-label">Section</label>
+                        <input type="text" class="form-control" value="N/A — this class has no sections" disabled>
+                    </div>
+                @endif
             </div>
 
             <div class="col-md-4">
@@ -131,9 +140,8 @@
                                 <th id="th-class">Class</th>
                                 <th id="th-section">Section</th>
                                 <th id="th-group">Group</th>
-                                <th id="th-register-no">Register No</th>
+                                <th id="th-registration-no">Registration No</th>
                                 <th id="th-roll-no">Roll No</th>
-                                <th id="th-mobile-no">Mobile No</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -153,17 +161,17 @@
                                                      class="avatar" alt="">
                                             @else
                                                 <div class="avatar-placeholder">
-                                                    {{ strtoupper(substr($student->full_name, 0, 1)) }}
+                                                    {{ strtoupper(substr($student->name, 0, 1)) }}
                                                 </div>
                                             @endif
-                                            <div class="fw-500 text-dark">{{ $student->full_name }}</div>
+                                            <div class="fw-500 text-dark">{{ $student->name }}</div>
                                         </div>
                                     </td>
-                                    <td>{{ $student->class?->name }}</td>
-                                    <td>{{ $student->section?->name }}</td>
-                                    <td>{{ $student->register_no }}</td>
-                                    <td>{{ $student->roll_no }}</td>
-                                    <td>{{ $student->mobile }}</td>
+                                    <td>{{ $student->class?->name ?? '—' }}</td>
+                                    <td>{{ $student->section?->name ?? '—' }}</td>
+                                    <td>{{ $student->group?->name ?? '—' }}</td>
+                                    <td>{{ $student->registration_no ?? '—' }}</td>
+                                    <td>{{ $student->roll_no ?? '—' }}</td>
                                 </tr>
                             @empty
                                 <tr>
@@ -210,7 +218,7 @@
                 </div>
 
                 <div class="modal-body">
-                    <div style="display:flex;flex-wrap:wrap;gap:24px;justify-content:flex-start;">
+                    <div style="display:flex;flex-wrap:wrap;gap:24px;justify-content:center;">
 
                         @foreach($printCards as $card)
                         @php
@@ -232,12 +240,15 @@
 
                         <div class="cert-preview-wrap">
 
-                            {{-- Certificate Sheet --}}
+                            {{-- Certificate Sheet — flex column so the footer (signature +
+                                 issue date) always sticks to the bottom, regardless of how
+                                 short/long the certificate content is (page-like layout). --}}
                             <div class="cert-sheet"
                                  style="width:{{ $size['width'] }};
                                         min-height:{{ $size['minHeight'] }};
                                         padding:{{ $mt }}px {{ $mr }}px {{ $mb }}px {{ $ml }}px;
-                                        position:relative;overflow:hidden;">
+                                        position:relative;overflow:hidden;
+                                        display:flex;flex-direction:column;">
 
                                 {{-- Background image --}}
                                 {{-- Bug fix: templates now store paths relative to public/ directly (not the storage disk) --}}
@@ -247,40 +258,10 @@
                                 @endif
 
                                 {{-- Content layer --}}
-                                <div style="position:relative;z-index:1;">
+                                <div style="position:relative;z-index:1;display:flex;flex-direction:column;flex:1;">
 
-                                    {{-- Header row: Logo + Signature --}}
-                                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
-
-                                        {{-- Logo --}}
-                                        @if($tmpl->logo_image)
-                                            <img src="{{ asset($tmpl->logo_image) }}"
-                                                 style="height:64px;object-fit:contain;">
-                                        @else
-                                            <div style="width:64px;"></div>
-                                        @endif
-
-                                    </div>
-                                    
                                     <div class="cert-content">
                                         {!! $card['content'] !!}
-                                    </div>
-
-                                    {{-- Footer: Signature --}}
-                                    @if($tmpl->signature_image)
-                                        <div style="margin-top:40px;text-align:right;">
-                                            <img src="{{ asset($tmpl->signature_image) }}"
-                                                 style="height:48px;object-fit:contain;">
-                                            <div style="font-size:.72rem;color:#888;margin-top:4px;border-top:1px solid #ddd;padding-top:4px;">
-                                                Authorized Signature
-                                            </div>
-                                        </div>
-                                    @endif
-
-                                    {{-- Issue date --}}
-                                    <div style="margin-top:24px;font-size:.72rem;color:#999;text-align:left;">
-                                        Issue Date:
-                                        {{ \Carbon\Carbon::parse($card['issue_date'])->format('d M Y') }}
                                     </div>
 
                                 </div>
@@ -304,7 +285,7 @@
                         <i class="bi bi-x-lg me-1"></i>Close
                     </button>
                     <button class="btn bg-dark text-white" onclick="window.print()">
-                        <i class="bi bi-printer me-1"></i>Print All Certificates
+                        <i class="bi bi-printer me-1"></i>Print
                     </button>
                 </div>
 
@@ -333,7 +314,8 @@
         <div class="cert-sheet print-page"
              style="width:{{ $size['width'] }};min-height:{{ $size['minHeight'] }};
                     padding:{{ $mt }}px {{ $mr }}px {{ $mb }}px {{ $ml }}px;
-                    position:relative;overflow:hidden;page-break-after:always;">
+                    position:relative;overflow:hidden;page-break-after:always;
+                    display:flex;flex-direction:column;">
 
             {{-- Bug fix: same path correction as the modal preview above --}}
             @if($tmpl->background_image)
@@ -341,30 +323,8 @@
                      style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;opacity:.18;">
             @endif
 
-            <div style="position:relative;z-index:1;">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
-                    @if($tmpl->logo_image)
-                        <img src="{{ asset($tmpl->logo_image) }}" style="height:64px;object-fit:contain;">
-                    @else
-                        <div style="width:64px;"></div>
-                    @endif
-                </div>
-
-                {{-- All placeholders already replaced — render directly --}}
+            <div style="position:relative;z-index:1;display:flex;flex-direction:column;flex:1;">
                 <div class="cert-content">{!! $card['content'] !!}</div>
-
-                @if($tmpl->signature_image)
-                    <div style="margin-top:40px;text-align:right;">
-                        <img src="{{ asset($tmpl->signature_image) }}" style="height:48px;object-fit:contain;">
-                        <div style="font-size:.72rem;color:#888;margin-top:4px;border-top:1px solid #ddd;padding-top:4px;">
-                            Authorized Signature
-                        </div>
-                    </div>
-                @endif
-
-                <div style="margin-top:24px;font-size:.72rem;color:#999;">
-                    Issue Date: {{ \Carbon\Carbon::parse($card['issue_date'])->format('d M Y') }}
-                </div>
             </div>
         </div>
         @endforeach
@@ -420,7 +380,14 @@
         body { background: #fff !important; }
         .no-print  { display: none !important; }
         .print-section { display: block !important; }
-        .print-page { box-shadow: none !important; border: none !important; }
+        .print-page {
+            box-shadow: none !important;
+            border: none !important;
+            /* Bug fix: block element with a fixed mm width was left-aligned
+               by default; margin auto centers it horizontally on the printed
+               page regardless of page_layout (A4/A5, portrait/landscape). */
+            margin: 0 auto !important;
+        }
     }
 
     /* ── Misc table ── */

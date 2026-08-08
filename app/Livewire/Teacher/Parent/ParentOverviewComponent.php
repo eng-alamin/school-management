@@ -19,7 +19,7 @@ class ParentOverviewComponent extends Component
     public function render()
     {
         return view('livewire.teacher.parent.parent-overview-component')
-            ->with('parent', $this->parent)
+            ->with('guardian', $this->parent)
             ->layout('layouts.teacher.app', [
                 'title' => 'Parent Overview | ' . institution()->name,
             ]);

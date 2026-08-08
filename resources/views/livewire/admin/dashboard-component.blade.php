@@ -22,6 +22,38 @@
     {{-- ══ Real Content (hidden while a Livewire request is in-flight) ══ --}}
     <div wire:loading.remove.delay>
 
+    <div class="section-reminder">
+        @if ($progressPercent < 100)
+            <div class="wizard-setup">
+                <div class="wizard-setup-glow"></div>
+
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 position-relative">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="wizard-setup-icon">
+                            <span class="material-icons-round">rocket_launch</span>
+                        </div>
+                        <div>
+                            <h4 class="mb-1 fw-bold">Setup Checklist</h4>
+                            <p class="mb-0 small opacity-90 teaxt-white">Complete the steps below to fully set up your institution.</p>
+                        </div>
+                    </div>
+                    <a href="{{route('admin.setup-wizard.index')}}" class="btn btn-sm btn-light fw-semibold wizard-setup-btn">
+                        <span>Complete Setup</span>
+                        <span class="material-icons-round" style="font-size:16px;vertical-align:middle;">arrow_forward</span>
+                    </a>
+                </div>
+
+                <div class="wizard-progress-track position-relative">
+                    <div class="wizard-progress-fill" style="width: {{ $progressPercent }}%"></div>
+                </div>
+                <div class="small mt-2 opacity-90 position-relative d-flex align-items-center gap-1">
+                    <span class="fw-semibold">{{ $progressPercent }}%</span>
+                    <span>Complete</span>
+                </div>
+            </div>
+        @endif
+    </div>
+
     {{-- ══ Welcome Header ══════════════════════════════════════════════════ --}}
     <div class="dash-header px-3 pt-3 pb-2">
         <h5 class="fw-bold mb-0 text-dark">Welcome, Admin! 👋</h5>
@@ -733,6 +765,84 @@
     /* ── Notice View Modal badges ────────────────────────────────── */
     .badge-active   { background: rgba(34,197,94,.12);  color: #16a34a; }
     .badge-inactive { background: rgba(107,114,128,.12); color: #6b7280; }
+
+
+    /* Section  Reminder */
+    .wizard-setup {
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(135deg, #000000 0%, #525057 100%);
+        color: #fff;
+        padding: 24px 26px;
+        border-radius: var(--radius-card, 16px);
+        box-shadow: 0 8px 24px rgba(139, 92, 246, .25);
+        margin-bottom: 20px;
+    }
+
+    .wizard-setup-glow {
+        position: absolute;
+        top: -60px;
+        right: -60px;
+        width: 180px;
+        height: 180px;
+        background: rgba(255, 255, 255, .12);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .wizard-setup h4 {
+        font-size: 1.15rem;
+        letter-spacing: -.01em;
+    }
+
+    .wizard-setup-icon {
+        width: 42px;
+        height: 42px;
+        min-width: 42px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, .18);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(4px);
+    }
+
+    .wizard-setup-icon .material-icons-round {
+        font-size: 22px;
+        color: #fff;
+    }
+
+    .wizard-setup-btn {
+        color: #8b5cf6 !important;
+        border-radius: 10px;
+        padding: 8px 16px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: transform .15s, box-shadow .15s;
+        box-shadow: 0 2px 8px rgba(0,0,0,.12);
+    }
+
+    .wizard-setup-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,.18);
+    }
+
+    .wizard-progress-track {
+        height: 8px;
+        border-radius: 20px;
+        background: rgba(255,255,255,.28);
+        overflow: hidden;
+        margin-top: 20px;
+    }
+
+    .wizard-progress-fill {
+        height: 100%;
+        border-radius: 20px;
+        background: #fff;
+        box-shadow: 0 0 8px rgba(255,255,255,.6);
+        transition: width .5s ease;
+    }
 
     /* ── Responsive tweaks ───────────────────────────────────────── */
     @media (min-width: 768px) {

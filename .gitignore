@@ -5,3 +5,4 @@ reports
 .env.example
 guide.php
 /public/storage
+/docs

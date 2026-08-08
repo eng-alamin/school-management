@@ -66,7 +66,7 @@
                                     <span class="sched-subj-name">{{ $item['subject'] }}</span>
                                 </div>
                                 <div>
-                                    <span class="sched-tchr-name">
+                                    <span class="sched-sec-name">
                                         {{ $item['class'] }}
                                         @if(!empty($item['section']))
                                             – {{ $item['section'] }}
@@ -131,8 +131,8 @@
     .sched-c--empty   .sched-cell-in::before{display:none}
 
     .sched-subj-name{font-family:var(--font-d);font-size:.82rem;font-weight:700;color:var(--ink);line-height:1.2;letter-spacing:-.01em}
-    .sched-tchr-name{font-family:var(--font-b);font-size:.64rem;font-weight:500;color:var(--ink-muted);margin-top:5px;display:flex;align-items:center;gap:5px}
-    .sched-tchr-name::before{content:'';width:9px;height:1px;background:var(--ink-faint);display:inline-block;flex-shrink:0}
+    .sched-sec-name{font-family:var(--font-b);font-size:.64rem;font-weight:500;color:var(--ink-muted);margin-top:5px;display:flex;align-items:center;gap:5px}
+    .sched-sec-name::before{content:'';width:9px;height:1px;background:var(--ink-faint);display:inline-block;flex-shrink:0}
     .sched-room-tag{font-family:var(--font-m);font-size:.48rem;font-weight:500;padding:2px 6px;border:1px solid var(--rule);border-radius:3px;color:var(--ink-faint);letter-spacing:.05em;display:inline-block;margin-top:3px;align-self:flex-start}
 
     @keyframes sched-up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}

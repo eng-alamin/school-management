@@ -124,6 +124,14 @@ class GenerateEmployeeComponent extends Component
                 ? Carbon::parse($employee->dob)->format('d M Y')
                 : '';
 
+            // {logo} / {print_date} / {qr_code} — used by the 5 ready-made designs
+            // shared between Student and Employee certificates (see
+            // GenerateStudentComponent::buildLogoHtml()/buildQrCodeHtml() for the
+            // same logic, kept in sync here).
+            $logoHtml      = $this->buildLogoHtml($template, $institute);
+            $printDateHtml = e(Carbon::parse($this->issue_date)->format('d M Y'));
+            $qrCodeHtml    = $this->buildQrCodeHtml($template, $employee);
+
             $content = str_replace(
                 [
                     // ── Institute placeholders ──
@@ -150,6 +158,7 @@ class GenerateEmployeeComponent extends Component
                     '{blood_group}',
                     '{dob}',
                     '{mobile}',
+                    '{mobileno}',
                     '{email}',
                     '{address}',
                     '{issue_date}',
@@ -157,6 +166,11 @@ class GenerateEmployeeComponent extends Component
                     // ── Photo placeholders ──
                     '{photo}',
                     '{employee_photo}',
+
+                    // ── Logo / date / QR (used by the 5 ready-made designs) ──
+                    '{logo}',
+                    '{print_date}',
+                    '{qr_code}',
                 ],
                 [
                     // ── Institute values ──
@@ -184,6 +198,7 @@ class GenerateEmployeeComponent extends Component
                     $employee->blood_group     ?? '',
                     $formattedDob,
                     $employee->mobile          ?? '',
+                    $institute?->phone         ?? '',
                     $employee->email           ?? '',
                     $employee->present_address ?? '',
                     Carbon::parse($this->issue_date)->format('d M Y'),
@@ -191,6 +206,11 @@ class GenerateEmployeeComponent extends Component
                     // ── Photo as inline img ──
                     $photoHtml,
                     $photoHtml,
+
+                    // ── Logo / date / QR ──
+                    $logoHtml,
+                    $printDateHtml,
+                    $qrCodeHtml,
                 ],
                 $content
             );
@@ -229,6 +249,56 @@ class GenerateEmployeeComponent extends Component
     // ── Helpers ──
 
     /**
+     * {logo} placeholder-এর জন্য inline <img> HTML বানায়। Template-এর নিজস্ব
+     * logo_image থাকলে সেটা ব্যবহার হয়, না থাকলে Institution-এর system_logo
+     * fallback হিসেবে ব্যবহার হয়। GenerateStudentComponent-এর একই মেথডের
+     * সাথে logic sync রাখা হয়েছে (dual maintenance এড়াতে চাইলে ভবিষ্যতে এটা
+     * একটা shared trait/service-এ move করা যেতে পারে)।
+     */
+    private function buildLogoHtml(CertificateTemplate $template, ?Institution $institute): string
+    {
+        $path = $template->logo_image ?: $institute?->system_logo;
+
+        if (!$path) {
+            return '';
+        }
+
+        $url = $template->logo_image
+            ? asset($template->logo_image)
+            : asset('storage/' . $institute->system_logo);
+
+        return '<img src="' . $url . '" style="height:56px;object-fit:contain;">';
+    }
+
+    /**
+     * {qr_code} placeholder resolve করে employee-এর জন্য। Template-এর
+     * qr_code_text field student/employee উভয়ের জন্য একই enum shares করে
+     * (registration_no/roll_no/name/email/mobile) — employee-এর
+     * registration_no/roll_no নেই, তাই সেক্ষেত্রে employee_id fallback হয়।
+     *
+     * NOTE: এটা আসল scannable QR image না, শুধু value readable text আকারে
+     * দেখায় (student component-এর সাথে সামঞ্জস্যপূর্ণ)।
+     */
+    private function buildQrCodeHtml(CertificateTemplate $template, Employee $employee): string
+    {
+        $value = match ($template->qr_code_text) {
+            'registration_no', 'roll_no' => $employee->employee_id,
+            'name'                       => $employee->name,
+            'email'                      => $employee->email,
+            'mobile'                     => $employee->mobile,
+            default                      => $employee->employee_id,
+        } ?? '';
+
+        if ($value === '') {
+            return '';
+        }
+
+        return '<div style="display:inline-block;padding:6px 10px;border:1px solid #999;'
+            . 'font-size:.7rem;font-family:monospace;letter-spacing:.03em;">'
+            . e($value) . '</div>';
+    }
+
+    /**
      * Cached per-request employee list. Prevents duplicate queries across
      * render(), updatedSelectAll(), updatedSelectedIds(), and the view.
      */
@@ -252,7 +322,6 @@ class GenerateEmployeeComponent extends Component
     public function getAvailableRoles(): array
     {
         return [
-            'admin'      => 'Admin',
             'teacher'    => 'Teacher',
             'accountant' => 'Accountant',
             'staff'      => 'Staff',

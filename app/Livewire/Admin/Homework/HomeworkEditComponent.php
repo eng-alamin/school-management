@@ -44,6 +44,11 @@ class HomeworkEditComponent extends Component
     public array $availableSections = [];
     public array $availableSubjects = [];
 
+    // ── Class-level section-support flag (academic_classes.has_section).
+    // Resolved both at mount() (for the homework's existing class) and on
+    // every class change via updatedClassId().
+    public bool $classHasSection = true;
+
     public function mount($id): void
     {
         $homework = Homework::where('institution_id', institution()->id)
@@ -65,9 +70,30 @@ class HomeworkEditComponent extends Component
 
         // Load sections & subjects for existing class/section
         if ($this->class_id) {
-            $this->loadSections($this->class_id);
+            $this->classHasSection = $this->resolveClassHasSection($this->class_id);
+
+            if ($this->classHasSection) {
+                $this->loadSections($this->class_id);
+            }
+
             $this->loadSubjects($this->class_id, $this->section_id);
         }
+    }
+
+    /**
+     * Resolves academic_classes.has_section for a given class id, scoped to
+     * the current institution. Defaults to true (section required) when the
+     * class can't be found, to avoid silently dropping a section requirement.
+     */
+    protected function resolveClassHasSection($classId): bool
+    {
+        if (!$classId) {
+            return true;
+        }
+
+        $class = AcademicClass::where('institution_id', institution()->id)->find($classId);
+
+        return $class ? (bool) $class->has_section : true;
     }
 
     // ── Class changed → reload sections, clear rest ──
@@ -77,12 +103,22 @@ class HomeworkEditComponent extends Component
         $this->subject_id        = null;
         $this->availableSections = [];
         $this->availableSubjects = [];
+        $this->classHasSection   = true;
 
         if (!$value) return;
 
+        $this->classHasSection = $this->resolveClassHasSection($value);
+
+        // Class-e section support na thakle, section query e na giye
+        // sরাসরি section-less subjects load kora hocche.
+        if (!$this->classHasSection) {
+            $this->loadSubjects($value, null);
+            return;
+        }
+
         $this->loadSections($value);
 
-        // No sections → load subjects directly
+        // No sections found in the current session's assignment → load subjects directly
         if (empty($this->availableSections)) {
             $this->loadSubjects($value, null);
         }
@@ -156,7 +192,9 @@ class HomeworkEditComponent extends Component
             return [];
         }
 
-        $sectionId = ($this->section_id && $this->section_id !== 'all') ? $this->section_id : null;
+        $sectionId = ($this->classHasSection && $this->section_id && $this->section_id !== 'all')
+            ? $this->section_id
+            : null;
 
         $query = AcademicClassAssign::where('institution_id', institution()->id)
             ->where('class_id', $this->class_id);
@@ -179,7 +217,10 @@ class HomeworkEditComponent extends Component
                 'required',
                 Rule::exists('academic_classes', 'id')->where('institution_id', institution()->id),
             ],
-            'section_id'      => 'nullable',
+            'section_id'      => [
+                Rule::requiredIf($this->classHasSection),
+                'nullable',
+            ],
             'subject_id'      => [
                 'required',
                 Rule::exists('academic_subjects', 'id')->where('institution_id', institution()->id),
@@ -213,7 +254,9 @@ class HomeworkEditComponent extends Component
             $homework = Homework::where('institution_id', institution()->id)
                 ->findOrFail($this->homework_id);
 
-            $sectionId = ($this->section_id && $this->section_id !== 'all')
+            // ── Data integrity: class-e section na thakle (has_section = false),
+            // section_id kokhono persist kora jabe na, client-side state jai hok na keno ──
+            $sectionId = ($this->classHasSection && $this->section_id && $this->section_id !== 'all')
                 ? $this->section_id
                 : null;
 

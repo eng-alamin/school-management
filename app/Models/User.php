@@ -23,6 +23,7 @@ class User extends Authenticatable
     const ROLE_ACCOUNTANT  = 'accountant';
     const ROLE_STUDENT     = 'student';
     const ROLE_PARENT      = 'parent';
+    const ROLE_MINISTRY    = 'ministry';
     const ROLE_SUPER_ADMIN = 'super_admin';
 
     /**
@@ -130,6 +131,11 @@ class User extends Authenticatable
         return $this->role === self::ROLE_PARENT;
     }
 
+    public function isMinistry(): bool
+    {
+        return $this->role === self::ROLE_MINISTRY;
+    }
+
     public function isSuperAdmin(): bool
     {
         return $this->role === self::ROLE_SUPER_ADMIN;
@@ -174,6 +180,7 @@ class User extends Authenticatable
             self::ROLE_STUDENT     => 'student.dashboard',
             self::ROLE_PARENT      => 'parent.dashboard',
             self::ROLE_ACCOUNTANT  => 'accountant.dashboard',
+            self::ROLE_MINISTRY    => 'ministry.dashboard',
             self::ROLE_SUPER_ADMIN => 'superadmin.dashboard',
             default => throw new \RuntimeException("Unknown user role for dashboard redirect: {$this->role}"),
         };

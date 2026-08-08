@@ -67,6 +67,10 @@ class StudentAddComponent extends Component
 
     public array $availableSections = [];
 
+    // ── Class-level section-support flag (academic_classes.has_section) ──
+    // True by default; set in updatedClassId() based on the selected class.
+    public bool $selectedClassHasSection = true;
+
     public bool $showFeeModal = false;
     public array $feeItems = [];
     public array $selectedFees = [
@@ -161,10 +165,19 @@ class StudentAddComponent extends Component
         $this->roll_no = str_pad($count + 1, 2, '0', STR_PAD_LEFT);
     }
 
+    /**
+     * Class change handler.
+     *
+     * Resolves the class's has_section flag (academic_classes.has_section)
+     * and only loads sections when the class actually supports them.
+     * If the class has no sections, section_id stays null and the
+     * section dropdown is hidden in the view (see selectedClassHasSection).
+     */
     public function updatedClassId($value): void
     {
         $this->section_id = null;
         $this->availableSections = [];
+        $this->selectedClassHasSection = true;
 
         if (!$value) {
             $this->roll_no = null;
@@ -173,18 +186,20 @@ class StudentAddComponent extends Component
 
         $institutionId = auth()->user()->institution_id;
 
-        $assigns = AcademicClassAssign::with('section')
+        $class = AcademicClass::with('sections')
             ->where('institution_id', $institutionId)
-            ->where('class_id', $value)
-            ->get();
+            ->find($value);
 
-        $this->availableSections = $assigns
-            ->pluck('section')
-            ->filter()
-            ->unique('id')
-            ->map(fn($s) => ['id' => $s->id, 'name' => $s->name])
-            ->values()
-            ->toArray();
+        if ($class) {
+            $this->selectedClassHasSection = (bool) $class->has_section;
+
+            if ($this->selectedClassHasSection) {
+                $this->availableSections = $class->sections
+                    ->map(fn($s) => ['id' => $s->id, 'name' => $s->name])
+                    ->values()
+                    ->toArray();
+            }
+        }
 
         $this->generateRollNo($value);
     }
@@ -223,11 +238,28 @@ class StudentAddComponent extends Component
 
     public function rules()
     {
+        $institutionId = auth()->user()->institution_id;
+
         return [
             'session_id'  => 'required',
             'registration_no' => 'nullable|unique:students,registration_no',
             'student_id'  => 'nullable|unique:students,student_id',
-            'class_id'    => 'required',
+
+            'class_id' => [
+                'required',
+                Rule::exists('academic_classes', 'id')
+                    ->where(fn($q) => $q->where('institution_id', $institutionId)),
+            ],
+
+            // Section required only when the selected class actually supports
+            // sections (academic_classes.has_section). Otherwise stays nullable
+            // and is forced to null in save() regardless of stray client state.
+            'section_id' => [
+                Rule::requiredIf($this->selectedClassHasSection),
+                'nullable',
+                Rule::exists('academic_sections', 'id')
+                    ->where(fn($q) => $q->where('institution_id', $institutionId)),
+            ],
 
             'name' => 'required',
 
@@ -257,6 +289,7 @@ class StudentAddComponent extends Component
             'guardian_username.unique'   => 'This guardian username is already taken. Please choose a different one.',
             'guardian_username.different'=> 'Guardian username must be different from student username.',
             'username.unique'            => 'This student username is already taken. Please choose a different one.',
+            'section_id.required'        => 'Please select a section for this class.',
         ];
     }
 
@@ -273,6 +306,9 @@ class StudentAddComponent extends Component
         $this->admission_date = now()->format('Y-m-d');
         $this->gender = 'male';
         $this->is_new_student = true;
+
+        $this->availableSections = [];
+        $this->selectedClassHasSection = true;
 
         $this->showFeeModal = false;
         $this->feeItems = [];
@@ -473,6 +509,10 @@ class StudentAddComponent extends Component
 
             $rollNo = $this->roll_no ?: str_pad($rollSerial + 1, 2, '0', STR_PAD_LEFT);
 
+            // ── Data integrity: class-e section na thakle (has_section = false),
+            // section_id kokhono persist kora jabe na, client-side state jai hok na keno ──
+            $sectionId = $this->selectedClassHasSection ? ($this->section_id ?: null) : null;
+
             $student = Student::create([
                 'user_id' => $user->id,
 
@@ -482,7 +522,7 @@ class StudentAddComponent extends Component
                 'roll_no'        => $rollNo,
                 'admission_date' => $this->admission_date,
                 'class_id'       => $this->class_id,
-                'section_id'     => $this->section_id,
+                'section_id'     => $sectionId,
                 'group_id'       => $this->group_id,
 
                 'name'              => $this->name,

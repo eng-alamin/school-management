@@ -56,7 +56,7 @@ class CertificateTemplate extends Model
 
         $student = [
             '{name}', '{gender}', '{father_name}', '{mother_name}',
-            '{student_photo}', '{register_no}', '{roll_no}', '{admission_date}',
+            '{student_photo}', '{registration_no}', '{roll_no}', '{admission_date}',
             '{class}', '{section}', '{category}', '{caste}', '{religion}',
             '{blood_group}', '{birthday}', '{email}', '{mobileno}',
             '{present_address}', '{permanent_address}',

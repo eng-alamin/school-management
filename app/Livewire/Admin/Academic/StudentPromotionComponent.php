@@ -11,12 +11,20 @@ use App\Models\Student;
 use App\Models\StudentEnrollment;
 use App\Models\StudentPromotion;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class StudentPromotionComponent extends Component
 {
     // Filter (Select Ground)
     public string $class_id   = '';
     public string $section_id = '';
+
+    // ── Class-level section-support flags (academic_classes.has_section).
+    // Two independent flags because promotion involves both a source class
+    // (class_id) and a destination class (to_class_id), which may differ in
+    // whether they support sections at all.
+    public bool $classHasSection   = true;
+    public bool $toClassHasSection = true;
 
     // Promotion settings
     public bool   $hasStudents      = false;
@@ -35,11 +43,13 @@ class StudentPromotionComponent extends Component
         $this->section_id  = '';
         $this->hasStudents = false;
         $this->students    = [];
+        $this->classHasSection = $this->resolveClassHasSection($this->class_id);
     }
 
     public function updatedToClassId(): void
     {
         $this->to_section_id = '';
+        $this->toClassHasSection = $this->resolveClassHasSection($this->to_class_id);
     }
 
     public function updatedSelectAll(bool $value): void
@@ -49,32 +59,70 @@ class StudentPromotionComponent extends Component
 
     public function getAvailableClasses()
     {
-        return AcademicClass::whereIn('id', AcademicClassAssign::distinct()->pluck('class_id'))
+        $institutionId = auth()->user()->institution_id;
+
+        return AcademicClass::where('institution_id', $institutionId)
+            ->whereIn('id', AcademicClassAssign::where('institution_id', $institutionId)->distinct()->pluck('class_id'))
             ->orderBy('id')
             ->get();
     }
 
+    /**
+     * Resolves academic_classes.has_section for a given class id, scoped to
+     * the current institution. Defaults to true (section required) when the
+     * class can't be found, to avoid silently dropping a section requirement.
+     */
+    private function resolveClassHasSection(?string $classId): bool
+    {
+        if (!$classId) {
+            return true;
+        }
+
+        $institutionId = auth()->user()->institution_id;
+
+        $class = AcademicClass::where('institution_id', $institutionId)->find($classId);
+
+        return $class ? (bool) $class->has_section : true;
+    }
+
+    /**
+     * Returns the valid sections for a class per the static
+     * academic_class_sections mapping — NOT the session-wise
+     * academic_class_assigns table. Returns an empty collection when the
+     * class has has_section = false, so the "All Section" / section
+     * dropdown correctly disappears for section-less classes.
+     */
     public function getAvailableSections(?string $classId)
     {
         if (!$classId) {
             return collect();
         }
 
-        return AcademicSection::whereIn('id',
-            AcademicClassAssign::where('class_id', $classId)
-                ->whereNotNull('section_id')
-                ->pluck('section_id')
-        )->orderBy('name')->get();
+        $institutionId = auth()->user()->institution_id;
+
+        $class = AcademicClass::with('sections')
+            ->where('institution_id', $institutionId)
+            ->find($classId);
+
+        if (!$class || !$class->has_section) {
+            return collect();
+        }
+
+        return $class->sections->sortBy('name')->values();
     }
 
     public function filter(): void
     {
         $this->validate([
             'class_id'   => 'required|exists:academic_classes,id',
-            'section_id' => 'nullable', // section এখন optional
+            'section_id' => [
+                Rule::requiredIf($this->classHasSection),
+                'nullable',
+            ],
         ]);
 
-        $sectionId = ($this->section_id && $this->section_id !== 'all')
+        // Class-e section na thakle, section_id kokhono query-te use kora jabe na
+        $sectionId = ($this->classHasSection && $this->section_id && $this->section_id !== 'all')
             ? $this->section_id
             : null;
 
@@ -151,7 +199,10 @@ class StudentPromotionComponent extends Component
         $this->validate([
             'to_session_id' => 'required|exists:academic_sessions,id',
             'to_class_id'   => 'required|exists:academic_classes,id',
-            'to_section_id' => 'nullable', // section এখন optional
+            'to_section_id' => [
+                Rule::requiredIf($this->toClassHasSection),
+                'nullable',
+            ],
         ]);
 
         if (empty($this->selectedStudents)) {
@@ -159,7 +210,8 @@ class StudentPromotionComponent extends Component
             return;
         }
 
-        $toSectionId = ($this->to_section_id && $this->to_section_id !== 'all')
+        // Destination class-e section na thakle, to_section_id kokhono use kora jabe na
+        $toSectionId = ($this->toClassHasSection && $this->to_section_id && $this->to_section_id !== 'all')
             ? $this->to_section_id
             : null;
 

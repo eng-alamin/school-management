@@ -48,6 +48,7 @@
                             </div>
                             @error('name') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
+
                         <!-- EIIN/কোড -->
                         <div class="col-md-6">
                             <div class="input-group input-group-outline">
@@ -76,6 +77,44 @@
                                        placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
                             </div>
                             @error('phone') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+
+                        <!-- Institution Medium -->
+                        <div class="col-md-6">
+                            <div class="input-group input-group-outline" wire:ignore>
+                                <label class="form-label">Institution Medium</label>
+                                <select wire:model="medium" class="form-select">
+                                    <option value="">Select Medium</option>
+                                    @foreach (\App\Models\Institution::MEDIUMS as $value => $label)
+                                        <option value="{{ $value }}">{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            @error('medium') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+
+                        <!-- Division -->
+                        <div class="col-md-6">
+                            <div class="input-group input-group-outline" wire:ignore>
+                                <label class="form-label">Division</label>
+                                <select wire:model="division" class="form-select">
+                                    <option value="">Select Division</option>
+                                    @foreach (\App\Models\Institution::DIVISIONS as $value => $label)
+                                        <option value="{{ $value }}">{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            @error('division') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+
+                        <!-- District -->
+                        <div class="col-md-6">
+                            <div class="input-group input-group-outline">
+                                <label class="form-label">District</label>
+                                <input type="text" wire:model="district" class="form-control"
+                                    placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
+                            </div>
+                            @error('district') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
 
                         <!-- City -->

@@ -10,7 +10,7 @@
         {{-- ===== FILTER ===== --}}
         <div class="form-section" style="padding-top:40px; padding-bottom:20px">
             <div class="section-heading">
-                <span class="material-icons-round">tune</span> Select Ground
+                <span class="material-icons-round">school</span> Select Ground
             </div>
             <div class="row g-4">
 
@@ -28,22 +28,31 @@
                     @error('filterClass') <span class="text-danger small">{{ $message }}</span> @enderror
                 </div>
 
-                {{-- Section --}}
+                {{-- Section — class-e section thakle select, na thakle N/A --}}
                 <div class="col-md-6">
-                    <div class="input-group input-group-outline">
-                        <label class="form-label">Section</label>
-                        <select wire:model.live="filterSection" class="form-select"
-                            {{ empty($sections) ? 'disabled' : '' }}>
-                            <option value="">{{ !$filterClass ? 'Select Class First' : 'Select Section' }}</option>
-                            @if(!empty($sections))
-                                <option value="all">All Section</option>
-                                @foreach ($sections as $item)
-                                    <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                @endforeach
-                            @endif
-                        </select>
-                    </div>
-                    @error('filterSection') <span class="text-danger small">{{ $message }}</span> @enderror
+                    @if($filterClassHasSection)
+                        <div class="input-group input-group-outline">
+                            <label class="form-label">Section</label>
+                            <select wire:model.live="filterSection" class="form-select"
+                                {{ empty($sections) ? 'disabled' : '' }}>
+                                <option value="">{{ !$filterClass ? 'Select Class First' : 'Select Section' }}</option>
+                                @if(!empty($sections))
+                                    @if(count($sections) > 1)
+                                        <option value="all">All Section</option>
+                                    @endif
+                                    @foreach ($sections as $item)
+                                        <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                    @endforeach
+                                @endif
+                            </select>
+                        </div>
+                        @error('filterSection') <span class="text-danger small">{{ $message }}</span> @enderror
+                    @else
+                        <div class="input-group input-group-outline">
+                            <label class="form-label">Section</label>
+                            <input type="text" class="form-control" value="N/A — this class has no sections" disabled>
+                        </div>
+                    @endif
                 </div>
 
                 {{-- Filter Button --}}
@@ -86,16 +95,6 @@
                         </div>
                     @endif
 
-                    {{-- Import --}}
-                    <button class="btn-outline" data-bs-toggle="modal" data-bs-target="#importModal">
-                        <span class="material-icons-round" style="font-size:16px">upload</span> Import
-                    </button>
-
-                    {{-- Export CSV --}}
-                    <button class="btn-outline" onclick="exportStudentCSV()">
-                        <span class="material-icons-round" style="font-size:16px">download</span> Export CSV
-                    </button>
-
                     {{-- Print --}}
                     <button class="btn-outline" onclick="printTable()">
                         <span class="material-icons-round" style="font-size:16px">print</span> Print
@@ -105,10 +104,6 @@
                     <button class="btn-outline" type="button" wire:click="resetForm">
                         <span class="material-icons-round" style="font-size:16px">refresh</span> Reset
                     </button>
-
-                    <a href="{{ route('teacher.student.add') }}" class="btn-outline bg-dark text-white">
-                        <span class="material-icons-round">add</span> Add Student
-                    </a>
                 </div>
             </div>
 
@@ -150,14 +145,6 @@
                                             class="act-btn view" title="View">
                                             <span class="material-icons-round">visibility</span>
                                         </a>
-                                        <a href="{{ route('teacher.student.edit', ['id' => $student->id]) }}"
-                                            class="act-btn edit" title="Edit">
-                                            <span class="material-icons-round">drive_file_rename_outline</span>
-                                        </a>
-                                        <button class="act-btn delete" title="Delete"
-                                            wire:click="confirmDeleteRecord({{ $student->user?->id }})">
-                                            <span class="material-icons-round">delete</span>
-                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -215,48 +202,7 @@
         </div>
     </div>
 
-    {{-- ===== DELETE CONFIRM ===== --}}
-    @if($confirmDelete)
-        <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.5);">
-            <div class="modal-dialog modal-sm">
-                <div class="modal-content">
-                    <div class="modal-body text-center py-4">
-                        <div style="width:56px;height:56px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
-                            <i class="bi bi-exclamation-triangle text-danger" style="font-size:1.5rem;"></i>
-                        </div>
-                        <h6 class="fw-700">Delete Student?</h6>
-                        <p class="text-muted small">This action cannot be undone.</p>
-                    </div>
-                    <div class="modal-footer justify-content-center border-0 pt-0">
-                        <button class="btn btn-light btn-sm" wire:click="$set('confirmDelete', false)">Cancel</button>
-                        <button class="btn btn-danger btn-sm" wire:click="deleteRecord">
-                            <span wire:loading wire:target="deleteRecord" class="spinner-border spinner-border-sm me-1"></span>
-                            Delete
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    @endif
-
 </div>
-
-@push('styles')
-<style>
-    :root { --primary: rgba(33,37,41); --primary-light: rgba(239,84,84,.12); }
-    .card { border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
-    .card-header { background: #fff; border-bottom: 1px solid var(--border); border-radius: 12px 12px 0 0 !important; padding: 16px 20px; }
-    .form-label { font-size: .8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
-    .form-control, .form-select { border-radius: 8px; border: 1px solid var(--border); font-size: .875rem; padding: .45rem .75rem; }
-    .table th { font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); }
-    .table td { vertical-align: middle; font-size: .875rem; }
-
-    @@media print {
-        .no-print, .card-header, .card-footer { display: none !important; }
-        .card { box-shadow: none; border: none; }
-    }
-</style>
-@endpush
 
 @push('scripts')
 <script>

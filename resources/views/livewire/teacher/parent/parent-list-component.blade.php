@@ -27,19 +27,10 @@
                     </div>
                 @endif
 
-                {{-- Export CSV --}}
-                <button class="btn-outline" onclick="exportParentCSV()">
-                    <span class="material-icons-round" style="font-size:16px">download</span> Export CSV
-                </button>
-
                 {{-- Print --}}
                 <button class="btn-outline" onclick="printTable()">
                     <span class="material-icons-round" style="font-size:16px">print</span> Print
                 </button>
-
-                <a href="{{ route('teacher.parent.add') }}" class="btn-outline bg-dark text-white">
-                    <span class="material-icons-round">add</span> New Parent
-                </a>
             </div>
         </div>
 
@@ -85,14 +76,6 @@
                                         class="act-btn view" title="View">
                                         <span class="material-icons-round">visibility</span>
                                     </a>
-                                    <a href="{{ route('teacher.parent.edit', ['id' => $parent->id]) }}"
-                                        class="act-btn edit" title="Edit">
-                                        <span class="material-icons-round">drive_file_rename_outline</span>
-                                    </a>
-                                    <button class="act-btn delete" title="Delete"
-                                        wire:click="confirmDeleteRecord({{ $parent->id }})">
-                                        <span class="material-icons-round">delete</span>
-                                    </button>
                                 </div>
                             </td>
                         </tr>

@@ -45,6 +45,12 @@ class HomeworkAddComponent extends Component
     public array $availableSections = [];
     public array $availableSubjects = [];
 
+    // ── Class-level section-support flag (academic_classes.has_section).
+    // Gates whether the Section dropdown / "All Section" option can appear
+    // at all — independent from whether the session-wise assign happens to
+    // list any sections.
+    public bool $classHasSection = true;
+
     // ── Class changed → reload sections, clear rest ──
     public function updatedClassId($value): void
     {
@@ -52,11 +58,24 @@ class HomeworkAddComponent extends Component
         $this->subject_id        = null;
         $this->availableSections = [];
         $this->availableSubjects = [];
+        $this->classHasSection   = true;
 
         if (!$value) return;
 
+        $institutionId = institution()->id;
+
+        $class = AcademicClass::where('institution_id', $institutionId)->find($value);
+        $this->classHasSection = $class ? (bool) $class->has_section : true;
+
+        // Class-e section support na thakle, assign-section query e na giye
+        // sরাসরি section-less subjects load kora hocche.
+        if (!$this->classHasSection) {
+            $this->loadSubjects($value, null);
+            return;
+        }
+
         $assigns = AcademicClassAssign::with('section')
-            ->where('institution_id', institution()->id)
+            ->where('institution_id', $institutionId)
             ->where('class_id', $value)
             ->whereNotNull('section_id')
             ->get();
@@ -68,7 +87,7 @@ class HomeworkAddComponent extends Component
             ->values()
             ->toArray();
 
-        // No sections → load subjects directly
+        // No sections found in the current session's assignment → load subjects directly
         if (empty($this->availableSections)) {
             $this->loadSubjects($value, null);
         }
@@ -142,7 +161,9 @@ class HomeworkAddComponent extends Component
             return [];
         }
 
-        $sectionId = ($this->section_id && $this->section_id !== 'all') ? $this->section_id : null;
+        $sectionId = ($this->classHasSection && $this->section_id && $this->section_id !== 'all')
+            ? $this->section_id
+            : null;
 
         $query = AcademicClassAssign::where('institution_id', institution()->id)
             ->where('class_id', $this->class_id);
@@ -169,6 +190,7 @@ class HomeworkAddComponent extends Component
             'availableSections', 'availableSubjects',
         ]);
         $this->status = 'published';
+        $this->classHasSection = true;
         $this->resetValidation();
     }
 
@@ -179,7 +201,10 @@ class HomeworkAddComponent extends Component
                 'required',
                 Rule::exists('academic_classes', 'id')->where('institution_id', institution()->id),
             ],
-            'section_id'      => 'nullable',
+            'section_id'      => [
+                Rule::requiredIf($this->classHasSection),
+                'nullable',
+            ],
             'subject_id'      => [
                 'required',
                 Rule::exists('academic_subjects', 'id')->where('institution_id', institution()->id),
@@ -221,7 +246,9 @@ class HomeworkAddComponent extends Component
                 ? $this->attachment->store('homeworks', 'public')
                 : null;
 
-            $sectionId = ($this->section_id && $this->section_id !== 'all')
+            // ── Data integrity: class-e section na thakle (has_section = false),
+            // section_id kokhono persist kora jabe na, client-side state jai hok na keno ──
+            $sectionId = ($this->classHasSection && $this->section_id && $this->section_id !== 'all')
                 ? $this->section_id
                 : null;
 

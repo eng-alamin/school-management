@@ -78,6 +78,13 @@ class StudentEditComponent extends Component
 
     public bool $guardian_exists = false;
 
+    public array $availableSections = [];
+
+    // ── Class-level section-support flag (academic_classes.has_section).
+    // Set both at mount() (for the student's existing class) and on every
+    // class change via updatedClassId().
+    public bool $selectedClassHasSection = true;
+
     public function mount($id)
     {
         $this->studentId = $id;
@@ -93,6 +100,10 @@ class StudentEditComponent extends Component
         $this->class_id       = $this->student->class_id;
         $this->section_id     = $this->student->section_id;
         $this->group_id       = $this->student->group_id;
+
+        // ── Resolve has_section state + available sections for the student's
+        // existing class, so the edit form opens with the correct UI state ──
+        $this->loadSectionsForClass($this->class_id);
 
         // Personal
         $this->name              = $this->student->name;
@@ -125,6 +136,49 @@ class StudentEditComponent extends Component
 
         $this->dispatch('date-updated', field: 'admission_date', date: $this->admission_date);
         $this->dispatch('date-updated', field: 'dob', date: $this->dob);
+    }
+
+    /**
+     * Resolves selectedClassHasSection + availableSections for a given
+     * class id, scoped to the current institution. Shared by mount() and
+     * updatedClassId() so both entry points behave identically.
+     */
+    private function loadSectionsForClass($classId): void
+    {
+        $this->availableSections = [];
+        $this->selectedClassHasSection = true;
+
+        if (!$classId) {
+            return;
+        }
+
+        $institutionId = auth()->user()->institution_id;
+
+        $class = AcademicClass::with('sections')
+            ->where('institution_id', $institutionId)
+            ->find($classId);
+
+        if ($class) {
+            $this->selectedClassHasSection = (bool) $class->has_section;
+
+            if ($this->selectedClassHasSection) {
+                $this->availableSections = $class->sections
+                    ->map(fn($s) => ['id' => $s->id, 'name' => $s->name])
+                    ->values()
+                    ->toArray();
+            }
+        }
+    }
+
+    /**
+     * Class change handler (edit form). Resets section_id and reloads
+     * has_section state so switching classes mid-edit behaves the same
+     * as on the Add form.
+     */
+    public function updatedClassId($value): void
+    {
+        $this->section_id = null;
+        $this->loadSectionsForClass($value);
     }
 
     /**
@@ -212,10 +266,27 @@ class StudentEditComponent extends Component
 
     public function rules()
     {
+        $institutionId = auth()->user()->institution_id;
+
         return [
             'session_id'  => 'required',
             'registration_no' => ['nullable', Rule::unique('students', 'registration_no')->ignore($this->studentId)],
-            'class_id'    => 'required',
+
+            'class_id' => [
+                'required',
+                Rule::exists('academic_classes', 'id')
+                    ->where(fn($q) => $q->where('institution_id', $institutionId)),
+            ],
+
+            // Section required only when the selected class supports sections
+            // (academic_classes.has_section). Forced to null in update()
+            // otherwise, regardless of client-side state.
+            'section_id' => [
+                Rule::requiredIf($this->selectedClassHasSection),
+                'nullable',
+                Rule::exists('academic_sections', 'id')
+                    ->where(fn($q) => $q->where('institution_id', $institutionId)),
+            ],
 
             'name'        => 'required',
             'gender'      => 'nullable|in:male,female,other',
@@ -244,6 +315,13 @@ class StudentEditComponent extends Component
         ];
     }
 
+    public function messages()
+    {
+        return [
+            'section_id.required' => 'Please select a section for this class.',
+        ];
+    }
+
     /**
      * BUG FIX: Age শুধু event dispatch হতো, ValidationException throw hoto na —
      * mane validation fail hole o update() logic egiye jete parto. Ekhon parent
@@ -258,7 +336,7 @@ class StudentEditComponent extends Component
 
     public function updated($propertyName)
     {
-        $this->validateOnly($propertyName, $this->rules());
+        $this->validateOnly($propertyName, $this->rules(), $this->messages());
     }
 
     public function update()
@@ -267,7 +345,7 @@ class StudentEditComponent extends Component
 
         try {
 
-            $this->validate($this->rules());
+            $this->validate($this->rules(), $this->messages());
 
             // ── Student user update ──────────────────────────────
             $userData = [
@@ -283,6 +361,10 @@ class StudentEditComponent extends Component
             $user = User::findOrFail($this->userId);
             $user->update($userData);
 
+            // ── Data integrity: class-e section na thakle (has_section = false),
+            // section_id kokhono persist kora jabe na, client-side state jai hok na keno ──
+            $sectionId = $this->selectedClassHasSection ? ($this->section_id ?: null) : null;
+
             // ── Student record update ────────────────────────────
             $studentData = [
                 'user_id'          => $user->id,
@@ -292,7 +374,7 @@ class StudentEditComponent extends Component
                 'roll_no'          => $this->roll_no,
                 'admission_date'   => $this->admission_date,
                 'class_id'         => $this->class_id,
-                'section_id'       => $this->section_id,
+                'section_id'       => $sectionId,
                 'group_id'         => $this->group_id,
 
                 'name'             => $this->name,
@@ -389,17 +471,27 @@ class StudentEditComponent extends Component
 
     public function render()
     {
-        $sessions   = AcademicSession::orderBy('name')->get();
-        $classes    = AcademicClass::orderBy('id')->get();
-        $sections   = AcademicSection::orderBy('name')->get();
-        $groups     = AcademicGroup::orderBy('name')->get();
+        $institutionId = auth()->user()->institution_id;
 
-        $guardians  = Guardian::orderBy('name')->get();
+        $sessions   = AcademicSession::orderBy('name')->get();
+
+        // ── Security fix: age institution_id scope chilo na, tai onno
+        // institution-er class/group/guardian o dekha/select kora jeto (IDOR) ──
+        $classes    = AcademicClass::where('institution_id', $institutionId)
+            ->orderBy('id')
+            ->get();
+
+        $groups     = AcademicGroup::where('institution_id', $institutionId)
+            ->orderBy('name')
+            ->get();
+
+        $guardians  = Guardian::whereHas('user', fn($q) => $q->where('institution_id', $institutionId))
+            ->orderBy('name')
+            ->get();
 
         return view('livewire.admin.student.student-edit-component')
             ->with('sessions', $sessions)
             ->with('classes', $classes)
-            ->with('sections', $sections)
             ->with('groups', $groups)
             ->with('guardians', $guardians)
             ->layout('layouts.admin.app', [

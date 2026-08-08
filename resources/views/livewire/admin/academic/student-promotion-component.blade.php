@@ -27,11 +27,17 @@
 
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
-                        <label class="form-label">Section</label>
-                        <select wire:model="section_id" class="form-select" @disabled(empty($availableSections))>
-                            <option value="">{{ empty($availableSections) ? 'Select class first' : 'All Section' }}</option>
-                            @if(!empty($availableSections) && $availableSections->count())
-                                <option value="all">All Section</option>
+                        <label class="form-label">Section @if($classHasSection)<span class="req">*</span>@endif</label>
+                        <select wire:model="section_id" class="form-select" @disabled(!$class_id || !$classHasSection)>
+                            @if(!$class_id)
+                                <option value="">Select class first</option>
+                            @elseif(!$classHasSection)
+                                <option value="">N/A — this class has no sections</option>
+                            @else
+                                <option value="">Select Section</option>
+                                @if($availableSections->count() > 1)
+                                    <option value="all">All Section</option>
+                                @endif
                                 @foreach($availableSections as $s)
                                     <option value="{{ $s->id }}">{{ $s->name }}</option>
                                 @endforeach

@@ -25,18 +25,25 @@
             {{-- Section --}}
             <div class="col-md-3">
                 <div class="input-group input-group-outline">
-                    <label class="form-label">Section</label>
+                    <label class="form-label">Section @if($classHasSection)<span class="req">*</span>@endif</label>
                     <select wire:model.live="filterSection" class="form-select"
-                        {{ empty($sections) ? 'disabled' : '' }}>
-                        <option value="">{{ !$filterClass ? 'Select Class First' : 'Select Section' }}</option>
-                        @if (!empty($sections))
-                            <option value="all">All Section</option>
+                        {{ (!$filterClass || !$classHasSection || empty($sections)) ? 'disabled' : '' }}>
+                        @if(!$filterClass)
+                            <option value="">Select Class First</option>
+                        @elseif(!$classHasSection)
+                            <option value="">N/A — this class has no sections</option>
+                        @else
+                            <option value="">Select Section</option>
+                            @if(count($sections) > 1)
+                                <option value="all">All Section</option>
+                            @endif
                             @foreach ($sections as $item)
                                 <option value="{{ $item['id'] }}">{{ $item['name'] }}</option>
                             @endforeach
                         @endif
                     </select>
                 </div>
+                @error('filterSection') <span class="text-danger small">{{ $message }}</span> @enderror
             </div>
             {{-- Exam --}}
             <div class="col-md-3">
@@ -44,9 +51,15 @@
                     <label class="form-label">Exam <span class="req">*</span></label>
                     <select wire:model.live="filterExam" class="form-select">
                         <option value="">Select Exam</option>
-                        @foreach ($exams as $exam)
-                            <option value="{{ $exam->id }}">{{ $exam->name }}</option>
-                        @endforeach
+                            @foreach ($exams as $item)
+                                <option value="{{ $item->id }}">
+                                    {{ $item->name }}
+                                    @if($item->classAssign)
+                                        — {{ $item->classAssign->academicClass->name ?? '' }}
+                                        @if($item->classAssign->academicSection) ({{ $item->classAssign->academicSection->name }}) @endif
+                                    @endif
+                                </option>
+                            @endforeach
                     </select>
                 </div>
                 @error('filterExam') <span class="text-danger small">{{ $message }}</span> @enderror

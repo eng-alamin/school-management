@@ -198,6 +198,60 @@
 
                                             <div class="col-md-6 mb-4">
                                                 <label class="form-label">
+                                                    <span class="lang-bn">প্রতিষ্ঠানের মাধ্যম</span>
+                                                    <span class="lang-en">Institution Medium</span>
+                                                </label>
+                                                <select
+                                                    class="form-select @error('institution_medium') is-invalid @enderror"
+                                                    wire:model.live="institution_medium"
+                                                >
+                                                    <option value="">Select Medium</option>
+                                                    @foreach (\App\Models\Institution::MEDIUM_LABELS as $value => $label)
+                                                        <option value="{{ $value }}">{{ $label }}</option>
+                                                    @endforeach
+                                                </select>
+                                                @error('institution_medium')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+
+                                            <div class="col-md-6 mb-4">
+                                                <label class="form-label">
+                                                    <span class="lang-bn">বিভাগ</span>
+                                                    <span class="lang-en">Division</span>
+                                                </label>
+                                                <select
+                                                    class="form-select @error('institution_division') is-invalid @enderror"
+                                                    wire:model.live="institution_division"
+                                                >
+                                                    <option value="">Select Division</option>
+                                                    @foreach (\App\Models\Institution::DIVISIONS as $value => $label)
+                                                        <option value="{{ $value }}">{{ $label }}</option>
+                                                    @endforeach
+                                                </select>
+                                                @error('institution_division')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+
+                                            <div class="col-md-6 mb-4">
+                                                <label class="form-label">
+                                                    <span class="lang-bn">জেলা</span>
+                                                    <span class="lang-en">District</span>
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    class="form-control @error('institution_district') is-invalid @enderror"
+                                                    wire:model.live="institution_district"
+                                                    placeholder="e.g. Dhaka, Cumilla, Bogura"
+                                                >
+                                                @error('institution_district')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+
+                                            <div class="col-md-6 mb-4">
+                                                <label class="form-label">
                                                     <span class="lang-bn">ইমেইল ঠিকানা</span>
                                                     <span class="lang-en">Email Address</span>
                                                 </label>
@@ -627,6 +681,22 @@
                                                     <span class="lang-en">Institution Type</span>
                                                 </div>
                                                 <div class="summary-value">{{ ucfirst($institution_type) }}</div>
+                                            </div>
+                                            <div class="summary-item">
+                                                <div class="summary-label">
+                                                    <span class="lang-bn">প্রতিষ্ঠানের মাধ্যম</span>
+                                                    <span class="lang-en">Institution Medium</span>
+                                                </div>
+                                                <div class="summary-value">{{ \App\Models\Institution::MEDIUM_LABELS[$institution_medium] ?? $institution_medium }}</div>
+                                            </div>
+                                            <div class="summary-item">
+                                                <div class="summary-label">
+                                                    <span class="lang-bn">বিভাগ ও জেলা</span>
+                                                    <span class="lang-en">Division & District</span>
+                                                </div>
+                                                <div class="summary-value">
+                                                    {{ \App\Models\Institution::DIVISIONS[$institution_division] ?? $institution_division }}, {{ $institution_district }}
+                                                </div>
                                             </div>
                                             <div class="summary-item">
                                                 <div class="summary-label">

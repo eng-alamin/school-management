@@ -20,6 +20,9 @@ class GenerateStudentComponent extends Component
     public ?int   $filterTemplate = null;
     public bool   $filtered       = false;
 
+    // Class-e section thake kina — false hole section select hide hobe (document 1-er pattern)
+    public bool $filterClassHasSection = true;
+
     // ── Date fields ──
     public string $issue_date = '';
 
@@ -49,6 +52,11 @@ class GenerateStudentComponent extends Component
             return;
         }
 
+        // Class-e section na thakle filterSection forcibly khali rakhbo (data integrity)
+        if (!$this->filterClassHasSection) {
+            $this->filterSection = '';
+        }
+
         $this->filtered    = true;
         $this->selectedIds = [];
         $this->selectAll   = false;
@@ -58,22 +66,32 @@ class GenerateStudentComponent extends Component
     // ── Reset Filter ──
     public function resetFilter(): void
     {
-        $this->filtered       = false;
-        $this->filterClass    = '';
-        $this->filterSection  = '';
-        $this->filterTemplate = null;
-        $this->selectedIds    = [];
-        $this->selectAll      = false;
+        $this->filtered              = false;
+        $this->filterClass           = '';
+        $this->filterSection         = '';
+        $this->filterTemplate        = null;
+        $this->filterClassHasSection = true;
+        $this->selectedIds           = [];
+        $this->selectAll             = false;
         $this->resetValidation();
         unset($this->students);
     }
 
     public function updatedFilterClass(): void
     {
-        $this->filterSection = '';
-        $this->selectedIds   = [];
-        $this->selectAll     = false;
+        $this->filterSection         = '';
+        $this->selectedIds           = [];
+        $this->selectAll             = false;
+        $this->filterClassHasSection = true;
         unset($this->students);
+
+        if ($this->filterClass) {
+            $class = AcademicClass::where('institution_id', institution()->id)
+                ->find($this->filterClass);
+
+            // Class na paoa gele safe default: section select active thakbe
+            $this->filterClassHasSection = $class ? (bool) $class->has_section : true;
+        }
     }
 
     public function updatedFilterSection(): void
@@ -134,6 +152,25 @@ class GenerateStudentComponent extends Component
                                justify-content:center;border-radius:6px;
                                font-size:1.5rem;color:#9ca3af;">👤</div>';
 
+            // Institute mobile — computed once, reused by {institute_mobile} and the
+            // legacy {mobileno} alias below.
+            $institutePhone = e($institute?->phone ?? '');
+
+            // {logo} placeholder — the 5 ready-made designs place this inline in the
+            // content (separate from the header logo rendered by the Blade view).
+            $logoHtml = $this->buildLogoHtml($template, $institute);
+
+            // {print_date} — "Date of Publication" in the ready-made designs; uses the
+            // same Issue Date the admin picked on the filter screen.
+            $printDateHtml = e(Carbon::parse($this->issue_date)->format('d M Y'));
+
+            // {qr_code} — text-value placeholder driven by the template's configured
+            // qr_code_text field (registration_no / roll_no / name / email / mobile).
+            // NOTE: this renders the chosen field as a labeled value box, not a real
+            // scannable QR image. Generating an actual QR image needs a package like
+            // simplesoftwareio/simple-qrcode — ask if you'd like that added.
+            $qrCodeHtml = $this->buildQrCodeHtml($template, $student);
+
             // Replace all {placeholder} → actual value
             $content = str_replace(
                 [
@@ -143,7 +180,7 @@ class GenerateStudentComponent extends Component
                     '{institute_mobile}',
                     '{institute_address}',
 
-                    // ── Student placeholders ──
+                    // ── Student placeholders (current) ──
                     '{student_id}',
                     '{name}',
                     '{registration_no}',
@@ -160,6 +197,12 @@ class GenerateStudentComponent extends Component
                     '{admission_date}',
                     '{issue_date}',
 
+                    // ── Student placeholders (legacy aliases, kept for old templates) ──
+                    '{register_no}',
+                    '{roll_no}',
+                    '{mobileno}',
+                    '{email}',
+
                     // ── Guardian placeholder ──
                     '{father_name}',
                     '{mother_name}',
@@ -167,15 +210,20 @@ class GenerateStudentComponent extends Component
                     // ── Photo placeholder ──
                     '{photo}',
                     '{student_photo}',
+
+                    // ── Logo / date / QR (used by the 5 ready-made designs) ──
+                    '{logo}',
+                    '{print_date}',
+                    '{qr_code}',
                 ],
                 [
                     // ── Institute values ──
                     e($institute?->name    ?? ''),
                     e($institute?->email   ?? ''),
-                    e($institute?->phone  ?? ''),
+                    $institutePhone,
                     e($institute?->address ?? ''),
 
-                    // ── Student values ──
+                    // ── Student values (current) ──
                     e($student->student_id),
                     e($student->name),
                     e($student->registration_no    ?? ''),
@@ -193,12 +241,24 @@ class GenerateStudentComponent extends Component
                         ? Carbon::parse($student->admission_date)->format('d M Y') : ''),
                     e(Carbon::parse($this->issue_date)->format('d M Y')),
 
-                    // ── Guardian placeholder (now eager-loaded, no N+1) ──
+                    // ── Student values (legacy aliases) ──
+                    e($student->registration_no ?? ''),
+                    e($student->roll_no         ?? ''),
+                    $institutePhone,
+                    e($student->email ?? ''),
+
+                    // ── Guardian placeholder (eager-loaded, no N+1) ──
                     e($student->guardians->first()?->father_name ?? ''),
                     e($student->guardians->first()?->mother_name ?? ''),
-                    
+
                     // ── Photo as inline img ──
                     $photoHtml,
+                    $photoHtml,
+
+                    // ── Logo / date / QR ──
+                    $logoHtml,
+                    $printDateHtml,
+                    $qrCodeHtml,
                 ],
                 $content
             );
@@ -232,6 +292,62 @@ class GenerateStudentComponent extends Component
     // ── Helpers ──
 
     /**
+     * {logo} placeholder-এর জন্য inline <img> HTML বানায়। Template-এর নিজস্ব
+     * logo_image থাকলে সেটা ব্যবহার হয়, না থাকলে Institution-এর system_logo
+     * fallback হিসেবে ব্যবহার হয়। কোনোটাই না থাকলে খালি string (তাহলে জায়গাটা
+     * blank থাকবে, কিন্তু raw "{logo}" text আর কখনো print হবে না)।
+     */
+    private function buildLogoHtml(CertificateTemplate $template, ?Institution $institute): string
+    {
+        $path = $template->logo_image ?: $institute?->system_logo;
+
+        if (!$path) {
+            return '';
+        }
+
+        // Certificate template images (logo_image/signature_image/background_image)
+        // are stored as public-relative paths — see the asset() usage in the
+        // print Blade view. Institution's own system_logo follows the same
+        // storage-disk convention as student/employee photos elsewhere in this
+        // module, so we resolve it via the storage URL instead.
+        $url = $template->logo_image
+            ? asset($template->logo_image)
+            : asset('storage/' . $institute->system_logo);
+
+        return '<img src="' . $url . '" style="height:56px;object-fit:contain;">';
+    }
+
+    /**
+     * {qr_code} placeholder resolve করে। Template-এর qr_code_text field
+     * (registration_no/roll_no/name/email/mobile) অনুযায়ী student-এর সেই
+     * value-টা একটা ছোট labeled box আকারে দেখায়।
+     *
+     * NOTE: এটা আসল scannable QR image না — শুধু value-টা readable text
+     * হিসেবে দেখায়, যাতে raw "{qr_code}" placeholder কখনো print না হয়।
+     * সত্যিকারের QR barcode image চাইলে `simplesoftwareio/simple-qrcode`
+     * package যোগ করে এটা প্রতিস্থাপন করা যাবে।
+     */
+    private function buildQrCodeHtml(CertificateTemplate $template, Student $student): string
+    {
+        $value = match ($template->qr_code_text) {
+            'registration_no' => $student->registration_no,
+            'roll_no'          => $student->roll_no,
+            'name'             => $student->name,
+            'email'            => $student->email,
+            'mobile'           => $student->mobile,
+            default            => $student->registration_no,
+        } ?? '';
+
+        if ($value === '') {
+            return '';
+        }
+
+        return '<div style="display:inline-block;padding:6px 10px;border:1px solid #999;'
+            . 'font-size:.7rem;font-family:monospace;letter-spacing:.03em;">'
+            . e($value) . '</div>';
+    }
+
+    /**
      * Cached per-request student list. Prevents duplicate queries across
      * render(), updatedSelectAll(), updatedSelectedIds(), and the view.
      */
@@ -256,13 +372,13 @@ class GenerateStudentComponent extends Component
     public function getAvailableClasses()
     {
         return AcademicClass::whereIn('id', AcademicClassAssign::distinct()->pluck('class_id'))
-            ->orderBy('name')
             ->get();
     }
 
     public function getAvailableSections()
     {
-        if (!$this->filterClass) {
+        // Class select na thakle, ba class-e section na thakle — empty
+        if (!$this->filterClass || !$this->filterClassHasSection) {
             return [];
         }
 

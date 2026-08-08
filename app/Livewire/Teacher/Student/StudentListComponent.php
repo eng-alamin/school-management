@@ -23,22 +23,23 @@ class StudentListComponent extends Component
     public int $perPage   = 10;
     public bool $hasFilter = false;
 
-    // Delete
-    public bool $confirmDelete = false;
-    public ?int $deleteId      = null;
+    // Class-e section thake kina — false hole section select hide hobe
+    public bool $filterClassHasSection = true;
 
     public function updatingSearch(): void { $this->resetPage(); }
 
     public function getAvailableClasses()
     {
         return AcademicClass::whereIn('id', AcademicClassAssign::distinct()->pluck('class_id'))
-            ->orderBy('name')
             ->get();
     }
 
     public function getAvailableSections()
     {
-        if (!$this->filterClass) return [];
+        // Class select na thakle, ba class-e section na thakle — empty
+        if (!$this->filterClass || !$this->filterClassHasSection) {
+            return [];
+        }
 
         return AcademicSection::whereIn('id',
             AcademicClassAssign::where('class_id', $this->filterClass)->pluck('section_id')
@@ -47,9 +48,17 @@ class StudentListComponent extends Component
 
     public function updatedFilterClass(): void
     {
-        $this->filterSection = '';
-        $this->hasFilter     = false;
+        $this->filterSection         = '';
+        $this->hasFilter             = false;
+        $this->filterClassHasSection = true;
         $this->resetPage();
+
+        if ($this->filterClass) {
+            $class = AcademicClass::where('institution_id', institution()->id)
+                ->find($this->filterClass);
+
+            $this->filterClassHasSection = $class ? (bool) $class->has_section : true;
+        }
     }
 
     public function updatedFilterSection(): void
@@ -70,45 +79,22 @@ class StudentListComponent extends Component
             'filterSection' => 'nullable',
         ]);
 
+        // Class-e section na thakle filterSection forcibly khali rakhbo (data integrity)
+        if (!$this->filterClassHasSection) {
+            $this->filterSection = '';
+        }
+
         $this->hasFilter = true;
         $this->resetPage();
     }
 
-    public function confirmDeleteRecord(int $id): void
-    {
-        $this->deleteId      = $id;
-        $this->confirmDelete = true;
-    }
-
-    public function deleteRecord(): void
-    {
-        DB::beginTransaction();
-
-        try {
-            $student = Student::findOrFail($this->deleteId);
-
-            $student->user()->delete();
-            $student->delete();
-
-            DB::commit();
-
-            $this->confirmDelete = false;
-            $this->deleteId      = null;
-            $this->dispatch('toast', type: 'success', message: 'Student deleted successfully!');
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            $this->dispatch('toast', type: 'error', message: 'Delete failed: ' . $e->getMessage());
-        }
-    }
-
     public function resetForm(): void
     {
-        $this->filterClass   = '';
-        $this->filterSection = '';
-        $this->search        = '';
-        $this->hasFilter     = false;
-        $this->confirmDelete = false;
-        $this->deleteId      = null;
+        $this->filterClass           = '';
+        $this->filterSection         = '';
+        $this->search                = '';
+        $this->hasFilter             = false;
+        $this->filterClassHasSection = true;
         $this->resetPage();
         $this->resetValidation();
     }

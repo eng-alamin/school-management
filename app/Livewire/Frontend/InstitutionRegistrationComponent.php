@@ -9,6 +9,7 @@ use App\Models\Invoice;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class InstitutionRegistrationComponent extends Component
 {
@@ -19,9 +20,13 @@ class InstitutionRegistrationComponent extends Component
     // Step 1 — Institution Information
     public string $institution_name = '';
     public string $institution_type = '';
+    public string $institution_medium = '';
+    public string $institution_division = '';
+    public string $institution_district = '';
     public string $phone = '';
     public string $email = '';
     public $logo;
+    public ?string $existing_logo_path = null;
 
     // Step 2 — Admin Account
     public string $admin_name = '';
@@ -32,49 +37,41 @@ class InstitutionRegistrationComponent extends Component
     public function mount(): void
     {
         $pending = session('pending_registration');
- 
+
         if (!$pending) {
             return;
         }
- 
-        $this->institution_name = $pending['institution_name'] ?? '';
-        $this->institution_type = $pending['institution_type'] ?? '';
-        $this->email            = $pending['email'] ?? '';
-        $this->phone            = $pending['phone'] ?? '';
-        $this->admin_name       = $pending['admin_name'] ?? '';
-        $this->admin_email      = $pending['admin_email'] ?? '';
-        $this->password         = $pending['password'] ?? 1234;
-        $this->password_confirmation         = $pending['password'] ?? 1234;
- 
+
+        $this->institution_name     = $pending['institution_name'] ?? '';
+        $this->institution_type     = $pending['institution_type'] ?? '';
+        $this->institution_medium   = $pending['institution_medium'] ?? '';
+        $this->institution_division = $pending['institution_division'] ?? '';
+        $this->institution_district = $pending['institution_district'] ?? '';
+        $this->email                = $pending['email'] ?? '';
+        $this->phone                = $pending['phone'] ?? '';
+        $this->admin_name           = $pending['admin_name'] ?? '';
+        $this->admin_email          = $pending['admin_email'] ?? '';
+        $this->password              = $pending['password'] ?? '1234';
+        $this->password_confirmation = $pending['password'] ?? '1234';
+
         $this->existing_logo_path = session('pending_logo');
 
         $this->currentStep = 3;
- 
-        session()->flash('info', 'Ager fill kora tothyo restore kora hoyeche. Password ta abar diye continue korun.');
-    }
 
-    protected function rules(): array
-    {
-        return [
-            'institution_name' => 'required|min:3|max:255',
-            'institution_type' => 'required|string',
-            'phone'       => 'required|string|max:30',
-            'email'       => 'required|email|max:255',
-            'logo'        => 'nullable|image|max:2048',
-            'admin_name'  => 'required|min:3|max:255',
-            'admin_email' => 'required|email|max:255|unique:users,email',
-            'password'    => 'required|min:8|confirmed',
-        ];
+        session()->flash('info', 'Ager fill kora tothyo restore kora hoyeche. Password ta abar diye continue korun.');
     }
 
     public function stepOneValidation(): void
     {
         $this->validate([
-            'institution_name' => 'required|min:3|max:255',
-            'institution_type' => 'required|string',
-            'phone'       => 'required|string|max:30',
-            'email'       => 'required|email|max:255',
-            'logo'        => 'nullable|image|max:2048',
+            'institution_name'     => 'required|min:3|max:255',
+            'institution_type'     => 'required|string',
+            'institution_medium'   => ['required', 'string', Rule::in(Institution::MEDIUMS)],
+            'institution_division' => ['required', 'string', Rule::in(array_keys(Institution::DIVISIONS))],
+            'institution_district' => 'required|string|max:100',
+            'phone'                => 'required|string|max:30',
+            'email'                => 'required|email|max:255',
+            'logo'                 => 'nullable|image|max:2048',
         ]);
     }
 
@@ -120,8 +117,11 @@ class InstitutionRegistrationComponent extends Component
 
         session([
             'pending_registration' => [
-                'institution_name' => $this->institution_name,
-                'institution_type' => $this->institution_type,
+                'institution_name'     => $this->institution_name,
+                'institution_type'     => $this->institution_type,
+                'institution_medium'   => $this->institution_medium,
+                'institution_division' => $this->institution_division,
+                'institution_district' => $this->institution_district,
                 'email'       => $this->email,
                 'phone'       => $this->phone,
                 'admin_name'  => $this->admin_name,
@@ -144,6 +144,9 @@ class InstitutionRegistrationComponent extends Component
             $institution = Institution::create([
                 'name'     => $this->institution_name,
                 'type'     => $this->institution_type,
+                'medium'   => $this->institution_medium,
+                'division' => $this->institution_division,
+                'district' => $this->institution_district,
                 'email'    => $this->email,
                 'phone'    => $this->phone,
                 'status'   => true,
@@ -161,20 +164,20 @@ class InstitutionRegistrationComponent extends Component
 
             // 3. Create the super-admin user
             $user = User::create([
-                'name'      => $this->admin_name,
-                'email'     => $this->admin_email,
-                'password'  => $this->password,
-                'role'      => 'admin',
-                'institution_id' => $institution->id,
+                'name'            => $this->admin_name,
+                'email'           => $this->admin_email,
+                'password'        => $this->password,
+                'role'            => 'admin',
+                'institution_id'  => $institution->id,
             ]);
 
             // 4. Create Invoice
             Invoice::create([
-                'institution_id'      => $institution->id,
+                'institution_id' => $institution->id,
                 'type'           => 'registration',
                 'invoice_no'     => 'REG_' . strtoupper(uniqid()),
-                'total_amount'     => number_format(setting('register_fee', 0), 0),
-                'status'         => 'free',
+                'total_amount'   => (float) setting('register_fee', 0),
+                'status'         => 'free', 
             ]);
 
             Auth::login($user);

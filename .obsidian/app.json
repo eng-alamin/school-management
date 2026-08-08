@@ -1,0 +1,7 @@
+{
+  "userIgnoreFilters": [
+    "vendor/"
+  ],
+  "alwaysUpdateLinks": true,
+  "attachmentFolderPath": "/"
+}

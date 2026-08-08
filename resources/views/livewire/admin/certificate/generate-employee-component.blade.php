@@ -187,7 +187,7 @@
                 </div>
 
                 <div class="modal-body">
-                    <div style="display:flex;flex-wrap:wrap;gap:24px;justify-content:flex-start;">
+                    <div style="display:flex;flex-wrap:wrap;gap:24px;justify-content:center;">
 
                         @foreach($printCards as $card)
                         @php
@@ -209,12 +209,15 @@
 
                         <div class="cert-preview-wrap">
 
-                            {{-- Certificate Sheet --}}
+                            {{-- Certificate Sheet — flex column so the footer (signature +
+                                 issue date) always sticks to the bottom, regardless of how
+                                 short/long the certificate content is (page-like layout). --}}
                             <div class="cert-sheet"
                                  style="width:{{ $size['width'] }};
                                         min-height:{{ $size['minHeight'] }};
                                         padding:{{ $mt }}px {{ $mr }}px {{ $mb }}px {{ $ml }}px;
-                                        position:relative;overflow:hidden;">
+                                        position:relative;overflow:hidden;
+                                        display:flex;flex-direction:column;">
 
                                 {{-- Bug fix: templates store paths relative to public/ directly (not the storage disk) --}}
                                 @if($tmpl->background_image)
@@ -223,38 +226,32 @@
                                 @endif
 
                                 {{-- Content layer --}}
-                                <div style="position:relative;z-index:1;">
-
-                                    {{-- Logo --}}
-                                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
-                                        @if($tmpl->logo_image)
-                                            <img src="{{ asset($tmpl->logo_image) }}"
-                                                 style="height:64px;object-fit:contain;">
-                                        @else
-                                            <div style="width:64px;"></div>
-                                        @endif
-                                    </div>
+                                <div style="position:relative;z-index:1;display:flex;flex-direction:column;flex:1;">
 
                                     {{-- All placeholders already replaced in PHP --}}
                                     <div class="cert-content">
                                         {!! $card['content'] !!}
                                     </div>
 
-                                    {{-- Signature --}}
-                                    @if($tmpl->signature_image)
-                                        <div style="margin-top:40px;text-align:right;">
-                                            <img src="{{ asset($tmpl->signature_image) }}"
-                                                 style="height:48px;object-fit:contain;">
-                                            <div style="font-size:.72rem;color:#888;margin-top:4px;border-top:1px solid #ddd;padding-top:4px;">
-                                                Authorized Signature
-                                            </div>
-                                        </div>
-                                    @endif
+                                    {{-- Footer: Signature + Issue Date — margin-top:auto pins this
+                                         to the bottom of the sheet no matter how tall the content is. --}}
+                                    <div style="margin-top:auto;">
 
-                                    {{-- Issue date --}}
-                                    <div style="margin-top:24px;font-size:.72rem;color:#999;text-align:left;">
-                                        Issue Date:
-                                        {{ \Carbon\Carbon::parse($card['issue_date'])->format('d M Y') }}
+                                        {{-- Bug fix: signature was right-aligned; now centered --}}
+                                        @if($tmpl->signature_image)
+                                            <div style="margin-top:40px;text-align:center;">
+                                                <img src="{{ asset($tmpl->signature_image) }}"
+                                                     style="height:48px;object-fit:contain;">
+                                                <div style="font-size:.72rem;color:#888;margin-top:4px;border-top:1px solid #ddd;padding-top:4px;">
+                                                    Authorized Signature
+                                                </div>
+                                            </div>
+                                        @endif
+
+                                        <div style="margin-top:24px;font-size:.72rem;color:#999;text-align:left;">
+                                            Issue Date:
+                                            {{ \Carbon\Carbon::parse($card['issue_date'])->format('d M Y') }}
+                                        </div>
                                     </div>
 
                                 </div>
@@ -305,7 +302,8 @@
         <div class="cert-sheet print-page"
              style="width:{{ $size['width'] }};min-height:{{ $size['minHeight'] }};
                     padding:{{ $mt }}px {{ $mr }}px {{ $mb }}px {{ $ml }}px;
-                    position:relative;overflow:hidden;page-break-after:always;">
+                    position:relative;overflow:hidden;page-break-after:always;
+                    display:flex;flex-direction:column;">
 
             {{-- Bug fix: same path correction as the modal preview above --}}
             @if($tmpl->background_image)
@@ -313,28 +311,25 @@
                      style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;opacity:.18;">
             @endif
 
-            <div style="position:relative;z-index:1;">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
-                    @if($tmpl->logo_image)
-                        <img src="{{ asset($tmpl->logo_image) }}" style="height:64px;object-fit:contain;">
-                    @else
-                        <div style="width:64px;"></div>
-                    @endif
-                </div>
+            <div style="position:relative;z-index:1;display:flex;flex-direction:column;flex:1;">
 
                 <div class="cert-content">{!! $card['content'] !!}</div>
 
-                @if($tmpl->signature_image)
-                    <div style="margin-top:40px;text-align:right;">
-                        <img src="{{ asset($tmpl->signature_image) }}" style="height:48px;object-fit:contain;">
-                        <div style="font-size:.72rem;color:#888;margin-top:4px;border-top:1px solid #ddd;padding-top:4px;">
-                            Authorized Signature
+                {{-- Footer: Signature + Issue Date — pinned to bottom of the page --}}
+                <div style="margin-top:auto;">
+                    {{-- Bug fix: signature was right-aligned; now centered --}}
+                    @if($tmpl->signature_image)
+                        <div style="margin-top:40px;text-align:center;">
+                            <img src="{{ asset($tmpl->signature_image) }}" style="height:48px;object-fit:contain;">
+                            <div style="font-size:.72rem;color:#888;margin-top:4px;border-top:1px solid #ddd;padding-top:4px;">
+                                Authorized Signature
+                            </div>
                         </div>
-                    </div>
-                @endif
+                    @endif
 
-                <div style="margin-top:24px;font-size:.72rem;color:#999;">
-                    Issue Date: {{ \Carbon\Carbon::parse($card['issue_date'])->format('d M Y') }}
+                    <div style="margin-top:24px;font-size:.72rem;color:#999;">
+                        Issue Date: {{ \Carbon\Carbon::parse($card['issue_date'])->format('d M Y') }}
+                    </div>
                 </div>
             </div>
         </div>
@@ -384,7 +379,14 @@
         body { background: #fff !important; }
         .no-print  { display: none !important; }
         .print-section { display: block !important; }
-        .print-page { box-shadow: none !important; border: none !important; }
+        .print-page {
+            box-shadow: none !important;
+            border: none !important;
+            /* Bug fix: block element with a fixed mm width was left-aligned
+               by default; margin auto centers it horizontally on the printed
+               page regardless of page_layout (A4/A5, portrait/landscape). */
+            margin: 0 auto !important;
+        }
     }
 
     .mat-table { width: 100%; border-collapse: collapse; }

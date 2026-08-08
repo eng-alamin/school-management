@@ -35,6 +35,7 @@
         },
         "files": [
             "app/Helpers/institution.php",
+            "app/Helpers/branch.php",
             "app/Helpers/feature.php",
             "app/Helpers/setting.php"
         ]

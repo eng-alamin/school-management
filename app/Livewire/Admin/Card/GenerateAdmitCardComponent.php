@@ -7,11 +7,13 @@ use App\Models\AdmitCardTemplate;
 use App\Models\AdmitCard;
 
 use App\Models\Student;
+use App\Models\AcademicClass;
 use App\Models\AcademicClassAssign;
 use App\Models\ExamSetup;
 use App\Models\ExamSetupDetail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
+use Illuminate\Validation\Rule;
 use Throwable;
 
 class GenerateAdmitCardComponent extends Component
@@ -22,6 +24,9 @@ class GenerateAdmitCardComponent extends Component
     public ?int $filterExam = null;
     public ?int $filterTemplate = null;
     public bool $filtered = false;
+
+    // ── Class-level section-support flag (academic_classes.has_section) ──
+    public bool $classHasSection = true;
 
     // Date fields
     public string $print_date = '';
@@ -48,10 +53,15 @@ class GenerateAdmitCardComponent extends Component
     {
         $this->validate([
             'filterClass'    => 'required|string',
+            'filterSection'  => [
+                Rule::requiredIf($this->classHasSection),
+                'nullable',
+            ],
             'filterExam'     => 'required',
             'filterTemplate' => 'required|exists:admit_card_templates,id',
         ], [
             'filterClass.required'    => 'Class is required.',
+            'filterSection.required'  => 'Please select a section for this class.',
             'filterExam.required'     => 'Exam is required.',
             'filterTemplate.required' => 'Template is required.',
             'filterTemplate.exists'   => 'Selected template is invalid.',
@@ -64,21 +74,40 @@ class GenerateAdmitCardComponent extends Component
 
     public function resetFilter(): void
     {
-        $this->filtered       = false;
-        $this->filterClass    = '';
-        $this->filterSection  = '';
-        $this->filterExam     = null;
-        $this->filterTemplate = null;
-        $this->selectedIds    = [];
-        $this->selectAll      = false;
+        $this->filtered        = false;
+        $this->filterClass     = '';
+        $this->filterSection   = '';
+        $this->filterExam      = null;
+        $this->filterTemplate  = null;
+        $this->selectedIds     = [];
+        $this->selectAll       = false;
+        $this->classHasSection = true;
         $this->resetValidation();
     }
 
     public function updatedFilterClass(): void
     {
-        $this->filterSection = '';
-        $this->selectedIds   = [];
-        $this->selectAll     = false;
+        $this->filterSection   = '';
+        $this->selectedIds     = [];
+        $this->selectAll       = false;
+        $this->classHasSection = $this->resolveClassHasSection($this->filterClass);
+    }
+
+    /**
+     * Resolves academic_classes.has_section for a given class id, scoped to
+     * the current institution. Defaults to true (section required) when the
+     * class can't be found, to avoid silently widening the student query.
+     */
+    private function resolveClassHasSection(?string $classId): bool
+    {
+        if (!$classId) {
+            return true;
+        }
+
+        $institutionId = auth()->user()->institution_id;
+        $class = AcademicClass::where('institution_id', $institutionId)->find($classId);
+
+        return $class ? (bool) $class->has_section : true;
     }
 
     public function updatedSelectAll(bool $value): void
@@ -118,9 +147,12 @@ class GenerateAdmitCardComponent extends Component
             'expiry_date' => 'required|date|after_or_equal:print_date',
         ]);
 
+        $institutionId = auth()->user()->institution_id;
+
         // FIX: filter by 'student_id' (business key) to match $this->selectedIds,
         // instead of the previous 'id' mismatch which silently broke selection.
         $students = Student::with(['class', 'section', 'group'])
+            ->where('institution_id', $institutionId)
             ->whereIn('student_id', $this->selectedIds)
             ->get();
 
@@ -131,7 +163,6 @@ class GenerateAdmitCardComponent extends Component
 
         $scheduleData  = $this->buildExamScheduleData();
         $institution   = institution();
-        $institutionId = $institution->id;
 
         DB::beginTransaction();
         try {
@@ -224,15 +255,18 @@ class GenerateAdmitCardComponent extends Component
             return [];
         }
 
+        // Class-e section support na thakle, section filter kokhono
+        // exam-schedule query-te apply kora jabe na.
+        $sectionFilterActive = $this->classHasSection
+            && $this->filterSection
+            && $this->filterSection !== 'all';
+
         $details = ExamSetupDetail::with(['classAssignDetail.subject', 'schedule'])
             ->where('exam_setup_id', $this->filterExam)
-            ->whereHas('classAssignDetail.classAssign', function ($query) {
+            ->whereHas('classAssignDetail.classAssign', function ($query) use ($sectionFilterActive) {
                 $query
                     ->when($this->filterClass, fn ($q) => $q->where('class_id', $this->filterClass))
-                    ->when(
-                        $this->filterSection && $this->filterSection !== 'all',
-                        fn ($q) => $q->where('section_id', $this->filterSection)
-                    );
+                    ->when($sectionFilterActive, fn ($q) => $q->where('section_id', $this->filterSection));
             })
             ->orderBy('serial')
             ->get();
@@ -267,13 +301,19 @@ class GenerateAdmitCardComponent extends Component
             return collect();
         }
 
+        $institutionId = auth()->user()->institution_id;
+
+        // Class-e section support na thakle, section filter kokhono
+        // apply kora jabe na — even if a stray filterSection value exists.
+        $sectionFilterActive = $this->classHasSection
+            && $this->filterSection
+            && $this->filterSection !== 'all';
+
         return Student::query()
             ->with(['class', 'section', 'group'])
+            ->where('institution_id', $institutionId)
             ->when($this->filterClass, fn ($q) => $q->where('class_id', $this->filterClass))
-            ->when(
-                $this->filterSection && $this->filterSection !== 'all',
-                fn ($q) => $q->where('section_id', $this->filterSection)
-            )
+            ->when($sectionFilterActive, fn ($q) => $q->where('section_id', $this->filterSection))
             ->orderBy('roll_no')
             ->get();
     }
@@ -284,13 +324,15 @@ class GenerateAdmitCardComponent extends Component
      */
     public function getAvailableClasses(): array
     {
+        $institutionId = auth()->user()->institution_id;
+
         return AcademicClassAssign::with('class')
+            ->where('institution_id', $institutionId)
             ->whereHas('class')
             ->get()
             ->unique('class_id')
             ->pluck('class')
             ->filter()
-            ->sortBy('name')
             ->values()
             ->map(fn ($class) => [
                 'id'   => $class->id,
@@ -301,15 +343,19 @@ class GenerateAdmitCardComponent extends Component
 
     /**
      * Section dropdown source = AcademicClassAssign, scoped to the
-     * currently selected class.
+     * currently selected class — gated by academic_classes.has_section
+     * so a section-less class never surfaces a section list at all.
      */
     public function getAvailableSections(): array
     {
-        if (!$this->filterClass) {
+        if (!$this->filterClass || !$this->classHasSection) {
             return [];
         }
 
+        $institutionId = auth()->user()->institution_id;
+
         return AcademicClassAssign::with('section')
+            ->where('institution_id', $institutionId)
             ->where('class_id', $this->filterClass)
             ->whereHas('section')
             ->get()
@@ -327,17 +373,22 @@ class GenerateAdmitCardComponent extends Component
 
     public function render()
     {
-        $templates = AdmitCardTemplate::where('is_active', true)->get();
+        $institutionId = auth()->user()->institution_id;
+
+        $templates = AdmitCardTemplate::where('institution_id', $institutionId)
+            ->where('is_active', true)
+            ->get();
 
         $students = $this->filtered ? $this->getStudents() : collect();
         $sections = $this->getAvailableSections();
         $classes  = $this->getAvailableClasses();
 
         $selectedTemplate = $this->filterTemplate
-            ? AdmitCardTemplate::find($this->filterTemplate)
+            ? AdmitCardTemplate::where('institution_id', $institutionId)->find($this->filterTemplate)
             : null;
 
-        $exams = ExamSetup::with('classAssign.class', 'classAssign.section')
+        $exams = ExamSetup::with('classAssign.academicClass', 'classAssign.academicSection')
+            ->where('institution_id', $institutionId)
             ->whereHas('details')
             ->orderBy('name')
             ->get();

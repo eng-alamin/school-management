@@ -48,7 +48,7 @@
             <div class="col-md-4">
                 <div class="input-group input-group-outline" wire:ignore>
                     <label class="form-label">Class <span class="req">*</span></label>
-                    <select wire:model="class_id" class="form-select" id="classSelect">
+                    <select wire:model.live="class_id" class="form-select" id="classSelect">
                         <option value="">Select Class</option>
                         @foreach($classes as $class)
                             <option value="{{ $class->id }}">{{ $class->name }}</option>
@@ -58,16 +58,25 @@
                 @error('class_id') <span class="text-danger">{{ $message }}</span> @enderror
             </div>
             <div class="col-md-4">
-                <div class="input-group input-group-outline" wire:ignore>
-                    <label class="form-label">Section</label>
-                    <select wire:model="section_id" class="form-select" id="sectionSelect">
-                        <option value="">Select Section</option>
-                        @foreach($sections as $section)
-                            <option value="{{ $section->id }}">{{ $section->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                @error('section_id') <span class="text-danger">{{ $message }}</span> @enderror
+                @if($selectedClassHasSection)
+                    <div class="input-group input-group-outline">
+                        <label class="form-label">Section <span class="req">*</span></label>
+                        <select wire:model="section_id" class="form-select" id="sectionSelect" @disabled(!$class_id)>
+                            <option value="">
+                                {{ !$class_id ? 'Select class first' : 'Select Section' }}
+                            </option>
+                            @foreach($availableSections as $section)
+                                <option value="{{ $section['id'] }}">{{ $section['name'] }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @error('section_id') <span class="text-danger">{{ $message }}</span> @enderror
+                @else
+                    <div class="input-group input-group-outline">
+                        <label class="form-label">Section</label>
+                        <input type="text" class="form-control" value="N/A — this class has no sections" disabled style="background:#f5f5f5;cursor:not-allowed">
+                    </div>
+                @endif
             </div>
             <div class="col-md-4">
                 <div class="input-group input-group-outline" wire:ignore>

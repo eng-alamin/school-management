@@ -13,7 +13,7 @@
         <div class="form-section" style="padding-top:40px;padding-bottom:20px">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
                 <div class="section-heading mb-0">
-                    <span class="material-icons-round">payments</span> Payment History
+                    Payment History
                 </div>
 
                 @if($salaries->total() > 10)
@@ -41,7 +41,7 @@
                         @foreach($salaries as $salary)
                         <tr wire:key="sal-{{ $salary->id }}">
                             <td>{{ \Carbon\Carbon::parse($salary->month)->format('F, Y') }}</td>
-                            <td>${{ number_format($salary->basic_salary, 2) }}</td>
+                            <td>৳{{ number_format($salary->basic_salary, 0) }}</td>
                             <td>
                                 @if($salary->status === 'paid')
                                     <span class="status-badge status-paid">Paid</span>

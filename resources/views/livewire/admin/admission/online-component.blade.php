@@ -134,7 +134,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="8" class="text-center py-5 text-muted">
+                            <td colspan="10" class="text-center py-5 text-muted">
                                 <span class="material-icons-round d-block mb-2" style="font-size:2.5rem;opacity:.2">how_to_reg</span>
                                 No admission applications found.
                             </td>

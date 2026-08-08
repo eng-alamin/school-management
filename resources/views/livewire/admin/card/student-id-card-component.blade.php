@@ -27,10 +27,16 @@
                 <div class="input-group input-group-outline">
                     <label class="form-label">Section</label>
                     <select wire:model.live="filterSection" class="form-select"
-                        {{ $sections->isEmpty() ? 'disabled' : '' }}>
-                        <option value="">{{ !$filterClass ? 'Select Class First' : 'Select Section' }}</option>
-                        @if ($sections->isNotEmpty())
-                            <option value="all">All Section</option>
+                        {{ (!$filterClass || !$classHasSection || $sections->isEmpty()) ? 'disabled' : '' }}>
+                        @if(!$filterClass)
+                            <option value="">Select Class First</option>
+                        @elseif(!$classHasSection)
+                            <option value="">N/A — this class has no sections</option>
+                        @else
+                            <option value="">Select Section</option>
+                            @if($sections->count() > 1)
+                                <option value="all">All Section</option>
+                            @endif
                             @foreach ($sections as $item)
                                 <option value="{{ $item->id }}">{{ $item->name }}</option>
                             @endforeach

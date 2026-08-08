@@ -16,10 +16,12 @@ class InstitutionComponent extends Component
 
     // General
     public string $name         = '';
+    public string $medium         = '';
     public ?string $eiin         = null;
     public ?string $email       = null;
     public ?string $phone       = null;
-    public ?string $city        = null;
+    public ?string $division    = null;
+    public ?string $district    = null;
     public ?string $address     = null;
     public array $weekends      = [];
     public string $unique_roll  = 'class_wise';
@@ -92,10 +94,12 @@ class InstitutionComponent extends Component
     {
         return [
             'name'              => 'required|string|max:255',
+            'medium'            => ['nullable', 'string', \Illuminate\Validation\Rule::in(array_keys(Institution::MEDIUMS))],
             'eiin'              => 'nullable|string|max:255',
             'email'             => 'nullable|email|max:255',
             'phone'             => 'nullable|string|max:30',
-            'city'              => 'nullable|string|max:100',
+            'division'          => ['nullable', 'string', \Illuminate\Validation\Rule::in(array_keys(Institution::DIVISIONS))],
+            'district'          => 'nullable|string|max:100',
             'address'           => 'nullable|string',
             'weekends'          => 'nullable|array',
             'weekends.*'        => 'string|in:Saturday,Sunday,Monday,Tuesday,Wednesday,Thursday,Friday',
@@ -139,10 +143,12 @@ class InstitutionComponent extends Component
         }
 
         $this->name                         = $setting->name;
+        $this->medium                       = $setting->medium;
         $this->eiin                         = $setting->eiin;
         $this->email                        = $setting->email;
         $this->phone                        = $setting->phone;
-        $this->city                         = $setting->city;
+        $this->division                     = $setting->division;
+        $this->district                     = $setting->district;
         $this->address                      = $setting->address;
         $this->weekends                     = $setting->weekends        ?? [];
         $this->unique_roll                  = $setting->unique_roll     ?? 'class_wise';
@@ -166,16 +172,12 @@ class InstitutionComponent extends Component
         $this->due_days                         = (int) ($setting->due_days ?? 30);
         $this->due_fees_calculation_with_fine   = (bool) $setting->due_fees_calculation_with_fine;
 
-        // Merge saved facilities with default definitions so newly added
-        // facility keys (added later in facilityDefinitions()) always appear,
-        // even if the institution's saved JSON doesn't have them yet.
         $saved = $setting->facilities ?? [];
         $this->facilities = array_merge($this->defaultFacilities(), array_intersect_key(
             $saved,
             $this->defaultFacilities()
         ));
 
-        // raw path সরাসরি property-তে রাখা হলো (storage/ prefix নেই)
         $this->system_logo  = $setting->system_logo;
         $this->text_logo    = $setting->text_logo;
         $this->print_logo   = $setting->print_logo;
@@ -225,10 +227,12 @@ class InstitutionComponent extends Component
 
         $setting->fill([
             'name'                           => $this->name,
+            'medium'                         => $this->medium,
             'eiin'                           => $this->eiin,
             'email'                          => $this->email,
             'phone'                          => $this->phone,
-            'city'                           => $this->city,
+            'division'                       => $this->division,
+            'district'                       => $this->district,
             'address'                        => $this->address,
             'weekends'                       => $this->weekends,
             'unique_roll'                    => $this->unique_roll,

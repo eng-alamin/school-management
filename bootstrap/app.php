@@ -13,6 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
+            'setup.wizard'   => \App\Http\Middleware\RedirectToSetupWizard::class,
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'billing.check' => \App\Http\Middleware\CheckBillingStatus::class,
         ]);
@@ -20,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'billing/payment/*',
             'registration/payment/*',
+            'iclock/*',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

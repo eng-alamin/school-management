@@ -15,9 +15,12 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('type')->nullable();
+            $table->string('medium')->default('bangla_medium');
             $table->string('eiin')->nullable();
             $table->string('email')->nullable();
             $table->string('phone')->nullable();
+            $table->string('division')->nullable();
+            $table->string('district')->nullable();
             $table->string('city')->nullable();
             $table->text('address')->nullable();
             $table->json('weekends')->nullable();
@@ -54,6 +57,8 @@ return new class extends Migration
 
             // facilities
             $table->json('facilities')->nullable();
+            $table->json('setup_progress')->nullable();
+            $table->boolean('setup_completed')->default(false);
 
             $table->boolean('status')->default(true);
             $table->timestamps();

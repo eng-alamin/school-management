@@ -1032,7 +1032,7 @@ body.dark-mode .header-pink-gradient {
 
 /* When open: rotate arrow + border highlight */
 .custom-select-wrapper.open .custom-select-trigger {
-    border-color: var(--select-focus);
+    /* border-color: var(--select-focus); */
     border-width: 2px;
     color: var(--dark);
 }
@@ -3494,7 +3494,6 @@ button:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-    outline: 2px solid var(--primary);
     outline-offset: 2px;
 }
 

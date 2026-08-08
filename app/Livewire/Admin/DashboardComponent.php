@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardComponent extends Component
 {
@@ -510,7 +511,11 @@ class DashboardComponent extends Component
     {
         $this->loadDashboardData();
 
-        return view('livewire.admin.dashboard-component')
+        $institution = Auth::user()->institution;
+
+        return view('livewire.admin.dashboard-component', [
+                'progressPercent' => $institution->setupProgressPercent(),
+            ])
             ->layout('layouts.admin.app', [
                 'title' => 'Dashboard | ' . institution()->name,
             ]);

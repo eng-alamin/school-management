@@ -33,12 +33,18 @@
                 <!-- Section -->
                 <div class="col-md-4">
                     <div class="input-group input-group-outline">
-                        <label class="form-label">Section</label>
+                        <label class="form-label">Section @if($classHasSection)<span class="req">*</span>@endif</label>
                         <select wire:model.live="section_id" class="form-select"
-                            {{ empty($availableSections) ? 'disabled' : '' }}>
-                            <option value="">{{ !$class_id ? 'Select Class First' : 'Select Section' }}</option>
-                            @if(!empty($availableSections))
-                                <option value="all">All Section</option>
+                            {{ (!$class_id || !$classHasSection || empty($availableSections)) ? 'disabled' : '' }}>
+                            @if(!$class_id)
+                                <option value="">Select Class First</option>
+                            @elseif(!$classHasSection)
+                                <option value="">N/A — this class has no sections</option>
+                            @else
+                                <option value="">Select Section</option>
+                                @if(count($availableSections) > 1)
+                                    <option value="all">All Section</option>
+                                @endif
                                 @foreach ($availableSections as $s)
                                     <option value="{{ $s['id'] }}">{{ $s['name'] }}</option>
                                 @endforeach

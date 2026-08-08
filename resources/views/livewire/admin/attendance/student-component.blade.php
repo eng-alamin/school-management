@@ -106,7 +106,7 @@
                         <th id="th-section">Section</th>
                         <th id="th-roll">Roll</th>
                         <th id="th-status">Status</th>
-                        <th id="th-remark">Remarks</th>
+                        <th id="th-actions" class="no-print">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -114,17 +114,15 @@
                     <tr wire:key="student-att-{{ $index }}">
                         <td class="text-muted fw-500">{{ $index + 1 }}</td>
                         <td>
-                            <div class="d-flex align-items-center gap-2">
+                            <a href="{{ route('admin.student.overview', ['id' => $item['id']]) }}" target="_blank" class="d-flex align-items-center gap-2">
                                 <img src="{{ $item['photo'] ? asset('storage/' . $item['photo']) : asset('assets/img/boy.jpg') }}"
                                     style="width:36px;height:36px;border-radius:8px;object-fit:cover;" alt="">
                                 <span>
                                     <span class="fw-600 d-block" style="font-size:.85rem">{{ $item['name'] }}</span>
                                     <span class="fs-8 fw-bold">{{ $item['student_id'] }}</span>
                                 </span>
-                            </div>
+                            </a>
                         </td>
-                        {{-- ✅ Fix: khali section_name er khetre 'All Section' na, '—' dekhano hocche
-                             (age eta ekjon individual student er row-e bhul bhabe "All Section" dekhato) --}}
                         <td><span class="att-section-pill">{{ $item['section_name'] ?: '—' }}</span></td>
                         <td class="fw-500">{{ $item['roll_no'] }}</td>
                         <td>
@@ -147,11 +145,13 @@
                                 </label>
                             </div>
                         </td>
-                        <td>
-                            <input type="text"
-                                wire:model="data.{{ $index }}.remarks"
-                                class="schedule-input"
-                                placeholder="Remarks">
+                        <td class="no-print">
+                            <div class="d-flex gap-1">
+                                <a href="{{ route('admin.student.attendance', ['id' => $item['id']]) }}" target="_blank"
+                                    class="act-btn view" title="View">
+                                    <span class="material-icons-round">visibility</span>
+                                </a>
+                            </div>
                         </td>
                     </tr>
                     @endforeach

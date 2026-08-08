@@ -23,12 +23,12 @@ return new class extends Migration
                 'a5_landscape',
             ])->default('a4_portrait');
             $table->enum('qr_code_text', [
-                'register_no',
+                'registration_no',
                 'roll_no',
                 'name',
                 'email',
                 'mobile',
-            ])->default('register_no');
+            ])->default('registration_no');
             $table->enum('photo_style', ['square', 'circle'])->default('square');
             $table->unsignedInteger('photo_size')->default(100); // in px
             $table->unsignedInteger('margin_top')->default(80);
