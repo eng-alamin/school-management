@@ -2,7 +2,7 @@
 
     <div class="card">
 
-        <div class="mat-card-header header-pink-gradient">
+        <div class="mat-card-header header-primary-gradient">
             <h5>All Homeworks</h5>
             <p>Manage homework records, view details, and organize easily.</p>
         </div>
@@ -16,7 +16,7 @@
                         <span class="material-icons-round" style="position:absolute;left:10px;font-size:17px;color:var(--muted);pointer-events:none">search</span>
                         <input type="text" wire:model.live.debounce.300ms="search"
                             placeholder="Search by title"
-                            style="border:1px solid rgba(0,0,0,.1);border-radius:8px;padding:7px 12px 7px 32px;font-size:.78rem;font-family:inherit;color:var(--dark);outline:none;background:#f8f9fa;width:220px"/>
+                            class="tb-search"/>
                     </div>
                 </div>
 

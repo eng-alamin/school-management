@@ -373,7 +373,7 @@
 
     .dash-view-all {
         font-size: 12px;
-        color: var(--pink);
+        color: var(--primary);
         font-weight: 500;
         text-decoration: none;
     }
@@ -416,7 +416,7 @@
     }
 
     .dash-quick-action:hover {
-        background: var(--pink-light);
+        background: var(--primary-light);
         transform: translateY(-2px);
     }
 

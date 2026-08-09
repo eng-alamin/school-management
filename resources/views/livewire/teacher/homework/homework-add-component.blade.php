@@ -2,7 +2,7 @@
     <div class="card"> 
 
         <!-- Floating Header -->
-        <div class="mat-card-header header-pink-gradient">
+        <div class="mat-card-header header-primary-gradient">
             <h5>
                 Add Homework
             </h5>
@@ -176,7 +176,7 @@
                 <span class="material-icons-round" style="font-size:16px">refresh</span> Reset
             </button>
 
-            <button class="btn-pink" type="button"
+            <button class="btn-primary" type="button"
                     wire:click="save"
                     wire:loading.attr="disabled"
                     wire:target="save">

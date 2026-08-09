@@ -3,7 +3,7 @@
     <div class="card">
 
       <!-- floating header -->
-      <div class="mat-card-header header-pink-gradient">
+      <div class="mat-card-header header-primary-gradient">
         <h5 id="inventory-unit-title">Inventory Unit</h5>
         <p id="inventory-unit-subtitle">Manage inventory units, create, update, and organize units easily.</p>
       </div>
@@ -15,7 +15,7 @@
                 <div class="card-toolbar-title">
                     <div style="position:relative;display:inline-flex;align-items:center">
                         <span class="material-icons-round" style="position:absolute;left:10px;font-size:17px;color:var(--muted);pointer-events:none">search</span>
-                        <input type="text" wire:model.live.debounce.300ms="search" id="inventory-unit-search" placeholder="Search" style="border:1px solid rgba(0,0,0,.1);border-radius:8px;padding:7px 12px 7px 32px;font-size:.78rem;font-family:inherit;color:var(--dark);outline:none;background:#f8f9fa;width:220px"/>
+                        <input type="text" wire:model.live.debounce.300ms="search" id="inventory-unit-search" placeholder="Search" class="tb-search"/>
                     </div>
                 </div>
 

@@ -12,7 +12,7 @@
         </div>
 
         {{-- ── Floating Header ── --}}
-        <div class="mat-card-header header-pink-gradient">
+        <div class="mat-card-header header-primary-gradient">
             <h5> Add Salary Payment</h5>
             <p>Review salary details and process payment for the selected employee</p>
         </div>
@@ -291,7 +291,7 @@
                                         wire:click="processPayment"
                                         wire:loading.attr="disabled"
                                         wire:target="processPayment"
-                                        class="btn-pink d-flex align-items-center gap-1">
+                                        class="btn-primary d-flex align-items-center gap-1">
                                     <span wire:loading.remove wire:target="processPayment">
                                         <span class="material-icons-round" style="font-size:16px;vertical-align:middle">check_circle</span>
                                         Paid

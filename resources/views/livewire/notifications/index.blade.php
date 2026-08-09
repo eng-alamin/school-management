@@ -4,7 +4,7 @@
     <div class="card">
 
         {{-- Floating Header --}}
-        <div class="mat-card-header header-pink-gradient">
+        <div class="mat-card-header header-primary-gradient">
             <h5 id="cardHeaderTitleAllsections">Notifications</h5>
             <p id="cardHeaderSubtitle">Manage and review all your notifications in one place.</p>
         </div>

@@ -1,7 +1,7 @@
 <div class="mat-card" style="padding-top:28px">
 
     {{-- Floating Header --}}
-    <div class="mat-card-header header-pink-gradient">
+    <div class="mat-card-header header-primary-gradient">
         <h5 id="cardHeaderTitleStudentOverview">
             <span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">
                 payments
@@ -104,7 +104,7 @@
 
                 {{-- Submit --}}
                 <div class="col-md-12">
-                    <button class="btn-pink w-100 d-flex justify-content-center align-items-center gap-1"
+                    <button class="btn-primary w-100 d-flex justify-content-center align-items-center gap-1"
                             type="button"
                             wire:click="save"
                             wire:loading.attr="disabled"

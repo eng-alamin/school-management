@@ -2,7 +2,7 @@
     <div class="card">
 
       <!-- floating header -->
-      <div class="mat-card-header header-pink-gradient">
+      <div class="mat-card-header header-primary-gradient">
         <h5><span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">how_to_reg</span>Student Admission</h5>
         <p>Create new student admission record</p>
       </div>
@@ -383,7 +383,7 @@
                 <span class="material-icons-round" style="font-size:16px">refresh</span> Reset
             </button>
 
-            <button class="btn-pink" type="button" wire:click="save" wire:loading.attr="disabled" wire:target="save">
+            <button class="btn-primary" type="button" wire:click="save" wire:loading.attr="disabled" wire:target="save">
                 <span wire:loading.remove wire:target="save" style="display: inline-flex;align-items: center;gap: 6px">
                     <span class="material-icons-round">save</span> Save
                 </span>

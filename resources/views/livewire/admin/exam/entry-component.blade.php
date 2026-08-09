@@ -1,7 +1,7 @@
 <div>
     <div class="card">
 
-        <div class="mat-card-header header-pink-gradient">
+        <div class="mat-card-header header-primary-gradient">
             <h5> Mark Entries</h5>
             <p>Enter or update student marks for an exam subject</p>
         </div>
@@ -52,7 +52,7 @@
                     <button wire:click="filter"
                             wire:loading.attr="disabled"
                             wire:target="filter"
-                            class="btn-pink d-flex align-items-center gap-1"
+                            class="btn-primary d-flex align-items-center gap-1"
                             type="button">
                         <span wire:loading.remove wire:target="filter">
                             <span class="material-icons-round" style="font-size:16px;vertical-align:middle;margin-right:4px">filter_alt</span> Filter
@@ -168,7 +168,7 @@
 
         {{-- Footer --}}
         <div class="form-footer">
-            <button class="btn-pink" type="button"
+            <button class="btn-primary" type="button"
                     wire:click="save"
                     wire:loading.attr="disabled"
                     wire:target="save">

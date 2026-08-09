@@ -1,7 +1,7 @@
 <div class="mat-card" style="padding-top:28px">
 
     <!-- floating header -->
-    <div class="mat-card-header header-pink-gradient">
+    <div class="mat-card-header header-primary-gradient">
         <h5 id="cardHeaderTitleParentOverview">Parent Overview</h5>
     </div>
 

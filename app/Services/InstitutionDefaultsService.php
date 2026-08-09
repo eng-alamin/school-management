@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Carbon\Carbon;
 use App\Models\Institution;
+use App\Models\Feature;
 use App\Models\InventoryCategory;
 use App\Models\InventoryUnit;
 use App\Models\EmployeeDepartment;
@@ -31,6 +32,8 @@ class InstitutionDefaultsService
 {
     public static function create(Institution $institution): void
     {
+        self::createFeatures($institution);
+
         self::createInventoryCategories($institution);
         self::createInventoryUnits($institution);
 
@@ -58,6 +61,33 @@ class InstitutionDefaultsService
         self::createOfficeAccounts($institution);
 
         self::createEventTypes($institution);
+    }
+
+    /**
+     * Institution create howar shomoy default feature flag gulo
+     * (module toggle) seed kore. Notun feature add korte hole
+     * ei array te shudhu key add korle hobe.
+     */
+    private static function createFeatures(Institution $institution): void
+    {
+        $features = [
+            'inventory_management_module',
+            'card_management_module',
+            'certificate_management_module',
+            'branch_module',
+        ];
+
+        foreach ($features as $featureKey) {
+            Feature::firstOrCreate(
+                [
+                    'institution_id' => $institution->id,
+                    'feature_key'    => $featureKey,
+                ],
+                [
+                    'is_active' => true,
+                ]
+            );
+        }
     }
 
     private static function createInventoryCategories(Institution $institution): void

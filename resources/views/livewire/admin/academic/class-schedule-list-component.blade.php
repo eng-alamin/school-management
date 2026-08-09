@@ -2,7 +2,7 @@
 
     <div class="card">
 
-        <div class="mat-card-header header-pink-gradient">
+        <div class="mat-card-header header-primary-gradient">
             <h5>Class Schedules</h5>
             <p>View class schedule by class and section</p>
         </div>
@@ -56,7 +56,7 @@
                         <button wire:click="filter"
                                 wire:loading.attr="disabled"
                                 wire:target="filter"
-                                class="btn-pink w-100 d-flex justify-content-center align-items-center"
+                                class="btn-primary w-100 d-flex justify-content-center align-items-center"
                                 type="button">
                             <span wire:loading.remove wire:target="filter">
                                 <span class="material-icons-round" style="font-size:16px;vertical-align:middle;margin-right:4px">filter_alt</span> Filter
@@ -70,7 +70,7 @@
                     {{-- New Schedule Button --}}
                     <div class="col-md-12">
                         <a href="{{ route('admin.academic.class-schedule.create') }}"
-                            class="btn-pink w-100 d-flex justify-content-center align-items-center">
+                            class="btn-primary w-100 d-flex justify-content-center align-items-center">
                             <span class="material-icons-round" style="font-size:16px">add</span>
                             <span>New Schedule</span>
                         </a>

@@ -2,7 +2,7 @@
     <div class="card">
 
         {{-- Floating Header --}}
-        <div class="mat-card-header header-pink-gradient">
+        <div class="mat-card-header header-primary-gradient">
             <h5> Salary Assign</h5>
             <p>Assign salary grades to employees by role and designation</p>
         </div>
@@ -49,7 +49,7 @@
                     <button wire:click="filter"
                             wire:loading.attr="disabled"
                             wire:target="filter"
-                            class="btn-pink d-flex align-items-center gap-1"
+                            class="btn-primary d-flex align-items-center gap-1"
                             type="button">
                         <span wire:loading.remove wire:target="filter">
                             <span class="material-icons-round" style="font-size:16px;vertical-align:middle;margin-right:4px">filter_alt</span> Filter
@@ -151,7 +151,7 @@
                 <button class="btn-outline" type="button" wire:click="resetForm">
                     <span class="material-icons-round" style="font-size:16px">refresh</span> Reset
                 </button>
-                <button class="btn-pink" type="button"
+                <button class="btn-primary" type="button"
                         wire:click="save"
                         wire:loading.attr="disabled"
                         wire:target="save">

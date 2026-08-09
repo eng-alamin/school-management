@@ -7,7 +7,7 @@
             {{-- Action Buttons --}}
             <div class="mb-3 no-print d-flex gap-2">
                 @if(count($selectedIds) > 0)
-                    <button class="btn-pink d-inline-flex align-items-center gap-1"
+                    <button class="btn-primary d-inline-flex align-items-center gap-1"
                             wire:click="collectSelected" type="button">
                         <span class="material-icons-round" style="font-size:16px">payments</span>
                         Selected Salary Collect ({{ count($selectedIds) }})
@@ -268,7 +268,7 @@
 
             <div class="pay-modal-footer">
                 <button type="button" class="btn-outline" wire:click="closePaymentModal">Cancel</button>
-                <button type="button" class="btn-pink" wire:click="savePayment" wire:loading.attr="disabled">
+                <button type="button" class="btn-primary" wire:click="savePayment" wire:loading.attr="disabled">
                     <span wire:loading wire:target="savePayment" class="spinner-border spinner-border-sm me-1"></span>
                     Confirm Payment
                 </button>

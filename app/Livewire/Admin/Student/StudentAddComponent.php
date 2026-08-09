@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Student;
 use Livewire\Component;
 use App\Models\User;
 use App\Models\Student;
+use App\Models\StudentEnrollment;
 use App\Models\Guardian;
 use App\Models\AcademicSession;
 use App\Models\AcademicClass;
@@ -518,7 +519,7 @@ class StudentAddComponent extends Component
 
                 'session_id'     => $this->session_id,
                 'student_id'     => $studentId,
-                'registration_no'    => $registrationNo,
+                'registration_no'=> $registrationNo,
                 'roll_no'        => $rollNo,
                 'admission_date' => $this->admission_date,
                 'class_id'       => $this->class_id,
@@ -539,6 +540,20 @@ class StudentAddComponent extends Component
                 'previous_institution' => $this->previous_institution,
                 'qualification'        => $this->qualification,
                 'remarks'              => $this->remarks,
+            ]);
+
+            // ── Student create howar sathe sathe tar first
+            // student_enrollments record-o toiri kora hocche (status = running).
+            // Same transaction-e thakay, kono step fail korle duitai rollback hobe ──
+            StudentEnrollment::create([
+                'institution_id'      => $institutionId,
+                'student_id'          => $student->id,
+                'class_id'            => $this->class_id,
+                'section_id'          => $sectionId,
+                'group_id'            => $this->group_id,
+                'roll_no'             => $rollNo,
+                'status'              => 'running',
+                'carry_forward_due'   => false,
             ]);
 
             if ($this->guardian_exists) {
@@ -615,10 +630,6 @@ class StudentAddComponent extends Component
 
             DB::rollBack();
 
-            // ── FIX: raw DB duplicate-key error (1062) ke user-friendly
-            // validation error e convert kora holo, raw 500 exception dekhano
-            // hobe na. Kon field e duplicate hoyeche seta message theke detect
-            // kora hocche ──
             if ((int) $e->getCode() === 23000 || str_contains($e->getMessage(), '1062')) {
 
                 $this->showFeeModal = false;

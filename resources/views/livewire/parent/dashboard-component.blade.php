@@ -25,7 +25,7 @@
         border-radius: 50%;
         overflow: hidden;
         border: 3px solid var(--border);
-        background: linear-gradient(135deg, var(--pink), #7ba3ff);
+        background: linear-gradient(135deg, var(--primary), #7ba3ff);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -69,7 +69,7 @@
         align-items: center;
         gap: 4px;
         background: var(--section-bg);
-        color: var(--pink);
+        color: var(--primary);
         font-size: 11px;
         font-weight: 600;
         padding: 3px 10px;
@@ -125,7 +125,7 @@
         align-items: center;
         justify-content: center;
         gap: 6px;
-        background: var(--pink);
+        background: var(--primary);
         color: #ffffff;
         font-size: 13px;
         font-weight: 500;

@@ -192,7 +192,7 @@
                 Reset
             </button>
 
-            <button class="btn-pink"
+            <button class="btn-primary"
                     type="button"
                     wire:click="save"
                     wire:loading.attr="disabled"

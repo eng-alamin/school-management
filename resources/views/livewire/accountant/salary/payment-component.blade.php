@@ -12,7 +12,7 @@
     </div>
 
     {{-- ── Floating Header ── --}}
-    <div class="mat-card-header header-pink-gradient">
+    <div class="mat-card-header header-primary-gradient">
         <h5>
             <span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">payments</span>
             Payroll
@@ -61,7 +61,7 @@
                 <button wire:click="filter"
                         wire:loading.attr="disabled"
                         wire:target="filter"
-                        class="btn-pink d-flex align-items-center gap-1"
+                        class="btn-primary d-flex align-items-center gap-1"
                         type="button">
                     <span wire:loading.remove wire:target="filter">
                         <span class="material-icons-round" style="font-size:16px;vertical-align:middle;margin-right:4px">filter_alt</span>
@@ -308,7 +308,7 @@
                         wire:click="$set('showPayModal', false)">
                     Cancel
                 </button>
-                <button class="btn-pink d-flex align-items-center gap-1"
+                <button class="btn-primary d-flex align-items-center gap-1"
                         wire:click="processPayment"
                         wire:loading.attr="disabled"
                         wire:target="processPayment">
@@ -437,7 +437,7 @@
                         wire:click="$set('showPayslip', false)">
                     Close
                 </button>
-                <button class="btn-pink d-flex align-items-center gap-1"
+                <button class="btn-primary d-flex align-items-center gap-1"
                         onclick="printPayslip()">
                     <span class="material-icons-round" style="font-size:16px;vertical-align:middle">print</span>
                     Print Payslip

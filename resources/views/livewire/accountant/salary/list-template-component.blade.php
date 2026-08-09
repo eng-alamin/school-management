@@ -3,7 +3,7 @@
     <div class="card">
 
         <!-- floating header -->
-        <div class="mat-card-header header-pink-gradient">
+        <div class="mat-card-header header-primary-gradient">
             <h5>Salary Templates</h5>
             <p>Manage salary templates, create, update, and organize salary grades easily.</p>
         </div>
@@ -17,7 +17,7 @@
                         <input type="text"
                                wire:model.live.debounce.300ms="search"
                                placeholder="Search"
-                               style="border:1px solid rgba(0,0,0,.1);border-radius:8px;padding:7px 12px 7px 32px;font-size:.78rem;font-family:inherit;color:var(--dark);outline:none;background:#f8f9fa;width:220px" />
+                               class="tb-search" />
                     </div>
                 </div>
 

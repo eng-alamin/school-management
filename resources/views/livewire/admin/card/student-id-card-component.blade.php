@@ -3,7 +3,7 @@
     <div class="card no-print">
 
         <!-- floating header -->
-        <div class="mat-card-header header-pink-gradient">
+        <div class="mat-card-header header-primary-gradient">
             <h5 id="cardHeaderTitleAllsections">Student Id Card Generate</h5>
             <p id="cardHeaderSubtitle">A lightweight, extendable, dependency-free javascript HTML table plugin.</p>
         </div>
@@ -62,7 +62,7 @@
                 <button wire:click="applyFilter"
                         wire:loading.attr="disabled"
                         wire:target="applyFilter"
-                        class="btn-pink w-100 d-flex justify-content-center align-items-center"
+                        class="btn-primary w-100 d-flex justify-content-center align-items-center"
                         type="button">
                     <span wire:loading.remove wire:target="applyFilter">
                         <span class="material-icons-round" style="font-size:16px;vertical-align:middle;margin-right:4px">filter_alt</span> Filter

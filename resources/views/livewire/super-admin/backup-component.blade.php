@@ -3,7 +3,7 @@
     <div class="card">
 
         <!-- floating header -->
-        <div class="mat-card-header header-pink-gradient">
+        <div class="mat-card-header header-primary-gradient">
             <h5>Database Backup</h5>
             <p>Manage database backups, create, restore, and organize backups easily.</p>
         </div>

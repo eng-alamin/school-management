@@ -2,7 +2,7 @@
 
     <div class="card">
 
-        <div class="mat-card-header header-pink-gradient">
+        <div class="mat-card-header header-primary-gradient">
             <h5>Salary Advance</h5>
             <p>View your salary advance history and outstanding balances.</p>
         </div>

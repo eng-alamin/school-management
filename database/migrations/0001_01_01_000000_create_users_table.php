@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
             $table->enum('role', ['super_admin', 'ministry', 'admin', 'branch', 'staff', 'teacher', 'accountant', 'student', 'parent',])->default('student');
             $table->string('name', 100);
             $table->string('username', 100)->nullable()->unique();
@@ -31,10 +32,7 @@ return new class extends Migration
             $table->softDeletes();
             
             $table->index(['institution_id', 'role', 'is_active'], 'users_institution_role_active_idx');
-
-            $table->unique(['username', 'deleted_at'], 'users_username_deleted_at_unique');
-            $table->unique(['phone', 'deleted_at'], 'users_phone_deleted_at_unique');
-            $table->unique(['email', 'deleted_at'], 'users_email_deleted_at_unique');
+            $table->index(['branch_id', 'role'], 'users_branch_role_idx');
 
         });
 

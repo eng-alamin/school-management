@@ -234,17 +234,24 @@
                                                 @enderror
                                             </div>
 
+                                            {{-- DISTRICT — dependent select, filtered by chosen division --}}
                                             <div class="col-md-6 mb-4">
                                                 <label class="form-label">
                                                     <span class="lang-bn">জেলা</span>
                                                     <span class="lang-en">District</span>
                                                 </label>
-                                                <input
-                                                    type="text"
-                                                    class="form-control @error('institution_district') is-invalid @enderror"
+                                                <select
+                                                    class="form-select @error('institution_district') is-invalid @enderror"
                                                     wire:model.live="institution_district"
-                                                    placeholder="e.g. Dhaka, Cumilla, Bogura"
+                                                    @if(!$institution_division) disabled @endif
                                                 >
+                                                    <option value="">
+                                                        {{ $institution_division ? 'Select District' : 'Select Division First' }}
+                                                    </option>
+                                                    @foreach ($this->districts as $district)
+                                                        <option value="{{ $district }}">{{ $district }}</option>
+                                                    @endforeach
+                                                </select>
                                                 @error('institution_district')
                                                     <div class="invalid-feedback">{{ $message }}</div>
                                                 @enderror

@@ -2,7 +2,7 @@
 
     <div class="card">
 
-        <div class="mat-card-header header-pink-gradient no-print">
+        <div class="mat-card-header header-primary-gradient no-print">
             <h5 id="cardHeaderTitleParentOverview">Parent Overview</h5>
         </div>
 

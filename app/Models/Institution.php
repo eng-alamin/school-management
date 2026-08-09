@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -20,6 +21,7 @@ class Institution extends Model
         'facilities'                     => 'array',
         'setup_progress'                 => 'array',
         'setup_completed'                => 'boolean',
+        'verified_at'                    => 'datetime',
     ];
 
     /*
@@ -30,11 +32,6 @@ class Institution extends Model
     protected static function booted(): void
     {
         static::created(function (Institution $institution) {
-            // Every institution must always have at least one branch, even if
-            // the school never uses the multi-branch feature. This keeps
-            // branch_id non-null on every downstream record (student, staff,
-            // fee, attendance, exam...) so no module ever needs a NULL-branch
-            // special case.
             $institution->branches()->create([
                 'name'      => 'Main Branch',
                 'code'      => 'MAIN',
@@ -65,16 +62,16 @@ class Institution extends Model
         self::MEDIUM_ENGLISH                => 'English Medium',
     ];
 
-    /*
-    |--------------------------------------------------------------------------
-    | Medium Helpers
-    |--------------------------------------------------------------------------
-    */
     public function mediumLabel(): string
     {
         return self::MEDIUM_LABELS[$this->medium] ?? $this->medium;
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Division / District Constants
+    |--------------------------------------------------------------------------
+    */
     public const DIVISIONS = [
         'dhaka'      => 'Dhaka',
         'chattogram' => 'Chattogram',
@@ -86,19 +83,113 @@ class Institution extends Model
         'mymensingh' => 'Mymensingh',
     ];
 
+    /**
+     * Division => Districts (English) mapping.
+     * Keys MUST exactly match self::DIVISIONS keys.
+     */
+    public const DISTRICTS = [
+        'dhaka' => [
+            'Dhaka', 'Faridpur', 'Gazipur', 'Gopalganj', 'Kishoreganj',
+            'Madaripur', 'Manikganj', 'Munshiganj', 'Narayanganj',
+            'Narsingdi', 'Rajbari', 'Shariatpur', 'Tangail',
+        ],
+        'chattogram' => [
+            'Chattogram', 'Cumilla', 'Brahmanbaria', 'Chandpur', 'Noakhali',
+            'Feni', 'Lakshmipur', "Cox's Bazar", 'Khagrachhari', 'Rangamati', 'Bandarban',
+        ],
+        'rajshahi' => [
+            'Rajshahi', 'Bogura', 'Pabna', 'Sirajganj', 'Natore',
+            'Naogaon', 'Chapainawabganj', 'Joypurhat',
+        ],
+        'khulna' => [
+            'Khulna', 'Jashore', 'Satkhira', 'Bagerhat', 'Jhenaidah',
+            'Magura', 'Narail', 'Kushtia', 'Chuadanga', 'Meherpur',
+        ],
+        'barishal' => [
+            'Barishal', 'Bhola', 'Jhalokathi', 'Patuakhali', 'Pirojpur', 'Barguna',
+        ],
+        'sylhet' => [
+            'Sylhet', 'Moulvibazar', 'Habiganj', 'Sunamganj',
+        ],
+        'rangpur' => [
+            'Rangpur', 'Dinajpur', 'Kurigram', 'Gaibandha', 'Lalmonirhat',
+            'Nilphamari', 'Panchagarh', 'Thakurgaon',
+        ],
+        'mymensingh' => [
+            'Mymensingh', 'Jamalpur', 'Netrokona', 'Sherpur',
+        ],
+    ];
+
+    /**
+     * Districts belonging to a given division key.
+     * Usage: Institution::districtsFor('dhaka')
+     */
+    public static function districtsFor(?string $divisionKey): array
+    {
+        return self::DISTRICTS[$divisionKey] ?? [];
+    }
+
+    /**
+     * Districts belonging to this institution's own division.
+     * Usage: $institution->availableDistricts()
+     */
+    public function availableDistricts(): array
+    {
+        return self::districtsFor($this->division);
+    }
+
+    public function divisionLabel(): string
+    {
+        return self::DIVISIONS[$this->division] ?? $this->division;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Verification Constants (Ministry Oversight)
+    |--------------------------------------------------------------------------
+    */
+    public const VERIFICATION_PENDING   = 'pending';
+    public const VERIFICATION_VERIFIED  = 'verified';
+    public const VERIFICATION_REJECTED  = 'rejected';
+    public const VERIFICATION_SUSPENDED = 'suspended';
+
+    public const VERIFICATION_STATUSES = [
+        self::VERIFICATION_PENDING,
+        self::VERIFICATION_VERIFIED,
+        self::VERIFICATION_REJECTED,
+        self::VERIFICATION_SUSPENDED,
+    ];
+
+    public const VERIFICATION_LABELS = [
+        self::VERIFICATION_PENDING   => 'Pending',
+        self::VERIFICATION_VERIFIED  => 'Verified',
+        self::VERIFICATION_REJECTED  => 'Rejected',
+        self::VERIFICATION_SUSPENDED => 'Suspended',
+    ];
+
+    public function verificationLabel(): string
+    {
+        return self::VERIFICATION_LABELS[$this->verification_status] ?? $this->verification_status;
+    }
+
+    public function verifiedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'verified_by');
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Setup Wizard Steps
     |--------------------------------------------------------------------------
     */
-    public const STEP_EMPLOYEE            = 'employee';
-    public const STEP_SESSION             = 'session';
-    public const STEP_CLASS_SETUP         = 'class_setup';
-    public const STEP_CLASS_ASSIGN        = 'class_assign';
-    public const STEP_CLASS_SCHEDULE      = 'class_schedule';
-    public const STEP_FEE_SETUP           = 'fee_setup';
-    public const STEP_STUDENT             = 'student';
-    public const STEP_PARENT              = 'parent';
+    public const STEP_EMPLOYEE       = 'employee';
+    public const STEP_SESSION        = 'session';
+    public const STEP_CLASS_SETUP    = 'class_setup';
+    public const STEP_CLASS_ASSIGN   = 'class_assign';
+    public const STEP_CLASS_SCHEDULE = 'class_schedule';
+    public const STEP_FEE_SETUP      = 'fee_setup';
+    public const STEP_STUDENT        = 'student';
+    public const STEP_PARENT         = 'parent';
 
     public const SETUP_STEPS = [
         self::STEP_EMPLOYEE,
@@ -111,15 +202,11 @@ class Institution extends Model
         self::STEP_PARENT,
     ];
 
-    /*
-    |--------------------------------------------------------------------------
-    | Setup Wizard Helpers
-    |--------------------------------------------------------------------------
-    */
     public function isStepCompleted(string $step): bool
     {
         return (bool) ($this->setup_progress[$step] ?? false);
     }
+
     public function markStepComplete(string $step): void
     {
         if (!in_array($step, self::SETUP_STEPS, true)) {
@@ -142,6 +229,7 @@ class Institution extends Model
 
         $this->save();
     }
+
     public function markStepIncomplete(string $step): void
     {
         $progress = $this->setup_progress ?? [];
@@ -151,6 +239,7 @@ class Institution extends Model
         $this->setup_completed = false;
         $this->save();
     }
+
     public function setupProgressPercent(): int
     {
         $progress = $this->setup_progress ?? [];
@@ -160,6 +249,7 @@ class Institution extends Model
 
         return (int) round(($done / count(self::SETUP_STEPS)) * 100);
     }
+
     public function skipSetupWizard(): void
     {
         $this->setup_completed = true;
@@ -171,7 +261,6 @@ class Institution extends Model
     | Existing Helpers
     |--------------------------------------------------------------------------
     */
-
     public function isWeekend(string $day): bool
     {
         return in_array($day, $this->weekends ?? []);
@@ -201,11 +290,6 @@ class Institution extends Model
         return $this->hasOne(AcademicSession::class)->where('is_current', true);
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Branch Relations
-    |--------------------------------------------------------------------------
-    */
     public function branches(): HasMany
     {
         return $this->hasMany(Branch::class);

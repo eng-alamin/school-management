@@ -1,7 +1,7 @@
 <div>
     <div class="card">
         <!-- Floating Header -->
-        <div class="mat-card-header header-pink-gradient">
+        <div class="mat-card-header header-primary-gradient">
             <h5>
                 Parent Registration
             </h5>
@@ -140,7 +140,7 @@
                 Back
             </button>
 
-            <button class="btn-pink" type="button" wire:click="update" wire:loading.attr="disabled" wire:target="update">
+            <button class="btn-primary" type="button" wire:click="update" wire:loading.attr="disabled" wire:target="update">
                 <span wire:loading.remove wire:target="update"  style="display: inline-flex;align-items: center;gap: 6px">
                     <span class="material-icons-round">save</span>
                     Update

@@ -2,7 +2,7 @@
 
     <div class="card">
 
-        <div class="mat-card-header header-pink-gradient">
+        <div class="mat-card-header header-primary-gradient">
             <h5>Student Promotion</h5>
             <p>Promote students to the next session/class</p>
         </div>
@@ -48,7 +48,7 @@
                 </div>
 
                 <div class="col-md-12 d-flex justify-content-end">
-                    <button wire:click="filter" class="btn-pink d-flex align-items-center gap-1" type="button" wire:loading.attr="disabled">
+                    <button wire:click="filter" class="btn-primary d-flex align-items-center gap-1" type="button" wire:loading.attr="disabled">
                         <span wire:loading wire:target="filter" class="spinner-border spinner-border-sm"></span>
                         <span class="material-icons-round" style="font-size:16px">filter_alt</span> Filter
                     </button>

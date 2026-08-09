@@ -2,7 +2,7 @@
 
     <div class="card">
 
-        <div class="mat-card-header header-pink-gradient">
+        <div class="mat-card-header header-primary-gradient">
             <h5 id="cardHeaderTitleAllStudents">All Students</h5>
             <p id="cardHeaderSubtitle">Manage students, filter by class and section.</p>
         </div>
@@ -60,7 +60,7 @@
                     <button wire:click="filter"
                             wire:loading.attr="disabled"
                             wire:target="filter"
-                            class="btn-pink w-100 d-flex justify-content-center align-items-center"
+                            class="btn-primary w-100 d-flex justify-content-center align-items-center"
                             type="button">
                         <span wire:loading.remove wire:target="filter">
                             <span class="material-icons-round" style="font-size:16px;vertical-align:middle;margin-right:4px">filter_alt</span> Filter
@@ -81,7 +81,7 @@
                     <div class="card-toolbar-title">
                         <div style="position:relative;display:inline-flex;align-items:center">
                             <span class="material-icons-round" style="position:absolute;left:10px;font-size:17px;color:var(--muted);pointer-events:none">search</span>
-                            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search name, reg no..." style="border:1px solid rgba(0,0,0,.1);border-radius:8px;padding:7px 12px 7px 32px;font-size:.78rem;font-family:inherit;color:var(--dark);outline:none;background:#f8f9fa;width:220px"/>
+                            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search name, reg no..." class="tb-search"/>
                         </div>
                     </div>
 

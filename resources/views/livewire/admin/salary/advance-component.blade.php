@@ -2,7 +2,7 @@
 
     <div class="card">
 
-        <div class="mat-card-header header-pink-gradient">
+        <div class="mat-card-header header-primary-gradient">
             <h5>Salary Advance</h5>
             <p>Issue salary advances to employees and track outstanding balances.</p>
         </div>
@@ -153,7 +153,7 @@
                     </div>
                     <div class="modal-footer border-0">
                         <button type="button" class="btn btn-light" wire:click="$set('showModal', false)">Cancel</button>
-                        <button type="button" class="btn btn-pink" wire:click="save" wire:loading.attr="disabled" wire:target="save">
+                        <button type="button" class="btn btn-primary" wire:click="save" wire:loading.attr="disabled" wire:target="save">
                             <span wire:loading.remove wire:target="save">Issue Advance</span>
                             <span wire:loading wire:target="save">
                                 <span class="material-icons-round" style="font-size:16px;animation:spin .7s linear infinite;vertical-align:middle">sync</span>

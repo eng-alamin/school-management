@@ -2,7 +2,7 @@
     <div class="card">
 
         <!-- Floating Header -->
-        <div class="mat-card-header header-pink-gradient">
+        <div class="mat-card-header header-primary-gradient">
             <h5>
                 Edit Deposit
             </h5>
@@ -150,7 +150,7 @@
         <!-- FORM FOOTER -->
         <div class="form-footer">
 
-            <button class="btn-pink"
+            <button class="btn-primary"
                     type="button"
                     wire:click="update"
                     wire:loading.attr="disabled"

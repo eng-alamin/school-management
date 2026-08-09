@@ -2,7 +2,7 @@
     <div class="card tpl-wizard">
 
         <!-- Floating Header -->
-        <div class="mat-card-header header-pink-gradient">
+        <div class="mat-card-header header-primary-gradient">
             <h5>
                 <span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">
                     workspace_premium
@@ -371,11 +371,11 @@
             @endif
 
             @if($step < $totalSteps)
-                <button class="btn-pink" type="button" wire:click="nextStep">
+                <button class="btn-primary" type="button" wire:click="nextStep">
                     Next <span class="material-icons-round" style="font-size:16px">arrow_forward</span>
                 </button>
             @else
-                <button class="btn-pink" type="button"
+                <button class="btn-primary" type="button"
                         wire:click="update"
                         wire:loading.attr="disabled"
                         wire:target="update">

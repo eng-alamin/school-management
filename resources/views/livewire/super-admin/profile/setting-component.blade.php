@@ -2,7 +2,7 @@
     <div class="card">
 
         <!-- floating header -->
-        <div class="mat-card-header header-pink-gradient">
+        <div class="mat-card-header header-primary-gradient">
             <h5 id="cardHeaderTitleProfileSetting">Profile Setting</h5>
         </div>
 

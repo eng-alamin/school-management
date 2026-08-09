@@ -4,7 +4,7 @@
     <div class="card">
 
         {{-- floating header --}}
-        <div class="mat-card-header header-pink-gradient">
+        <div class="mat-card-header header-primary-gradient">
             <h5 id="cardHeaderTitleAllsections">Feature Control</h5>
             <p id="cardHeaderSubtitle">Manage system feature toggles and configurations.</p>
         </div>

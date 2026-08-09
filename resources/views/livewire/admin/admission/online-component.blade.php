@@ -2,7 +2,7 @@
 
     <div class="card">
 
-        <div class="mat-card-header header-pink-gradient">
+        <div class="mat-card-header header-primary-gradient">
             <h5 id="cardHeaderTitleAllAdmissions">
                 <span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">how_to_reg</span>
                 Online Admissions
@@ -20,7 +20,7 @@
                         <span class="material-icons-round" style="position:absolute;left:10px;font-size:17px;color:var(--muted);pointer-events:none">search</span>
                         <input type="text" wire:model.live.debounce.300ms="search"
                             placeholder="Search name, mobile, guardian..."
-                            style="border:1px solid rgba(0,0,0,.1);border-radius:8px;padding:7px 12px 7px 32px;font-size:.78rem;font-family:inherit;color:var(--dark);outline:none;background:#f8f9fa;width:240px"/>
+                            class="tb-search"/>
                     </div>
                 </div>
 
@@ -297,7 +297,7 @@
 
                 <div class="modal-box-footer">
                     <button type="button" class="btn-outline" wire:click="closeFeeModal">Cancel</button>
-                    <button type="button" class="btn-pink" wire:click="generateInvoiceAndApprove" wire:loading.attr="disabled" wire:target="generateInvoiceAndApprove">
+                    <button type="button" class="btn-primary" wire:click="generateInvoiceAndApprove" wire:loading.attr="disabled" wire:target="generateInvoiceAndApprove">
                         <span wire:loading.remove wire:target="generateInvoiceAndApprove">Confirm &amp; Generate Invoice</span>
                         <span wire:loading wire:target="generateInvoiceAndApprove">Processing...</span>
                     </button>
@@ -386,7 +386,7 @@
 
                 <div class="modal-box-footer">
                     <button type="button" class="btn-outline" wire:click="skipPayment">Skip / Later</button>
-                    <button type="button" class="btn-pink" wire:click="confirmPayment" wire:loading.attr="disabled" wire:target="confirmPayment">
+                    <button type="button" class="btn-primary" wire:click="confirmPayment" wire:loading.attr="disabled" wire:target="confirmPayment">
                         <span wire:loading.remove wire:target="confirmPayment">Confirm Payment</span>
                         <span wire:loading wire:target="confirmPayment">Processing...</span>
                     </button>
@@ -507,7 +507,7 @@
         background: rgba(224,82,82,.06);
         border-radius: 6px;
     }
-    .btn-pink { background: var(--primary, #ef4444); color: #fff; border: none; border-radius: 8px; padding: 8px 18px; font-weight: 600; }
+    .btn-primary { background: var(--primary, #ef4444); color: #fff; border: none; border-radius: 8px; padding: 8px 18px; font-weight: 600; }
     .btn-outline { background: transparent; border: 1px solid var(--border, #e5e7eb); border-radius: 8px; padding: 8px 18px; }
 </style>
 @endpush

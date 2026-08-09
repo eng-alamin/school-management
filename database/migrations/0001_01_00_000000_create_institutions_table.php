@@ -55,14 +55,26 @@ return new class extends Migration
             $table->string('print_logo')->nullable();
             $table->string('report_logo')->nullable();
 
-            // facilities
+            // Facilities & Setup
             $table->json('facilities')->nullable();
             $table->json('setup_progress')->nullable();
             $table->boolean('setup_completed')->default(false);
 
+            // Status
             $table->boolean('status')->default(true);
+
+            // Ministry Verification / Oversight
+            $table->enum('verification_status', ['pending', 'verified', 'rejected', 'suspended'])
+                ->default('pending');
+            $table->foreignId('verified_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamp('verified_at')->nullable();
+            $table->text('verification_note')->nullable();
+
             $table->timestamps();
             $table->softDeletes();
+
+            $table->index(['division', 'district']);
+            $table->index(['verification_status'], 'institutions_verification_status_idx');
         });
     }
 

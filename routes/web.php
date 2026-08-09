@@ -83,6 +83,10 @@ Route::middleware(['auth', 'role:parent'])->group(function () {
 
     // Notice 
     Route::get('parent/notices', \App\Livewire\Parent\Notice\NoticeComponent::class)->name('parent.notices');
+
+    // Grievances
+    Route::get('/grievances/index', \App\Livewire\Guardian\Grievance\IndexComponent::class)->name('guardian.grievances.index');
+    Route::get('/grievances/create', \App\Livewire\Guardian\Grievance\CreateComponent::class)->name('guardian.grievances.create');
 });
 
 // Student
@@ -108,6 +112,11 @@ Route::middleware(['auth', 'role:student'])->group(function () {
     Route::get('student/mailbox/sent', \App\Livewire\Student\Mailbox\SentComponent::class)->name('student.mailbox.sent');
     Route::get('student/mailbox/important', \App\Livewire\Student\Mailbox\ImportantComponent::class)->name('student.mailbox.important');
     Route::get('student/mailbox/trash', \App\Livewire\Student\Mailbox\TrashComponent::class)->name('student.mailbox.trash');
+    
+    // Grievances
+    Route::get('/grievances/index', \App\Livewire\Student\Grievance\IndexComponent::class)->name('student.grievances.index');
+    Route::get('/grievances/create', \App\Livewire\Student\Grievance\CreateComponent::class)->name('student.grievances.create');
+
     // Notification
     Route::get('student/notifications', \App\Livewire\Student\Notifications\Index::class)->name('student.notifications.index');
     // Notice
@@ -154,6 +163,11 @@ Route::middleware(['auth', 'role:teacher', 'billing.check'])->group(function () 
     // Notice
     Route::get('teacher/notices', \App\Livewire\Teacher\Notice\NoticeComponent::class)->name('teacher.notices');
     Route::get('teacher/notifications', \App\Livewire\Teacher\Notifications\Index::class)->name('teacher.notifications.index');
+    
+    // Grievances
+    Route::get('/grievances/index', \App\Livewire\Teacher\Grievance\IndexComponent::class)->name('teacher.grievances.index');
+    Route::get('/grievances/create', \App\Livewire\Teacher\Grievance\CreateComponent::class)->name('teacher.grievances.create');
+
     // Profile
     Route::get('teacher/profile/overview', \App\Livewire\Teacher\Profile\OverviewComponent::class)->name('teacher.profile.overview');
     Route::get('teacher/profile/setting', \App\Livewire\Teacher\Profile\SettingComponent::class)->name('teacher.profile.setting');
@@ -279,13 +293,14 @@ Route::middleware(['auth', 'role:admin', 'billing.check', 'setup.wizard'])->grou
 
     // Student
     Route::get('/student/add', \App\Livewire\Admin\Student\StudentAddComponent::class)->name('admin.student.add');
-    Route::get('/student/payment-collect/{invoice}', \App\Livewire\Admin\Student\StudentPaymentCollectComponent::class)->name('admin.students.payment-collect');
     Route::get('/student/list', \App\Livewire\Admin\Student\StudentListComponent::class)->name('admin.student.list');
     Route::get('/student/{id}/edit', \App\Livewire\Admin\Student\StudentEditComponent::class)->name('admin.student.edit');
-    Route::get('/student/{id}/overview', \App\Livewire\Admin\Student\StudentOverviewComponent::class)->name('admin.student.overview');
-    Route::get('/student/{id}/invoice', \App\Livewire\Admin\Student\StudentInvoiceComponent::class)->name('admin.student.invoice');
-    Route::get('/student/{id}/account', \App\Livewire\Admin\Student\StudentAccountComponent::class)->name('admin.student.account');
-    Route::get('student/{id}/attendance', \App\Livewire\Admin\Student\AttendanceComponent::class)->name('admin.student.attendance');
+    Route::get('/student/{id}/overview', \App\Livewire\Admin\Student\OverviewComponent::class)->name('admin.student.overview');
+    Route::get('/student/{id}/invoice', \App\Livewire\Admin\Student\InvoiceComponent::class)->name('admin.student.invoice');
+    Route::get('/student/payment-collect/{invoice}', \App\Livewire\Admin\Student\PaymentCollectComponent::class)->name('admin.students.payment-collect');
+    Route::get('/student/{id}/account', \App\Livewire\Admin\Student\AccountComponent::class)->name('admin.student.account');
+    Route::get('/student/{id}/attendance', \App\Livewire\Admin\Student\AttendanceComponent::class)->name('admin.student.attendance');
+    Route::get('/student/{id}/enrollment', \App\Livewire\Admin\Student\EnrollmentComponent::class)->name('admin.student.enrollment');
 
     // Academic
     Route::get('/academic/sessions', \App\Livewire\Admin\Academic\SessionComponent::class)->name('admin.academic.sessions');
@@ -298,6 +313,7 @@ Route::middleware(['auth', 'role:admin', 'billing.check', 'setup.wizard'])->grou
     Route::get('/academic/class-schedule/list', \App\Livewire\Admin\Academic\ClassScheduleListComponent::class)->name('admin.academic.class-schedule.list');
     Route::get('/academic/teacher-schedule', \App\Livewire\Admin\Academic\TeacherScheduleComponent::class)->name('admin.academic.teacher-schedule');
     Route::get('/academic/student-promotion', \App\Livewire\Admin\Academic\StudentPromotionComponent::class)->name('admin.academic.student-promotion');
+    Route::get('/academic/student-enrollment', \App\Livewire\Admin\Academic\StudentEnrollmentComponent::class)->name('admin.academic.student-enrollment');
 
     // Employee
     Route::get('/employee/departments', \App\Livewire\Admin\Employee\DepartmentComponent::class)->name('admin.employee.departments');
@@ -433,6 +449,47 @@ Route::middleware(['auth', 'role:admin', 'billing.check'])
         Route::get('/', \App\Livewire\Admin\SetupWizardComponent::class)->name('index');
     });
 
+// Ministry
+Route::middleware(['auth', 'role:ministry'])->prefix('ministry')->name('ministry.')->group(function () {
+    Route::get('/dashboard',\App\Livewire\Ministry\DashboardComponent::class)->name('dashboard');
+
+    // Institution
+    Route::get('/institutions/index', \App\Livewire\Ministry\Institution\IndexComponent::class)->name('institutions.index');
+    Route::get('/institutions/{institution}', \App\Livewire\Ministry\Institution\ShowComponent::class)->name('institutions.show');
+    
+    // Circular
+    Route::get('/circulars/index', \App\Livewire\Ministry\Circular\IndexComponent::class)->name('circulars.index');
+    Route::get('/circulars/create', \App\Livewire\Ministry\Circular\CreateComponent::class)->name('circulars.create');
+    Route::get('/circulars/{circular}', \App\Livewire\Ministry\Circular\ShowComponent::class)->name('circulars.show');
+
+    // Statistics
+    Route::get('/statistics/students', \App\Livewire\Ministry\Statistics\StudentComponent::class)->name('statistics.students');
+    Route::get('/statistics/teachers', \App\Livewire\Ministry\Statistics\TeacherComponent::class)->name('statistics.teachers');
+
+    // Compliance & Inspection
+    Route::get('/compliance/checklist', \App\Livewire\Ministry\Compliance\ChecklistComponent::class)->name('compliance.checklist');
+    Route::get('/compliance/inspections/index', \App\Livewire\Ministry\Compliance\InspectionIndexComponent::class)->name('compliance.inspections.index');
+    Route::get('/compliance/inspections/create', \App\Livewire\Ministry\Compliance\InspectionFormComponent::class)->name('compliance.inspections.create');
+    Route::get('/compliance/inspections/{inspection}', \App\Livewire\Ministry\Compliance\InspectionShowComponent::class)->name('compliance.inspections.show');
+    Route::get('/compliance/violations/index', \App\Livewire\Ministry\Compliance\ViolationIndexComponent::class)->name('compliance.violations.index');
+
+    // Grievances    
+    Route::get('/grievances/index', \App\Livewire\Ministry\Grievance\IndexComponent::class)->name('grievances.index');
+    Route::get('/grievances/{grievance}', \App\Livewire\Ministry\Grievance\ShowComponent::class)->name('grievances.show');
+
+    Route::get('/academic-performance', \App\Livewire\Ministry\Academic\PerformanceComponent::class)->name('academic.performance');
+    Route::get('/ranking', \App\Livewire\Ministry\Ranking\IndexComponent::class)->name('ranking.index');
+    Route::get('/geography/heatmap', \App\Livewire\Ministry\Geography\HeatmapComponent::class)->name('geography.heatmap');
+    Route::get('/reports', \App\Livewire\Ministry\Reports\IndexComponent::class)->name('reports.index');
+    Route::get('/users', \App\Livewire\Ministry\User\IndexComponent::class)->name('users.index');
+    Route::get('/roles', \App\Livewire\Ministry\Role\IndexComponent::class)->name('roles.index');
+
+    // Profile
+    Route::get('/profile/overview', \App\Livewire\Ministry\Profile\OverviewComponent::class)->name('profile.overview');
+    Route::get('/profile/setting', \App\Livewire\Ministry\Profile\SettingComponent::class)->name('profile.setting');
+    Route::get('/profile/activitylog', \App\Livewire\Ministry\Profile\ActivityLogComponent::class)->name('profile.activitylog');
+    Route::get('/profile/loginlog', \App\Livewire\Ministry\Profile\LoginlogComponent::class)->name('profile.loginlog');
+});
 
 // Super Admin
 Route::middleware(['auth', 'role:super_admin'])->prefix('superadmin')->name('superadmin.')->group(function () {

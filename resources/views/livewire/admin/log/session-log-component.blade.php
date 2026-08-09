@@ -2,7 +2,7 @@
 <div>
     <div class="card">
 
-        <div class="mat-card-header header-pink-gradient">
+        <div class="mat-card-header header-primary-gradient">
             <h5 id="cardHeaderTitleAllsections">Active Sessions</h5>
             <p id="cardHeaderSubtitle">Users currently active in the last 5 minutes.</p>
         </div>

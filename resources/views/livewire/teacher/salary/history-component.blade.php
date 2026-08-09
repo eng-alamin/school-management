@@ -2,7 +2,7 @@
     <div class="card">
 
         {{-- ── Floating Header ── --}}
-        <div class="mat-card-header header-pink-gradient">
+        <div class="mat-card-header header-primary-gradient">
             <h5>Salary History</h5>
             <p>View your monthly salary payment records</p>
         </div>

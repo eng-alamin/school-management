@@ -7,13 +7,13 @@
             box-shadow: 0 4px 20px rgba(0,0,0,.08);
         }
 
-        .header-pink-gradient {
+        .header-primary-gradient {
             /* background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%); */
             color: #fff;
             padding: 32px 28px;
         }
 
-        .header-pink-gradient h4 {
+        .header-primary-gradient h4 {
             font-size: 1.4rem;
         }
 
@@ -157,7 +157,7 @@
                 <div class="setup-wizard-card bg-white mb-4">
 
                     {{-- HEADER --}}
-                    <div class="header-pink-gradient">
+                    <div class="header-primary-gradient">
                         <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
                             <div>
                                 <h4 class="mb-1 fw-bold" data-en="Setup Checklist" data-bn="সেটআপ চেকলিস্ট"></h4>

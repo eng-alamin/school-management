@@ -12,7 +12,7 @@
     @endpush
 
     <div class="mat-card">
-        <div class="mat-card-header header-pink-gradient d-flex justify-content-between align-items-center">
+        <div class="mat-card-header header-primary-gradient d-flex justify-content-between align-items-center">
             <h5 class="mb-0"><span class="material-icons-round align-middle">fingerprint</span> Biometric Devices (All Institutions)</h5>
             <button class="btn btn-light btn-sm" wire:click="openCreateModal">
                 <span class="material-icons-round align-middle" style="font-size:18px;">add</span> Add Device
@@ -133,7 +133,7 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <form wire:submit="save">
-                        <div class="modal-header header-pink-gradient">
+                        <div class="modal-header header-primary-gradient">
                             <h5 class="modal-title">{{ $editingId ? 'Edit Device' : 'Add Device' }}</h5>
                             <button type="button" class="btn-close" wire:click="$set('showFormModal', false)"></button>
                         </div>
@@ -194,7 +194,7 @@
         <div class="modal d-block" tabindex="-1" style="background: rgba(0,0,0,.5);">
             <div class="modal-dialog">
                 <div class="modal-content">
-                    <div class="modal-header header-pink-gradient">
+                    <div class="modal-header header-primary-gradient">
                         <h5 class="modal-title">{{ $viewingDevice->device_name }}</h5>
                         <button type="button" class="btn-close" wire:click="$set('showViewModal', false)"></button>
                     </div>
@@ -225,7 +225,7 @@
         <div class="modal d-block" tabindex="-1" style="background: rgba(0,0,0,.5);">
             <div class="modal-dialog">
                 <div class="modal-content">
-                    <div class="modal-header header-pink-gradient">
+                    <div class="modal-header header-primary-gradient">
                         <h5 class="modal-title">Confirm Delete</h5>
                         <button type="button" class="btn-close" wire:click="$set('showDeleteModal', false)"></button>
                     </div>

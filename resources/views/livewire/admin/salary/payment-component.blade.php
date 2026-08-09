@@ -12,7 +12,7 @@
     </div>
 
     {{-- ── Floating Header ── --}}
-    <div class="mat-card-header header-pink-gradient">
+    <div class="mat-card-header header-primary-gradient">
         <h5> Payroll</h5>
         <p>Process and manage employee salary payments by role and month</p>
     </div>
@@ -58,7 +58,7 @@
                 <button wire:click="filter"
                         wire:loading.attr="disabled"
                         wire:target="filter"
-                        class="btn-pink d-flex align-items-center gap-1"
+                        class="btn-primary d-flex align-items-center gap-1"
                         type="button">
                     <span wire:loading.remove wire:target="filter">
                         <span class="material-icons-round" style="font-size:16px;vertical-align:middle;margin-right:4px">filter_alt</span>

@@ -60,8 +60,8 @@
 
     <!-- Profile Tabs -->
     <ul class="nav profile-tabs border-bottom mt-4 flex-nowrap overflow-auto">
-        <li class="nav-item"><a class="nav-link {{ request()->routeIs('superadmin.profile.overview') ? 'active' : '' }}" href="{{ route('superadmin.profile.overview') }}">Overview</a></li>
-        <li class="nav-item"><a class="nav-link {{ request()->routeIs('superadmin.profile.setting') ? 'active' : '' }}" href="{{ route('superadmin.profile.setting') }}">Settings</a></li>
-        <li class="nav-item"><a class="nav-link {{ request()->routeIs('superadmin.profile.loginlog') ? 'active' : '' }}" href="{{ route('superadmin.profile.loginlog') }}">Login Logs </a></li>
+        <li class="nav-item"><a class="nav-link {{ request()->routeIs('ministry.profile.overview') ? 'active' : '' }}" href="{{ route('ministry.profile.overview') }}">Overview</a></li>
+        <li class="nav-item"><a class="nav-link {{ request()->routeIs('ministry.profile.setting') ? 'active' : '' }}" href="{{ route('ministry.profile.setting') }}">Settings</a></li>
+        <li class="nav-item"><a class="nav-link {{ request()->routeIs('ministry.profile.loginlog') ? 'active' : '' }}" href="{{ route('ministry.profile.loginlog') }}">Login Logs </a></li>
     </ul>
 </div>

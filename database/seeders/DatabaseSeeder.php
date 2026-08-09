@@ -11,11 +11,13 @@ class DatabaseSeeder extends Seeder
     use WithoutModelEvents;
 
     /**
-     * Seed the application's database.
+     * Seed the application's database. 
      */
     public function run(): void
     {
-        $this->call(SuperAdminSeeder::class);
         $this->call(PricingRateSeeder::class);
+        $this->call(MinistryRolePermissionSeeder::class);
+        $this->call(UserSeeder::class);
+        // php artisan db:seed --class=MinistryRolePermissionSeeder
     }
 }

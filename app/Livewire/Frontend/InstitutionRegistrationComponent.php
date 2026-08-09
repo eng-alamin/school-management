@@ -61,6 +61,27 @@ class InstitutionRegistrationComponent extends Component
         session()->flash('info', 'Ager fill kora tothyo restore kora hoyeche. Password ta abar diye continue korun.');
     }
 
+    /**
+     * Livewire computed property — re-evaluated automatically whenever
+     * institution_division changes. Used in Blade as $this->districts.
+     * Source of truth lives on the Institution model.
+     */
+    public function getDistrictsProperty(): array
+    {
+        return Institution::districtsFor($this->institution_division);
+    }
+
+    /**
+     * Livewire lifecycle hook — fires automatically whenever
+     * institution_division is updated via wire:model.live.
+     * Resets the district selection so a stale district from a
+     * previously selected division can never be submitted.
+     */
+    public function updatedInstitutionDivision(): void
+    {
+        $this->institution_district = '';
+    }
+
     public function stepOneValidation(): void
     {
         $this->validate([
@@ -68,7 +89,7 @@ class InstitutionRegistrationComponent extends Component
             'institution_type'     => 'required|string',
             'institution_medium'   => ['required', 'string', Rule::in(Institution::MEDIUMS)],
             'institution_division' => ['required', 'string', Rule::in(array_keys(Institution::DIVISIONS))],
-            'institution_district' => 'required|string|max:100',
+            'institution_district' => ['required', 'string', Rule::in($this->districts)],
             'phone'                => 'required|string|max:30',
             'email'                => 'required|email|max:255',
             'logo'                 => 'nullable|image|max:2048',
@@ -177,7 +198,7 @@ class InstitutionRegistrationComponent extends Component
                 'type'           => 'registration',
                 'invoice_no'     => 'REG_' . strtoupper(uniqid()),
                 'total_amount'   => (float) setting('register_fee', 0),
-                'status'         => 'free', 
+                'status'         => 'free',
             ]);
 
             Auth::login($user);

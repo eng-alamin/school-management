@@ -633,7 +633,7 @@
 
     .dash-view-all {
         font-size: 12px;
-        color: var(--pink);
+        color: var(--primary);
         font-weight: 500;
         text-decoration: none;
     }
@@ -676,7 +676,7 @@
     }
 
     .dash-quick-action:hover {
-        background: var(--pink-light);
+        background: var(--primary-light);
         transform: translateY(-2px);
     }
 
@@ -718,7 +718,7 @@
     }
 
     .dash-notice-row-btn:hover {
-        background: var(--pink-light, #fce7f3);
+        background: var(--primary-light, #fce7f3);
     }
 
     .inv-badge {
@@ -752,7 +752,7 @@
         width: 38px;
         height: 38px;
         border-radius: 50%;
-        background: linear-gradient(135deg, var(--pink), #7ba3ff);
+        background: linear-gradient(135deg, var(--primary), #7ba3ff);
         color: #fff;
         font-size: 15px;
         font-weight: 700;
@@ -771,77 +771,67 @@
     .wizard-setup {
         position: relative;
         overflow: hidden;
-        background: linear-gradient(135deg, #000000 0%, #525057 100%);
+        background: linear-gradient(135deg, var(--primary-ink) 0%, var(--primary) 100%);
         color: #fff;
         padding: 24px 26px;
-        border-radius: var(--radius-card, 16px);
-        box-shadow: 0 8px 24px rgba(139, 92, 246, .25);
+        border-radius: var(--radius-card);
+        box-shadow: var(--shadow-lg);
         margin-bottom: 20px;
     }
-
     .wizard-setup-glow {
         position: absolute;
         top: -60px;
         right: -60px;
-        width: 180px;
-        height: 180px;
-        background: rgba(255, 255, 255, .12);
+        width: 200px;
+        height: 200px;
+        background: radial-gradient(circle, rgba(201, 165, 103, 0.35), transparent 70%);
         border-radius: 50%;
         pointer-events: none;
     }
-
-    .wizard-setup h4 {
-        font-size: 1.15rem;
-        letter-spacing: -.01em;
-    }
-
+    .wizard-setup h4 { font-size: 1.15rem; letter-spacing: -.01em; color: #fff; }
     .wizard-setup-icon {
         width: 42px;
         height: 42px;
         min-width: 42px;
         border-radius: 12px;
-        background: rgba(255, 255, 255, .18);
+        background: rgba(255, 255, 255, .14);
         display: flex;
         align-items: center;
         justify-content: center;
         backdrop-filter: blur(4px);
     }
-
-    .wizard-setup-icon .material-icons-round {
-        font-size: 22px;
-        color: #fff;
-    }
-
+    .wizard-setup-icon .material-icons-round { font-size: 22px; color: var(--secondary); }
     .wizard-setup-btn {
-        color: #8b5cf6 !important;
+        background: var(--secondary) !important;
+        color: var(--primary-ink) !important;
+        font-weight: 700;
         border-radius: 10px;
         padding: 8px 16px;
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        transition: transform .15s, box-shadow .15s;
-        box-shadow: 0 2px 8px rgba(0,0,0,.12);
+        border: none;
+        transition: transform 0.15s, box-shadow 0.15s, background .2s;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, .18);
     }
-
     .wizard-setup-btn:hover {
+        background: #fff !important;
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0,0,0,.18);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, .22);
     }
-
     .wizard-progress-track {
         height: 8px;
         border-radius: 20px;
-        background: rgba(255,255,255,.28);
+        background: rgba(255, 255, 255, .22);
         overflow: hidden;
         margin-top: 20px;
     }
-
     .wizard-progress-fill {
         height: 100%;
         border-radius: 20px;
-        background: #fff;
-        box-shadow: 0 0 8px rgba(255,255,255,.6);
-        transition: width .5s ease;
+        background: linear-gradient(90deg, var(--secondary), #f1d9a5);
+        box-shadow: 0 0 8px rgba(201, 165, 103, .6);
+        transition: width .6s ease;
     }
 
     /* ── Responsive tweaks ───────────────────────────────────────── */

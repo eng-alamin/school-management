@@ -339,7 +339,7 @@
 
     .dash-view-all {
         font-size: 12px;
-        color: var(--pink);
+        color: var(--primary);
         font-weight: 500;
         text-decoration: none;
     }
@@ -363,7 +363,7 @@
         width: 36px;
         height: 36px;
         border-radius: 10px;
-        background: linear-gradient(135deg, var(--pink), #7ba3ff);
+        background: linear-gradient(135deg, var(--primary), #7ba3ff);
         color: #fff;
         font-size: 14px;
         font-weight: 700;

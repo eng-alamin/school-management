@@ -1,6 +1,5 @@
 .agents
 .kilo
-reports
 .env
 .env.example
 guide.php

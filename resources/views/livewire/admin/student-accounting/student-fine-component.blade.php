@@ -2,7 +2,7 @@
 
     <div class="card">
 
-        <div class="mat-card-header header-pink-gradient">
+        <div class="mat-card-header header-primary-gradient">
             <h5 id="cardHeaderTitleAllsections">Student Fine</h5>
             <p id="cardHeaderSubtitle">Add Student Fine for any reason including Absent, Indiscipline.</p>
         </div>

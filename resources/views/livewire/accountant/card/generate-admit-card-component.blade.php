@@ -11,7 +11,7 @@
         @endif
 
         <!-- floating header -->
-        <div class="mat-card-header header-pink-gradient">
+        <div class="mat-card-header header-primary-gradient">
             <h5 id="cardHeaderTitleAllsections">Admit Card Generate</h5>
             <p id="cardHeaderSubtitle">A lightweight, extendable, dependency-free javascript HTML table plugin.</p>
         </div>
@@ -75,7 +75,7 @@
             </div>
 
             <div class="col-md-12 text-center">
-                <button class="btn-pink w-100 d-flex justify-content-center align-items-center"
+                <button class="btn-primary w-100 d-flex justify-content-center align-items-center"
                         wire:click="applyFilter"
                         wire:loading.attr="disabled">
                     <span wire:loading wire:target="applyFilter" class="spinner-border spinner-border-sm"></span>

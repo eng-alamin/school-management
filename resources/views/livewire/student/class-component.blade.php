@@ -1,7 +1,7 @@
 <div>
     <div class="card">
 
-        <div class="mat-card-header header-pink-gradient">
+        <div class="mat-card-header header-primary-gradient">
             <h5>Class Schedule</h5>
             <p>Your weekly class timetable.</p>
         </div>

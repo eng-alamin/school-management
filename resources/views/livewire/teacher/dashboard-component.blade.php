@@ -204,7 +204,7 @@
             @empty
                 <p class="text-center text-secondary py-2 mb-0" style="font-size:13px;">
                     No leave applications yet.
-                    <a href="#" class="text-decoration-none" style="color:var(--pink);">Apply now</a>
+                    <a href="#" class="text-decoration-none" style="color:var(--primary);">Apply now</a>
                 </p>
             @endforelse
         </div>
@@ -376,7 +376,7 @@
         display: flex; align-items: center; gap: 6px;
         margin-bottom: 12px;
     }
-    .dash-view-all { font-size: 12px; color: var(--pink); font-weight: 500; text-decoration: none; }
+    .dash-view-all { font-size: 12px; color: var(--primary); font-weight: 500; text-decoration: none; }
 
     /* ── Leave Rows ──────────────────────────────────────────────── */
     .dash-leave-row {
@@ -411,7 +411,7 @@
     }
     .dash-unread-dot {
         width: 8px; height: 8px; border-radius: 50%;
-        background: var(--pink); flex-shrink: 0;
+        background: var(--primary); flex-shrink: 0;
     }
 
     /* ── Activity ────────────────────────────────────────────────── */
@@ -434,7 +434,7 @@
         border-radius: 12px; background: var(--section-bg);
         transition: background .15s, transform .15s;
     }
-    .dash-quick-action:hover { background: var(--pink-light); transform: translateY(-2px); }
+    .dash-quick-action:hover { background: var(--primary-light); transform: translateY(-2px); }
     .dash-quick-icon {
         width: 48px; height: 48px; border-radius: 14px;
         display: flex; align-items: center; justify-content: center;
@@ -453,7 +453,7 @@
     .dash-birthday-row:last-child { border-bottom: none; padding-bottom: 0; }
     .dash-birthday-avatar {
         width: 38px; height: 38px; border-radius: 50%;
-        background: linear-gradient(135deg, var(--pink), #7ba3ff);
+        background: linear-gradient(135deg, var(--primary), #7ba3ff);
         color: #fff; font-size: 15px; font-weight: 700;
         display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }

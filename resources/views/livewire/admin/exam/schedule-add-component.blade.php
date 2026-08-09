@@ -1,7 +1,7 @@
 <div>
     <div class="card">
 
-        <div class="mat-card-header header-pink-gradient">
+        <div class="mat-card-header header-primary-gradient">
             <h5>Exam Schedule</h5>
             <p>Create or update the date, time and room for each subject.</p>
         </div>
@@ -40,7 +40,7 @@
                     <button wire:click="filter"
                             wire:loading.attr="disabled"
                             wire:target="filter"
-                            class="btn-pink w-100 d-flex justify-content-center align-items-center"
+                            class="btn-primary w-100 d-flex justify-content-center align-items-center"
                             type="button">
                         <span wire:loading.remove wire:target="filter">
                             <span class="material-icons-round" style="font-size:16px;vertical-align:middle;margin-right:4px">filter_alt</span> Filter
@@ -151,7 +151,7 @@
             <button class="btn-outline" type="button" wire:click="resetForm">
                 <span class="material-icons-round" style="font-size:16px">refresh</span> Reset
             </button>
-            <button class="btn-pink" type="button"
+            <button class="btn-primary" type="button"
                     wire:click="save"
                     wire:loading.attr="disabled"
                     wire:target="save">

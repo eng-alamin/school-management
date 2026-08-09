@@ -2,7 +2,7 @@
     <div class="card">
 
       <!-- floating header -->
-      <div class="mat-card-header header-pink-gradient">
+      <div class="mat-card-header header-primary-gradient">
         <h5><span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">how_to_reg</span>Student Admission</h5>
         <p>Create new student admission record</p>
       </div>
@@ -51,7 +51,7 @@
                 <div class="col-md-3">
                     <div class="input-group input-group-outline">
                         <label class="form-label">Roll (Auto)</label>
-                        <input type="text" wire:model="roll_no" class="form-control" readonly style="background:#f5f5f5;cursor:not-allowed">
+                        <input type="text" wire:model="roll_no" class="form-control" readonly style="cursor:not-allowed">
                         @error('roll_no') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
                 </div>
@@ -414,7 +414,7 @@
                 <span class="material-icons-round" style="font-size:16px">refresh</span> Reset
             </button>
 
-            <button class="btn-pink" type="button" wire:click="openFeeConfirmModal" wire:loading.attr="disabled" wire:target="openFeeConfirmModal,save">
+            <button class="btn-primary" type="button" wire:click="openFeeConfirmModal" wire:loading.attr="disabled" wire:target="openFeeConfirmModal,save">
                 <span wire:loading.remove wire:target="openFeeConfirmModal,save" style="display: inline-flex;align-items: center;gap: 6px">
                     <span class="material-icons-round">save</span> Save
                 </span>
@@ -463,7 +463,7 @@
 
                 <div class="modal-box-footer">
                     <button type="button" class="btn-outline" wire:click="closeFeeModal">Cancel</button>
-                    <button type="button" class="btn-pink" wire:click="save" wire:loading.attr="disabled" wire:target="save">
+                    <button type="button" class="btn-primary" wire:click="save" wire:loading.attr="disabled" wire:target="save">
                         <span wire:loading.remove wire:target="save">Confirm &amp; Save</span>
                         <span wire:loading wire:target="save">Saving...</span>
                     </button>

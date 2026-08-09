@@ -2,7 +2,7 @@
     <div class="card">
 
         {{-- Floating Header --}}
-        <div class="mat-card-header header-pink-gradient">
+        <div class="mat-card-header header-primary-gradient">
             <h5>Fee Invoices</h5>
             <p>View and manage student fee invoices by class and section</p>
         </div>

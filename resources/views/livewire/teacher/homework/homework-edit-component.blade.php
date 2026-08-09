@@ -2,7 +2,7 @@
     <div class="card"> 
 
         <!-- Floating Header -->
-        <div class="mat-card-header header-pink-gradient">
+        <div class="mat-card-header header-primary-gradient">
             <h5>
                 Edit Homework
             </h5>
@@ -179,7 +179,7 @@
                 Back
             </button>
 
-            <button class="btn-pink" type="button"
+            <button class="btn-primary" type="button"
                     wire:click="update"
                     wire:loading.attr="disabled"
                     wire:target="update">

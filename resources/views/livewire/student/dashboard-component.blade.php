@@ -258,7 +258,7 @@
         height: 60px;
         border-radius: 50%;
         overflow: hidden;
-        background: linear-gradient(135deg, var(--pink), #7ba3ff);
+        background: linear-gradient(135deg, var(--primary), #7ba3ff);
         color: #fff;
         display: flex;
         align-items: center;
@@ -341,7 +341,7 @@
 
     .dash-view-all {
         font-size: 12px;
-        color: var(--pink);
+        color: var(--primary);
         font-weight: 500;
         text-decoration: none;
     }
@@ -387,7 +387,7 @@
     }
 
     .dash-quick-action:hover {
-        background: var(--pink-light);
+        background: var(--primary-light);
         transform: translateY(-2px);
     }
 

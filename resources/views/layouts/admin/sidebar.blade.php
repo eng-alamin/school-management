@@ -84,7 +84,7 @@
       <li class="nav1-item">
         <div class="nav1-link {{ Route::is('admin.student.list', 'admin.student.edit') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
           <span class="material-icons-round nav-icon">school</span>
-          <span class="nav-label" id="nav-admission">Students</span>
+          <span class="nav-label" id="nav-students">Students</span>
           <span class="material-icons-round nav-arrow">expand_more</span>
         </div>
         <div class="nav2-collapse {{ Route::is('admin.student.list', 'admin.student.edit') == true ? 'show' : '' }}">
@@ -130,6 +130,7 @@
             <li class="nav2-item"><a href="{{route('admin.academic.class-schedule.list') }}" class="nav2-link {{ str_contains(request()->url(), 'academic/class-schedule') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-class-schedule">Class Schedule</span></a></li>
             <li class="nav2-item"><a href="{{route('admin.academic.teacher-schedule') }}" class="nav2-link {{ str_contains(request()->url(), 'academic/teacher-schedule') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-teacher-schedule">Teacher Schedule</span></a></li>
             <li class="nav2-item"><a href="{{route('admin.academic.student-promotion') }}" class="nav2-link {{ str_contains(request()->url(), 'academic/student-promotion') == true ? 'active' : '' }}"><span class="nav2-icon">S</span><span class="nav2-label" id="nav-student-promotion">Student Promotion</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.academic.student-enrollment') }}" class="nav2-link {{ str_contains(request()->url(), 'academic/student-enrollment') == true ? 'active' : '' }}"><span class="nav2-icon">S</span><span class="nav2-label" id="nav-student-enrollment">Student Enrollment</span></a></li>
           </ul>
         </div>
       </li>
@@ -201,7 +202,7 @@
             <li class="nav2-item"><a href="{{route('admin.student-accounting.fee.types') }}" class="nav2-link {{ Route::is('admin.student-accounting.fee.types') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-fees-type">Fees Type</span></a></li>
             <li class="nav2-item"><a href="{{route('admin.student-accounting.fee.setups') }}" class="nav2-link {{ Route::is('admin.student-accounting.fee.setups') == true ? 'active' : '' }}"><span class="nav2-icon">S</span><span class="nav2-label" id="nav-fees-setup">Fees Setup</span></a></li>
             <li class="nav2-item"><a href="{{route('admin.student-accounting.fee.fines') }}" class="nav2-link {{ Route::is('admin.student-accounting.fee.fines') == true ? 'active' : '' }}"><span class="nav2-icon">S</span><span class="nav2-label" id="nav-fine-setup">Fine Setup</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.student-accounting.student.fines') }}" class="nav2-link {{ Route::is('admin.student-accounting.student.fines') == true ? 'active' : '' }}"><span class="nav2-icon">F</span><span class="nav2-label" id="nav-student-list">Student Fine</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.student-accounting.student.fines') }}" class="nav2-link {{ Route::is('admin.student-accounting.student.fines') == true ? 'active' : '' }}"><span class="nav2-icon">F</span><span class="nav2-label" id="nav-student-fine">Student Fine</span></a></li>
             <li class="nav2-item"><a href="{{route('admin.student-accounting.fee.invoices') }}" class="nav2-link {{ Route::is('admin.student-accounting.fee.invoices') == true ? 'active' : '' }}"><span class="nav2-icon">I</span><span class="nav2-label" id="nav-fees-pay-invoice">Fees Pay / Invoice</span></a></li>
           </ul>
         </div>
@@ -334,7 +335,7 @@
       <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), 'activity-logs') || str_contains(request()->url(), 'session-logs') || str_contains(request()->url(), 'login-logs') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
           <span class="material-icons-round nav-icon">security</span>
-          <span class="nav-label" id="nav-schools">Audit & Security Logs</span>
+          <span class="nav-label" id="nav-audit-security">Audit & Security Logs</span>
           <span class="material-icons-round nav-arrow">expand_more</span>
         </div>
         <div class="nav2-collapse {{ str_contains(request()->url(), 'activity-logs') || str_contains(request()->url(), 'session-logs') || str_contains(request()->url(), 'login-logs') == true ? 'show' : '' }}">

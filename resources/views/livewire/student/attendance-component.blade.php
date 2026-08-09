@@ -2,7 +2,7 @@
     <div class="card att-card">
 
         {{-- Floating Header --}}
-        <div class="mat-card-header header-pink-gradient">
+        <div class="mat-card-header header-primary-gradient">
             <h5>My Attendance</h5>
             <p>View your attendance record</p>
         </div>

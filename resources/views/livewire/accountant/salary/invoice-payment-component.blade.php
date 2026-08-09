@@ -177,7 +177,7 @@
             <span class="material-icons-round" style="font-size:16px">arrow_back</span>
             Back
         </a>
-        <button onclick="printPayslip()" class="btn-pink d-inline-flex align-items-center gap-1">
+        <button onclick="printPayslip()" class="btn-primary d-inline-flex align-items-center gap-1">
             <span class="material-icons-round" style="font-size:16px;vertical-align:middle">print</span>
             Print Payslip
         </button>

@@ -2,7 +2,7 @@
     <div class="card">
 
         <!-- Floating Header -->
-        <div class="mat-card-header header-pink-gradient">
+        <div class="mat-card-header header-primary-gradient">
             <h5>
                 Add Deposit
             </h5>
@@ -142,7 +142,7 @@
                 Reset
             </button>
 
-            <button class="btn-pink"
+            <button class="btn-primary"
                     type="button"
                     wire:click="save"
                     wire:loading.attr="disabled"

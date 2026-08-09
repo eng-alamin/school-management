@@ -4,7 +4,7 @@
     <div class="card">
 
         <!-- floating header -->
-        <div class="mat-card-header header-pink-gradient">
+        <div class="mat-card-header header-primary-gradient">
             <h5 id="cardHeaderTitleAllsections">Attendance Report</h5>
             <p id="cardHeaderSubtitle">Student ও Employee attendance (biometric + manual) একসাথে দেখুন।</p>
         </div>

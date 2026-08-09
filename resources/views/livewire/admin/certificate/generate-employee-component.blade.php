@@ -3,7 +3,7 @@
     <div class="card no-print">
 
         <!-- floating header -->
-        <div class="mat-card-header header-pink-gradient">
+        <div class="mat-card-header header-primary-gradient">
             <h5>Employee Certificate Generate</h5>
             <p>Select role and template, then generate certificates for employees.</p>
         </div>
@@ -38,7 +38,7 @@
             </div>
 
             <div class="col-md-12 text-center">
-                <button class="btn-pink w-100 d-flex justify-content-center align-items-center"
+                <button class="btn-primary w-100 d-flex justify-content-center align-items-center"
                         wire:click="applyFilter"
                         wire:loading.attr="disabled">
                     <span wire:loading wire:target="applyFilter"

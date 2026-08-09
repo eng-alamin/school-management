@@ -4,7 +4,7 @@
 
     <div class="card">
 
-        <div class="mat-card-header header-pink-gradient">
+        <div class="mat-card-header header-primary-gradient">
             <h5 id="emp-add-header-title">Employee Registration</h5>
             <p id="emp-add-header-subtitle">Create new employee record</p>
         </div>
@@ -277,7 +277,7 @@
                 Reset
             </button>
 
-            <button class="btn-pink" type="button" wire:click="save" wire:loading.attr="disabled" wire:target="save">
+            <button class="btn-primary" type="button" wire:click="save" wire:loading.attr="disabled" wire:target="save">
                 <span wire:loading.remove wire:target="save" style="display: inline-flex;align-items: center;gap: 6px">
                     <span class="material-icons-round">save</span>
                     Save

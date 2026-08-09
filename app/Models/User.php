@@ -10,11 +10,12 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, HasApiTokens, SoftDeletes;
+    use HasFactory, Notifiable, HasApiTokens, SoftDeletes, HasRoles;
 
     // Role constants — magic string এর বদলে constant ব্যবহার করো
     const ROLE_ADMIN       = 'admin';
@@ -33,6 +34,7 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'institution_id',
+        'branch_id',
         'role',
         'name',
         'username',
@@ -73,6 +75,21 @@ class User extends Authenticatable
         ];
     }
 
+    // কোনো user soft-delete করলে তার username/phone/email ভবিষ্যতে অন্য কেউ ব্যবহার করতে পারবে না
+    protected static function booted(): void
+    {
+        static::deleting(function (User $user) {
+            if (!$user->isForceDeleting()) {
+                $suffix = '_deleted_' . now()->timestamp;
+                $user->update([
+                    'username' => $user->username ? $user->username . $suffix : null,
+                    'phone'    => $user->phone ? $user->phone . $suffix : null,
+                    'email'    => $user->email ? $user->email . $suffix : null,
+                ]);
+            }
+        });
+    }
+
     // =====================
     // Relationships
     // =====================
@@ -80,6 +97,11 @@ class User extends Authenticatable
     public function institution()
     {
         return $this->belongsTo(Institution::class);
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
     }
 
     public function student()
@@ -98,7 +120,9 @@ class User extends Authenticatable
     }
 
     // =====================
-    // Role Helpers
+    // Role Helpers (এই enum column ভিত্তিক helper গুলো panel/guard নির্ধারণ করে —
+    // অপরিবর্তিত রাখা হয়েছে। Ministry Panel-এর ভিতরের granular permission
+    // এখন থেকে Spatie HasRoles trait ($this->hasRole(), $this->can()) দিয়ে হবে)
     // =====================
 
     public function isAdmin(): bool

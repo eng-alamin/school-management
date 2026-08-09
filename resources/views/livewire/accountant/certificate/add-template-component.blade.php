@@ -1,7 +1,7 @@
 <div class="mat-card" style="padding-top:28px">
 
     <!-- Floating Header -->
-    <div class="mat-card-header header-pink-gradient">
+    <div class="mat-card-header header-primary-gradient">
         <h5>
             <span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">
                 workspace_premium
@@ -235,7 +235,7 @@
         <button class="btn-outline" type="button" wire:click="resetForm">
             <span class="material-icons-round" style="font-size:16px">refresh</span> Reset
         </button>
-        <button class="btn-pink" type="button"
+        <button class="btn-primary" type="button"
                 wire:click="save"
                 wire:loading.attr="disabled"
                 wire:target="save">

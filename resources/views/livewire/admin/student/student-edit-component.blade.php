@@ -2,7 +2,7 @@
     <div class="card">
 
         <!-- Floating Header -->
-        <div class="mat-card-header header-pink-gradient">
+        <div class="mat-card-header header-primary-gradient">
             <h5>Edit Student</h5>
             <p>Update student information</p>
         </div>
@@ -74,7 +74,7 @@
                 @else
                     <div class="input-group input-group-outline">
                         <label class="form-label">Section</label>
-                        <input type="text" class="form-control" value="N/A — this class has no sections" disabled style="background:#f5f5f5;cursor:not-allowed">
+                        <input type="text" class="form-control" value="N/A — this class has no sections" disabled style="cursor:not-allowed">
                     </div>
                 @endif
             </div>
@@ -409,7 +409,7 @@
                 Back
             </button>
 
-            <button class="btn-pink" type="button" wire:click="update" wire:loading.attr="disabled" wire:target="update">
+            <button class="btn-primary" type="button" wire:click="update" wire:loading.attr="disabled" wire:target="update">
                 <span wire:loading.remove wire:target="update" style="display: inline-flex;align-items: center;gap: 6px">
                     <span class="material-icons-round">update</span> Update
                 </span>

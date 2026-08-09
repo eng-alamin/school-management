@@ -4,7 +4,7 @@
     <div class="card">
 
         <!-- floating header -->
-        <div class="mat-card-header header-pink-gradient">
+        <div class="mat-card-header header-primary-gradient">
             <h5 id="cardHeaderTitleAllsections">Manage Invoices</h5>
             <p id="cardHeaderSubtitle">Track school billing, payments, and apply discounts.</p>
         </div>

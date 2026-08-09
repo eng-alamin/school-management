@@ -79,5 +79,6 @@
         <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.student.invoice') ? 'active' : '' }}" href="{{ route('admin.student.invoice', ['id' => $student->id]) }}">Invoice</a></li>
         <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.student.account') ? 'active' : '' }}"href="{{ route('admin.student.account', ['id' => $student->id]) }}">Account</a></li>
         <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.student.attendance') ? 'active' : '' }}" href="{{ route('admin.student.attendance', ['id' => $student->id]) }}">Attendance</a></li>
+        <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.student.enrollment') ? 'active' : '' }}" href="{{ route('admin.student.enrollment', ['id' => $student->id]) }}">Enrollment</a></li>
     </ul>
 </div>

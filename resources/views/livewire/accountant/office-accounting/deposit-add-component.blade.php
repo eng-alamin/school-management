@@ -1,7 +1,7 @@
 <div class="mat-card" style="padding-top:28px">
 
     <!-- Floating Header -->
-    <div class="mat-card-header header-pink-gradient">
+    <div class="mat-card-header header-primary-gradient">
         <h5>
             <span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">
                 account_balance_wallet
@@ -144,7 +144,7 @@
             Reset
         </button>
 
-        <button class="btn-pink"
+        <button class="btn-primary"
                 type="button"
                 wire:click="save"
                 wire:loading.attr="disabled"

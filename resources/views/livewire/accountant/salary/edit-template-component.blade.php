@@ -1,7 +1,7 @@
 <div class="mat-card" style="padding-top:28px">
 
     <!-- Floating Header -->
-    <div class="mat-card-header header-pink-gradient">
+    <div class="mat-card-header header-primary-gradient">
         <h5>
             <span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">
                 edit
@@ -113,7 +113,7 @@
 
                     <button type="button"
                             wire:click="addAllowanceRow"
-                            class="btn-pink mt-2"
+                            class="btn-primary mt-2"
                             style="font-size:.78rem;padding:6px 14px">
                         <span class="material-icons-round" style="font-size:16px">add_circle</span>
                         Add Rows
@@ -168,7 +168,7 @@
 
                     <button type="button"
                             wire:click="addDeductionRow"
-                            class="btn-pink mt-2"
+                            class="btn-primary mt-2"
                             style="font-size:.78rem;padding:6px 14px">
                         <span class="material-icons-round" style="font-size:16px">add_circle</span>
                         Add Rows
@@ -224,7 +224,7 @@
             Back
         </a>
 
-        <button class="btn-pink"
+        <button class="btn-primary"
                 type="button"
                 wire:click="update"
                 wire:loading.attr="disabled"

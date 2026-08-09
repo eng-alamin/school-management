@@ -2,7 +2,7 @@
 
     <div class="card">
 
-        <div class="mat-card-header header-pink-gradient">
+        <div class="mat-card-header header-primary-gradient">
             <h5 id="cardHeaderTitleAllschedules">Teacher Schedule</h5>
             <p id="cardHeaderSubtitle">View weekly class schedule assigned to a specific teacher.</p>
         </div>
@@ -26,7 +26,7 @@
                 </div>
 
                 <div class="col-md-8 offset-md-2 text-center">
-                    <button wire:click="filter" class="btn-pink w-100 d-flex justify-content-center align-items-center" type="button">
+                    <button wire:click="filter" class="btn-primary w-100 d-flex justify-content-center align-items-center" type="button">
                         <span wire:loading wire:target="filter" class="spinner-border spinner-border-sm me-2"></span>
                         View Schedule
                     </button>
