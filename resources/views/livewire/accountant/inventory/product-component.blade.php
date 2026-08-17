@@ -29,10 +29,10 @@
                         </select>
                     </div>
                 @endif
-                <a href="{{ route('admin.inventory.categories') }}" target="_blank" class="btn-sm btn-outline">
+                <a href="{{ route('accountant.inventory.categories') }}" target="_blank" class="btn-sm btn-outline">
                     <span class="material-icons-round fs-6">category</span> <span id="inventory-product-category-btn">Category</span>
                 </a>
-                <a href="{{ route('admin.inventory.units') }}" target="_blank" class="btn-sm btn-outline">
+                <a href="{{ route('accountant.inventory.units') }}" target="_blank" class="btn-sm btn-outline">
                     <span class="material-icons-round fs-6">ac_unit</span> <span id="inventory-product-unit-btn">Unit</span>
                 </a>
                 <button class="btn-outline bg-dark text-white" wire:click="openCreate">

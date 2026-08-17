@@ -77,6 +77,6 @@
     <ul class="nav profile-tabs border-bottom mt-4 flex-nowrap overflow-auto no-print" wire:ignore>
         <li class="nav-item"><a class="nav-link {{ request()->routeIs('accountant.student.overview') ? 'active' : '' }}" href="{{ route('accountant.student.overview', ['id' => $student->id]) }}">Overview</a></li>
         <li class="nav-item"><a class="nav-link {{ request()->routeIs('accountant.student.invoice') ? 'active' : '' }}" href="{{ route('accountant.student.invoice', ['id' => $student->id]) }}">Invoice</a></li>
-        <li class="nav-item"><a class="nav-link {{ request()->routeIs('accountant.student.payment.add') ? 'active' : '' }}" href="{{ route('accountant.student.payment.add', ['id' => $student->id]) }}">Payment</a></li>
+        <li class="nav-item"><a class="nav-link {{ request()->routeIs('accountant.student.payment') ? 'active' : '' }}" href="{{ route('accountant.student.payment', ['id' => $student->id]) }}">Payment</a></li>
     </ul>
 </div>

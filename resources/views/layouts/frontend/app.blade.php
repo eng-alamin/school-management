@@ -7,7 +7,7 @@
     <title>EMS – জাতীয় বিদ্যালয় ব্যবস্থাপনা সিস্টেম</title>
 
     <link rel="shortcut icon" href="{{ ($logo = setting('system_logo')) ? asset('storage/'.$logo) : asset('assets/img/default-logo.png') }}">
-    
+
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -18,6 +18,12 @@
     />
     <link
       href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Bootstrap-select CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css"
       rel="stylesheet"
     />
 
@@ -115,8 +121,122 @@
       <i class="bi bi-arrow-up"></i>
     </button>
 
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Bootstrap-select JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
+
     <script src="{{ asset('assets/js/front.js') }}"></script>
+
+<script>
+        // ── Single script: material-style input focus/fill states +
+        //    bootstrap-select (selectpicker) init/sync.
+        //    All selects use class="selectpicker" only. ──
+
+        document.addEventListener('livewire:initialized', () => {
+
+            setTimeout(() => initAllFields(), 100);
+
+            Livewire.hook('morph.updated', ({ el }) => {
+                setTimeout(() => initAllFields(), 0);
+            });
+
+            function initAllFields() {
+
+                document.querySelectorAll('.input-group-outline select').forEach(function(select) {
+                    var group = select.closest('.input-group');
+                    if (!group) return;
+                    if (select.value && select.value !== '') {
+                        group.classList.add('is-filled');
+                    } else {
+                        group.classList.remove('is-filled');
+                    }
+                    if (select._materialInit) return;
+                    select._materialInit = true;
+                    select.addEventListener('change', function() {
+                        group.classList.toggle('is-filled', !!select.value);
+                    });
+                    select.addEventListener('focus', function() { group.classList.add('is-focused'); });
+                    select.addEventListener('blur', function() { group.classList.remove('is-focused'); });
+                });
+            }
+
+            // Registered once — not inside initAllFields — so it never
+            // piles up duplicate listeners on every morph.updated call.
+            Livewire.on('date-updated', function (event) {
+                var data = Array.isArray(event) ? event[0] : event;
+                if (!data || !data.field) return;
+
+                var input = document.querySelector(
+                    '.input-group-outline input[type="date"][wire\\:model="' + data.field + '"]'
+                );
+                if (!input) return;
+
+                var newDate = data.date || '';
+                if (newDate) {
+                    input.value = newDate;
+                    input.dataset.dpValue = newDate;
+                    if (input._dpTriggerSync) {
+                        input._dpTriggerSync(newDate);
+                    }
+                }
+            });
+
+        });
+
+        // ── bootstrap-select (selectpicker) init/sync ──
+        // Uses a MutationObserver instead of relying on Livewire's
+        // morph.updated hook, so it works no matter when/whether that
+        // hook fires (wire:ignore blocks, nested components, step
+        // switches via conditional blocks, etc). Any .selectpicker that appears in
+        // the DOM gets initialized exactly once.
+
+        function initOneSelectpicker(select) {
+            var $select = $(select);
+            if ($select.data('selectpicker')) {
+                $select.selectpicker('destroy');
+            }
+            $select.selectpicker();
+        }
+
+        function scanAndInitSelectpickers(root) {
+            (root || document).querySelectorAll('select.selectpicker').forEach(initOneSelectpicker);
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            scanAndInitSelectpickers(document);
+        });
+        document.addEventListener('livewire:navigated', function () {
+            scanAndInitSelectpickers(document);
+        });
+
+        var selectpickerObserver = new MutationObserver(function (mutations) {
+            mutations.forEach(function (mutation) {
+                mutation.addedNodes.forEach(function (node) {
+                    if (node.nodeType !== 1) return; // element nodes only
+                    if (node.matches && node.matches('select.selectpicker')) {
+                        initOneSelectpicker(node);
+                    }
+                    if (node.querySelectorAll) {
+                        node.querySelectorAll('select.selectpicker').forEach(initOneSelectpicker);
+                    }
+                });
+            });
+        });
+        selectpickerObserver.observe(document.body, { childList: true, subtree: true });
+
+        // Push selectpicker change to Livewire's wire:model
+        $(document).on('changed.bs.select', '.selectpicker[wire\\:model], .selectpicker[wire\\:model\\.live]', function () {
+            let el = this;
+            let attr = el.getAttribute('wire:model.live') ? 'wire:model.live' : 'wire:model';
+            let model = el.getAttribute(attr).replace('.live', '');
+            let value = $(el).val();
+            let root = el.closest('[wire\\:id]');
+            if (!root) return;
+            window.Livewire.find(root.getAttribute('wire:id')).set(model, value);
+        });
+    </script>
 
     @stack('scripts')
     @livewireScripts

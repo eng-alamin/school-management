@@ -21,7 +21,6 @@ class ExamComponent extends Component
     public $filterSection = '';
     public $filterSubject = '';
 
-    // ✅ Fix: StudentComponent-er moto has_section pattern ekhane-o add kora holo
     public bool $selectedClassHasSection = true;
     public array $availableSections = [];
 
@@ -35,7 +34,6 @@ class ExamComponent extends Component
     {
         $institutionId = institution()->id;
 
-        // ✅ Fix: academicClass()/academicSection() relation names + institution scope
         return ExamSetup::with('classAssign.academicClass', 'classAssign.academicSection')
             ->where('institution_id', $institutionId)
             ->whereHas('details')
@@ -99,8 +97,6 @@ class ExamComponent extends Component
 
         $institutionId = institution()->id;
 
-        // ✅ Fix: has_section flag + eta onujayi availableSections load kora holo
-        // (StudentComponent-er sathe consistent pattern)
         $class = AcademicClass::where('institution_id', $institutionId)
             ->find($this->filterClass);
 
@@ -149,7 +145,6 @@ class ExamComponent extends Component
             return;
         }
 
-        // ✅ Fix: class-e section thakle section select kora required
         if ($this->selectedClassHasSection && !$this->filterSection) {
             $this->dispatch('toast', type: 'error', message: 'Please select a section.');
             return;
@@ -234,12 +229,10 @@ class ExamComponent extends Component
             return [
                 'student_id'   => $student->id,
                 'section_id'   => $student->section_id,
-                // ✅ Fix: section_name khali thakle '—' dekhano hocche (StudentComponent
-                // consistent), 'section' na thakle empty string thakbei thik ache
                 'section_name' => $sectionNames[$student->section_id] ?? '',
                 'name'         => $student->name,
                 'roll_no'      => $student->roll_no,
-                'register_no'  => $student->register_no,
+                'registration_no'  => $student->registration_no,
 
                 'status'       => $att->status ?? 'present',
                 'remarks'      => $att->remarks ?? '',
@@ -259,8 +252,6 @@ class ExamComponent extends Component
 
         $institutionId = institution()->id;
 
-        // ✅ Fix: DB::transaction() wrap + try/catch (age kono error handling e chilo na,
-        // raw exception user ke dekhiye dite parto)
         DB::beginTransaction();
         try {
             foreach ($this->data as $item) {
@@ -276,7 +267,6 @@ class ExamComponent extends Component
                         'subject_id'      => $this->filterSubject,
                     ],
                     [
-                        // ✅ Fix: institution_id explicit set kora holo
                         'institution_id' => $institutionId,
                         'status'         => $item['status'],
                         'remarks'        => $item['remarks'],

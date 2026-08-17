@@ -3,12 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\BelongsToInstitution;
+use App\Traits\BelongsToBranch;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class LeaveCategory extends Model
 {
     use BelongsToInstitution;
+    use BelongsToBranch;
     use SoftDeletes;
 
     protected $guarded = [];

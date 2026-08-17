@@ -275,7 +275,7 @@
                                                         <span class="lang-en">Academic Year</span>
                                                         <span class="text-danger">*</span>
                                                     </label>
-                                                    <select wire:model="session_id" class="form-select @error('session_id') is-invalid @enderror">
+                                                    <select wire:model="session_id" class="selectpicker" @error('session_id') is-invalid @enderror">
                                                         <option value="">Select</option>
                                                         @foreach($sessions as $session)
                                                             <option value="{{ $session->id }}"@if($session->is_current === true) selected @endif>{{ $session->name }}</option>
@@ -289,7 +289,7 @@
                                                         <span class="lang-en">Class</span>
                                                         <span class="text-danger">*</span>
                                                     </label>
-                                                    <select wire:model="class_id" class="form-select @error('class_id') is-invalid @enderror">
+                                                    <select wire:model="class_id" class="selectpicker @error('class_id') is-invalid @enderror">
                                                         <option value="">Select Class</option>
                                                         @foreach($classes as $class)
                                                             <option value="{{ $class->id }}">{{ $class->name }}</option>
@@ -302,7 +302,7 @@
                                                         <span class="lang-bn">গ্রুপ</span>
                                                         <span class="lang-en">Group</span>
                                                     </label>
-                                                    <select wire:model="group_id" class="form-select">
+                                                    <select wire:model="group_id" class="selectpicker">
                                                         <option value="">Select Group</option>
                                                         @foreach($groups as $group)
                                                             <option value="{{ $group->id }}">{{ $group->name }}</option>
@@ -347,7 +347,7 @@
                                                         <span class="lang-bn">লিঙ্গ</span>
                                                         <span class="lang-en">Gender</span>
                                                     </label>
-                                                    <select wire:model="gender" class="form-select">
+                                                    <select wire:model="gender" class="selectpicker">
                                                         <option value="male">Male</option>
                                                         <option value="female">Female</option>
                                                         <option value="other">Other</option>
@@ -358,7 +358,7 @@
                                                         <span class="lang-bn">রক্তের গ্রুপ</span>
                                                         <span class="lang-en">Blood Group</span>
                                                     </label>
-                                                    <select wire:model="blood_group" class="form-select">
+                                                    <select wire:model="blood_group" class="selectpicker">
                                                         <option value="">Select</option>
                                                         @foreach(['A+','A-','B+','B-','AB+','AB-','O+','O-'] as $bg)
                                                             <option value="{{ $bg }}">{{ $bg }}</option>
@@ -378,7 +378,7 @@
                                                         <span class="lang-bn">ধর্ম</span>
                                                         <span class="lang-en">Religion</span>
                                                     </label>
-                                                    <select wire:model="religion" class="form-select">
+                                                    <select wire:model="religion" class="selectpicker">
                                                         <option value="">Select</option>
                                                         <option value="muslim">Muslim</option>
                                                         <option value="hindu">Hindu</option>

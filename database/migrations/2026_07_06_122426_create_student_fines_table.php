@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('student_fines', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('student_id')->constrained()->cascadeOnDelete();
             $table->enum('reason', ['absent', 'indiscipline', 'library_damage', 'uniform', 'other'])->default('other');
             $table->decimal('amount', 10, 2);
@@ -23,6 +24,7 @@ return new class extends Migration
             $table->foreignId('fee_invoice_id')->nullable()->constrained('fee_invoices')->nullOnDelete();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
+            $table->softDeletes();
 
             $table->index(['institution_id', 'status']);
         });

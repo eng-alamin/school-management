@@ -54,7 +54,7 @@
                 </div>
 
                 {{-- Reset --}}
-                <button class="btn-outline bg-dark text-white"
+                <button class="btn btn-secondary"
                         wire:click="$set('search',''); $set('filter','all'); $set('type',''); $set('priority','')"
                         title="Reset filters">
                     <span class="material-icons-round">refresh</span>
@@ -62,18 +62,20 @@
 
                 {{-- Mark All Read --}}
                 @if($unreadCount > 0)
-                    <button class="btn-outline bg-dark text-white" wire:click="markAllAsRead">
-                        <span class="material-icons-round">done_all</span>
-                        <span>Mark All Read</span>
+                    <button class="btn btn-primary" wire:click="markAllAsRead">
+                        <span>
+                            <span class="material-icons-round">done_all</span>
+                            <span>Mark All Read</span>
+                        </span>
                     </button>
                 @endif
 
                 {{-- Clear All --}}
-                <button class="btn-outline bg-dark text-white"
-                        wire:click="clearAll"
-                        wire:confirm="Delete all notifications? This action cannot be undone.">
-                    <span class="material-icons-round">delete_sweep</span>
-                    <span>Clear All</span>
+                <button class="btn btn-primary" wire:click="clearAll" wire:confirm="Delete all notifications? This action cannot be undone.">
+                    <span>
+                        <span class="material-icons-round">delete_sweep</span>
+                        <span>Clear All</span>
+                    </span>
                 </button>
 
             </div>

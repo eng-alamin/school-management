@@ -4,12 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\BelongsToInstitution;
+use App\Traits\BelongsToBranch;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class AdmitCardTemplate extends Model
 {
     use BelongsToInstitution;
+    use BelongsToBranch;
     use HasFactory, SoftDeletes;
  
     protected $fillable = [

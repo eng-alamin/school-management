@@ -5,11 +5,13 @@ namespace App\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\BelongsToInstitution;
+use App\Traits\BelongsToBranch;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class SalaryPayment extends Model
 {
     use BelongsToInstitution;
+    use BelongsToBranch;
     use SoftDeletes;
 
     protected $guarded = [];

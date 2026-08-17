@@ -4,13 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\BelongsToInstitution;
+use App\Traits\BelongsToBranch;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class IdCardTemplate extends Model
 {
     use BelongsToInstitution;
-    use HasFactory, SoftDeletes;
+    use BelongsToBranch;
+    use SoftDeletes;
+    use HasFactory;
  
     protected $fillable = [
         'name', 'type', 'background_color', 'text_color', 'accent_color',

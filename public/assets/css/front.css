@@ -694,15 +694,13 @@ h6 {
     margin: 0;
     font-size: 0.9rem;
 }
-.form-control,
-.form-select {
+.form-control {
     background: var(--bg-alt);
     border-color: var(--border);
     color: var(--text);
     border-radius: 10px;
 }
-.form-control:focus,
-.form-select:focus {
+.form-control:focus {
     background: var(--bg-alt);
     border-color: var(--primary);
     color: var(--text);
@@ -1371,7 +1369,7 @@ body.page-transitioning > *:not(#pageLoader):not(nav):not(footer) {
     color: var(--text-soft);
     margin-bottom: 8px;
 }
-.wizard-card .form-control,
+/* .wizard-card .form-control,
 .wizard-card .form-select {
     border-radius: 14px;
     min-height: 52px;
@@ -1381,12 +1379,12 @@ body.page-transitioning > *:not(#pageLoader):not(nav):not(footer) {
     transition: 0.25s;
     background: #fff;
     color: #1a2e1f;
-}
-.wizard-card .form-control:focus,
+} */
+/* .wizard-card .form-control:focus,
 .wizard-card .form-select:focus {
     border-color: var(--primary);
     box-shadow: 0 0 0 4px rgba(25, 135, 84, 0.12);
-}
+} */
 .wizard-btn {
     min-height: 52px;
     border-radius: 14px;
@@ -1765,9 +1763,9 @@ body.page-transitioning > *:not(#pageLoader):not(nav):not(footer) {
 .toggle-eye:hover {
     color: var(--primary);
 }
-.wizard-card .form-control.input-wrap-control {
+/* .wizard-card .form-control.input-wrap-control {
     padding-right: 52px;
-}
+} */
 
 /* ── PASSWORD STRENGTH BAR ── */
 .strength-bar {
@@ -1787,4 +1785,158 @@ body.page-transitioning > *:not(#pageLoader):not(nav):not(footer) {
 .strength-text {
     font-size: 12px;
     margin-top: 4px;
+}
+
+/* ============================================================
+   BOOTSTRAP-SELECT (selectpicker) — GLOBAL, CLEAN SINGLE BORDER
+   ============================================================ */
+
+/* Reset wrapper - kill any border/shadow on the outer bootstrap-select div */
+.bootstrap-select {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+}
+.bootstrap-select > .btn {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Single border lives ONLY on dropdown-toggle */
+.bootstrap-select > .dropdown-toggle {
+    background-color: #fff !important;
+    border-radius: 5px !important;
+    border: 1.5px solid var(--border) !important;
+    box-shadow: none !important;
+    color: var(--text) !important;
+    transition:
+        border-color 0.25s ease,
+        box-shadow 0.25s ease,
+        background-color 0.25s ease;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9' fill='none'%3E%3Cpath d='M1 1.5L7 7.5L13 1.5' stroke='%23198754' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 1rem center !important;
+    background-size: 13px 9px !important;
+}
+.bootstrap-select > .dropdown-toggle:hover,
+.bootstrap-select > .dropdown-toggle:focus {
+    background-color: var(--primary-light) !important;
+    border-color: var(--primary) !important;
+    color: var(--text) !important;
+}
+.bootstrap-select.show > .dropdown-toggle {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 4px rgba(25, 135, 84, 0.12) !important;
+}
+
+/* dropdown-menu panel - only one border here too */
+.bootstrap-select .dropdown-menu {
+    border-radius: 16px !important;
+    box-shadow: var(--shadow-md) !important;
+    padding: 8px !important;
+    margin-top: 8px !important;
+    background: var(--bg-card) !important;
+}
+
+/* fix arrow icon color/shape to match brand */
+.bootstrap-select > .dropdown-toggle .filter-option {
+    color: var(--text);
+}
+.bootstrap-select > .dropdown-toggle::after {
+    display: none !important;
+}
+.bootstrap-select > .dropdown-toggle .bs-caret {
+    display: none;
+}
+
+/* selected/hover item */
+.bootstrap-select .dropdown-item {
+    border-radius: 8px !important;
+    padding: 10px 14px !important;
+    color: var(--text) !important;
+    transition: 0.2s;
+}
+.bootstrap-select .dropdown-item:hover,
+.bootstrap-select .dropdown-item.active {
+    background: var(--primary-light) !important;
+    color: var(--primary-dark) !important;
+}
+.bootstrap-select .dropdown-item.selected.active {
+    background: var(--primary) !important;
+    color: #fff !important;
+}
+
+/* search box (if data-live-search="true") */
+.bootstrap-select .bs-searchbox .form-control {
+    border-radius: 10px !important;
+    border: 1.5px solid var(--border) !important;
+    background: var(--bg-alt) !important;
+    color: var(--text) !important;
+    padding: 8px 12px !important;
+}
+.bootstrap-select .bs-searchbox .form-control:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 3px rgba(25, 135, 84, 0.12) !important;
+}
+
+/* disabled state */
+.bootstrap-select > .dropdown-toggle:disabled,
+.bootstrap-select.disabled > .dropdown-toggle {
+    background-color: var(--border) !important;
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+.bootstrap-select {
+    width: 100% !important;
+}
+.bootstrap-select > .dropdown-toggle {
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+}
+.bootstrap-select .dropdown-menu {
+    min-width: 100% !important;
+}
+
+/* Dark Mode */
+[data-theme="dark"] .bootstrap-select > .dropdown-toggle {
+    background-color: var(--bg-alt) !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9' fill='none'%3E%3Cpath d='M1 1.5L7 7.5L13 1.5' stroke='%2372eda7' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+}
+[data-theme="dark"] .bootstrap-select > .dropdown-toggle:hover,
+[data-theme="dark"] .bootstrap-select > .dropdown-toggle:focus {
+    background-color: var(--primary-light) !important;
+}
+
+[data-theme="dark"] .wizard-card {
+    background: var(--bg-alt);
+}
+[data-theme="dark"] .form-control {
+    background: var(--bg-alt);
+}
+[data-theme="dark"] .institution-search-list .list-group-item {
+    background: var(--bg-alt);
+    color: #fff;
+}
+
+[data-theme="dark"] .summary-box {
+    background: var(--bg-alt);
+    color: #fff;
+}
+
+[data-theme="dark"] .wizard-btn {
+    background: var(--primary);
+    color: #fff;
+}
+[data-theme="dark"] .upload-box {
+    background: var(--bg-alt);
+    color: #fff;
+}
+[data-theme="dark"] .guardian-toggle-box {
+    background: var(--bg-alt);
+    color: #fff;
+}
+[data-theme="dark"] .feature-box {
+    background: var(--bg-alt);
+    color: #fff;
 }

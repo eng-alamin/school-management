@@ -11,6 +11,8 @@ return new class extends Migration
         Schema::create('biometric_device_commands', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
+            
             $table->foreignId('biometric_device_id')->constrained('biometric_devices')->cascadeOnDelete();
 
             // device-কে যেই command_id পাঠানো হয় (ADMS format: C:<command_id>:DATA ...)

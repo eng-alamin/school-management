@@ -131,20 +131,27 @@
 
     <!-- FORM FOOTER -->
     <div class="form-footer">
-        <button class="btn-outline" type="button" wire:click="resetForm">
-            <span class="material-icons-round" style="font-size:16px">refresh</span>
-            Reset
-        </button>
-
-        <button class="btn-primary" type="button" wire:click="save" wire:loading.attr="disabled" wire:target="save">
-            <span wire:loading.remove wire:target="save"  style="display: inline-flex;align-items: center;gap: 6px">
-                <span class="material-icons-round">save</span>
-                Save
+        <button class="btn btn-secondary" type="button" wire:click="resetForm" wire:loading.attr="disabled" wire:target="resetForm,reset">
+            <span wire:loading.remove wire:target="resetForm,reset">
+                <span class="material-icons-round">refresh</span>
+                <span>Reset</span>
             </span>
 
-            <span wire:loading wire:target="save">
-                <span class="material-icons-round" style="font-size:16px;animation:spin .7s linear infinite">sync</span>
-                Saving...
+            <span wire:loading wire:target="resetForm,reset">
+                <span class="material-icons-round" style="animation:spin .7s linear infinite">sync</span>
+                Reseting...
+            </span>
+        </button>
+
+        <button class="btn btn-primary" type="button" wire:click="openFeeConfirmModal" wire:loading.attr="disabled" wire:target="openFeeConfirmModal,save">
+            <span wire:loading.remove wire:target="openFeeConfirmModal,save">
+                <span class="material-icons-round">save</span>
+                <span>Save</span> 
+            </span>
+
+            <span wire:loading wire:target="openFeeConfirmModal,save">
+                <span class="material-icons-round" style="animation:spin .7s linear infinite">sync</span>
+                <span>Processing...</span>
             </span>
         </button>
     </div>

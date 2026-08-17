@@ -14,8 +14,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 use Illuminate\Validation\ValidationException;
+use Illuminate\Database\QueryException;
 use Illuminate\Validation\Rule;
 use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\Storage;
 
 class StudentEditComponent extends Component
 {
@@ -50,10 +52,6 @@ class StudentEditComponent extends Component
     public $username;
     public $password;
 
-    // ── Username auto-generate theke manually edit hoyeche kina track korar flag.
-    // Edit page e existing username DB theke pre-fill hoy, tai mount() e eta
-    // 'true' rakha hocche jate purono/existing student-er username accidentally
-    // overwrite na hoye jay (nahole tar login vengge jabe).
     public bool $usernameManuallyEdited = true;
 
     public $guardian_id;
@@ -69,7 +67,6 @@ class StudentEditComponent extends Component
     public $guardian_username;
     public $guardian_password;
 
-    // ── Guardian Username o same karone, existing guardian thakle protect kora hocche.
     public bool $guardianUsernameManuallyEdited = true;
 
     public $previous_institution;
@@ -79,11 +76,9 @@ class StudentEditComponent extends Component
     public bool $guardian_exists = false;
 
     public array $availableSections = [];
-
-    // ── Class-level section-support flag (academic_classes.has_section).
-    // Set both at mount() (for the student's existing class) and on every
-    // class change via updatedClassId().
     public bool $selectedClassHasSection = true;
+
+    private const DEFAULT_GUARDIAN_PASSWORD = '12345678';
 
     public function mount($id)
     {
@@ -101,8 +96,6 @@ class StudentEditComponent extends Component
         $this->section_id     = $this->student->section_id;
         $this->group_id       = $this->student->group_id;
 
-        // ── Resolve has_section state + available sections for the student's
-        // existing class, so the edit form opens with the correct UI state ──
         $this->loadSectionsForClass($this->class_id);
 
         // Personal
@@ -138,11 +131,6 @@ class StudentEditComponent extends Component
         $this->dispatch('date-updated', field: 'dob', date: $this->dob);
     }
 
-    /**
-     * Resolves selectedClassHasSection + availableSections for a given
-     * class id, scoped to the current institution. Shared by mount() and
-     * updatedClassId() so both entry points behave identically.
-     */
     private function loadSectionsForClass($classId): void
     {
         $this->availableSections = [];
@@ -278,9 +266,6 @@ class StudentEditComponent extends Component
                     ->where(fn($q) => $q->where('institution_id', $institutionId)),
             ],
 
-            // Section required only when the selected class supports sections
-            // (academic_classes.has_section). Forced to null in update()
-            // otherwise, regardless of client-side state.
             'section_id' => [
                 Rule::requiredIf($this->selectedClassHasSection),
                 'nullable',
@@ -331,7 +316,8 @@ class StudentEditComponent extends Component
     {
         $this->dispatch('validation-failed');
 
-        throw new ValidationException($validator);
+        throw (new ValidationException($validator))
+            ->errorBag($this->getErrorBag());
     }
 
     public function updated($propertyName)
@@ -347,7 +333,6 @@ class StudentEditComponent extends Component
 
             $this->validate($this->rules(), $this->messages());
 
-            // ── Student user update ──────────────────────────────
             $userData = [
                 'name'     => $this->name,
                 'username' => $this->username,
@@ -361,11 +346,8 @@ class StudentEditComponent extends Component
             $user = User::findOrFail($this->userId);
             $user->update($userData);
 
-            // ── Data integrity: class-e section na thakle (has_section = false),
-            // section_id kokhono persist kora jabe na, client-side state jai hok na keno ──
             $sectionId = $this->selectedClassHasSection ? ($this->section_id ?: null) : null;
 
-            // ── Student record update ────────────────────────────
             $studentData = [
                 'user_id'          => $user->id,
 
@@ -393,12 +375,24 @@ class StudentEditComponent extends Component
             ];
 
             if ($this->student_photo_upload) {
+
+                $oldPhoto = $this->student->photo;
+
                 $studentData['photo'] = $this->student_photo_upload->store('students', 'public');
+
+                if ($oldPhoto) {
+                    Storage::disk('public')->delete($oldPhoto);
+                }
             }
 
             $this->student->update($studentData);
 
-            // ── Guardian ─────────────────────────────────────────
+            activity()
+                ->performedOn($this->student)
+                ->causedBy(auth()->user())
+                ->withProperties(['institution_id' => auth()->user()->institution_id])
+                ->log('Student updated');
+
             if ($this->guardian_exists) {
 
                 $this->student->guardians()->sync([
@@ -411,11 +405,8 @@ class StudentEditComponent extends Component
 
                 $guardianPassword = !empty($this->guardian_password)
                     ? $this->guardian_password
-                    : '1234';
+                    : self::DEFAULT_GUARDIAN_PASSWORD;
 
-                // BUG FIX: age ekhane 'institution_id' pathano hocchilo na, tai
-                // notun Guardian-er User account ta kono institution er sathe
-                // link e hocchilo na (multi-tenant scoping venge jeto).
                 $userGuardian = User::create([
                     'institution_id' => auth()->user()->institution_id,
                     'role'     => 'parent',
@@ -441,10 +432,23 @@ class StudentEditComponent extends Component
                 ];
 
                 if ($this->guardian_photo_upload) {
+
+                    $oldPhoto = $this->guardian->photo;
+
                     $guardianData['photo'] = $this->guardian_photo_upload->store('guardians', 'public');
+
+                    if ($oldPhoto) {
+                        Storage::disk('public')->delete($oldPhoto);
+                    }
                 }
 
                 $guardian = Guardian::create($guardianData);
+
+                activity()
+                    ->performedOn($guardian)
+                    ->causedBy(auth()->user())
+                    ->withProperties(['institution_id' => auth()->user()->institution_id])
+                    ->log('Guardian created (from student edit)');
 
                 $this->student->guardians()->sync([
                     $guardian->id => [
@@ -459,6 +463,38 @@ class StudentEditComponent extends Component
             $this->dispatch('date-updated', field: 'dob', date: $this->dob);
 
             $this->dispatch('toast', type: 'success', message: 'Student updated successfully!');
+
+        } catch (ValidationException $e) {
+
+            DB::rollBack();
+            throw $e;
+
+        } catch (QueryException $e) {
+
+            DB::rollBack();
+
+            if ((int) $e->getCode() === 23000 || str_contains($e->getMessage(), '1062')) {
+
+                if (str_contains($e->getMessage(), 'users_username_unique')) {
+                    $this->addError('username', 'This username is already taken. Please choose a different one.');
+                    $this->addError('guardian_username', 'This username is already taken. Please choose a different one.');
+                } elseif (str_contains($e->getMessage(), 'users_email_unique')) {
+                    $this->addError('email', 'This email is already taken. Please choose a different one.');
+                    $this->addError('guardian_email', 'This email is already taken. Please choose a different one.');
+                } elseif (str_contains($e->getMessage(), 'students_registration_no')) {
+                    $this->addError('registration_no', 'This registration number is already used. Please refresh and try again.');
+                } else {
+                    $this->addError('name', 'A duplicate entry was found. Please check your input and try again.');
+                }
+
+                $this->dispatch('validation-failed');
+                $this->dispatch('toast', type: 'error', message: 'Duplicate data found. Please check the highlighted fields.');
+
+                return;
+            }
+
+            $this->dispatch('toast', type: 'error', message: 'Something went wrong!');
+            throw $e;
 
         } catch (\Throwable $e) {
 
@@ -475,13 +511,12 @@ class StudentEditComponent extends Component
 
         $sessions   = AcademicSession::orderBy('name')->get();
 
-        // ── Security fix: age institution_id scope chilo na, tai onno
-        // institution-er class/group/guardian o dekha/select kora jeto (IDOR) ──
         $classes    = AcademicClass::where('institution_id', $institutionId)
             ->orderBy('id')
             ->get();
 
         $groups     = AcademicGroup::where('institution_id', $institutionId)
+            ->where('is_status', true)
             ->orderBy('name')
             ->get();
 
@@ -489,13 +524,14 @@ class StudentEditComponent extends Component
             ->orderBy('name')
             ->get();
 
-        return view('livewire.admin.student.student-edit-component')
-            ->with('sessions', $sessions)
-            ->with('classes', $classes)
-            ->with('groups', $groups)
-            ->with('guardians', $guardians)
-            ->layout('layouts.admin.app', [
-                'title' => 'Edit Student | ' . institution()->name,
-            ]);
+
+        return view('livewire.admin.student.student-edit-component', [
+            'sessions'      => $sessions,
+            'classes'      => $classes,
+            'groups'      => $groups,
+            'guardians'      => $guardians,
+        ])->layout('layouts.admin.app', [
+            'title' => 'Edit Student | ' . institution()->name,
+        ]);
     }
 }

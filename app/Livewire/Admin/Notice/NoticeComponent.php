@@ -51,7 +51,7 @@ class NoticeComponent extends Component
         return [
             'title' => 'required|min:3|max:255',
             'description' => 'required|min:10',
-            'audience' => 'required|in:all,admin,teacher,student',
+            'audience' => 'required|in:all,admin,teacher,student,parent',
             'priority' => 'required|in:low,medium,high,urgent',
             'status' => 'required|in:active,inactive',
             'published_at' => 'required|date',

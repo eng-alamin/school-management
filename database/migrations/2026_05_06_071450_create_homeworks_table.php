@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('homeworks', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
             
             // Academic
             $table->foreignId('class_id')->constrained('academic_classes')->cascadeOnDelete();

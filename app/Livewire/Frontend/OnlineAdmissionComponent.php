@@ -540,6 +540,7 @@ class OnlineAdmissionComponent extends Component
                 ->get();
 
             $groups = AcademicGroup::where('institution_id', $this->institution_id)
+                ->where('is_status', true)
                 ->orderBy('name')
                 ->get();
 

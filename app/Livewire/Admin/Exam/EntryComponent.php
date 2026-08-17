@@ -209,6 +209,7 @@ class EntryComponent extends Component
     public function render()
     {
         $exams = ExamSetup::with('classAssign.academicClass', 'classAssign.academicSection')
+            ->where('is_published', true)
             ->whereHas('details')
             ->orderBy('name')
             ->get();

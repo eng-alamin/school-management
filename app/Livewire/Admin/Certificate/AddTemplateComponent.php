@@ -52,11 +52,125 @@ class AddTemplateComponent extends Component
     public string $selectedDesign = '';
 
     public array $designs = [
-        'one' => '<div>design one</div>',
-        'two' => '<div>design two</div>',
-        'three' => '<div>design three</div>',
-        'four' => '<div>design four</div>',
-        'five' => '<div>design five</div>',
+
+        'one' => '<div style="font-family:Georgia,serif;padding:20px;">
+    <div style="text-align:center;">
+        <strong style="font-size:16px;">{institute_name}</strong><br>
+        {institute_email} | {institute_mobile}<br>
+        {institute_address}
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin:20px 0;">
+        <div>Registration No: {registration_no}</div>
+        <div>{logo}</div>
+        <div>Admission On: {admission_date}</div>
+    </div>
+    <h2 style="text-align:center;letter-spacing:1px;margin:20px 0;">SCHOOL CERTIFICATE EXAMINATION-2020</h2>
+    <p style="font-size:15px;line-height:1.9;text-align:justify;">
+        This Is To Certify That {name} And Of He/she Is Gender As {gender} Son/daughter Of {father_name} &amp; {mother_name}
+        Of {institute_name} And {institute_address} Bearing Roll- {roll} &amp; Exam Center Campus-04 And Class {class}
+        Dulg Passed The Final school Certificate Examination Of 2020 {group} And His/her Date Of Birth As Recorded
+        Is {birthday} Obtained G.p.a 4.94 In The Scale Of 5.00.
+    </p>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:30px;">
+        <div>Date of Publication of Result: {print_date}</div>
+        <div>{qr_code}</div>
+    </div>
+</div>',
+
+        'two' => '<div style="border:3px double #7a1f1f;font-family:Georgia,serif;padding:25px;">
+    <div style="text-align:center;">
+        <strong style="font-size:16px;">{institute_name}</strong><br>
+        {institute_email} | {institute_mobile}<br>
+        {institute_address}
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin:20px 0;">
+        <div>Registration No: {registration_no}</div>
+        <div>{logo}</div>
+        <div>Admission On: {admission_date}</div>
+    </div>
+    <h2 style="text-align:center;letter-spacing:1px;margin:20px 0;">SCHOOL CERTIFICATE EXAMINATION-2020</h2>
+    <p style="font-size:15px;line-height:1.9;text-align:justify;">
+        This Is To Certify That {name} And Of He/she Is Gender As {gender} Son/daughter Of {father_name} &amp; {mother_name}
+        Of {institute_name} And {institute_address} Bearing Roll- {roll} &amp; Exam Center Campus-04 And Class {class}
+        Dulg Passed The Final school Certificate Examination Of 2020 {group} And His/her Date Of Birth As Recorded
+        Is {birthday} Obtained G.p.a 4.94 In The Scale Of 5.00.
+    </p>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:30px;">
+        <div>Date of Publication of Result: {print_date}</div>
+        <div>{qr_code}</div>
+    </div>
+</div>',
+
+        'three' => '<div style="padding:40px;font-family:\'Times New Roman\',serif;text-align:center;position:relative;background:#fefefe;border:1px solid #ccc;">
+    <h3 style="margin:0;color:#555;font-size:13px;">{institute_name}</h3>
+    <p style="margin:2px 0;font-size:12px;color:#777;">{institute_address}</p>
+    <p style="margin:0 0 20px;font-size:12px;color:#777;">{institute_email} | {institute_mobile}</p>
+
+    <h1 style="font-size:28px;letter-spacing:4px;color:#2c2c2c;margin:20px 0;">CERTIFICATE</h1>
+    <p style="font-size:13px;color:#999;margin-bottom:25px;">Registration No: {registration_no} &nbsp;|&nbsp; Admission On: {admission_date}</p>
+
+    <p style="font-size:16px;line-height:2;max-width:650px;margin:0 auto;">
+        Presented to <strong>{name}</strong>, S/D of {father_name} &amp; {mother_name}, studying in Class {class}
+        (Section: {section}), bearing Roll No. {roll}. Gender: {gender}, Religion: {religion},
+        Date of Birth: {birthday}. Awarded in recognition of excellent performance and conduct.
+    </p>
+
+    <div style="margin-top:50px;display:flex;justify-content:space-around;font-size:13px;">
+        <div>_____________________<br>Date: {print_date}</div>
+        <div>_____________________<br>Authorized Signature</div>
+    </div>
+</div>',
+
+        'four' => '<div style="padding:30px;font-family:\'Segoe UI\',Arial,sans-serif;">
+    <div style="display:flex;justify-content:space-between;border-bottom:3px solid #16a34a;padding-bottom:12px;margin-bottom:25px;">
+        <div>
+            <div style="font-size:18px;font-weight:700;color:#16a34a;">{institute_name}</div>
+            <div style="font-size:12px;color:#666;">{institute_address}</div>
+            <div style="font-size:12px;color:#666;">{institute_email} | {institute_mobile}</div>
+        </div>
+        <div style="text-align:right;font-size:12px;color:#666;">
+            Reg No: {registration_no}<br>Admission: {admission_date}
+        </div>
+    </div>
+
+    <h2 style="color:#16a34a;font-size:20px;margin-bottom:15px;">Certificate of Recognition</h2>
+
+    <p style="font-size:14.5px;line-height:1.8;color:#333;">
+        This is to certify that <strong>{name}</strong> (Gender: {gender}), Son/Daughter of {father_name} and {mother_name},
+        a student of Class {class}, Section {section}, Roll {roll}, Blood Group {blood}, born on {birthday}, Religion {religion},
+        has fulfilled all the requirements set by {institute_name}.
+    </p>
+
+    <div style="display:flex;justify-content:space-between;margin-top:60px;font-size:13px;color:#444;">
+        <div>Issued on: {print_date}</div>
+        <div>Signature &amp; Seal</div>
+    </div>
+</div>',
+
+        'five' => '<div style="padding:35px;font-family:Georgia,serif;border:6px solid #7a1f1f;text-align:center;">
+    <div style="font-size:14px;color:#333;margin-bottom:5px;">
+        <strong>{institute_name}</strong> &nbsp;|&nbsp; {institute_email} &nbsp;|&nbsp; {institute_mobile}
+    </div>
+    <div style="font-size:12px;color:#666;margin-bottom:20px;">{institute_address}</div>
+
+    <h2 style="font-size:24px;color:#7a1f1f;letter-spacing:2px;margin-bottom:5px;">SCHOOL CERTIFICATE EXAMINATION</h2>
+    <p style="font-size:12px;color:#777;margin-bottom:20px;">
+        Registration No: {registration_no} &nbsp;&nbsp; Admission On: {admission_date}
+    </p>
+
+    <p style="font-size:15px;line-height:1.9;text-align:justify;max-width:680px;margin:0 auto;">
+        This is to certify that <strong>{name}</strong>, Gender: <strong>{gender}</strong>, Son/Daughter of
+        <strong>{father_name}</strong> &amp; <strong>{mother_name}</strong>, of {institute_name}, {institute_address},
+        bearing Roll No. <strong>{roll}</strong> and Class <strong>{class}</strong> (Section: {section}),
+        has passed the final examination with satisfactory academic standing.
+        Date of Birth: <strong>{birthday}</strong>, Religion: <strong>{religion}</strong>, Blood Group: <strong>{blood}</strong>.
+    </p>
+
+    <div style="display:flex;justify-content:space-between;margin-top:55px;font-size:13px;">
+        <div>Date of Publication: {print_date}</div>
+        <div>Controller of Examinations</div>
+    </div>
+</div>',
     ];
 
     public array $designMeta = [
@@ -172,8 +286,6 @@ class AddTemplateComponent extends Component
         $this->selectedDesign = $key;
         $this->certificate_content = $this->designs[$key];
 
-        // Tell the JS side to push this same content into Summernote if it's
-        // already mounted, and to (re)mount it if we're now on/near Step 4.
         $this->dispatch('designContentUpdated', content: $this->designs[$key]);
     }
 
@@ -197,8 +309,6 @@ class AddTemplateComponent extends Component
 
         $this->step = $target;
 
-        // Whenever we land on Step 4, make sure Summernote reflects whatever
-        // certificate_content currently holds (design pick or manual edits).
         if ($this->step === 4) {
             $this->dispatch('ensureEditorSynced', content: $this->certificate_content);
         }

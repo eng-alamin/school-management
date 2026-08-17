@@ -17,7 +17,8 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(PricingRateSeeder::class);
         $this->call(MinistryRolePermissionSeeder::class);
+        $this->call(InstitutionRolePermissionSeeder::class);
         $this->call(UserSeeder::class);
-        // php artisan db:seed --class=MinistryRolePermissionSeeder
+        // php artisan db:seed --class=InstitutionRolePermissionSeeder
     }
 }

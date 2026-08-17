@@ -29,7 +29,7 @@
                     </div>
                 @endif
 
-                <a href="{{ route('admin.inventory.purchase.add') }}" class="btn-sm btn-outline bg-dark text-white">
+                <a href="{{ route('accountant.inventory.purchase.add') }}" class="btn-sm btn-outline bg-dark text-white">
                     <span class="material-icons-round">add</span> Add Purchase
                 </a>
             </div>
@@ -90,7 +90,7 @@
 
                                 <td>
                                     <div class="d-flex gap-1">
-                                        <a href="{{ route('admin.inventory.purchase.edit', ['id' => $purchase->id]) }}"
+                                        <a href="{{ route('accountant.inventory.purchase.edit', ['id' => $purchase->id]) }}"
                                            class="act-btn edit" title="Edit">
                                             <span class="material-icons-round">drive_file_rename_outline</span>
                                         </a>
@@ -106,7 +106,7 @@
                                 <td colspan="8" class="text-center py-5 text-muted">
                                     <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
                                     No purchases found.
-                                    <a href="{{ route('admin.inventory.purchase.add') }}">Create one now</a>.
+                                    <a href="{{ route('accountant.inventory.purchase.add') }}">Create one now</a>.
                                 </td>
                             </tr>
                         @endforelse

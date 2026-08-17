@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('attendance_exam_assigns', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('exam_schedule_id')->constrained('exam_schedules')->cascadeOnDelete();
             $table->foreignId('teacher_id')->constrained('users')->cascadeOnDelete();
             $table->timestamps();

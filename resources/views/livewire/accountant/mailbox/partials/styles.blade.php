@@ -1,4 +1,4 @@
-{{-- resources/views/livewire/admin/mailbox/partials/styles.blade.php --}}
+{{-- resources/views/livewire/accountant/mailbox/partials/styles.blade.php --}}
 {{-- Include this at the bottom of every mailbox blade view --}}
 
 @once

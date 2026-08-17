@@ -60,8 +60,8 @@
 
     <!-- Profile Tabs -->
     <ul class="nav profile-tabs border-bottom mt-4 flex-nowrap overflow-auto">
-        <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.profile.overview') ? 'active' : '' }}" href="{{ route('admin.profile.overview') }}">Overview</a></li>
-        <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.profile.setting') ? 'active' : '' }}" href="{{ route('admin.profile.setting') }}">Settings</a></li>
-        <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.profile.loginlog') ? 'active' : '' }}" href="{{ route('admin.profile.loginlog') }}">Login Logs </a></li>
+        <li class="nav-item"><a class="nav-link {{ request()->routeIs('accountant.profile.overview') ? 'active' : '' }}" href="{{ route('accountant.profile.overview') }}">Overview</a></li>
+        <li class="nav-item"><a class="nav-link {{ request()->routeIs('accountant.profile.setting') ? 'active' : '' }}" href="{{ route('accountant.profile.setting') }}">Settings</a></li>
+        <li class="nav-item"><a class="nav-link {{ request()->routeIs('accountant.profile.loginlog') ? 'active' : '' }}" href="{{ route('accountant.profile.loginlog') }}">Login Logs </a></li>
     </ul>
 </div>

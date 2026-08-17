@@ -7,10 +7,12 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use App\Traits\BelongsToInstitution;
+use App\Traits\BelongsToBranch;
 
 class Notification extends Model
 {
     use BelongsToInstitution;
+    use BelongsToBranch;
 
     protected $guarded = [];
 

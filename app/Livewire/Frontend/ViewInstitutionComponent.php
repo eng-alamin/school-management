@@ -3,9 +3,11 @@
 namespace App\Livewire\Frontend;
 
 use App\Models\Institution;
+use App\Models\InstitutionFacility;
 use App\Models\Scopes\InstitutionScope;
 use App\Models\User;
 use App\Models\Employee;
+use App\Models\InstitutionCommittee;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -178,11 +180,6 @@ class ViewInstitutionComponent extends Component
         ];
     }
 
-    /**
-     * স্কুল/কলেজ Ranking — বর্তমানে শুধু Student Count ভিত্তিক।
-     * TODO: Result module রেডি হলে Pass Rate যোগ করে weighted score বানাতে হবে,
-     * তখন এই মেথডে formula আপডেট করলেই চলবে, ব্লেড ফাইল পরিবর্তনের দরকার নেই।
-     */
     public function getRankingProperty(): array
     {
         $ranked = Institution::withoutGlobalScope(InstitutionScope::class)
@@ -205,41 +202,65 @@ class ViewInstitutionComponent extends Component
         ];
     }
 
-    /**
-     * Facilities / Infrastructure master definitions: key => [label_bn, label_en, icon].
-     */
-    private static function facilityDefinitions(): array
+    public function getFacilitiesProperty(): array
     {
-        return [
-            'library'      => ['label_bn' => 'লাইব্রেরি',        'label_en' => 'Library',        'icon' => 'bi-book-half'],
-            'science_lab'  => ['label_bn' => 'সায়েন্স ল্যাব',    'label_en' => 'Science Lab',    'icon' => 'bi-eyedropper'],
-            'computer_lab' => ['label_bn' => 'কম্পিউটার ল্যাব',  'label_en' => 'Computer Lab',    'icon' => 'bi-pc-display'],
-            'playground'   => ['label_bn' => 'খেলার মাঠ',        'label_en' => 'Playground',     'icon' => 'bi-tree'],
-            'transport'    => ['label_bn' => 'পরিবহন সুবিধা',    'label_en' => 'Transport',       'icon' => 'bi-bus-front'],
-            'hostel'       => ['label_bn' => 'হোস্টেল',          'label_en' => 'Hostel',          'icon' => 'bi-house-door'],
-            'canteen'      => ['label_bn' => 'ক্যান্টিন',        'label_en' => 'Canteen',         'icon' => 'bi-cup-hot'],
-        ];
+        return InstitutionFacility::query()
+            ->where('institution_id', $this->institution->id)
+            ->where('status', InstitutionFacility::STATUS_ACTIVE)
+            ->orderBy('name')
+            ->get()
+            ->map(function (InstitutionFacility $facility) {
+                return [
+                    'id'   => $facility->id,
+                    'name' => $facility->name,
+                    'icon' => self::facilityIconFor($facility->name),
+                ];
+            })
+            ->all();
     }
 
     /**
-     * Facilities / Infrastructure list.
+     * Facility name এর keyword অনুযায়ী একটা relevant bootstrap icon return করে।
+     * কোনো keyword না মিললে generic fallback icon ব্যবহার হয়।
      */
-    public function getFacilitiesProperty(): array
+    private static function facilityIconFor(string $name): string
     {
-        $saved = $this->institution->facilities ?? [];
+        $name = strtolower($name);
 
-        return collect(self::facilityDefinitions())
-            ->map(function (array $def, string $key) use ($saved) {
-                return [
-                    'key'       => $key,
-                    'label_bn'  => $def['label_bn'],
-                    'label_en'  => $def['label_en'],
-                    'icon'      => $def['icon'],
-                    'available' => (bool) ($saved[$key] ?? false),
-                ];
-            })
-            ->values()
-            ->all();
+        $iconMap = [
+            'library'    => 'bi-book-half',
+            'science'    => 'bi-eyedropper',
+            'lab'        => 'bi-flask',
+            'computer'   => 'bi-pc-display',
+            'playground' => 'bi-tree',
+            'ground'     => 'bi-tree',
+            'transport'  => 'bi-bus-front',
+            'bus'        => 'bi-bus-front',
+            'hostel'     => 'bi-house-door',
+            'canteen'    => 'bi-cup-hot',
+            'cafeteria'  => 'bi-cup-hot',
+            'mosque'     => 'bi-moon-stars',
+            'prayer'     => 'bi-moon-stars',
+            'wifi'       => 'bi-wifi',
+            'internet'   => 'bi-wifi',
+            'cctv'       => 'bi-camera-video',
+            'security'   => 'bi-shield-check',
+            'generator'  => 'bi-lightning-charge',
+            'medical'    => 'bi-heart-pulse',
+            'health'     => 'bi-heart-pulse',
+            'sports'     => 'bi-trophy',
+            'auditorium' => 'bi-easel',
+            'parking'    => 'bi-p-square',
+            'air'        => 'bi-snow',
+        ];
+
+        foreach ($iconMap as $keyword => $icon) {
+            if (str_contains($name, $keyword)) {
+                return $icon;
+            }
+        }
+
+        return 'bi-patch-check';
     }
 
     /**
@@ -287,6 +308,17 @@ class ViewInstitutionComponent extends Component
         ];
     }
 
+    public function getInstitutionCommitteesProperty()
+    {
+        return InstitutionCommittee::query()
+            ->withoutGlobalScope(InstitutionScope::class)
+            ->where('institution_id', $this->institution->id)
+            ->where('status', 'active')
+            ->ordered()
+            ->take(6)
+            ->get();
+    }
+
     public function render()
     {
         return view('livewire.frontend.view-institution-component', [
@@ -299,6 +331,7 @@ class ViewInstitutionComponent extends Component
             'facilities'     => $this->facilities,
             'notices'        => $this->notices,
             'admission'      => $this->admission,
+            'institutionCommittees' => $this->InstitutionCommittees,
         ])->layout('layouts.frontend.app', [
             'title' => $this->institution->name,
         ]);

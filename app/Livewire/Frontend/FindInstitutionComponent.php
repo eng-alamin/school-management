@@ -15,7 +15,7 @@ class FindInstitutionComponent extends Component
     public int $perPage = 9;
 
     public string $filterType = '';
-    public string $filterCity = '';
+    public string $filterDistrict = '';
 
     protected $paginationTheme = 'bootstrap';
 
@@ -29,14 +29,14 @@ class FindInstitutionComponent extends Component
         $this->resetPage();
     }
 
-    public function updatingFilterCity(): void
+    public function updatingFilterDistrict(): void
     {
         $this->resetPage();
     }
 
     public function resetFilters(): void
     {
-        $this->reset(['search', 'filterType', 'filterCity']);
+        $this->reset(['search', 'filterType', 'filterDistrict']);
         $this->resetPage();
     }
 
@@ -76,14 +76,14 @@ class FindInstitutionComponent extends Component
             ->pluck('type');
     }
 
-    public function getInstitutionCitiesProperty()
+    public function getInstitutionDistrictsProperty()
     {
         return Institution::withoutGlobalScope(\App\Models\Scopes\InstitutionScope::class)
             ->where('status', true)
-            ->whereNotNull('city')
+            ->whereNotNull('district')
             ->distinct()
-            ->orderBy('city')
-            ->pluck('city');
+            ->orderBy('district')
+            ->pluck('district');
     }
 
     public function render()
@@ -98,14 +98,14 @@ class FindInstitutionComponent extends Component
                 $query->where(function ($q) {
                     $q->where('name', 'like', "%{$this->search}%")
                         ->orWhere('eiin', 'like', "%{$this->search}%")
-                        ->orWhere('city', 'like', "%{$this->search}%");
+                        ->orWhere('district', 'like', "%{$this->search}%");
                 });
             })
             ->when($this->filterType, function ($query) {
                 $query->where('type', $this->filterType);
             })
-            ->when($this->filterCity, function ($query) {
-                $query->where('city', $this->filterCity);
+            ->when($this->filterDistrict, function ($query) {
+                $query->where('district', $this->filterDistrict);
             })
             ->orderBy('name')
             ->paginate($this->perPage);
@@ -114,7 +114,7 @@ class FindInstitutionComponent extends Component
             'institutions' => $institutions,
             'stats' => $this->stats,
             'institutionTypes' => $this->institutionTypes,
-            'institutionCities' => $this->institutionCities,
+            'institutionDistricts' => $this->institutionDistricts,
         ])->layout('layouts.frontend.app', [
             'title' => 'Find Institution',
         ]);

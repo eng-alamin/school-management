@@ -14,10 +14,11 @@ return new class extends Migration
         Schema::create('notices', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
             $table->string('title');
             $table->longText('description');
-            $table->enum('audience', ['all', 'admin', 'teacher', 'student'])->default('all');
+            $table->enum('audience', ['all', 'admin', 'teacher', 'parent', 'student'])->default('all');
             $table->enum('priority', ['low', 'medium', 'high', 'urgent'])->default('medium');
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->string('attachment')->nullable();       // file path

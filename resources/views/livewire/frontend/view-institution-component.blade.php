@@ -275,22 +275,25 @@
                         </div>
 
                         <div class="row g-3">
-                            @foreach($facilities as $facility)
-                                <div class="col-md-4 col-12" wire:key="facility-{{ $facility['key'] }}">
+                            @forelse($facilities as $facility)
+                                <div class="col-md-4 col-12" wire:key="facility-{{ $facility['id'] }}">
                                     <div class="d-flex align-items-center gap-2 p-3 rounded-3"
-                                         style="background: {{ $facility['available'] ? 'rgba(25,135,84,0.08)' : 'var(--bg-alt)' }}; border: 1px solid var(--border);">
-                                        <i class="bi {{ $facility['icon'] }} fs-5" style="color: {{ $facility['available'] ? '#198754' : '#adb5bd' }};"></i>
+                                         style="background: rgba(25,135,84,0.08); border: 1px solid var(--border);">
+                                        <i class="bi {{ $facility['icon'] }} fs-5" style="color: #198754;"></i>
                                         <div class="flex-grow-1">
-                                            <div class="small fw-semibold" style="{{ $facility['available'] ? '' : 'color:#adb5bd;' }}">
-                                                <span class="lang-bn">{{ $facility['label_bn'] }}</span>
-                                                <span class="lang-en">{{ $facility['label_en'] }}</span>
-                                            </div>
+                                            <div class="small fw-semibold">{{ $facility['name'] }}</div>
                                         </div>
-                                        <i class="bi bi-{{ $facility['available'] ? 'check-circle-fill' : 'dash-circle' }}"
-                                           style="color: {{ $facility['available'] ? '#198754' : '#adb5bd' }};"></i>
+                                        <i class="bi bi-check-circle-fill" style="color: #198754;"></i>
                                     </div>
                                 </div>
-                            @endforeach
+                            @empty
+                                <div class="col-12">
+                                    <p class="text-muted small mb-0">
+                                        <span class="lang-bn">এই প্রতিষ্ঠানে এখনো কোনো সুযোগ-সুবিধা যোগ করা হয়নি।</span>
+                                        <span class="lang-en">No facilities have been added for this institution yet.</span>
+                                    </p>
+                                </div>
+                            @endforelse
                         </div>
                     </div>
 
@@ -388,6 +391,51 @@
                             </div>
                         @endif
                     </div>
+
+                    {{-- ===== COMMITTEE MEMBER (Preview) ===== --}}
+                    @if($institutionCommittees->isNotEmpty())
+                        <div class="feature-card p-4 p-md-5 mt-4">
+                            <div class="d-flex align-items-center justify-content-between gap-3 mb-4 pb-3 flex-wrap" style="border-bottom: 1px solid var(--border);">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="feature-icon" style="width:52px;height:52px;margin-bottom:0;font-size:1.4rem;">
+                                        <i class="bi bi-person-vcard"></i>
+                                    </div>
+                                    <h5 class="fw-bold mb-0">
+                                        <span class="lang-bn">কমিটির সদস্যবৃন্দ</span>
+                                        <span class="lang-en">Committee Member</span>
+                                    </h5>
+                                </div>
+
+                                <a href="{{ route('view.committee', $institution->id) }}" class="btn btn-sm btn-outline-primary rounded-pill">
+                                    <span class="lang-bn">সকল সদস্য দেখুন</span>
+                                    <span class="lang-en">View All</span>
+                                    <i class="bi bi-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+
+                            <div class="row g-3">
+                                @foreach($institutionCommittees as $member)
+                                    <div class="col-lg-4 col-md-6 col-6" wire:key="ci-committee-{{ $member->id }}">
+                                        <div class="d-flex align-items-center gap-3 p-3 rounded-3 h-100" style="background: var(--bg-alt); border: 1px solid var(--border);">
+                                            <div class="rounded-circle overflow-hidden flex-shrink-0 d-flex align-items-center justify-content-center"
+                                                style="width:52px;height:52px;background: var(--bg-card); border: 2px solid var(--border);">
+                                                @if($member->photo)
+                                                    <img src="{{ $member->photo_url }}" alt="{{ $member->name }}" class="w-100 h-100" style="object-fit: cover;">
+                                                @else
+                                                    <i class="bi bi-person-fill text-primary"></i>
+                                                @endif
+                                            </div>
+                                            <div class="flex-grow-1 overflow-hidden">
+                                                <h6 class="fw-bold mb-1 text-truncate" style="font-size: 0.9rem;">{{ $member->name }}</h6>
+                                                <span class="badge bg-primary rounded-pill" style="font-size: 0.68rem;">{{ $member->designation }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
                 </div>
 
                 {{-- RIGHT: Sidebar --}}
@@ -511,42 +559,24 @@
                                 <i class="bi bi-clipboard-data"></i>
                             </div>
                             <h5 class="fw-bold mb-0">
-                                <span class="lang-bn">দ্রুত সারাংশ</span>
-                                <span class="lang-en">Quick Summary</span>
+                                <span class="lang-bn">দ্রুত লিঙ্ক</span>
+                                <span class="lang-en">Quick Link</span>
                             </h5>
                         </div>
 
                         <div class="d-flex justify-content-between align-items-center py-2" style="border-bottom: 1px solid var(--border);">
                             <span class="text-muted small">
-                                <span class="lang-bn">নিবন্ধন প্রিফিক্স</span>
-                                <span class="lang-en">Registration Prefix</span>
+                                <span class="lang-bn">কমিটির সদস্য</span>
+                                <span class="lang-en">Committee Member</span>
                             </span>
-                            <span class="fw-semibold small">{{ $institution->institution_code_prefix ?? '—' }}</span>
+                            <a href="{{ route('view.committee', $institution->id) }}" class="text-muted fw-semibold small text-decoration-none">Link</a>
                         </div>
                         <div class="d-flex justify-content-between align-items-center py-2" style="border-bottom: 1px solid var(--border);">
                             <span class="text-muted small">
-                                <span class="lang-bn">শুরু নম্বর</span>
-                                <span class="lang-en">Register Start</span>
+                                <span class="lang-bn">শিক্ষক নিবন্ধন</span>
+                                <span class="lang-en">Teacher Registration</span>
                             </span>
-                            <span class="fw-semibold small">{{ $institution->register_start_from }}</span>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center py-2" style="border-bottom: 1px solid var(--border);">
-                            <span class="text-muted small">
-                                <span class="lang-bn">স্বয়ংক্রিয় স্টুডেন্ট লগইন</span>
-                                <span class="lang-en">Auto Student Login</span>
-                            </span>
-                            <span class="badge {{ $institution->auto_generate_student_login ? 'bg-primary' : 'bg-secondary' }} rounded-pill">
-                                {{ $institution->auto_generate_student_login ? 'ON' : 'OFF' }}
-                            </span>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center py-2">
-                            <span class="text-muted small">
-                                <span class="lang-bn">স্বয়ংক্রিয় অভিভাবক লগইন</span>
-                                <span class="lang-en">Auto Guardian Login</span>
-                            </span>
-                            <span class="badge {{ $institution->auto_generate_guardian_login ? 'bg-primary' : 'bg-secondary' }} rounded-pill">
-                                {{ $institution->auto_generate_guardian_login ? 'ON' : 'OFF' }}
-                            </span>
+                            <a href="{{ route('teacher.registration') }}" target="_blank" class="text-muted fw-semibold small text-decoration-none">Link</a>
                         </div>
 
                         <hr style="border-color: var(--border);">

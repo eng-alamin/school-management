@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Attendance;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\ExamSchedule;
+use App\Models\ExamSetup;
 use App\Models\AttendanceExamAssign;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -17,13 +18,16 @@ class ExamDutyAssignComponent extends Component
     protected string $paginationTheme = 'bootstrap';
 
     // ── Sort allowlist (security: raw column injection thekano jonno) ──
-    private const SORTABLE_FIELDS = ['id', 'exam_date', 'subject_name'];
+    private const SORTABLE_FIELDS = ['id', 'exam_date', 'subject_name', 'exam_name'];
 
     // List
     public string $search = '';
     public int $perPage = 10;
     public string $sortField = 'exam_date';
     public string $sortDirection = 'asc';
+
+    // Filter: kon Exam Setup-er schedule dekhabe (blank = shob)
+    public ?int $examSetupFilter = null;
 
     // Modal
     public bool $showModal = false;
@@ -56,6 +60,11 @@ class ExamDutyAssignComponent extends Component
     }
 
     public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingExamSetupFilter(): void
     {
         $this->resetPage();
     }
@@ -143,21 +152,26 @@ class ExamDutyAssignComponent extends Component
             'id'           => 'exam_schedules.id',
             'exam_date'    => 'exam_schedules.exam_date',
             'subject_name' => 'sub.name',
+            'exam_name'    => 'es.name',
         ];
         $sortColumn = $sortColumnMap[$this->sortField] ?? 'exam_schedules.exam_date';
 
         $schedules = ExamSchedule::query()
             ->select('exam_schedules.*')
+            ->join('exam_setups as es', 'es.id', '=', 'exam_schedules.exam_setup_id')
             ->join('exam_setup_details as esd', 'esd.id', '=', 'exam_schedules.exam_setup_detail_id')
             ->join('academic_class_assign_details as acad', 'acad.id', '=', 'esd.academic_class_assign_detail_id')
             ->leftJoin('academic_subjects as sub', 'sub.id', '=', 'acad.subject_id')
             ->with([
                 'examSetup.classAssign.academicClass',
                 'examSetup.classAssign.academicSection',
+                'examSetup.term',
+                'examSetup.type',
                 'examSetupDetail.classAssignDetail.subject',
             ])
             ->where('exam_schedules.institution_id', $institutionId)
             ->when($this->search, fn ($q) => $q->where('sub.name', 'like', "%{$this->search}%"))
+            ->when($this->examSetupFilter, fn ($q) => $q->where('exam_schedules.exam_setup_id', $this->examSetupFilter))
             ->orderBy($sortColumn, $this->sortDirection)
             ->paginate($this->perPage);
 
@@ -175,10 +189,17 @@ class ExamDutyAssignComponent extends Component
             ->orderBy('name')
             ->pluck('name', 'id');
 
+        // ── Filter dropdown-er jonno shob Exam Setup list (class + term shoho) ──
+        $examSetups = ExamSetup::with(['classAssign.academicClass', 'classAssign.academicSection', 'term'])
+            ->where('institution_id', $institutionId)
+            ->orderBy('name')
+            ->get();
+
         return view('livewire.admin.attendance.exam-duty-assign-component')
             ->with('schedules', $schedules)
             ->with('dutyMap', $dutyMap)
             ->with('teachers', $teachers)
+            ->with('examSetups', $examSetups)
             ->layout('layouts.admin.app', [
                 'title' => 'Exam Duty Assign | ' . institution()->name,
             ]);

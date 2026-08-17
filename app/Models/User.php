@@ -19,6 +19,7 @@ class User extends Authenticatable
 
     // Role constants — magic string এর বদলে constant ব্যবহার করো
     const ROLE_ADMIN       = 'admin';
+    const ROLE_BRANCH       = 'branch';
     const ROLE_TEACHER     = 'teacher';
     const ROLE_STAFF       = 'staff';
     const ROLE_ACCOUNTANT  = 'accountant';
@@ -130,6 +131,11 @@ class User extends Authenticatable
         return $this->role === self::ROLE_ADMIN;
     }
 
+    public function isBranch(): bool
+    {
+        return $this->role === self::ROLE_BRANCH;
+    }
+
     public function isTeacher(): bool
     {
         return $this->role === self::ROLE_TEACHER;
@@ -177,6 +183,7 @@ class User extends Authenticatable
     {
         return match($this->role) {
             self::ROLE_ADMIN      => $this->employee,
+            self::ROLE_BRANCH      => $this->employee,
             self::ROLE_TEACHER    => $this->employee,
             self::ROLE_STAFF      => $this->employee,
             self::ROLE_ACCOUNTANT => $this->employee,
@@ -200,6 +207,7 @@ class User extends Authenticatable
     {
         return match ($this->role) {
             self::ROLE_ADMIN       => 'admin.dashboard',
+            self::ROLE_BRANCH      => 'branch.dashboard',
             self::ROLE_TEACHER     => 'teacher.dashboard',
             self::ROLE_STUDENT     => 'student.dashboard',
             self::ROLE_PARENT      => 'parent.dashboard',

@@ -14,6 +14,7 @@ return new class extends Migration
             Schema::create('sms_logs', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('institution_id')->nullable()->constrained()->onDelete('cascade');
+                $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
                 $table->foreignId('sent_by')->nullable()->constrained('users')->onDelete('set null'); // কে পাঠালো (admin/system)
                 $table->string('type')->default('individual'); // individual / bulk / attendance / fee_due / exam / notice / birthday
                 $table->string('to');                          // যাকে SMS পাঠানো হয়েছে

@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('employee_id_cards', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('template_id')->nullable()->constrained('id_card_templates')->nullOnDelete();
             $table->string('employee_id');
            

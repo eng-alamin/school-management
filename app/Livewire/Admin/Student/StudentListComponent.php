@@ -157,7 +157,7 @@ class StudentListComponent extends Component
             ->orderBy('name')
             ->get();
 
-        $students = Student::with(['guardians', 'class', 'section'])
+        $query = Student::with(['guardians', 'class', 'section'])
             ->when($this->filterClass, fn($q) =>
                 $q->where('class_id', $this->filterClass)
             )
@@ -169,8 +169,9 @@ class StudentListComponent extends Component
                 ->orWhere('student_id', 'like', "%{$this->search}%")
                 ->orWhere('registration_no', 'like', "%{$this->search}%")
                 ->orWhere('roll_no', 'like', "%{$this->search}%")))
-            ->orderBy($this->sortField, $this->sortDir)
-            ->paginate($this->perPage);
+            ->orderBy($this->sortField, $this->sortDir);
+
+        $students = $query->paginate($this->perPage);
 
         return view('livewire.admin.student.student-list-component')
             ->with('students', $students)

@@ -12,6 +12,7 @@ class RoleMiddleware
     protected $dashboards = [
         'super_admin'=> 'superadmin.dashboard',
         'admin'      => 'admin.dashboard',
+        'branch'     => 'branch.dashboard',
         'staff'      => 'staff.dashboard',
         'teacher'    => 'teacher.dashboard',
         'accountant' => 'accountant.dashboard',

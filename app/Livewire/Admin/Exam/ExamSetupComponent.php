@@ -27,7 +27,7 @@ class ExamSetupComponent extends Component
     public string $search        = '';
     public int    $perPage       = 10;
     public string $sortField     = 'id';
-    public string $sortDirection = 'asc';
+    public string $sortDirection = 'desc';
 
     // Modal
     public bool $showModal     = false;

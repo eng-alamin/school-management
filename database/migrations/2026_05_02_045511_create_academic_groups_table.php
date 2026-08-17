@@ -14,8 +14,10 @@ return new class extends Migration
         Schema::create('academic_groups', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
             $table->string('name');
             $table->boolean('is_current')->default(true);
+            $table->boolean('is_status')->default(true);
             $table->timestamps();
             $table->softDeletes();
 

@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('leave_applications', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
             $table->nullableMorphs('applicable');             // applicable_id + applicable_type
             $table->foreignId('leave_category_id')->constrained('leave_categories')->onDelete('restrict');
             $table->date('start_date');

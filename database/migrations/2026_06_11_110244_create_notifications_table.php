@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('notifications', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->nullable()->constrained()->onDelete('cascade');
+            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
             $table->morphs('notifiable'); // notifiable_id + notifiable_type
             $table->string('type', 100);             // e.g. fee_due, attendance, admission
             $table->string('title');

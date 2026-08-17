@@ -71,20 +71,20 @@ class InstitutionDefaultsService
     private static function createFeatures(Institution $institution): void
     {
         $features = [
-            'inventory_management_module',
-            'card_management_module',
-            'certificate_management_module',
-            'branch_module',
+            'inventory_module' => true,
+            'card_module'      => true,
+            'certificate_module' => true,
+            'branch_module'    => false,
         ];
 
-        foreach ($features as $featureKey) {
+        foreach ($features as $featureKey => $isActive) {
             Feature::firstOrCreate(
                 [
                     'institution_id' => $institution->id,
                     'feature_key'    => $featureKey,
                 ],
                 [
-                    'is_active' => true,
+                    'is_active' => $isActive,
                 ]
             );
         }

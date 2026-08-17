@@ -206,7 +206,7 @@ class EditComponent extends Component
                 $first = $rows->first();
                 return (object) [
                     'id'       => $first->class_id,
-                    'name'     => $first->class->name,
+                    'name'     => $first->class?->name,
                     'sections' => $rows->pluck('section')->filter()->values(),
                 ];
             })

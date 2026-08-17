@@ -182,7 +182,7 @@
                                                     <span class="lang-en">Institution Type</span>
                                                 </label>
                                                 <select
-                                                    class="form-select @error('institution_type') is-invalid @enderror"
+                                                    class="selectpicker @error('institution_type') is-invalid @enderror"
                                                     wire:model.live="institution_type"
                                                 >
                                                     <option value="">Select Type</option>
@@ -202,7 +202,7 @@
                                                     <span class="lang-en">Institution Medium</span>
                                                 </label>
                                                 <select
-                                                    class="form-select @error('institution_medium') is-invalid @enderror"
+                                                    class="selectpicker @error('institution_medium') is-invalid @enderror"
                                                     wire:model.live="institution_medium"
                                                 >
                                                     <option value="">Select Medium</option>
@@ -221,7 +221,7 @@
                                                     <span class="lang-en">Division</span>
                                                 </label>
                                                 <select
-                                                    class="form-select @error('institution_division') is-invalid @enderror"
+                                                    class="selectpicker @error('institution_division') is-invalid @enderror"
                                                     wire:model.live="institution_division"
                                                 >
                                                     <option value="">Select Division</option>
@@ -241,7 +241,7 @@
                                                     <span class="lang-en">District</span>
                                                 </label>
                                                 <select
-                                                    class="form-select @error('institution_district') is-invalid @enderror"
+                                                    class="selectpicker @error('institution_district') is-invalid @enderror"
                                                     wire:model.live="institution_district"
                                                     @if(!$institution_division) disabled @endif
                                                 >

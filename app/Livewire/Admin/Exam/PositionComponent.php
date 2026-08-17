@@ -8,6 +8,7 @@ use App\Models\ExamSetup;
 use App\Models\ExamSetupDetail;
 use App\Models\ExamEntry;
 use App\Models\ExamPosition;
+use App\Models\ExamGrade;
 use App\Models\Student;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -20,6 +21,9 @@ class PositionComponent extends Component
 
     // Read-only display (derived from selected exam's classAssign)
     public ?string $selectedClassLabel = null;
+
+    // 'mark' | 'grade' | 'both' — exam_types.name onujayi decide hoy
+    public string $displayMode = 'both';
 
     // Results
     public array $rows = []; // student_id => row data
@@ -50,18 +54,42 @@ class PositionComponent extends Component
 
         if (!$this->exam_setup_id) {
             $this->selectedClassLabel = null;
+            $this->displayMode = 'both';
             return;
         }
 
         // ✅ Fix: academicClass()/academicSection() relation names ব্যবহার করা হলো
         // (পুরনো class()/section() নাম আর কোথাও নেই, তাই আগে এখানে সবসময় "—" দেখাত)
-        $examSetup = ExamSetup::with('classAssign.academicClass', 'classAssign.academicSection')
+        $examSetup = ExamSetup::with('classAssign.academicClass', 'classAssign.academicSection', 'type')
             ->find($this->exam_setup_id);
 
         $this->selectedClassLabel = $examSetup
             ? ($examSetup->classAssign->academicClass->name ?? '—') .
               ($examSetup->classAssign->academicSection ? ' - ' . $examSetup->classAssign->academicSection->name : '')
             : null;
+
+        $this->displayMode = $this->resolveDisplayMode($examSetup);
+    }
+
+    /**
+     * ExamType-er name theke display-mode resolve kore:
+     * 'mark'  => shudhu marks dekhabe (GPA/Grade hide)
+     * 'grade' => shudhu grade dekhabe
+     * 'both'  => shob dekhabe (default/fallback)
+     */
+    private function resolveDisplayMode(?ExamSetup $examSetup): string
+    {
+        $typeName = strtolower(trim((string) ($examSetup?->type?->name ?? '')));
+
+        $hasMark  = str_contains($typeName, 'mark');
+        $hasGrade = str_contains($typeName, 'grade');
+
+        return match (true) {
+            $hasMark && $hasGrade => 'both',
+            $hasGrade             => 'grade',
+            $hasMark              => 'mark',
+            default               => 'both',
+        };
     }
 
     private function resetResults(): void
@@ -72,6 +100,38 @@ class PositionComponent extends Component
         $this->resolvedClassAssignId = null;
         $this->resolvedClassId = null;
         $this->resolvedSectionId = null;
+    }
+
+    /**
+     * Institution-er sob grade band (A+, A, B... F) percentage-range shoho.
+     */
+    private function loadExamGrades()
+    {
+        return ExamGrade::where('institution_id', institution()->id)
+            ->orderByDesc('min_percentage')
+            ->get();
+    }
+
+    /**
+     * Percentage-tা kon grade-range-e pore seta khuje ber kore.
+     */
+    private function resolveGrade($examGrades, float $percentage): ?ExamGrade
+    {
+        return $examGrades->first(
+            fn (ExamGrade $grade) => $percentage >= (float) $grade->min_percentage
+                && $percentage <= (float) $grade->max_percentage
+        );
+    }
+
+    /**
+     * Result 'fail' hole percentage-range match na kore, sobcheye kom
+     * grade_point-er grade (shadharonoto "F") force kora hoy — karon
+     * ekta subject fail thakleo overall percentage passing range-e pore
+     * jete pare, jeta bhul upper grade dekhabe.
+     */
+    private function lowestGrade($examGrades): ?ExamGrade
+    {
+        return $examGrades->sortBy('grade_point')->first();
     }
 
     public function filter(): void
@@ -113,7 +173,6 @@ class PositionComponent extends Component
         $detailIds = $details->pluck('id');
         $fullMarkTotal = $details->sum('full_mark');
 
-        // ✅ Fix: academicClass/academicSection relation নাম
         $students = Student::with('academicClass', 'academicSection')
             ->where('class_id', $this->resolvedClassId)
             ->when($this->resolvedSectionId, function ($q) {
@@ -149,6 +208,7 @@ class PositionComponent extends Component
         }
 
         $currentExam = $examSetup;
+        $examGrades  = $this->loadExamGrades();
 
         $computed = [];
         foreach ($students as $student) {
@@ -167,6 +227,13 @@ class PositionComponent extends Component
             } else {
                 $result = $percentage >= 33 ? 'pass' : 'fail'; // adjust threshold as needed
             }
+
+            // ✅ New: result onujayi gpa/grade resolve kora hocche exam_grades theke
+            $gradeModel = match ($result) {
+                'pass'  => $this->resolveGrade($examGrades, $percentage) ?? $this->lowestGrade($examGrades),
+                'fail'  => $this->lowestGrade($examGrades),
+                default => null, // incomplete / absent → nishchit na hoye grade dewa hocche na
+            };
 
             // ✅ Fix: একই class_assign (একই class+section+exam-series) এর মধ্যেই
             // আগের position খোঁজা হচ্ছে — আগে শুধু session + সময় দিয়ে filter হতো,
@@ -193,6 +260,8 @@ class PositionComponent extends Component
                 'total_full_mark'   => $fullMarkTotal,
                 'percentage'        => $percentage,
                 'result'            => $result,
+                'gpa'               => $gradeModel?->grade_point,
+                'grade'             => $gradeModel?->name,
                 'previous_position' => $previousPosition,
                 'position'          => $existing->position ?? null,
                 'principal_comment' => $existing->principal_comment ?? null,
@@ -245,14 +314,14 @@ class PositionComponent extends Component
                         'student_id'               => $studentId,
                     ],
                     [
-                        // ✅ Fix: institution_id explicit set করা হলো
-                        // (Exam module এর প্রতিটা টেবিলেই এই bug repeat হয়েছিল)
                         'institution_id'      => $institutionId,
                         'academic_session_id' => $this->academic_session_id,
                         'total_obtained'      => $row['total_obtained'],
                         'total_full_mark'     => $row['total_full_mark'],
                         'percentage'          => $row['percentage'],
                         'result'              => $row['result'],
+                        'gpa'                 => $row['gpa'],
+                        'grade'               => $row['grade'],
                         'previous_position'   => $row['previous_position'],
                         'position'            => $row['position'],
                         'principal_comment'   => $row['principal_comment'],
@@ -277,10 +346,10 @@ class PositionComponent extends Component
     {
         $academicSessions = AcademicSession::orderByDesc('id')->get();
 
-        // ✅ Fix: academicClass/academicSection relation নাম
         $exams = $this->academic_session_id
             ? ExamSetup::with('classAssign.academicClass', 'classAssign.academicSection')
                 ->where('academic_session_id', $this->academic_session_id)
+                ->where('is_published', true)
                 ->whereHas('details')
                 ->orderBy('name')
                 ->get()

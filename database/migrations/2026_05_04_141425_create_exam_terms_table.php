@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('exam_terms', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
             $table->string('name')->nullable();
             $table->timestamps();
 

@@ -4,12 +4,15 @@ namespace App\Models;
 
 use App\Traits\BelongsToInstitution;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\BelongsToBranch;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class BiometricAttendanceLog extends Model
 {
     use BelongsToInstitution;
+    use BelongsToBranch;
+    use SoftDeletes;
 
     public const VERIFY_MODE_PASSWORD = 0;
     public const VERIFY_MODE_FINGERPRINT = 1;

@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'setup.wizard'   => \App\Http\Middleware\RedirectToSetupWizard::class,
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'billing.check' => \App\Http\Middleware\CheckBillingStatus::class,
+            'permission.team' => \App\Http\Middleware\SetPermissionsTeamId::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [

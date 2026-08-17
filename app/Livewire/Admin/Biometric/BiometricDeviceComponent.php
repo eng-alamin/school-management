@@ -260,7 +260,7 @@ class BiometricDeviceComponent extends Component
         ->layout('layouts.admin.app', [
             'title' => 'Biometric Device | ' . institution()->name,
             'breadcrumbs' => [
-                ['name' => 'Biometric Device', 'url' => route('admin.biometric-devices')],
+                ['name' => 'Biometric Device', 'url' => route('admin.biometric.devices')],
             ],
         ]);
     }

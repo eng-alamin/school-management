@@ -4,11 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\BelongsToInstitution;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Traits\BelongsToBranch;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class FeePayment extends Model
 {
     use BelongsToInstitution;
+    use BelongsToBranch;
     use SoftDeletes;
 
     protected $guarded = [];

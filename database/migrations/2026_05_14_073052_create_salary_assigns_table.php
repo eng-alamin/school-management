@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('salary_assigns', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
             // ── Foreign keys ──────────────────────────────────────
             $table->string('role');
             $table->foreignId('designation_id')->nullable()->constrained('employee_designations')->nullOnDelete();

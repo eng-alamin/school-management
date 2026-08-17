@@ -2,13 +2,17 @@
 
 namespace App\Models;
 
-use App\Traits\BelongsToInstitution;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\BelongsToInstitution;
+use App\Traits\BelongsToBranch;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class BiometricDeviceCommand extends Model
 {
     use BelongsToInstitution;
+    use BelongsToBranch;
+    // use SoftDeletes;
 
     protected $fillable = [
         'institution_id',

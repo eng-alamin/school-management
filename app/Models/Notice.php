@@ -3,13 +3,16 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\BelongsToInstitution;
+use App\Traits\BelongsToBranch;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Notice extends Model
 {
-    use BelongsToInstitution, SoftDeletes;
+    use BelongsToInstitution;
+    use BelongsToBranch;
+    use SoftDeletes;
 
     protected $guarded = [];
 

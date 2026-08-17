@@ -5,12 +5,16 @@ namespace App\Livewire\Admin\Academic;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\AcademicGroup;
+use Illuminate\Validation\Rule;
 
 class GroupComponent extends Component
 {
     use WithPagination;
 
     protected string $paginationTheme = 'bootstrap';
+
+    // Security: allowlist for sortBy() — never orderBy() a raw client value
+    protected const SORTABLE_FIELDS = ['id', 'name', 'is_current'];
 
     // List
     public string $search = '';
@@ -31,7 +35,15 @@ class GroupComponent extends Component
     protected function rules(): array
     {
         return [
-            'name'      => 'required|string|max:255|unique:academic_groups,name,' . $this->editId . ',id,institution_id,' . institution()->id,
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('academic_groups', 'name')
+                    ->where(fn ($q) => $q->where('institution_id', institution()->id))
+                    ->whereNull('deleted_at')
+                    ->ignore($this->editId),
+            ],
             'is_current' => 'boolean',
         ];
     }
@@ -43,6 +55,10 @@ class GroupComponent extends Component
 
     public function sortBy(string $field): void
     {
+        if (! in_array($field, self::SORTABLE_FIELDS, true)) {
+            return;
+        }
+
         if ($this->sortField === $field) {
             $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
         } else {
@@ -55,6 +71,8 @@ class GroupComponent extends Component
 
     public function openCreate(): void
     {
+        // abort_unless(auth()->user()->can('academic-group-create'), 403);
+
         $this->resetForm();
         $this->editId = null;
         $this->showModal = true;
@@ -62,28 +80,40 @@ class GroupComponent extends Component
 
     public function openEdit(int $id): void
     {
+        // abort_unless(auth()->user()->can('academic-group-update'), 403);
+
         $record = AcademicGroup::where('institution_id', institution()->id)
             ->findOrFail($id);
 
-        $this->editId    = $id;
-        $this->name      = $record->name;
+        $this->editId     = $id;
+        $this->name       = $record->name;
         $this->is_current = (bool) $record->is_current;
-        $this->showModal = true;
+        $this->showModal  = true;
     }
 
     public function save(): void
     {
+        // abort_unless($this->editId ? auth()->user()->can('academic-group-update') : auth()->user()->can('academic-group-create'),403);
+
         $this->validate();
 
         $data = [
-            'name'      => $this->name,
+            'name'       => $this->name,
             'is_current' => $this->is_current,
         ];
 
         if ($this->editId) {
-            AcademicGroup::where('institution_id', institution()->id)
-                ->findOrFail($this->editId)
-                ->update($data);
+            $record = AcademicGroup::where('institution_id', institution()->id)
+                ->findOrFail($this->editId);
+
+            $record->update($data);
+
+            activity()
+                ->performedOn($record)
+                ->tap(function ($activity) {
+                    $activity->institution_id = institution()->id;
+                })
+                ->log('Academic group updated');
 
             $savedId = $this->editId;
             $this->dispatch('toast', type: 'success', message: 'Data updated successfully!');
@@ -92,6 +122,13 @@ class GroupComponent extends Component
 
             $record  = AcademicGroup::create($data);
             $savedId = $record->id;
+
+            activity()
+                ->performedOn($record)
+                ->tap(function ($activity) {
+                    $activity->institution_id = institution()->id;
+                })
+                ->log('Academic group created');
 
             $this->dispatch('toast', type: 'success', message: 'Data created successfully!');
         }
@@ -108,17 +145,49 @@ class GroupComponent extends Component
         $this->resetForm();
     }
 
+    public function toggleStatus(int $id): void
+    {
+        // abort_unless(auth()->user()->can('academic-group-update'), 403);
+
+        $record = AcademicGroup::where('institution_id', institution()->id)
+            ->findOrFail($id);
+
+        $record->update(['is_status' => ! $record->is_status]);
+
+        activity()
+            ->performedOn($record)
+            ->tap(function ($activity) {
+                $activity->institution_id = institution()->id;
+            })
+            ->log($record->is_status ? 'Academic group activated' : 'Academic group deactivated');
+
+        $this->dispatch('toast', type: 'success', message: 'Status updated successfully!');
+    }
+
     public function confirmDeleteRecord(int $id): void
     {
+        // abort_unless(auth()->user()->can('academic-group-delete'), 403);
+
         $this->deleteId      = $id;
         $this->confirmDelete = true;
     }
 
     public function deleteRecord(): void
     {
-        AcademicGroup::where('institution_id', institution()->id)
-            ->findOrFail($this->deleteId)
-            ->delete();
+        // abort_unless(auth()->user()->can('academic-group-delete'), 403);
+
+        $record = AcademicGroup::where('institution_id', institution()->id)
+            ->findOrFail($this->deleteId);
+
+        // Log BEFORE delete, per project convention
+        activity()
+            ->performedOn($record)
+            ->tap(function ($activity) {
+                $activity->institution_id = institution()->id;
+            })
+            ->log('Academic group deleted');
+
+        $record->delete();
 
         $this->confirmDelete = false;
         $this->deleteId      = null;
@@ -136,7 +205,7 @@ class GroupComponent extends Component
     {
         $groups = AcademicGroup::query()
             ->where('institution_id', institution()->id)
-            ->when($this->search, fn($q) => $q->where('name', 'like', "%{$this->search}%"))
+            ->when($this->search, fn ($q) => $q->where('name', 'like', "%{$this->search}%"))
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 

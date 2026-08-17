@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('inventory_purchases', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('supplier_id')->nullable()->constrained('inventory_suppliers')->nullOnDelete();
             $table->foreignId('store_id')->nullable()->constrained('inventory_stores')->nullOnDelete();
             $table->string('bill_no');

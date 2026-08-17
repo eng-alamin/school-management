@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('salary_advance_repayments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('salary_advance_id')->constrained()->cascadeOnDelete();
  
             // Which month's SalaryPayment this deduction came from.

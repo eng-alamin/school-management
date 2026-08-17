@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('exam_setup_details', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('exam_setup_id')->constrained('exam_setups')->cascadeOnDelete();
             $table->foreignId('academic_class_assign_detail_id')->constrained('academic_class_assign_details')->cascadeOnDelete();
             $table->decimal('full_mark', 8, 2)->default(100);

@@ -71,7 +71,7 @@ class EditTemplateComponent extends Component
     <p style="font-size:15px;line-height:1.9;text-align:justify;">
         This Is To Certify That {name} And Of He/she Is Gender As {gender} Son/daughter Of {father_name} &amp; {mother_name}
         Of {institute_name} And {institute_address} Bearing Roll- {roll} &amp; Exam Center Campus-04 And Class {class}
-        Dulg Passed The Final school Certificate Examination Of 2020 {category} And His/her Date Of Birth As Recorded
+        Dulg Passed The Final school Certificate Examination Of 2020 {group} And His/her Date Of Birth As Recorded
         Is {birthday} Obtained G.p.a 4.94 In The Scale Of 5.00.
     </p>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:30px;">
@@ -95,7 +95,7 @@ class EditTemplateComponent extends Component
     <p style="font-size:15px;line-height:1.9;text-align:justify;">
         This Is To Certify That {name} And Of He/she Is Gender As {gender} Son/daughter Of {father_name} &amp; {mother_name}
         Of {institute_name} And {institute_address} Bearing Roll- {roll} &amp; Exam Center Campus-04 And Class {class}
-        Dulg Passed The Final school Certificate Examination Of 2020 {category} And His/her Date Of Birth As Recorded
+        Dulg Passed The Final school Certificate Examination Of 2020 {group} And His/her Date Of Birth As Recorded
         Is {birthday} Obtained G.p.a 4.94 In The Scale Of 5.00.
     </p>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:30px;">

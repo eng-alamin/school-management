@@ -68,8 +68,6 @@ class StudentAddComponent extends Component
 
     public array $availableSections = [];
 
-    // ── Class-level section-support flag (academic_classes.has_section) ──
-    // True by default; set in updatedClassId() based on the selected class.
     public bool $selectedClassHasSection = true;
 
     public bool $showFeeModal = false;
@@ -208,7 +206,6 @@ class StudentAddComponent extends Component
     public function updatedGuardianExists($value): void
     {
         if ($value) {
-            // Existing guardian select kora hocche -> new-guardian fields clear
             $this->reset([
                 'guardian_name',
                 'guardian_relation',
@@ -225,7 +222,6 @@ class StudentAddComponent extends Component
                 'guardian_photo_upload',
             ]);
         } else {
-            // Notun guardian create kora hocche -> existing guardian_id clear
             $this->reset(['guardian_id']);
         }
 
@@ -252,9 +248,6 @@ class StudentAddComponent extends Component
                     ->where(fn($q) => $q->where('institution_id', $institutionId)),
             ],
 
-            // Section required only when the selected class actually supports
-            // sections (academic_classes.has_section). Otherwise stays nullable
-            // and is forced to null in save() regardless of stray client state.
             'section_id' => [
                 Rule::requiredIf($this->selectedClassHasSection),
                 'nullable',
@@ -481,9 +474,6 @@ class StudentAddComponent extends Component
 
             $studentId = $stdPrefix . $year . str_pad($stdSerial, $stdDigit, '0', STR_PAD_LEFT);
 
-            // ── Race-condition safety: registration_no-o ekhon ekivabei
-            // lock kore re-verify/re-generate kora hocche, preview-e generate
-            // kora value use na kore ──
             $regDigit     = (int) ($inst->registration_digit_length ?? 6);
             $regStartFrom = (int) ($inst->registration_start_from ?? 1);
 
@@ -510,8 +500,6 @@ class StudentAddComponent extends Component
 
             $rollNo = $this->roll_no ?: str_pad($rollSerial + 1, 2, '0', STR_PAD_LEFT);
 
-            // ── Data integrity: class-e section na thakle (has_section = false),
-            // section_id kokhono persist kora jabe na, client-side state jai hok na keno ──
             $sectionId = $this->selectedClassHasSection ? ($this->section_id ?: null) : null;
 
             $student = Student::create([
@@ -542,9 +530,6 @@ class StudentAddComponent extends Component
                 'remarks'              => $this->remarks,
             ]);
 
-            // ── Student create howar sathe sathe tar first
-            // student_enrollments record-o toiri kora hocche (status = running).
-            // Same transaction-e thakay, kono step fail korle duitai rollback hobe ──
             StudentEnrollment::create([
                 'institution_id'      => $institutionId,
                 'student_id'          => $student->id,
@@ -609,7 +594,6 @@ class StudentAddComponent extends Component
             $this->showFeeModal = false;
 
             if ($invoice) {
-                // ── Invoice toiri hoyeche - Payment Collect page e redirect koro ──
                 $this->dispatch('toast', type: 'success', message: 'Student created successfully!');
 
                 return redirect()->route('admin.students.payment-collect', ['invoice' => $invoice->id]);
@@ -743,16 +727,19 @@ class StudentAddComponent extends Component
             ->orderBy('id')
             ->get();
 
-        $groups = AcademicGroup::orderBy('name')->get();
+        $groups = AcademicGroup::orderBy('name')
+            ->where('is_status', true)
+            ->get();
+            
         $guardians = Guardian::all();
 
-        return view('livewire.admin.student.student-add-component')
-            ->with('sessions', $sessions)
-            ->with('classes', $classes)
-            ->with('groups', $groups)
-            ->with('guardians', $guardians)
-            ->layout('layouts.admin.app', [
-                'title' => 'Create Admission | ' . institution()->name,
-            ]);
+        return view('livewire.admin.student.student-add-component',[
+            'sessions'      => $sessions,
+            'classes'      => $classes,
+            'groups'      => $groups,
+            'guardians'      => $guardians,
+        ])->layout('layouts.admin.app', [
+            'title' => 'Create Admission | ' . institution()->name,
+        ]);
     }
 }

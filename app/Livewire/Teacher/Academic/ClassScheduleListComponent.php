@@ -5,6 +5,7 @@ namespace App\Livewire\Teacher\Academic;
 use Livewire\Component;
 use App\Models\AcademicClassSchedule;
 use App\Models\AcademicClassAssignDetail;
+use App\Models\AcademicSubject;
 
 class ClassScheduleListComponent extends Component
 {
@@ -18,20 +19,19 @@ class ClassScheduleListComponent extends Component
 
     public function loadSchedule(): void
     {
+        $institutionId = institution()->id;
+        $teacherId     = auth()->id();
+
         // Admin panel theke EI teacher (login kora user) ke je je class+section e
         // subject assign kora ache, shegula AcademicClassAssignDetail theke nao
         $details = AcademicClassAssignDetail::with(['subject', 'classAssign.class', 'classAssign.section'])
-            ->where('teacher_id', auth()->id())
+            ->where('institution_id', $institutionId)
+            ->where('teacher_id', $teacherId)
             ->get();
 
         if ($details->isEmpty()) {
             return;
         }
-
-        // class_assign_id => [tar nijer subject name gula] — shudhu EI subject gula e
-        // schedule theke dekhabo, oi class/section er onno subject na
-        $mySubjectsByAssign = $details->groupBy('academic_class_assign_id')
-            ->map(fn($group) => $group->pluck('subject.name')->filter()->values());
 
         $assigns = $details->pluck('classAssign')->filter()->unique('id');
 
@@ -42,22 +42,27 @@ class ClassScheduleListComponent extends Component
         // in a single query, then group them in memory for O(1) lookup.
         $classIds = $assigns->pluck('class_id')->unique()->values();
 
-        $schedulesByAssign = AcademicClassSchedule::whereIn('class_id', $classIds)
+        $schedulesByAssign = AcademicClassSchedule::where('institution_id', $institutionId)
+            ->whereIn('class_id', $classIds)
             ->get()
             ->groupBy(fn($s) => $s->class_id . ':' . ($s->section_id ?? 'null'));
 
+        // ── data JSON e shudhu subject_id/teacher_id thake (name na) ──
+        // Age subject NAME diye match kora hocchilo ($period['subject']), ja
+        // key-i exist kore na ebong duita alada class e same name-er subject
+        // thakle bhul match howar risk o thake. Ekhon সরাসরি teacher_id diye
+        // match kora hocche — eta e actual source of truth (ei teacher ki
+        // shotti-i ei period-e assigned).
         $allRows = collect();
 
         foreach ($assigns as $assign) {
-            $mySubjects = $mySubjectsByAssign[$assign->id] ?? collect();
-
             $key = $assign->class_id . ':' . ($assign->section_id ?? 'null');
             $schedules = $schedulesByAssign[$key] ?? collect();
 
             foreach ($schedules as $schedule) {
                 foreach ($schedule->data ?? [] as $period) {
-                    // shudhu nijer subject hole e row e dhukbe
-                    if (!$mySubjects->contains($period['subject'] ?? null)) {
+                    // shudhu nijer teacher_id-r row e dhukbe
+                    if ((int) ($period['teacher_id'] ?? 0) !== (int) $teacherId) {
                         continue;
                     }
 
@@ -71,7 +76,7 @@ class ClassScheduleListComponent extends Component
                         'day'        => $schedule->day,
                         'class'      => $assign->class?->name ?? '—',
                         'section'    => $assign->section?->name ?? '—',
-                        'subject'    => $period['subject']    ?? '—',
+                        'subject_id' => $period['subject_id'] ?? null,
                         'start_time' => $period['start_time'],
                         'end_time'   => $period['end_time'],
                         'class_room' => $period['class_room'] ?? null,
@@ -83,6 +88,19 @@ class ClassScheduleListComponent extends Component
         if ($allRows->isEmpty()) {
             return;
         }
+
+        // ── Subject name bulk resolve (N+1 thekano jonno ekbare) ──
+        $subjectIds = $allRows->pluck('subject_id')->filter()->unique()->values();
+
+        $subjectNames = AcademicSubject::where('institution_id', $institutionId)
+            ->whereIn('id', $subjectIds)
+            ->pluck('name', 'id');
+
+        $allRows = $allRows->map(function ($row) use ($subjectNames) {
+            $row['subject'] = $subjectNames[$row['subject_id']] ?? '—';
+            unset($row['subject_id']);
+            return $row;
+        });
 
         // Unique time slots sort by start_time
         $timeSlots = $allRows

@@ -1,6 +1,6 @@
 <div>
     {{-- ===== HERO / SEARCH SECTION ===== --}}
-    <section class="hero-section" style="padding: 110px 0 60px;">
+    <section class="hero-section" style="padding: 110px 0 60px;" wire:ignore>
         <div class="container">
             <div class="text-center mb-4">
                 <span class="hero-badge fade-up">
@@ -35,7 +35,7 @@
                                     <input
                                         type="text"
                                         class="form-control border-start-0 ps-0"
-                                        placeholder="{{ 'Name, EIIN or City...' }}"
+                                        placeholder="{{ 'Name, EIIN or District...' }}"
                                         wire:model.live.debounce.400ms="search"
                                     >
                                     <div wire:loading wire:target="search" class="input-group-text bg-transparent border-start-0">
@@ -49,7 +49,7 @@
                                     <span class="lang-bn">প্রকার</span>
                                     <span class="lang-en">Type</span>
                                 </label>
-                                <select class="form-select" wire:model.live="filterType">
+                                <select class="selectpicker" wire:model.live="filterType">
                                     <option value="">
                                         {{ 'All Types' }}
                                     </option>
@@ -62,20 +62,20 @@
                             <div class="col-md-3">
                                 <label class="form-label">
                                     <span class="lang-bn">এলাকা</span>
-                                    <span class="lang-en">City</span>
+                                    <span class="lang-en">District</span>
                                 </label>
-                                <select class="form-select" wire:model.live="filterCity">
+                                <select class="selectpicker" wire:model.live="filterDistrict">
                                     <option value="">
-                                        {{ 'All Cities' }}
+                                        {{ 'All Districts' }}
                                     </option>
-                                    @foreach($institutionCities as $city)
-                                        <option value="{{ $city }}">{{ $city }}</option>
+                                    @foreach($institutionDistricts as $district)
+                                        <option value="{{ $district }}">{{ $district }}</option>
                                     @endforeach
                                 </select>
                             </div>
                         </div>
 
-                        @if($search || $filterType || $filterCity)
+                        @if($search || $filterType || $filterDistrict)
                             <div class="mt-3 d-flex align-items-center gap-2">
                                 <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" wire:click="resetFilters">
                                     <i class="bi bi-x-circle me-1"></i>
@@ -167,7 +167,7 @@
                 </div>
             </div>
 
-            <div class="row g-4" wire:loading.class="opacity-50" wire:target="search,filterType,filterCity,gotoPage,previousPage,nextPage">
+            <div class="row g-4" wire:loading.class="opadistrict-50" wire:target="search,filterType,filterDistrict,gotoPage,previousPage,nextPage">
                 @forelse($institutions as $inst)
                     <div class="col-md-6 col-lg-4">
                         <div class="feature-card p-4 h-100 d-flex flex-column">
@@ -196,9 +196,9 @@
                                         <i class="bi bi-hash text-primary"></i> EIIN: {{ $inst->eiin }}
                                     </li>
                                 @endif
-                                @if($inst->city)
+                                @if($inst->district)
                                     <li class="mb-2 d-flex align-items-center gap-2">
-                                        <i class="bi bi-geo-alt text-primary"></i> {{ $inst->city }}
+                                        <i class="bi bi-geo-alt text-primary"></i> {{ $inst->district }}
                                     </li>
                                 @endif
                                 @if($inst->phone)

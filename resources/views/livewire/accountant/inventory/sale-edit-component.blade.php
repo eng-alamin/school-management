@@ -342,7 +342,7 @@
     <!-- FORM FOOTER -->
     <div class="form-footer">
 
-        <a href="{{ route('admin.inventory.sale.list') }}"
+        <a href="{{ route('accountant.inventory.sale.list') }}"
            class="btn-outline">
             <span class="material-icons-round" style="font-size:16px">arrow_back</span>
             Back

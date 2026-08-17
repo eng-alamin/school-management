@@ -326,7 +326,7 @@
                                                         <span class="lang-bn">লিঙ্গ</span>
                                                         <span class="lang-en">Gender</span>
                                                     </label>
-                                                    <select wire:model="gender" class="form-select">
+                                                    <select wire:model="gender" class="selectpicker">
                                                         <option value="">Select</option>
                                                         <option value="male">Male</option>
                                                         <option value="female">Female</option>
@@ -338,7 +338,7 @@
                                                         <span class="lang-bn">রক্তের গ্রুপ</span>
                                                         <span class="lang-en">Blood Group</span>
                                                     </label>
-                                                    <select wire:model="blood_group" class="form-select">
+                                                    <select wire:model="blood_group" class="selectpicker">
                                                         <option value="">Select</option>
                                                         @foreach(['A+','A-','B+','B-','AB+','AB-','O+','O-'] as $bg)
                                                             <option value="{{ $bg }}">{{ $bg }}</option>
@@ -358,7 +358,7 @@
                                                         <span class="lang-bn">ধর্ম</span>
                                                         <span class="lang-en">Religion</span>
                                                     </label>
-                                                    <select wire:model="religion" class="form-select">
+                                                    <select wire:model="religion" class="selectpicker">
                                                         <option value="">Select</option>
                                                         <option value="muslim">Muslim</option>
                                                         <option value="hindu">Hindu</option>

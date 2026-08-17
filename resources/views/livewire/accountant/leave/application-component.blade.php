@@ -44,7 +44,7 @@
                 @endif
 
                 
-                <a href="{{ route('admin.leave.categories') }}" target="_blank" class="btn-sm btn-outline" wire:click="openCreate">
+                <a href="{{ route('accountant.leave.categories') }}" target="_blank" class="btn-sm btn-outline" wire:click="openCreate">
                     <span class="material-icons-round">category</span>
                     <span>Add Category</span>
                 </a>

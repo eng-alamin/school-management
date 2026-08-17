@@ -235,6 +235,7 @@ class ScheduleAddComponent extends Component
     {
         return view('livewire.admin.exam.schedule-add-component')
             ->with('exams', ExamSetup::with('classAssign.academicClass', 'classAssign.academicSection')
+                ->where('is_published', true)
                 ->orderBy('name')
                 ->get())
             ->layout('layouts.admin.app', [

@@ -48,7 +48,7 @@
         </li>
       @endif
 
-      @if(feature_enabled(\App\Support\Feature::INVENTORY_MANAGEMENT_MODULE))
+      @if(feature_enabled(\App\Support\Feature::INVENTORY_MODULE))
         <li class="nav1-item">
           <div class="nav1-link {{ str_contains(request()->url(), 'inventory/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
             <span class="material-icons-round nav-icon">inventory_2</span>
@@ -129,6 +129,7 @@
             <li class="nav2-item"><a href="{{route('admin.academic.class-assign') }}" class="nav2-link {{ str_contains(request()->url(), 'academic/class-assign') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-class-assign">Class Assign</span></a></li>
             <li class="nav2-item"><a href="{{route('admin.academic.class-schedule.list') }}" class="nav2-link {{ str_contains(request()->url(), 'academic/class-schedule') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-class-schedule">Class Schedule</span></a></li>
             <li class="nav2-item"><a href="{{route('admin.academic.teacher-schedule') }}" class="nav2-link {{ str_contains(request()->url(), 'academic/teacher-schedule') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-teacher-schedule">Teacher Schedule</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.academic.substitute-teacher') }}" class="nav2-link {{ str_contains(request()->url(), 'academic/substitute-teacher') == true ? 'active' : '' }}"><span class="nav2-icon">S</span><span class="nav2-label" id="nav-substitute-teacher">Substitute Teacher</span></a></li>
             <li class="nav2-item"><a href="{{route('admin.academic.student-promotion') }}" class="nav2-link {{ str_contains(request()->url(), 'academic/student-promotion') == true ? 'active' : '' }}"><span class="nav2-icon">S</span><span class="nav2-label" id="nav-student-promotion">Student Promotion</span></a></li>
             <li class="nav2-item"><a href="{{route('admin.academic.student-enrollment') }}" class="nav2-link {{ str_contains(request()->url(), 'academic/student-enrollment') == true ? 'active' : '' }}"><span class="nav2-icon">S</span><span class="nav2-label" id="nav-student-enrollment">Student Enrollment</span></a></li>
           </ul>
@@ -177,15 +178,15 @@
       </li>
 
       <li class="nav1-item">
-        <div class="nav1-link {{ str_contains(request()->url(), '/biometric-devices') || str_contains(request()->url(), '/biometric-device-mappings') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
+        <div class="nav1-link {{ str_contains(request()->url(), '/biometric/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
           <span class="material-icons-round nav-icon">fingerprint</span>
           <span class="nav-label" id="nav-biometric">Biometric</span>
           <span class="material-icons-round nav-arrow">expand_more</span>
         </div>
-        <div class="nav2-collapse {{ str_contains(request()->url(), '/biometric-devices') || str_contains(request()->url(), '/biometric-device-mappings') == true ? 'show' : '' }}">
+        <div class="nav2-collapse {{ str_contains(request()->url(), '/biometric/') == true ? 'show' : '' }}">
           <ul>
-            <li class="nav2-item"><a href="{{route('admin.biometric-devices') }}" class="nav2-link {{ str_contains(request()->url(), 'biometric-devices') == true ? 'active' : '' }}"><span class="nav2-icon">BD</span><span class="nav2-label" id="nav-biometric-devices">Biometric Devices</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.biometric-device-mappings') }}" class="nav2-link {{ str_contains(request()->url(), 'biometric-device-mappings') == true ? 'active' : '' }}"><span class="nav2-icon">DUM</span><span class="nav2-label" id="nav-biometric-device-mappings">Device User Mappings</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.biometric.devices') }}" class="nav2-link {{ str_contains(request()->url(), 'biometric/devices') == true ? 'active' : '' }}"><span class="nav2-icon">BD</span><span class="nav2-label" id="nav-biometric-devices">Biometric Devices</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.biometric.mapping.index') }}" class="nav2-link {{ str_contains(request()->url(), 'biometric/mapping/') == true ? 'active' : '' }}"><span class="nav2-icon">DUM</span><span class="nav2-label" id="nav-biometric-device-mappings">Device User Mappings</span></a></li>
           </ul>
         </div>
       </li>
@@ -241,7 +242,7 @@
         </div>
       </li>
 
-      @if(feature_enabled(\App\Support\Feature::CARD_MANAGEMENT_MODULE))
+      @if(feature_enabled(\App\Support\Feature::CARD_MODULE))
         <li class="nav1-item">
           <div class="nav1-link {{ str_contains(request()->url(), 'card/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
             <span class="material-icons-round nav-icon">credit_card</span>
@@ -260,7 +261,7 @@
         </li>
       @endif
 
-      @if(feature_enabled(\App\Support\Feature::CERTIFICATE_MANAGEMENT_MODULE))
+      @if(feature_enabled(\App\Support\Feature::CERTIFICATE_MODULE))
         <li class="nav1-item">
           <div class="nav1-link {{ str_contains(request()->url(), 'certificate/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
             <span class="material-icons-round nav-icon">workspace_premium</span>
@@ -343,6 +344,35 @@
             <li class="nav2-item"><a href="{{ route('admin.activitylog') }}" class="nav2-link {{ Route::is('admin.activitylog') == true ? 'active' : '' }}"><span class="nav2-icon">AL</span><span class="nav2-label" id="nav-activity-logs">Activity Logs</span></a></li>
             <li class="nav2-item"><a href="{{ route('admin.sessionlog') }}" class="nav2-link {{ Route::is('admin.sessionlog') == true ? 'active' : '' }}"><span class="nav2-icon">SL</span><span class="nav2-label" id="nav-session-logs">Session Logs</span></a></li>
             <li class="nav2-item"><a href="{{ route('admin.loginlog') }}" class="nav2-link {{ Route::is('admin.loginlog') == true ? 'active' : '' }}"><span class="nav2-icon">LL</span><span class="nav2-label" id="nav-login-logs">Login Logs</span></a></li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="nav1-item">
+        <div class="nav1-link {{ request()->is('roles-permissions/*') ? 'active open' : '' }}" onclick="toggleNav1(this)">
+          <span class="material-icons-round nav-icon">door_front</span>
+          <span class="nav-label" id="nav-roles-permission">Role & Permission</span>
+          <span class="material-icons-round nav-arrow">expand_more</span>
+        </div>
+        <div class="nav2-collapse {{ request()->is('roles-permissions/*') ? 'show' : '' }}">
+          <ul>
+            <li class="nav2-item"><a href="{{route('admin.role-permission.index') }}" class="nav2-link {{ str_contains(request()->url(), 'roles-permissions/index') == true ? 'active' : '' }}"><span class="nav2-icon">I</span><span class="nav2-label" id="nav-committees">Index</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.role-permission.create') }}" class="nav2-link {{ str_contains(request()->url(), 'roles-permissions/create') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-facilities">Create</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.role-permission.users') }}" class="nav2-link {{ str_contains(request()->url(), 'roles-permissions/users') == true ? 'active' : '' }}"><span class="nav2-icon">U</span><span class="nav2-label" id="nav-facilities">Users</span></a></li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="nav1-item">
+        <div class="nav1-link {{ request()->is('information/*') ? 'active open' : '' }}" onclick="toggleNav1(this)">
+          <span class="material-icons-round nav-icon">door_front</span>
+          <span class="nav-label" id="nav-informations">Informations</span>
+          <span class="material-icons-round nav-arrow">expand_more</span>
+        </div>
+        <div class="nav2-collapse {{ request()->is('information/*') ? 'show' : '' }}">
+          <ul>
+            <li class="nav2-item"><a href="{{route('admin.information.committees') }}" class="nav2-link {{ str_contains(request()->url(), 'information/committees') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-committees">Committees</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.information.facilities') }}" class="nav2-link {{ str_contains(request()->url(), 'information/facilities') == true ? 'active' : '' }}"><span class="nav2-icon">F</span><span class="nav2-label" id="nav-facilities">Facilities</span></a></li>
           </ul>
         </div>
       </li>

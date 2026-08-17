@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('academic_class_assign_details', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('academic_class_assign_id')->constrained('academic_class_assigns')->cascadeOnDelete();
             $table->foreignId('subject_id')->constrained('academic_subjects')->cascadeOnDelete();
             $table->foreignId('teacher_id')->nullable()->constrained('users')->nullOnDelete();

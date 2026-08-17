@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
-use App\Traits\BelongsToInstitution;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\BelongsToInstitution;
+use App\Traits\BelongsToBranch;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SalaryTemplateDeduction extends Model
 {
     use BelongsToInstitution;
+    use BelongsToBranch;
 
     protected $guarded = [];
 

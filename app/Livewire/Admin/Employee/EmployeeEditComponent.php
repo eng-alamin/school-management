@@ -23,7 +23,6 @@ class EmployeeEditComponent extends Component
     public $userId;
     public $employee;
 
-    // Academic Details
     public $role;
     public $joining_date;
     public $designation_id;
@@ -33,7 +32,6 @@ class EmployeeEditComponent extends Component
     public $total_experience;
     public $comments;
 
-    // Employee Details
     public $name;
     public $dob;
     public $religion;
@@ -45,17 +43,11 @@ class EmployeeEditComponent extends Component
     public $photo;
     public $photo_upload;
 
-    // Login Details
     public $username;
     public $password;
 
-    // ── Username auto-generate theke manually edit hoyeche kina track korar flag.
-    // Edit page e existing username DB theke pre-fill hoy, tai mount() e eta
-    // 'true' rakha hocche jate purono employee-er username accidentally
-    // overwrite na hoye jay (nahole tar login vengge jabe).
     public bool $usernameManuallyEdited = true;
 
-    // Bank Info
     public $bank_name;
     public $holder_name;
     public $bank_branch;
@@ -63,10 +55,21 @@ class EmployeeEditComponent extends Component
     public $ifsc_code;
     public $account_no;
 
+    private const ASSIGNABLE_ROLES = [
+        User::ROLE_TEACHER,
+        User::ROLE_STAFF,
+        User::ROLE_ACCOUNTANT,
+    ];
+
     public function mount($id)
     {
-        $this->employeeId = $id;
-        $this->employee   = Employee::with('user')->findOrFail($id);
+        $institutionId = auth()->user()->institution_id;
+
+        $this->employee = Employee::with('user')
+            ->where('institution_id', $institutionId)
+            ->findOrFail($id);
+
+        $this->employeeId = $this->employee->id;
         $this->userId     = $this->employee->user_id;
 
         $this->role               = $this->employee->user->role;
@@ -78,7 +81,6 @@ class EmployeeEditComponent extends Component
         $this->total_experience   = $this->employee->total_experience;
         $this->comments           = $this->employee->comments;
 
-        // Employee Details
         $this->name              = $this->employee->name;
         $this->dob               = $this->employee->dob;
         $this->religion          = $this->employee->religion;
@@ -89,10 +91,8 @@ class EmployeeEditComponent extends Component
 
         $this->photo = $this->employee->photo;
 
-        // Login Details
         $this->username = $this->employee->user->username;
 
-        // Bank Info
         $this->bank_name    = $this->employee->bank_name;
         $this->holder_name  = $this->employee->holder_name;
         $this->bank_branch  = $this->employee->bank_branch;
@@ -101,25 +101,43 @@ class EmployeeEditComponent extends Component
         $this->account_no   = $this->employee->account_no;
     }
 
-    /**
-     * Selected designation_id theke designation name বের করে।
-     * Blade e "Principal" check korar jonno use hobe.
-     */
+    public function rules(): array
+    {
+        $institutionId = auth()->user()->institution_id;
+
+        return [
+            'role' => ['required', Rule::in(self::ASSIGNABLE_ROLES)],
+            'joining_date' => 'required|date',
+            'designation_id' => [
+                'required',
+                Rule::exists('employee_designations', 'id')->where('institution_id', $institutionId),
+            ],
+            'department_id' => [
+                'required',
+                Rule::exists('employee_departments', 'id')->where('institution_id', $institutionId),
+            ],
+            'comments' => 'nullable|string|max:1000',
+
+            'name' => 'required',
+            'mobile' => 'nullable|string|max:20',
+            'email'    => ['nullable', Rule::unique('users', 'email')->ignore($this->userId)],
+            'photo_upload' => 'nullable|image|max:2048',
+
+            'username'    => ['required', Rule::unique('users', 'username')->ignore($this->userId)],
+            'password'    => 'nullable|min:8',
+        ];
+    }
+
     public function getSelectedDesignationNameProperty(): ?string
     {
         if (!$this->designation_id) {
             return null;
         }
 
-        return EmployeeDesignation::find($this->designation_id)?->name;
+        return EmployeeDesignation::where('institution_id', auth()->user()->institution_id)
+            ->find($this->designation_id)?->name;
     }
 
-    /**
-     * Name change hole -> Username auto-generate hobe, KINTU shudhu tokhoni
-     * jokhon usernameManuallyEdited flag manually 'false' kora hoyeche
-     * (mane user "Suggest" button diye notun suggestion cheyeche).
-     * Default e existing employee-er username protected thake.
-     */
     public function updatedName($value): void
     {
         if (!$this->usernameManuallyEdited) {
@@ -127,31 +145,17 @@ class EmployeeEditComponent extends Component
         }
     }
 
-    /**
-     * User Username field e hate diye change korle flag lock hoye jabe,
-     * jate porer name change eta overwrite na kore.
-     */
     public function updatedUsername(): void
     {
         $this->usernameManuallyEdited = true;
     }
 
-    /**
-     * Admin ইচ্ছাকৃতভাবে "Suggest" button click korle notun username
-     * suggest hobe current name theke, ebong pore Name change hole
-     * ar auto-update hobe.
-     */
     public function enableUsernameAutoSuggest(): void
     {
         $this->usernameManuallyEdited = false;
         $this->username = $this->generateUniqueUsername($this->name, $this->userId);
     }
 
-    /**
-     * Name theke unique username slug generate kore.
-     * "Abc 123" -> "abc_123". Duplicate thakle "_1", "_2"... suffix add hobe.
-     * $ignoreUserId dile nijer current username-ke duplicate hisebe dhora hobe na.
-     */
     private function generateUniqueUsername(?string $name, ?int $ignoreUserId = null): ?string
     {
         if (!$name || trim($name) === '') {
@@ -179,28 +183,11 @@ class EmployeeEditComponent extends Component
         return $username;
     }
 
-    public function rules()
-    {
-        return [
-            'role' => 'required',
-            'joining_date' => 'required|date',
-            'designation_id' => 'required|exists:employee_designations,id',
-            'department_id' => 'required|exists:employee_departments,id',
-            'comments' => 'nullable|string|max:1000',
-
-            'name' => 'required',
-            'mobile' => 'nullable|string|max:20',
-            'email'    => ['nullable', Rule::unique('users', 'email')->ignore($this->userId)],
-            'photo_upload' => 'nullable|image|max:2048',
-
-            'username'    => ['required', Rule::unique('users', 'username')->ignore($this->userId)],
-            'password'    => 'nullable|min:4',
-        ];
-    }
-
     protected function failedValidation($validator)
     {
         $this->dispatch('validation-failed');
+
+        parent::failedValidation($validator);
     }
 
     public function updated($propertyName)
@@ -210,73 +197,87 @@ class EmployeeEditComponent extends Component
 
     public function update()
     {
-        DB::beginTransaction();
+        $this->validate($this->rules());
+
+        $institutionId = auth()->user()->institution_id;
+
+        $oldPhoto = null;
+        $newPhotoPath = null;
 
         try {
+            DB::transaction(function () use ($institutionId, &$oldPhoto, &$newPhotoPath) {
 
-            $this->validate($this->rules());
+                abort_unless($this->employee->institution_id === $institutionId, 403);
 
-            // ── User update ──────────────────────────────
-            $userData = [
-                'role'     => $this->role,
-                'name'     => $this->name,
-                'username' => $this->username,
-                'email'    => $this->email,
-            ];
+                $userData = [
+                    'role'     => $this->role,
+                    'name'     => $this->name,
+                    'username' => $this->username,
+                    'email'    => $this->email,
+                ];
 
-            if (!empty($this->password)) {
-                $userData['password'] = $this->password;
-            }
-
-            $user = User::findOrFail($this->userId);
-            $user->update($userData);
-
-            // ── Employee update ───────────────────────────
-            $employeeData = [
-                'joining_date'      => $this->joining_date,
-                'designation_id'    => $this->designation_id,
-                'department_id'     => $this->department_id,
-                'qualification'     => $this->qualification,
-                'experience_detail' => $this->experience_detail,
-                'total_experience'  => $this->total_experience,
-                'comments'          => $this->comments,
-
-                'name'              => $this->name,
-                'dob'               => $this->dob,
-                'religion'          => $this->religion,
-                'mobile'            => $this->mobile,
-                'email'             => $this->email,
-                'present_address'   => $this->present_address,
-                'permanent_address' => $this->permanent_address,
-
-                'bank_name'         => $this->bank_name,
-                'holder_name'       => $this->holder_name,
-                'bank_branch'       => $this->bank_branch,
-                'bank_address'      => $this->bank_address,
-                'ifsc_code'         => $this->ifsc_code,
-                'account_no'        => $this->account_no,
-            ];
-
-            if ($this->photo_upload) {
-
-                $oldPhoto = $this->employee->photo;
-
-                $employeeData['photo'] = $this->photo_upload->store('employees', 'public');
-
-                if ($oldPhoto) {
-                    Storage::disk('public')->delete($oldPhoto);
+                if (!empty($this->password)) {
+                    $userData['password'] = $this->password;
                 }
+
+                $user = User::where('institution_id', $institutionId)->findOrFail($this->userId);
+                $user->update($userData);
+
+                $employeeData = [
+                    'joining_date'      => $this->joining_date,
+                    'designation_id'    => $this->designation_id,
+                    'department_id'     => $this->department_id,
+                    'qualification'     => $this->qualification,
+                    'experience_detail' => $this->experience_detail,
+                    'total_experience'  => $this->total_experience,
+                    'comments'          => $this->comments,
+
+                    'name'              => $this->name,
+                    'dob'               => $this->dob,
+                    'religion'          => $this->religion,
+                    'mobile'            => $this->mobile,
+                    'email'             => $this->email,
+                    'present_address'   => $this->present_address,
+                    'permanent_address' => $this->permanent_address,
+
+                    'bank_name'         => $this->bank_name,
+                    'holder_name'       => $this->holder_name,
+                    'bank_branch'       => $this->bank_branch,
+                    'bank_address'      => $this->bank_address,
+                    'ifsc_code'         => $this->ifsc_code,
+                    'account_no'        => $this->account_no,
+                ];
+
+                if ($this->photo_upload) {
+                    $oldPhoto = $this->employee->photo;
+                    $newPhotoPath = $this->photo_upload->store('employees', 'public');
+                    $employeeData['photo'] = $newPhotoPath;
+                }
+
+                $this->employee->update($employeeData);
+            });
+
+            if ($oldPhoto) {
+                Storage::disk('public')->delete($oldPhoto);
             }
 
-            $this->employee->update($employeeData);
-
-            DB::commit();
+            activity()
+                ->performedOn($this->employee)
+                ->causedBy(auth()->user())
+                ->withProperties([
+                    'institution_id' => $institutionId,
+                    'icon' => 'edit',
+                    'type' => 'employee_updated',
+                ])
+                ->log('Employee updated: ' . $this->employee->name);
 
             $this->dispatch('toast', type: 'success', message: 'Employee updated successfully!');
 
         } catch (\Throwable $e) {
 
-            DB::rollBack();
+            if ($newPhotoPath) {
+                Storage::disk('public')->delete($newPhotoPath);
+            }
 
             $this->dispatch('toast', type: 'error', message: 'Something went wrong!');
             throw $e;
@@ -285,16 +286,13 @@ class EmployeeEditComponent extends Component
 
     public function render()
     {
-        $employees    = Employee::all();
-        $departments  = EmployeeDepartment::all();
-        $designations = EmployeeDesignation::all();
+        $institutionId = auth()->user()->institution_id;
 
-        return view('livewire.admin.employee.employee-edit-component')
-            ->with('employees', $employees)
-            ->with('departments', $departments)
-            ->with('designations', $designations)
-            ->layout('layouts.admin.app', [
-                'title' => 'Edit Employee | ' . institution()->name,
-            ]);
+        return view('livewire.admin.employee.employee-edit-component', [
+            'departments'  => EmployeeDepartment::where('institution_id', $institutionId)->get(),
+            'designations' => EmployeeDesignation::where('institution_id', $institutionId)->get(),
+        ])->layout('layouts.admin.app', [
+            'title' => 'Edit Employee | ' . institution()->name,
+        ]);
     }
 }

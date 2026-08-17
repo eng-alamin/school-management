@@ -18,7 +18,6 @@ class Institution extends Model
         'enable_registration_prefix'     => 'boolean',
         'due_fees_calculation_with_fine' => 'boolean',
         'status'                         => 'boolean',
-        'facilities'                     => 'array',
         'setup_progress'                 => 'array',
         'setup_completed'                => 'boolean',
         'verified_at'                    => 'datetime',
@@ -298,5 +297,10 @@ class Institution extends Model
     public function mainBranch()
     {
         return $this->hasOne(Branch::class)->where('is_main', true);
+    }
+
+    public function hasMultipleBranches(): bool
+    {
+        return $this->branches()->count() > 1;
     }
 }

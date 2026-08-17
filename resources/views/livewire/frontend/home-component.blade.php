@@ -1632,180 +1632,90 @@
           </h2>
           <p class="text-muted">
             <span class="lang-bn"
-              >ডেমো বুক করুন, প্রশ্ন করুন বা সাপোর্ট নিন</span
+              >আমাদের সহায়তা দলের সাথে যোগাযোগ করুন</span
             >
             <span class="lang-en"
-              >Book a demo, ask a question, or get support</span
+              >Contact our support team</span
             >
           </p>
         </div>
         <div class="row g-4">
-          <div class="col-lg-5">
+          <div class="col-lg-12">
             <div class="contact-card h-100">
               <h5 class="fw-bold mb-4">
                 <span class="lang-bn">যোগাযোগের তথ্য</span>
                 <span class="lang-en">Contact Information</span>
               </h5>
-              <div class="contact-info-item">
-                <div class="contact-info-icon">
-                  <i class="bi bi-geo-alt-fill"></i>
-                </div>
-                <div>
-                  <h6>
-                    <span class="lang-bn">ঠিকানা</span
-                    ><span class="lang-en">Address</span>
-                  </h6>
-                  <p>
-                    <span class="lang-bn"
-                      >বাংলাদেশ সচিবালয়, শিক্ষা মন্ত্রণালয়, ঢাকা-১০০০</span
-                    ><span class="lang-en"
-                      >Bangladesh Secretariat, Ministry of Education,
-                      Dhaka-1000</span
-                    >
-                  </p>
-                </div>
-              </div>
-              <div class="contact-info-item">
-                <div class="contact-info-icon">
-                  <i class="bi bi-telephone-fill"></i>
-                </div>
-                <div>
-                  <h6>
-                    <span class="lang-bn">হেল্পলাইন</span
-                    ><span class="lang-en">Helpline</span>
-                  </h6>
-                  <p>+880-2-55100737 | 16535</p>
-                </div>
-              </div>
-              <div class="contact-info-item">
-                <div class="contact-info-icon">
-                  <i class="bi bi-envelope-fill"></i>
-                </div>
-                <div>
-                  <h6>
-                    <span class="lang-bn">ইমেইল</span
-                    ><span class="lang-en">Email</span>
-                  </h6>
-                  <p>support@ems.gov.bd</p>
-                </div>
-              </div>
-              <div class="contact-info-item">
-                <div class="contact-info-icon">
-                  <i class="bi bi-clock-fill"></i>
-                </div>
-                <div>
-                  <h6>
-                    <span class="lang-bn">সাপোর্ট সময়</span
-                    ><span class="lang-en">Support Hours</span>
-                  </h6>
-                  <p>
-                    24/7
-                    <span class="lang-bn"
-                      >অনলাইন | সরকারি ছুটি ব্যতীত ৯টা-৫টা অফিস</span
-                    ><span class="lang-en"
-                      >Online | 9AM–5PM Office (Except Govt. Holidays)</span
-                    >
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-7">
-            <div class="contact-card">
-              <h5 class="fw-bold mb-4">
-                <span class="lang-bn">ডেমো রিকোয়েস্ট করুন</span>
-                <span class="lang-en">Request a Demo</span>
-              </h5>
-              <div class="row g-3">
+
+              <div class="row">
+                <!-- LEFT COLUMN -->
                 <div class="col-md-6">
-                  <label class="form-label"
-                    ><span class="lang-bn">পূর্ণ নাম</span
-                    ><span class="lang-en">Full Name</span></label
-                  >
-                  <input
-                    type="text"
-                    class="form-control"
-                    placeholder="Md. Abdul Karim"
-                  />
+                  <div class="contact-info-item">
+                    <div class="contact-info-icon">
+                      <i class="bi bi-geo-alt-fill"></i>
+                    </div>
+                    <div>
+                      <h6>
+                        <span class="lang-bn">ঠিকানা</span
+                        ><span class="lang-en">Address</span>
+                      </h6>
+                      <p>
+                        <span class="lang-bn"
+                          >বাংলাদেশ সচিবালয়, শিক্ষা মন্ত্রণালয়, ঢাকা-১০০০</span
+                        ><span class="lang-en"
+                          >Bangladesh Secretariat, Ministry of Education,
+                          Dhaka-1000</span
+                        >
+                      </p>
+                    </div>
+                  </div>
+                  <div class="contact-info-item">
+                    <div class="contact-info-icon">
+                      <i class="bi bi-telephone-fill"></i>
+                    </div>
+                    <div>
+                      <h6>
+                        <span class="lang-bn">হেল্পলাইন</span
+                        ><span class="lang-en">Helpline</span>
+                      </h6>
+                      <p>+880-2-55100737 | 16535</p>
+                    </div>
+                  </div>
                 </div>
+
+                <!-- RIGHT COLUMN -->
                 <div class="col-md-6">
-                  <label class="form-label"
-                    ><span class="lang-bn">পদবি</span
-                    ><span class="lang-en">Designation</span></label
-                  >
-                  <input
-                    type="text"
-                    class="form-control"
-                    placeholder="Principal / DEO"
-                  />
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label"
-                    ><span class="lang-bn">প্রতিষ্ঠানের নাম</span
-                    ><span class="lang-en">Institution Name</span></label
-                  >
-                  <input
-                    type="text"
-                    class="form-control"
-                    placeholder="Dhaka Govt. High School"
-                  />
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label">EMIS Code</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    placeholder="1234567"
-                  />
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label"
-                    ><span class="lang-bn">মোবাইল</span
-                    ><span class="lang-en">Mobile</span></label
-                  >
-                  <input
-                    type="tel"
-                    class="form-control"
-                    placeholder="+880 1X XX XX XXXX"
-                  />
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label"
-                    ><span class="lang-bn">জেলা</span
-                    ><span class="lang-en">District</span></label
-                  >
-                  <select class="form-select">
-                    <option>
-                      <span class="lang-bn">জেলা বেছে নিন</span
-                      ><span class="lang-en">Select District</span>
-                    </option>
-                    <option>Dhaka</option>
-                    <option>Chittagong</option>
-                    <option>Rajshahi</option>
-                    <option>Sylhet</option>
-                    <option>Khulna</option>
-                    <option>Barisal</option>
-                    <option>Rangpur</option>
-                    <option>Mymensingh</option>
-                  </select>
-                </div>
-                <div class="col-12">
-                  <label class="form-label"
-                    ><span class="lang-bn">বার্তা (ঐচ্ছিক)</span
-                    ><span class="lang-en">Message (Optional)</span></label
-                  >
-                  <textarea
-                    class="form-control"
-                    rows="3"
-                    placeholder="..."
-                  ></textarea>
-                </div>
-                <div class="col-12">
-                  <button class="btn btn-primary w-100 rounded-pill py-2">
-                    <i class="bi bi-send-fill me-2"></i>
-                    <span class="lang-bn">ডেমো রিকোয়েস্ট পাঠান</span>
-                    <span class="lang-en">Send Demo Request</span>
-                  </button>
+                  <div class="contact-info-item">
+                    <div class="contact-info-icon">
+                      <i class="bi bi-envelope-fill"></i>
+                    </div>
+                    <div>
+                      <h6>
+                        <span class="lang-bn">ইমেইল</span
+                        ><span class="lang-en">Email</span>
+                      </h6>
+                      <p>support@ems.gov.bd</p>
+                    </div>
+                  </div>
+                  <div class="contact-info-item">
+                    <div class="contact-info-icon">
+                      <i class="bi bi-clock-fill"></i>
+                    </div>
+                    <div>
+                      <h6>
+                        <span class="lang-bn">সাপোর্ট সময়</span
+                        ><span class="lang-en">Support Hours</span>
+                      </h6>
+                      <p>
+                        24/7
+                        <span class="lang-bn"
+                          >অনলাইন | সরকারি ছুটি ব্যতীত ৯টা-৫টা অফিস</span
+                        ><span class="lang-en"
+                          >Online | 9AM–5PM Office (Except Govt. Holidays)</span
+                        >
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

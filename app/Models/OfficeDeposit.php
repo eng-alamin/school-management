@@ -2,14 +2,17 @@
 
 namespace App\Models;
 
-use App\Traits\BelongsToInstitution;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\BelongsToInstitution;
+use App\Traits\BelongsToBranch;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 
 class OfficeDeposit extends Model
 {
-    use BelongsToInstitution, SoftDeletes;
+    use BelongsToInstitution;
+    use BelongsToBranch;
+    use SoftDeletes;
 
     protected $guarded = [];
 
