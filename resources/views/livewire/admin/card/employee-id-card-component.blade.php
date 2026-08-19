@@ -41,13 +41,13 @@
                 <button wire:click="applyFilter"
                         wire:loading.attr="disabled"
                         wire:target="applyFilter"
-                        class="btn-primary w-100 d-flex justify-content-center align-items-center"
+                        class="btn btn-primary w-100 d-flex justify-content-center align-items-center"
                         type="button">
                     <span wire:loading.remove wire:target="applyFilter">
-                        <span class="material-icons-round" style="font-size:16px;vertical-align:middle;margin-right:4px">filter_alt</span> Filter
+                        <span class="material-icons-round" style="vertical-align:middle;margin-right:4px">filter_alt</span> Filter
                     </span>
                     <span wire:loading wire:target="applyFilter">
-                        <span class="material-icons-round" style="font-size:16px;animation:spin .7s linear infinite">sync</span> Filtering...
+                        <span class="material-icons-round" style="animation:spin .7s linear infinite">sync</span> Filtering...
                     </span>
                 </button>
             </div>
@@ -77,7 +77,7 @@
                         </div>
                     </div>
 
-                    <button class="btn-outline bg-dark text-white"
+                    <button class="btn btn-primary"
                             wire:click="generateCards"
                             wire:loading.attr="disabled"
                             @if(!$filtered || $employees->isEmpty()) disabled @endif>

@@ -42,7 +42,7 @@
                     </div>
                 @endif
 
-                <a href="{{ route('admin.leave.categories') }}" target="_blank" class="btn btn-primary">
+                <a href="{{ route($routePrefix . 'leave.categories') }}" target="_blank" class="btn btn-primary">
                     <span>
                         <span class="material-icons-round">assignment</span>
                         <span>Add Category</span>

@@ -90,7 +90,7 @@ class FeeInvoiceComponent extends Component
             ->orderBy($this->sortField, $this->sortDir)
             ->paginate($this->perPage);
 
-        return view('livewire.branch.student-accounting.fee-invoice-component')
+        return view('livewire.admin.student-accounting.fee-invoice-component')
             ->with([
                 'classes'  => $classes,
                 'students' => $students,

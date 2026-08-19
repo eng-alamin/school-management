@@ -44,9 +44,13 @@ class IndexUserMappingComponent extends Component
     public ?int $deletingId = null;
     public bool $showDeleteModal = false;
 
+    public string $routePrefix = '';
+
     public function mount(): void
     {
-        // Show a toast after redirect from Create/Edit save().
+        $this->routePrefix = $this->resolveRoutePrefix();
+
+                // Show a toast after redirect from Create/Edit save().
         if (session()->has('toast_success')) {
             $this->dispatch('toast', type: 'success', message: session('toast_success'));
         }
@@ -66,6 +70,19 @@ class IndexUserMappingComponent extends Component
                 $this->selectedDeviceId = null;
             }
         }
+    }
+
+    protected function resolveRoutePrefix(): string
+    {
+        $routeName = request()->route()?->getName();
+
+        if ($routeName && str_contains($routeName, '.')) {
+            return explode('.', $routeName)[0] . '.';
+        }
+
+        $segment = request()->segment(1);
+
+        return $segment ? $segment . '.' : '';
     }
 
     public function sortBy(string $field): void

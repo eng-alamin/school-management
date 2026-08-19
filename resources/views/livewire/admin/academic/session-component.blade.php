@@ -29,7 +29,7 @@
                         </select>
                     </div>
                 @endif
-                <button class="btn-outline bg-dark text-white" wire:click="openCreate">
+                <button class="btn btn-primary" wire:click="openCreate">
                     <span class="material-icons-round">add</span> <span id="newSectionBtn">Add Session</span>
                 </button>
 
@@ -81,7 +81,8 @@
                         <tr>
                             <td colspan="6" class="text-center py-5 text-muted">
                                 <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
-                                No sessions found. <a href="#" wire:click.prevent="openCreate">Create one now</a>.
+                                <span>No sessions found.</span> <br><br> 
+                                <a href="#" class="btn btn-primary btn-sm" wire:click.prevent="openCreate">Create one now</a>.
                             </td>
                         </tr>
                         @endforelse

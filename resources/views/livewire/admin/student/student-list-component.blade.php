@@ -72,7 +72,7 @@
                     <span class="material-icons-round" style="font-size:16px">print</span> Print
                 </button>
 
-                <a href="{{ route('admin.student.add') }}" class="btn btn-primary btn-sm">
+                <a href="{{ route($routePrefix . 'student.add') }}" class="btn btn-primary">
                     <span>
                         <span class="material-icons-round">add</span>
                         <span>Add Student</span>
@@ -135,11 +135,11 @@
                             </td>
                             <td class="no-print">
                                 <div class="d-flex gap-1">
-                                    <a href="{{ route('admin.student.overview', ['id' => $student->id]) }}" target="_blank"
+                                    <a href="{{ route($routePrefix . 'student.overview', ['id' => $student->id]) }}" target="_blank"
                                         class="act-btn view" title="View">
                                         <span class="material-icons-round">visibility</span>
                                     </a>
-                                    <a href="{{ route('admin.student.edit', ['id' => $student->id]) }}"
+                                    <a href="{{ route($routePrefix . 'student.edit', ['id' => $student->id]) }}"
                                         class="act-btn edit" title="Edit">
                                         <span class="material-icons-round">drive_file_rename_outline</span>
                                     </a>
@@ -158,8 +158,8 @@
                         <tr>
                             <td colspan="10" class="text-center py-5 text-muted">
                                 <span class="material-icons-round d-block mb-2" style="font-size:2.5rem;opacity:.2">groups</span>
-                                No students found.
-                                <a href="{{ route('admin.student.add') }}">Add one now</a>.
+                                <span>No students found.</span> <br><br>
+                                <a href="{{ route($routePrefix . 'student.add') }}" class="btn btn-primary btn-sm">Add one now</a>.
                             </td>
                         </tr>
                         @endforelse

@@ -143,6 +143,7 @@ class NoticeComponent extends Component
                     ->withProperties(['icon' => 'campaign', 'type' => 'notice'])
                     ->tap(function ($activity) use ($record) {
                         $activity->institution_id = $record->institution_id;
+                        $activity->branch_id = $record->branch_id;
                     })
                     ->log('Notice updated: ' . $record->title);
             } else {
@@ -154,6 +155,7 @@ class NoticeComponent extends Component
                     ->withProperties(['icon' => 'campaign', 'type' => 'notice'])
                     ->tap(function ($activity) use ($record) {
                         $activity->institution_id = $record->institution_id;
+                        $activity->branch_id = $record->branch_id;
                     })
                     ->log('New notice created: ' . $record->title);
             }
@@ -254,6 +256,7 @@ class NoticeComponent extends Component
                 ->withProperties(['icon' => 'campaign', 'type' => 'notice'])
                 ->tap(function ($activity) use ($record) {
                     $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
                 })
                 ->log('Notice deleted: ' . $record->title);
 
@@ -291,6 +294,7 @@ class NoticeComponent extends Component
                 ->withProperties(['icon' => 'campaign', 'type' => 'notice'])
                 ->tap(function ($activity) use ($record) {
                     $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
                 })
                 ->log('Notice status changed to ' . $newStatus . ': ' . $record->title);
 
@@ -327,6 +331,7 @@ class NoticeComponent extends Component
                 ->withProperties(['icon' => 'campaign', 'type' => 'notice'])
                 ->tap(function ($activity) use ($record) {
                     $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
                 })
                 ->log('Attachment removed from notice: ' . $record->title);
 

@@ -201,7 +201,7 @@ class PaymentCollectComponent extends Component
     {
         $officeAccounts = OfficeAccount::orderBy('name')->get();
 
-        return view('livewire.branch.student.payment-collect-component')
+        return view('livewire.admin.student.payment-collect-component')
             ->with('officeAccounts', $officeAccounts)
             ->layout('layouts.branch.app', [
                 'title' => 'Collect Payment | ' . institution()->name,

@@ -107,7 +107,7 @@
                 <h6 style="margin:0;font-weight:600;font-size:.85rem;color:var(--muted)">
                     Purchase Items
                 </h6>
-                <button class="btn-outline"
+                <button class="btn btn-primary"
                         type="button"
                         wire:click="addItem"
                         style="padding:5px 14px;font-size:.78rem">
@@ -253,14 +253,14 @@
         <!-- FORM FOOTER -->
         <div class="form-footer">
 
-            <button class="btn-outline"
+            <button class="btn btn-primary"
                     type="button"
                     wire:click="resetForm">
                 <span class="material-icons-round" style="font-size:16px">refresh</span>
                 Reset
             </button>
 
-            <button class="btn-primary"
+            <button class="btn btn-primary"
                     type="button"
                     wire:click="save"
                     wire:loading.attr="disabled"

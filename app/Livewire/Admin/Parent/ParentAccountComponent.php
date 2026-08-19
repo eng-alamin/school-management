@@ -21,8 +21,12 @@ class ParentAccountComponent extends Component
     public $password;
     public $password_confirmation;
 
+    public string $routePrefix = '';
+
     public function mount(int $id)
     {
+        $this->routePrefix = $this->resolveRoutePrefix();
+
         $this->guardian = Guardian::with('user')->findOrFail($id);
         $this->user     = $this->guardian->user;
 
@@ -34,6 +38,19 @@ class ParentAccountComponent extends Component
         $this->username = $this->user->username;
         $this->email    = $this->user->email;
         $this->phone    = $this->user->phone;
+    }
+
+    protected function resolveRoutePrefix(): string
+    {
+        $routeName = request()->route()?->getName();
+
+        if ($routeName && str_contains($routeName, '.')) {
+            return explode('.', $routeName)[0] . '.';
+        }
+
+        $segment = request()->segment(1);
+
+        return $segment ? $segment . '.' : '';
     }
 
     public function updateAccount()

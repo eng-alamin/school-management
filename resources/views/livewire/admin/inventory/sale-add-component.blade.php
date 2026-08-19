@@ -227,7 +227,7 @@
 
             <!-- Add Rows button -->
             <div style="margin-top:12px">
-                <button class="btn-outline"
+                <button class="btn btn-primary"
                         type="button"
                         wire:click="addItem"
                         style="padding:5px 14px;font-size:.78rem">
@@ -338,14 +338,16 @@
         <!-- FORM FOOTER -->
         <div class="form-footer">
 
-            <button class="btn-outline"
+            <button class="btn btn-primary"
                     type="button"
                     wire:click="resetForm">
-                <span class="material-icons-round" style="font-size:16px">refresh</span>
-                Reset
+                <span>
+                    <span class="material-icons-round">refresh</span>
+                    <span>Reset</span>
+                </span>
             </button>
 
-            <button class="btn-primary"
+            <button class="btn btn-primary"
                     type="button"
                     wire:click="save"
                     wire:loading.attr="disabled"
@@ -353,15 +355,15 @@
 
                 <span wire:loading.remove wire:target="save" style="display: inline-flex;align-items: center;gap: 6px">
                     <span class="material-icons-round">receipt</span>
-                    Create
+                    <span>Create</span>
                 </span>
 
                 <span wire:loading wire:target="save">
                     <span class="material-icons-round"
-                        style="font-size:16px;animation:spin .7s linear infinite">
+                        style="animation:spin .7s linear infinite">
                         sync
                     </span>
-                    Creating...
+                    <span>Creating...</span>
                 </span>
 
             </button>

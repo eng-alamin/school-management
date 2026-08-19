@@ -25,7 +25,7 @@ class OverviewComponent extends Component
 
     public function render()
     {
-        return view('livewire.branch.student.overview-component')
+        return view('livewire.admin.student.overview-component')
             ->with('student', $this->student)
             ->layout('layouts.branch.app', [
                 'title' => 'Student Overview | ' . institution()->name,

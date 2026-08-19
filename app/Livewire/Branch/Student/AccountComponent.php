@@ -108,7 +108,7 @@ class AccountComponent extends Component
 
     public function render()
     {
-        return view('livewire.branch.student.account-component')
+        return view('livewire.admin.student.account-component')
             ->with('student', $this->student)
             ->layout('layouts.branch.app', [
                 'title' => 'Student Account | ' . institution()->name,

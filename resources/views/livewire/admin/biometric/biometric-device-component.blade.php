@@ -38,7 +38,7 @@
                         </select>
                     </div>
                 @endif
-                <button class="btn-outline bg-dark text-white" wire:click="openCreateModal">
+                <button class="btn btn-primary" wire:click="openCreateModal">
                     <span class="material-icons-round">add</span> <span id="newSectionBtn">Add Device</span>
                 </button>
             </div>

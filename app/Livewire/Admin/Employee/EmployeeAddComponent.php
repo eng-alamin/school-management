@@ -218,16 +218,18 @@ class EmployeeAddComponent extends Component
         $this->validate($this->rules());
 
         $institutionId = auth()->user()->institution_id;
+        $branchId = auth()->user()->branch_id;
 
         $photoPath = null;
 
         try {
-            [$user, $employee] = DB::transaction(function () use ($institutionId, &$photoPath) {
+            [$user, $employee] = DB::transaction(function () use ($institutionId, $branchId, &$photoPath) {
 
                 DB::table('institutions')->where('id', $institutionId)->lockForUpdate()->first();
 
                 $user = User::create([
                     'institution_id' => $institutionId,
+                    'branch_id'      => $branchId,
                     'role'           => $this->role,
                     'name'           => $this->name,
                     'username'       => $this->username,
@@ -276,6 +278,7 @@ class EmployeeAddComponent extends Component
                 ->causedBy(auth()->user())
                 ->withProperties([
                     'institution_id' => $institutionId,
+                    'branch_id' => $branchId,
                     'icon' => 'person_add',
                     'type' => 'employee_created',
                 ])

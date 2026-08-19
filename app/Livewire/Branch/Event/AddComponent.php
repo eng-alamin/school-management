@@ -1,0 +1,199 @@
+<?php
+
+namespace App\Livewire\Branch\Event;
+
+use Livewire\Component;
+use App\Models\EventType;
+use App\Models\Event;
+use App\Models\AcademicClassAssign;
+use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\Rule;
+
+class AddComponent extends Component
+{
+    use WithFileUploads;
+
+    public $title = '';
+    public $is_holiday = false;
+    public $event_type_id = '';
+    public $audience = '';
+    public $date_from = '';
+    public $date_to = '';
+    public $description = '';
+    public $show_website = false;
+    public $image_upload = null;
+
+    public $selectedClasses = [];
+    public $selectedSections = [];
+
+    public function mount()
+    {
+        $this->date_from = now()->format('Y-m-d');
+        $this->date_to = now()->addDays(7)->format('Y-m-d');
+    }
+
+    public function resetForm()
+    {
+        $this->reset();
+        $this->date_from = now()->format('Y-m-d');
+        $this->date_to = now()->addDays(7)->format('Y-m-d');
+    }
+
+    protected function failedValidation($validator)
+    {
+        $this->dispatch('validation-failed');
+    }
+
+    public function rules()
+    {
+        $institutionId = auth()->user()->institution_id;
+
+        return [
+            'title'            => 'required|string|max:255',
+            'is_holiday'       => 'boolean',
+            'event_type_id'    => [
+                'required',
+                Rule::exists('event_types', 'id')->where(
+                    fn($q) => $q->where('institution_id', $institutionId)
+                ),
+            ],
+            'audience'         => ['required', Rule::in(['everyone', 'class', 'section'])],
+            'date_from'        => 'required|date',
+            'date_to'          => 'nullable|date|after_or_equal:date_from',
+            'description'      => 'nullable|string',
+            'show_website'     => 'boolean',
+            'image_upload'     => 'nullable|image|max:2048',
+
+            'selectedClasses'               => 'required_if:audience,class|array',
+            'selectedClasses.*.class_id'    => 'required|exists:academic_classes,id',
+            'selectedClasses.*.class_name'  => 'required|string',
+
+            'selectedSections'                  => 'required_if:audience,section|array',
+            'selectedSections.*.class_id'       => 'required|exists:academic_classes,id',
+            'selectedSections.*.class_name'     => 'required|string',
+            'selectedSections.*.section_id'     => 'required|exists:academic_sections,id',
+            'selectedSections.*.section_name'   => 'required|string',
+        ];
+    }
+
+    public function updated($propertyName)
+    {
+        $this->validateOnly($propertyName, $this->rules());
+    }
+
+    public function save()
+    {
+        DB::beginTransaction();
+
+        try {
+            $this->validate($this->rules());
+
+            $institutionId = auth()->user()->institution_id;
+
+            $imagePath = $this->image_upload
+                ? $this->image_upload->store('events', 'public')
+                : null;
+
+            $event = Event::create([
+                'institution_id' => $institutionId,
+                'title'          => $this->title,
+                'is_holiday'     => $this->is_holiday,
+                'event_type_id'  => $this->event_type_id,
+                'audience'       => $this->audience,
+                'date_from'      => $this->date_from,
+                'date_to'        => $this->date_to,
+                'description'    => $this->description,
+                'show_website'   => $this->show_website,
+                'image'          => $imagePath,
+            ]);
+
+            // Selected Class
+            if ($this->audience === 'class') {
+                foreach ($this->selectedClasses as $class) {
+                    $event->eventClasses()->create([
+                        'class_id'   => $class['class_id'],
+                        'class_name' => $class['class_name'],
+                    ]);
+                }
+            }
+
+            // Selected Section
+            if ($this->audience === 'section') {
+                foreach ($this->selectedSections as $section) {
+                    $event->eventSections()->create([
+                        'class_id'     => $section['class_id'],
+                        'class_name'   => $section['class_name'],
+                        'section_id'   => $section['section_id'],
+                        'section_name' => $section['section_name'],
+                    ]);
+                }
+            }
+
+            // ── Activity Log ───────────────────────────────────────
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($event)
+                ->withProperties(['icon' => 'event', 'type' => 'event'])
+                ->tap(function ($activity) use ($event) {
+                    $activity->institution_id = $event->institution_id;
+                })
+                ->log('New event created: ' . $event->title);
+
+            DB::commit();
+
+            $this->dispatch('toast', type: 'success', message: 'Event created successfully!');
+            $this->resetForm();
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            $this->dispatch('toast', type: 'error', message: 'An error occurred while creating the event.');
+            throw $e;
+        }
+    }
+
+    public function render()
+    {
+        $institutionId = auth()->user()->institution_id;
+
+        // BUG FIX: previously classes/sections were pulled from raw
+        // AcademicClass::with('sections') / AcademicSection::all() with NO
+        // institution scoping, and without regard to whether a class/section
+        // combination was actually "assigned" for this institution. Now
+        // sourced from academic_class_assigns (the real source of truth),
+        // scoped by institution_id.
+        $classAssigns = AcademicClassAssign::with(['class', 'section'])
+            ->where('institution_id', $institutionId)
+            ->get();
+
+        // Unique classes -> used for "Selected Class" audience dropdown
+        $classes = $classAssigns->pluck('class')->filter()->unique('id')->values();
+
+        // Classes grouped with their assigned sections -> used for
+        // "Selected Section" audience dropdown
+        $classesWithSections = $classAssigns
+            ->whereNotNull('section_id')
+            ->groupBy('class_id')
+            ->map(function ($rows) {
+                $first = $rows->first();
+                return (object) [
+                    'id'       => $first->class_id,
+                    'name'     => $first->class?->name,
+                    'sections' => $rows->pluck('section')->filter()->values(),
+                ];
+            })
+            ->values();
+
+        $eventTypes = EventType::where('institution_id', $institutionId)->get();
+
+        return view('livewire.admin.event.add-component')
+            ->with('classes', $classes)
+            ->with('classesWithSections', $classesWithSections)
+            ->with('eventTypes', $eventTypes)
+            ->layout('layouts.branch.app', [
+                'title' => 'Create Event | ' . institution()->name,
+            ]);
+    }
+}

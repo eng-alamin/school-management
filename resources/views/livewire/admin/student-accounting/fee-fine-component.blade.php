@@ -26,8 +26,11 @@
                     </div>
                 @endif
 
-                <button class="btn-outline bg-dark text-white" wire:click="openCreate">
-                    <span class="material-icons-round">add</span> <span>Add Fee Fine</span>
+                <button class="btn btn-primary" wire:click="openCreate">
+                    <span>
+                        <span class="material-icons-round">add</span>
+                        <span>Add Fee Fine</span>
+                    </span>
                 </button>
             </div>
         </div>

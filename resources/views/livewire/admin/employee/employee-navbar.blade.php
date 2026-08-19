@@ -80,20 +80,20 @@
     <!-- Profile Tabs (hidden on print via no-print) -->
     <ul class="nav profile-tabs border-bottom mt-4 flex-nowrap overflow-auto no-print">
         <li class="nav-item">
-            <a class="nav-link {{ request()->routeIs('admin.employee.view') ? 'active' : '' }}"
-               href="{{ route('admin.employee.view', ['id' => $employee->id]) }}">
+            <a class="nav-link {{ request()->routeIs($routePrefix . 'employee.view') ? 'active' : '' }}"
+               href="{{ route($routePrefix . 'employee.view', ['id' => $employee->id]) }}">
                 Overview
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link {{ request()->routeIs('admin.employee.account') ? 'active' : '' }}"
-               href="{{ route('admin.employee.account', ['id' => $employee->id]) }}">
+            <a class="nav-link {{ request()->routeIs($routePrefix . 'employee.account') ? 'active' : '' }}"
+               href="{{ route($routePrefix . 'employee.account', ['id' => $employee->id]) }}">
                 Account
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link {{ request()->routeIs('admin.employee.invoices') ? 'active' : '' }}"
-               href="{{ route('admin.employee.invoices', ['id' => $employee->id]) }}">
+            <a class="nav-link {{ request()->routeIs($routePrefix . 'employee.invoices') ? 'active' : '' }}"
+               href="{{ route($routePrefix . 'employee.invoices', ['id' => $employee->id]) }}">
                 Invoices
             </a>
         </li>

@@ -309,7 +309,7 @@ class FeeFineComponent extends Component
             ? FeeFine::with('feeSetup.academicClass', 'feeSetup.feeType')->find($this->viewId)
             : null;
 
-        return view('livewire.branch.student-accounting.fee-fine-component')
+        return view('livewire.admin.student-accounting.fee-fine-component')
             ->with([
                 'feeFines' => $feeFines,
                 'classes'  => $classes,

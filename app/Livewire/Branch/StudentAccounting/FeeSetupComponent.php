@@ -179,7 +179,7 @@ class FeeSetupComponent extends Component
 
     public function render()
     {
-        return view('livewire.branch.student-accounting.fee-setup-component')
+        return view('livewire.admin.student-accounting.fee-setup-component')
             ->layout('layouts.branch.app', [
                 'title' => 'Fee Setup | ' . institution()->name,
             ]);

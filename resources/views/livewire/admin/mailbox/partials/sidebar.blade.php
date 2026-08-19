@@ -6,15 +6,15 @@
 @endphp
 
 <div class="mailbox-sidebar">
-    <a href="{{ route('admin.mailbox.compose') }}"
-       class="compose-btn {{ request()->routeIs('admin.mailbox.compose') ? 'active' : '' }}">
+    <a href="{{ route($routePrefix . 'mailbox.compose') }}"
+       class="compose-btn {{ request()->routeIs($routePrefix . 'mailbox.compose') ? 'active' : '' }}">
         <i class="fas fa-pen"></i>
         <span>Compose</span>
     </a>
 
     <nav class="sidebar-nav">
-        <a href="{{ route('admin.mailbox.inbox') }}"
-           class="nav-item {{ request()->routeIs('admin.mailbox.inbox') ? 'active' : '' }}">
+        <a href="{{ route($routePrefix . 'mailbox.inbox') }}"
+           class="nav-item {{ request()->routeIs($routePrefix . 'mailbox.inbox') ? 'active' : '' }}">
             <i class="fas fa-inbox"></i>
             <span>Inbox</span>
             @if($unreadCount > 0)
@@ -22,14 +22,14 @@
             @endif
         </a>
 
-        <a href="{{ route('admin.mailbox.sent') }}"
-           class="nav-item {{ request()->routeIs('admin.mailbox.sent') ? 'active' : '' }}">
+        <a href="{{ route($routePrefix . 'mailbox.sent') }}"
+           class="nav-item {{ request()->routeIs($routePrefix . 'mailbox.sent') ? 'active' : '' }}">
             <i class="fas fa-paper-plane"></i>
             <span>Sent</span>
         </a>
 
-        <a href="{{ route('admin.mailbox.important') }}"
-           class="nav-item {{ request()->routeIs('admin.mailbox.important') ? 'active' : '' }}">
+        <a href="{{ route($routePrefix . 'mailbox.important') }}"
+           class="nav-item {{ request()->routeIs($routePrefix . 'mailbox.important') ? 'active' : '' }}">
             <i class="fas fa-star"></i>
             <span>Important</span>
             @if($importantCount > 0)
@@ -37,8 +37,8 @@
             @endif
         </a>
 
-        <a href="{{ route('admin.mailbox.trash') }}"
-           class="nav-item {{ request()->routeIs('admin.mailbox.trash') ? 'active' : '' }}">
+        <a href="{{ route($routePrefix . 'mailbox.trash') }}"
+           class="nav-item {{ request()->routeIs($routePrefix . 'mailbox.trash') ? 'active' : '' }}">
             <i class="fas fa-trash"></i>
             <span>Trash</span>
             @if($trashCount > 0)

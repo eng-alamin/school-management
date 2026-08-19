@@ -33,9 +33,26 @@ class AdvanceComponent extends Component
     public string $advance_date        = '';
     public string $reason              = '';
 
+    public string $routePrefix = '';
+
     public function mount(): void
     {
+        $this->routePrefix = $this->resolveRoutePrefix();
+
         $this->advance_date = now()->format('Y-m-d');
+    }
+
+    protected function resolveRoutePrefix(): string
+    {
+        $routeName = request()->route()?->getName();
+
+        if ($routeName && str_contains($routeName, '.')) {
+            return explode('.', $routeName)[0] . '.';
+        }
+
+        $segment = request()->segment(1);
+
+        return $segment ? $segment . '.' : '';
     }
 
     public function updatingSearch(): void

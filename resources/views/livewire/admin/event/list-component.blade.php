@@ -28,10 +28,10 @@
                     </div>
                 @endif
 
-                <a href="{{ route('admin.event.types') }}" class="btn btn-primary">
+                <a href="{{ route($routePrefix . 'event.types') }}" class="btn btn-primary">
                     <span class="material-icons-round">add</span> Add Types
                 </a>
-                <a href="{{ route('admin.event.add') }}" class="btn btn-primary">
+                <a href="{{ route($routePrefix . 'event.add') }}" class="btn btn-primary">
                     <span class="material-icons-round">add</span> Add Event
                 </a>
             </div>
@@ -112,7 +112,7 @@
                                 </td>
                                 <td>
                                     <div class="d-flex gap-1">
-                                        <a href="{{ route('admin.event.edit', ['id' => $event->id]) }}"
+                                        <a href="{{ route($routePrefix . 'event.edit', ['id' => $event->id]) }}"
                                            class="act-btn edit" title="Edit">
                                             <span class="material-icons-round">drive_file_rename_outline</span>
                                         </a>
@@ -128,7 +128,7 @@
                                 <td colspan="8" class="text-center py-5 text-muted">
                                     <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
                                     No events found.
-                                    <a href="{{ route('admin.event.add') }}">Create one now</a>.
+                                    <a href="{{ route($routePrefix . 'event.add') }}">Create one now</a>.
                                 </td>
                             </tr>
                         @endforelse

@@ -26,25 +26,25 @@
                     </div>
                 @endif
 
-                <a href="{{ route('admin.academic.classes') }}" class="btn btn-primary btn-sm">
+                <a href="{{ route($routePrefix . 'academic.classes') }}" class="btn btn-primary btn-sm">
                     <span>
                         <span class="material-icons-round">flight_class</span>
                         <span>Class</span>
                     </span>
                 </a>
-                <a href="{{ route('admin.academic.sections') }}" class="btn btn-primary btn-sm">
+                <a href="{{ route($routePrefix . 'academic.sections') }}" class="btn btn-primary btn-sm">
                     <span>
                         <span class="material-icons-round">border_inner</span>
                         <span>Section</span>
                     </span>
                 </a>
-                <a href="{{ route('admin.academic.subjects') }}" class="btn btn-primary btn-sm">
+                <a href="{{ route($routePrefix . 'academic.subjects') }}" class="btn btn-primary btn-sm">
                     <span>
                         <span class="material-icons-round">subject</span>
                         <span>Subjects</span>
                     </span>
                 </a>
-                <a href="{{ route('admin.academic.groups') }}" class="btn btn-primary btn-sm">
+                <a href="{{ route($routePrefix . 'academic.groups') }}" class="btn btn-primary btn-sm">
                     <span>
                         <span class="material-icons-round">group</span>
                         <span>Groups</span>

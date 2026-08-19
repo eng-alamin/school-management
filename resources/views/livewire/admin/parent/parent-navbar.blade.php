@@ -79,10 +79,8 @@
 
     <!-- Profile Tabs -->
     <ul class="nav profile-tabs border-bottom mt-4 flex-nowrap overflow-auto no-print">
-        <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.parent.overview') ? 'active' : '' }}" href="{{ route('admin.parent.overview', ['id' => $guardian->id]) }}">Overview</a></li>
-        <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.parent.child') ? 'active' : '' }}" href="{{ route('admin.parent.child', ['id' => $guardian->id]) }}">Children</a></li>
-        <li class="nav-item">
-            <a class="nav-link {{ request()->routeIs('admin.parent.account') ? 'active' : '' }}" href="{{ route('admin.parent.account', ['id' => $guardian->id]) }}">Account</a>
-        </li>
+        <li class="nav-item"><a class="nav-link {{ request()->routeIs($routePrefix . 'parent.overview') ? 'active' : '' }}" href="{{ route($routePrefix . 'parent.overview', ['id' => $guardian->id]) }}">Overview</a></li>
+        <li class="nav-item"><a class="nav-link {{ request()->routeIs($routePrefix . 'parent.child') ? 'active' : '' }}" href="{{ route($routePrefix . 'parent.child', ['id' => $guardian->id]) }}">Children</a></li>
+        <li class="nav-item"><a class="nav-link {{ request()->routeIs($routePrefix . 'parent.account') ? 'active' : '' }}" href="{{ route($routePrefix . 'parent.account', ['id' => $guardian->id]) }}">Account</a></li>
     </ul>
 </div>

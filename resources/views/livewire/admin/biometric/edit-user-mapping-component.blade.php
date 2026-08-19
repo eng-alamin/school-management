@@ -57,7 +57,13 @@
                 </div>
 
                 <div class="d-flex justify-content-end gap-2 mt-4">
-                    <a wire:navigate href="{{ route('admin.biometric.mapping.index', ['device_id' => $device->id]) }}" class="btn btn-light">Cancel</a>
+                    <button type="button" class="btn btn-light" onclick="history.back()">
+                        <span>
+                            <span class="material-icons-round">arrow_back</span>
+                            <span>Cancel</span>
+                        </span>
+                    </button>
+             
                     <button type="submit" class="btn btn-primary" wire:loading.attr="disabled" wire:target="save">
                         <span wire:loading wire:target="save" class="spinner-border spinner-border-sm me-1"></span>
                         Update Mapping

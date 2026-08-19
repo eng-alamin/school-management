@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Student;
 
 use Livewire\Component;
+use App\Models\Branch;
 use App\Models\User;
 use App\Models\Student;
 use App\Models\StudentEnrollment;
@@ -78,22 +79,12 @@ class StudentAddComponent extends Component
         'monthly_fee'      => true,
     ];
 
-    public function mount()
+    private function resolveActiveBranchId(): ?int
     {
-        $session = AcademicSession::where('is_current', true)->first();
-        $this->session_id = $session?->id;
+        $user = auth()->user();
 
-        $group = AcademicGroup::where('is_current', true)->first();
-        $this->group_id = $group?->id;
-
-        $this->generateRegisterNo();
-        $this->generateStudentId();
-
-        $this->admission_date = now()->format('Y-m-d');
-        $this->gender = 'male';
-
-        $this->dispatch('date-updated', date: $this->admission_date);
-        $this->dispatch('date-updated', date: $this->dob);
+        return $user->branch_id
+            ?? Branch::resolveMainBranchId($user->institution_id);
     }
 
     private function generateRegisterNo(): void
@@ -110,8 +101,9 @@ class StudentAddComponent extends Component
 
         $year = now()->format('y');
 
-        $lastStudent = Student::where('institution_id', $institutionId)
-            ->whereNotNull('registration_no')
+        // BranchScope automatically narrows this to the current branch
+        // for branch-scoped roles — no manual branch_id filter needed.
+        $lastStudent = Student::whereNotNull('registration_no')
             ->orderByDesc('id')
             ->first();
 
@@ -136,8 +128,7 @@ class StudentAddComponent extends Component
 
         $year = now()->format('y');
 
-        $lastStudent = Student::where('institution_id', $institutionId)
-            ->whereNotNull('student_id')
+        $lastStudent = Student::whereNotNull('student_id')
             ->orderByDesc('id')
             ->first();
 
@@ -155,23 +146,29 @@ class StudentAddComponent extends Component
             return;
         }
 
-        $institutionId = auth()->user()->institution_id;
-
-        $count = Student::where('institution_id', $institutionId)
-            ->where('class_id', $classId)
-            ->count();
+        $count = Student::where('class_id', $classId)->count();
 
         $this->roll_no = str_pad($count + 1, 2, '0', STR_PAD_LEFT);
     }
 
-    /**
-     * Class change handler.
-     *
-     * Resolves the class's has_section flag (academic_classes.has_section)
-     * and only loads sections when the class actually supports them.
-     * If the class has no sections, section_id stays null and the
-     * section dropdown is hidden in the view (see selectedClassHasSection).
-     */
+    public function mount()
+    {
+        $session = AcademicSession::where('is_current', true)->first();
+        $this->session_id = $session?->id;
+
+        $group = AcademicGroup::where('is_current', true)->first();
+        $this->group_id = $group?->id;
+
+        $this->generateRegisterNo();
+        $this->generateStudentId();
+
+        $this->admission_date = now()->format('Y-m-d');
+        $this->gender = 'male';
+
+        $this->dispatch('date-updated', date: $this->admission_date);
+        $this->dispatch('date-updated', date: $this->dob);
+    }
+
     public function updatedClassId($value): void
     {
         $this->section_id = null;
@@ -236,11 +233,30 @@ class StudentAddComponent extends Component
     public function rules()
     {
         $institutionId = auth()->user()->institution_id;
+        $branchId      = $this->resolveActiveBranchId();
 
         return [
             'session_id'  => 'required',
-            'registration_no' => 'nullable|unique:students,registration_no',
-            'student_id'  => 'nullable|unique:students,student_id',
+
+            'registration_no' => [
+                'nullable',
+                Rule::unique('students', 'registration_no')
+                    ->where(fn($q) => $q
+                        ->where('institution_id', $institutionId)
+                        ->where('branch_id', $branchId)
+                    )
+                    ->whereNull('deleted_at'),
+            ],
+
+            'student_id' => [
+                'nullable',
+                Rule::unique('students', 'student_id')
+                    ->where(fn($q) => $q
+                        ->where('institution_id', $institutionId)
+                        ->where('branch_id', $branchId)
+                    )
+                    ->whereNull('deleted_at'),
+            ],
 
             'class_id' => [
                 'required',
@@ -462,8 +478,8 @@ class StudentAddComponent extends Component
 
             $year = now()->format('y');
 
-            $lastStudentForId = Student::where('institution_id', $institutionId)
-                ->whereNotNull('student_id')
+            // BranchScope narrows this automatically for branch-scoped roles.
+            $lastStudentForId = Student::whereNotNull('student_id')
                 ->lockForUpdate()
                 ->orderByDesc('id')
                 ->first();
@@ -481,8 +497,7 @@ class StudentAddComponent extends Component
                 ? $inst->registration_code_prefix
                 : 'RG' . str_pad($institutionId, 2, '0', STR_PAD_LEFT);
 
-            $lastStudentForReg = Student::where('institution_id', $institutionId)
-                ->whereNotNull('registration_no')
+            $lastStudentForReg = Student::whereNotNull('registration_no')
                 ->lockForUpdate()
                 ->orderByDesc('id')
                 ->first();
@@ -493,8 +508,7 @@ class StudentAddComponent extends Component
 
             $registrationNo = $regPrefix . $year . str_pad($regSerial, $regDigit, '0', STR_PAD_LEFT);
 
-            $rollSerial = Student::where('institution_id', $institutionId)
-                ->where('class_id', $this->class_id)
+            $rollSerial = Student::where('class_id', $this->class_id)
                 ->lockForUpdate()
                 ->count();
 
@@ -596,7 +610,7 @@ class StudentAddComponent extends Component
             if ($invoice) {
                 $this->dispatch('toast', type: 'success', message: 'Student created successfully!');
 
-                return redirect()->route('admin.students.payment-collect', ['invoice' => $invoice->id]);
+                return redirect()->route('branch.students.payment-collect', ['invoice' => $invoice->id]);
             }
 
             $this->resetForm();
@@ -730,14 +744,14 @@ class StudentAddComponent extends Component
         $groups = AcademicGroup::orderBy('name')
             ->where('is_status', true)
             ->get();
-            
+
         $guardians = Guardian::all();
 
-        return view('livewire.admin.student.student-add-component',[
-            'sessions'      => $sessions,
-            'classes'      => $classes,
-            'groups'      => $groups,
-            'guardians'      => $guardians,
+        return view('livewire.admin.student.student-add-component', [
+            'sessions'  => $sessions,
+            'classes'   => $classes,
+            'groups'    => $groups,
+            'guardians' => $guardians,
         ])->layout('layouts.admin.app', [
             'title' => 'Create Admission | ' . institution()->name,
         ]);

@@ -9,14 +9,19 @@ use App\Models\User;
 
 class InstitutionScope implements Scope
 {
+    protected const INSTITUTION_EXEMPT_ROLES = [
+        User::ROLE_SUPER_ADMIN,
+    ];
+
     public function apply(Builder $builder, Model $model): void
     {
         if (!auth()->check()) {
             return;
         }
 
-        // Super Admin Bypass
-        if (auth()->user()->role === User::ROLE_SUPER_ADMIN) {
+        $user = auth()->user();
+
+        if (in_array($user->role, self::INSTITUTION_EXEMPT_ROLES, true)) {
             return;
         }
 

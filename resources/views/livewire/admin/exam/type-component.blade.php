@@ -30,8 +30,11 @@
                         </select>
                     </div>
                 @endif
-                <button class="btn-outline bg-dark text-white" wire:click="openCreate">
-                    <span class="material-icons-round">add</span> <span id="newSectionBtn">Add Type</span>
+                <button class="btn btn-primary" wire:click="openCreate">
+                    <span>
+                        <span class="material-icons-round">add</span> 
+                        <span id="newSectionBtn">Add Type</span>
+                    </span>
                 </button>
 
             </div>

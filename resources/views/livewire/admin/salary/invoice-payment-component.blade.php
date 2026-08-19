@@ -184,11 +184,11 @@
 
     {{-- ── Print Button (outside printable area) ── --}}
     <div class="no-print d-flex justify-content-end mt-3 gap-2">
-        <button type="button" class="btn-outline" onclick="history.back()">
+        <button type="button" class="btn btn-primary" onclick="history.back()">
             <span class="material-icons-round" style="font-size:16px">arrow_back</span>
             Back
         </button>
-        <button onclick="printPayslip()" class="btn-primary d-inline-flex align-items-center gap-1">
+        <button onclick="printPayslip()" class="btn btn-primary d-inline-flex align-items-center gap-1">
             <span class="material-icons-round" style="font-size:16px;vertical-align:middle">print</span>
             Print Payslip
         </button>

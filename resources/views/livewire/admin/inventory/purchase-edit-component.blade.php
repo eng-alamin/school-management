@@ -107,7 +107,7 @@
                 <h6 style="margin:0;font-weight:600;font-size:.85rem;color:var(--muted)">
                     Purchase Items
                 </h6>
-                <button class="btn-outline"
+                <button class="btn btn-primary"
                         type="button"
                         wire:click="addItem"
                         style="padding:5px 14px;font-size:.78rem">
@@ -256,12 +256,14 @@
         <!-- FORM FOOTER -->
         <div class="form-footer">
 
-            <a href="{{ url()->previous() }}" class="btn-outline">
-                <span class="material-icons-round" style="font-size:16px">arrow_back</span>
-                Back
+            <a href="{{ url()->previous() }}" class="btn btn-primary">
+                <span>
+                    <span class="material-icons-round" style="font-size:16px">arrow_back</span>
+                    <span>Back</span>
+                </span>
             </a>
 
-            <button class="btn-primary"
+            <button class="btn btn-primary"
                     type="button"
                     wire:click="save"
                     wire:loading.attr="disabled"
@@ -269,7 +271,7 @@
 
                 <span wire:loading.remove wire:target="save" style="display: inline-flex;align-items: center;gap: 6px">
                     <span class="material-icons-round">save</span>
-                    Update
+                    <span>Update</span>
                 </span>
 
                 <span wire:loading wire:target="save">
@@ -277,7 +279,7 @@
                         style="font-size:16px;animation:spin .7s linear infinite">
                         sync
                     </span>
-                    Updating...
+                    <span>Updating...</span>
                 </span>
 
             </button>

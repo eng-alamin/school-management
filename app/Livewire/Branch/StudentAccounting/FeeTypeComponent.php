@@ -241,7 +241,7 @@ class FeeTypeComponent extends Component
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
-        return view('livewire.branch.student-accounting.fee-type-component')
+        return view('livewire.admin.student-accounting.fee-type-component')
             ->with('feeTypes', $feeTypes)
             ->layout('layouts.branch.app', [
                 'title' => 'Fee Type | ' . institution()->name,

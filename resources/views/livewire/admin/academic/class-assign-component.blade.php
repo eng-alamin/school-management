@@ -26,7 +26,7 @@
                     </div>
                 @endif
 
-                <button class="btn-outline bg-dark text-white" wire:click="openCreate">
+                <button class="btn btn-primary" wire:click="openCreate">
                     <span class="material-icons-round">add</span> <span>New Assign</span>
                 </button>
             </div>

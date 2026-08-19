@@ -32,7 +32,7 @@
                     </div>
                 @endif
 
-                <a href="{{ route('admin.salary.add-template') }}"
+                <a href="{{ route($routePrefix . 'salary.add-template') }}"
                    class="btn btn-primary">
                     <span class="material-icons-round">add</span> Add Template
                 </a>
@@ -93,7 +93,7 @@
                                          <button class="act-btn view" title="View" wire:click="openView({{ $template->id }})">
                                             <span class="material-icons-round">visibility</span>
                                         </button>
-                                        <a href="{{ route('admin.salary.edit-template', ['id' => $template->id]) }}"
+                                        <a href="{{ route($routePrefix . 'salary.edit-template', ['id' => $template->id]) }}"
                                            class="act-btn edit" title="Edit">
                                             <span class="material-icons-round">drive_file_rename_outline</span>
                                         </a>
@@ -109,7 +109,7 @@
                                 <td colspan="9" class="text-center py-5 text-muted">
                                     <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
                                     No salary templates found.
-                                    <a href="{{ route('admin.salary.add-template') }}">Create one now</a>.
+                                    <a href="{{ route($routePrefix . 'salary.add-template') }}">Create one now</a>.
                                 </td>
                             </tr>
                         @endforelse

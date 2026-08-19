@@ -206,7 +206,7 @@ class AttendanceComponent extends Component
 
     public function render()
     {
-        return view('livewire.branch.student.attendance-component')
+        return view('livewire.admin.student.attendance-component')
             ->layout('layouts.branch.app', [
                 'title' => 'Student Attendance | ' . institution()->name,
             ]);

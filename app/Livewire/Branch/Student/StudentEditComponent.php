@@ -525,7 +525,7 @@ class StudentEditComponent extends Component
             ->get();
 
 
-        return view('livewire.branch.student.student-edit-component', [
+        return view('livewire.admin.student.student-edit-component', [
             'sessions'      => $sessions,
             'classes'      => $classes,
             'groups'      => $groups,

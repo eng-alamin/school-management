@@ -29,14 +29,24 @@
                         </select>
                     </div>
                 @endif
-                <a href="{{ route('admin.inventory.categories') }}" target="_blank" class="btn-sm btn-outline">
-                    <span class="material-icons-round fs-6">category</span> <span id="inventory-product-category-btn">Category</span>
+
+                <a href="{{ route($routePrefix . 'inventory.categories') }}" target="_blank" class="btn btn-primary">
+                    <span>
+                        <span class="material-icons-round">category</span>
+                        <span id="inventory-product-category-btn">Category</span>
+                    </span>
                 </a>
-                <a href="{{ route('admin.inventory.units') }}" target="_blank" class="btn-sm btn-outline">
-                    <span class="material-icons-round fs-6">ac_unit</span> <span id="inventory-product-unit-btn">Unit</span>
+                <a href="{{ route($routePrefix . 'inventory.units') }}" target="_blank" class="btn btn-primary">
+                    <span>
+                        <span class="material-icons-round">ac_unit</span>
+                        <span id="inventory-product-unit-btn">Unit</span>
+                    </span>
                 </a>
-                <button class="btn-outline bg-dark text-white" wire:click="openCreate">
-                    <span class="material-icons-round">add</span> <span id="inventory-product-add-btn">Add Product</span>
+                <button class="btn btn-primary" wire:click="openCreate">
+                    <span>
+                        <span class="material-icons-round">add</span>
+                        <span id="inventory-product-add-btn">Add Product</span>
+                    </span>
                 </button>
 
             </div>
@@ -223,34 +233,3 @@
         </div>
     @endif
 </div>
-
-
-@push('styles')
-    <style>
-        :root {
-            --primary: rgba(33, 37, 41);
-            --primary-light: rgba(239,84,84,.12);
-        }
-
-        .card { border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
-        .card-header { background: #fff; border-bottom: 1px solid var(--border); border-radius: 12px 12px 0 0 !important; padding: 16px 20px; }
-        .card-header .card-title { font-size: .95rem; font-weight: 600; margin: 0; }
-
-        .modal-header { border-bottom: 1px solid var(--border); }
-        .modal-footer { border-top: 1px solid var(--border); }
-        .modal-title { font-weight: 600; font-size: 1rem; }
-
-        .form-label { font-size: .8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
-        .form-control, .form-select {
-            border-radius: 8px; border: 1px solid var(--border);
-            font-size: .875rem; padding: .45rem .75rem;
-            transition: border-color .2s, box-shadow .2s;
-        }
-        .form-control:focus, .form-select:focus {
-            border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light);
-        }
-
-        .btn-sm { font-size: .78rem; padding: .3rem .65rem; border-radius: 6px; }
-
-    </style>
-@endpush

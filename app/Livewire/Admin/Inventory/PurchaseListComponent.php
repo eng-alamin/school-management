@@ -22,6 +22,26 @@ class PurchaseListComponent extends Component
     public bool  $confirmDelete = false;
     public ?int  $deleteId      = null;
 
+    public string $routePrefix = '';
+
+    public function mount(): void
+    {
+        $this->routePrefix = $this->resolveRoutePrefix();
+    }
+
+    protected function resolveRoutePrefix(): string
+    {
+        $routeName = request()->route()?->getName();
+
+        if ($routeName && str_contains($routeName, '.')) {
+            return explode('.', $routeName)[0] . '.';
+        }
+
+        $segment = request()->segment(1);
+
+        return $segment ? $segment . '.' : '';
+    }
+
     public function updatingSearch(): void
     {
         $this->resetPage();

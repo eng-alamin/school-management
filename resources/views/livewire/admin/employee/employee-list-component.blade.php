@@ -28,7 +28,7 @@
                     </div>
                 @endif
 
-                <a href="{{ route('admin.employee.add') }}"class="btn btn-primary btn-sm">
+                <a href="{{ route($routePrefix . 'employee.add') }}"class="btn btn-primary btn-sm">
                     <span>
                         <span class="material-icons-round">add</span> 
                         <span>New Employee</span>
@@ -94,11 +94,11 @@
                             </td>
                             <td>
                                 <div class="d-flex gap-1">
-                                    <a href="{{ route('admin.employee.view', ['id' => $employee->id]) }}" target="_blank"
+                                    <a href="{{ route($routePrefix . 'employee.view', ['id' => $employee->id]) }}" target="_blank"
                                         class="act-btn view" title="View">
                                         <span class="material-icons-round">visibility</span>
                                     </a>
-                                    <a href="{{ route('admin.employee.edit', ['id' => $employee->id]) }}"
+                                    <a href="{{ route($routePrefix . 'employee.edit', ['id' => $employee->id]) }}"
                                        class="act-btn edit" title="Edit">
                                         <span class="material-icons-round">drive_file_rename_outline</span>
                                     </a>
@@ -118,7 +118,7 @@
                             <td colspan="9" class="text-center py-5 text-muted">
                                 <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
                                 No employees found.
-                                <a href="{{ route('admin.employee.add') }}">Add one now</a>.
+                                <a href="{{ route($routePrefix . 'employee.add') }}">Add one now</a>.
                             </td>
                         </tr>
                         @endforelse

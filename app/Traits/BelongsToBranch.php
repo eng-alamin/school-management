@@ -21,15 +21,13 @@ trait BelongsToBranch
             $user = auth()->user();
 
             if (!feature_enabled(Feature::BRANCH_MODULE)) {
-                $model->branch_id ??= Branch::withoutGlobalScopes()
-                    ->where('institution_id', $user->institution_id)
-                    ->where('is_main', true)
-                    ->value('id');
+                $model->branch_id ??= Branch::resolveMainBranchId($user->institution_id);
 
                 return;
             }
 
-            $model->branch_id ??= $user->branch_id;
+            $model->branch_id ??= $user->branch_id
+                ?? Branch::resolveMainBranchId($user->institution_id);
         });
     }
 

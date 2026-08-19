@@ -62,6 +62,29 @@ class ApplicationComponent extends Component
         'student'      => User::class,
     ];
 
+    public string $routePrefix = '';
+
+    public function mount(): void
+    {
+        $this->routePrefix = $this->resolveRoutePrefix();
+
+        $this->start_date = now()->format('Y-m-d');
+        $this->end_date   = now()->format('Y-m-d');
+    }
+
+    protected function resolveRoutePrefix(): string
+    {
+        $routeName = request()->route()?->getName();
+
+        if ($routeName && str_contains($routeName, '.')) {
+            return explode('.', $routeName)[0] . '.';
+        }
+
+        $segment = request()->segment(1);
+
+        return $segment ? $segment . '.' : '';
+    }
+
     // ──────────────────────────────────────────
     // Validation
     // ──────────────────────────────────────────
@@ -78,15 +101,6 @@ class ApplicationComponent extends Component
             'attachment'        => 'nullable|file|max:5120',
             'comments'          => 'nullable|string|max:1000',
         ];
-    }
-
-    // ──────────────────────────────────────────
-    // Lifecycle
-    // ──────────────────────────────────────────
-    public function mount(): void
-    {
-        $this->start_date = now()->format('Y-m-d');
-        $this->end_date   = now()->format('Y-m-d');
     }
 
     public function updatingSearch(): void    { $this->resetPage(); }

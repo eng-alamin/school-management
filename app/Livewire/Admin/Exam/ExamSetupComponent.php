@@ -58,6 +58,26 @@ class ExamSetupComponent extends Component
     public float $default_mcq_mark       = 0;
     public float $default_practical_mark = 0;
 
+    public string $routePrefix = '';
+
+    public function mount(): void
+    {
+        $this->routePrefix = $this->resolveRoutePrefix();
+    }
+
+    protected function resolveRoutePrefix(): string
+    {
+        $routeName = request()->route()?->getName();
+
+        if ($routeName && str_contains($routeName, '.')) {
+            return explode('.', $routeName)[0] . '.';
+        }
+
+        $segment = request()->segment(1);
+
+        return $segment ? $segment . '.' : '';
+    }
+
     protected function rules(): array
     {
         $institutionId = institution()->id;
@@ -238,7 +258,7 @@ class ExamSetupComponent extends Component
     public function save(): void
     {
         $this->validate();
-
+        
         $currentSession = AcademicSession::where('is_current', true)->first();
         $institutionId  = institution()->id;
 
@@ -275,7 +295,7 @@ class ExamSetupComponent extends Component
                 $serial = 1;
                 foreach ($this->subjects as $detailId => $marks) {
                     ExamSetupDetail::create([
-                        // FIX: institution_id ছিল না — NOT NULL কলামের জন্য
+                        // institution_id ছিল না — NOT NULL কলামের জন্য
                         // insert fail করতে পারত, বা cross-tenant row তৈরি হতে পারত।
                         'institution_id'                   => $institutionId,
                         'exam_setup_id'                    => $record->id,
@@ -341,7 +361,7 @@ class ExamSetupComponent extends Component
                 }
 
                 $record = ExamSetup::create([
-                    // FIX: institution_id ছিল না — bulk create-এ প্রতিটা row
+                    // institution_id ছিল না — bulk create-এ প্রতিটা row
                     // NOT NULL constraint এ fail করত অথবা cross-tenant leak হতো।
                     'institution_id'           => $institutionId,
                     'name'                     => $this->name,
@@ -356,7 +376,6 @@ class ExamSetupComponent extends Component
                 $serial = 1;
                 foreach ($assign->details as $detail) {
                     ExamSetupDetail::create([
-                        // FIX: institution_id ছিল না
                         'institution_id'                   => $institutionId,
                         'exam_setup_id'                    => $record->id,
                         'academic_class_assign_detail_id'  => $detail->id,

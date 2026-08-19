@@ -29,8 +29,11 @@
                     </div>
                 @endif
 
-                <a href="{{ route('admin.inventory.sale.add') }}" class="btn-sm btn-outline bg-dark text-white">
-                    <span class="material-icons-round">add</span> Add Sale
+                <a href="{{ route($routePrefix . 'inventory.sale.add') }}" class="btn btn-primary">
+                    <span>
+                        <span class="material-icons-round">add</span>
+                        <span>Add Sale</span>
+                    </span>
                 </a>
             </div>
         </div>
@@ -103,7 +106,7 @@
 
                                 <td>
                                     <div class="d-flex gap-1">
-                                        <a href="{{ route('admin.inventory.sale.edit', ['id' => $sale->id]) }}"
+                                        <a href="{{ route($routePrefix . 'inventory.sale.edit', ['id' => $sale->id]) }}"
                                            class="act-btn edit" title="Edit">
                                             <span class="material-icons-round">drive_file_rename_outline</span>
                                         </a>
@@ -118,8 +121,8 @@
                             <tr>
                                 <td colspan="8" class="text-center py-5 text-muted">
                                     <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
-                                    No sales found.
-                                    <a href="{{ route('admin.inventory.sale.add') }}">Create one now</a>.
+                                    <span>No sales found.</span> <br> <br>
+                                    <a class="btn btn-primary btn-sm" href="{{ route($routePrefix . 'inventory.sale.add') }}">Create one now</a>.
                                 </td>
                             </tr>
                         @endforelse
@@ -160,18 +163,3 @@
     @endif
 
 </div>
-
-@push('styles')
-    <style>
-        .card { border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
-        .card-header { background: #fff; border-bottom: 1px solid var(--border); border-radius: 12px 12px 0 0 !important; padding: 16px 20px; }
-
-        .badge-active   { background: rgba(34,197,94,.12);   color: #16a34a; }
-        .badge-inactive { background: rgba(107,114,128,.12);  color: #6b7280; }
-        .badge-used     { background: rgba(59,130,246,.12);   color: #2563eb; }
-        .badge-pending  { background: rgba(245,158,11,.12);   color: #d97706; }
-        .badge-received { background: rgba(139,92,246,.12);   color: #7c3aed; }
-
-        .btn-sm { font-size: .78rem; padding: .3rem .65rem; border-radius: 6px; }
-    </style>
-@endpush

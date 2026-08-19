@@ -24,8 +24,11 @@
                         </select>
                     </div>
                 @endif
-                <a href="{{ route('admin.exam.schedule.add') }}" class="btn-outline btn-sm bg-dark text-white">
-                    <span class="material-icons-round">add</span> <span id="newSectionBtn">Add Schedule</span>
+                <a href="{{ route($routePrefix . 'exam.schedule.add') }}" class="btn btn-primary">
+                    <span>
+                        <span class="material-icons-round">add</span>
+                        <span id="newSectionBtn">Add Schedule</span>
+                    </span>
                 </a>
 
             </div>
@@ -74,7 +77,7 @@
                                     <button class="act-btn view" title="View" wire:click="openView({{ $setup->id }})">
                                         <span class="material-icons-round">visibility</span>
                                     </button>
-                                    <a href="{{ route('admin.exam.schedule.add') }}?exam={{ $setup->id }}" class="act-btn edit" title="Edit">
+                                    <a href="{{ route($routePrefix . 'exam.schedule.add') }}?exam={{ $setup->id }}" class="act-btn edit" title="Edit">
                                         <span class="material-icons-round">drive_file_rename_outline</span>
                                     </a>
                                     <button class="act-btn delete" title="Delete" wire:click="confirmDeleteRecord({{ $setup->id }})">
@@ -87,7 +90,7 @@
                         <tr>
                             <td colspan="5" class="text-center py-5 text-muted">
                                 <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
-                                No schedules found. <a href="{{ route('admin.exam.schedule.add') }}">Create one now</a>.
+                                No schedules found. <a href="{{ route($routePrefix . 'exam.schedule.add') }}">Create one now</a>.
                             </td>
                         </tr>
                         @endforelse

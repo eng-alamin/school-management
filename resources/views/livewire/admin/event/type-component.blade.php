@@ -29,12 +29,10 @@
                         </select>
                     </div>
                 @endif
-                <a href="{{ route('admin.event.list') }}" class="btn btn-primary">
-                   <span>
-                        <span class="material-icons-round">keyboard_backspace</span>
-                        <span> Back Event</span>
-                   </span>
-                </a>
+                <button type="button" class="btn btn-primary" onclick="history.back()">
+                    <span class="material-icons-round">arrow_back</span>
+                    Back
+                </button>
                 <button class="btn btn-primary" wire:click="openCreate">
                     <span class="material-icons-round">add</span> <span id="newSectionBtn">Add Type</span>
                 </button>

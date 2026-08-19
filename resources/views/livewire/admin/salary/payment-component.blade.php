@@ -170,13 +170,13 @@
 
                             {{-- Actions --}}
                             <td>
-                                @if($recordExists && $employee->salary_status === 'paid')
-                                    <a class="action-btn btn-payslip" href="{{ route('admin.salary.invoice-payment', ['id' => $employee->id, 'month' => $this->month]) }}" target="_blank">
+                                @if($recordExists && $employee->salary_status === 'paid') 
+                                    <a class="action-btn btn-payslip" href="{{ route($routePrefix . 'salary.invoice-payment', ['id' => $employee->id, 'month' => $this->month]) }}" target="_blank">
                                         <span class="material-icons-round" style="font-size:14px;vertical-align:middle">visibility</span>
                                         Payslip
                                     </a>
                                 @elseif($recordExists)
-                                    <a class="action-btn btn-paynow" href="{{ route('admin.salary.add-payment', ['id' => $employee->id, 'month' => $this->month]) }}" target="_blank">
+                                    <a class="action-btn btn-paynow" href="{{ route($routePrefix . 'salary.add-payment', ['id' => $employee->id, 'month' => $this->month]) }}" target="_blank">
                                         <span class="material-icons-round" style="font-size:14px;vertical-align:middle">credit_card</span>
                                         Pay Now
                                     </a>
@@ -184,7 +184,7 @@
                                     {{-- Nothing to act on for a past month that was never processed --}}
                                     <span class="text-muted" style="font-size:12px">—</span>
                                 @else
-                                    <a class="action-btn btn-paynow" href="{{ route('admin.salary.add-payment', ['id' => $employee->id, 'month' => $this->month]) }}" target="_blank">
+                                    <a class="action-btn btn-paynow" href="{{ route($routePrefix . 'salary.add-payment', ['id' => $employee->id, 'month' => $this->month]) }}" target="_blank">
                                         <span class="material-icons-round" style="font-size:14px;vertical-align:middle">credit_card</span>
                                         Generate &amp; Pay
                                     </a>

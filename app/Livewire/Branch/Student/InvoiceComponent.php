@@ -239,7 +239,7 @@ class InvoiceComponent extends Component
 
     public function render()
     {
-        return view('livewire.branch.student.invoice-component')
+        return view('livewire.admin.student.invoice-component')
             ->layout('layouts.branch.app', [
                 'title' => 'Student Invoice | ' . institution()->name,
             ]);

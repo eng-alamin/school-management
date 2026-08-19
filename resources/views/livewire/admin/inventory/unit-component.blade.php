@@ -29,8 +29,11 @@
                         </select>
                     </div>
                 @endif
-                <button class="btn-outline bg-dark text-white" wire:click="openCreate">
-                    <span class="material-icons-round">add</span> <span id="inventory-unit-add-btn">Add Unit</span>
+                <button class="btn btn-primary" wire:click="openCreate">
+                    <span>
+                        <span class="material-icons-round">add</span> 
+                        <span id="inventory-unit-add-btn">Add Unit</span>
+                    </span>
                 </button>
 
             </div>
@@ -42,9 +45,6 @@
                     <thead>
                         <tr>
                             <th id="th-sl">SL</th>
-                            @if(institution()->hasMultipleBranches())
-                                <th id="th-branch">Branch</th>
-                            @endif
                             <th id="th-name" wire:click="sortBy('name')" style="cursor:pointer">Name @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif </th>
                             <th id="th-actions">Actions</th>
                         </tr>
@@ -53,9 +53,6 @@
                         @forelse($units as $i => $unit)
                         <tr>
                             <td class="text-muted">{{ $units->firstItem() + $i }}</td>
-                            @if(institution()->hasMultipleBranches())
-                                <td>{{ $unit->branch?->label() ?? 'All Branches' }}</td>
-                            @endif
                             <td> {{ $unit->name }} </td>
                             <td>
                                 <div class="d-flex gap-1">
@@ -70,7 +67,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="{{ institution()->hasMultipleBranches() ? 4 : 3 }}" class="text-center py-5 text-muted">
+                            <td colspan="3" class="text-center py-5 text-muted">
                                 <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
                                 No units found. <a href="#" wire:click.prevent="openCreate">Create one now</a>.
                             </td>
@@ -102,19 +99,6 @@
                     <div class="modal-body">
                         <form wire:submit.prevent="save">
                             <div class="row g-3">
-                                @if($this->showBranchField())
-                                    <div class="col-md-12">
-                                        <label class="form-label" id="dept-lbl-branch">Branch</label>
-                                        <select class="form-select no-custom-select @error('branch_id') is-invalid @enderror" wire:model="branch_id">
-                                            <option value="">All Branches</option>
-                                            @foreach($this->branchFieldOptions() as $branch)
-                                                <option value="{{ $branch->id }}">{{ $branch->name }}</option>
-                                            @endforeach
-                                        </select>
-                                        @error('branch_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                    </div>
-                                @endif
-
                                 <div class="col-md-12">
                                     <label class="form-label">Name <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model.defer="name" placeholder="e.g. Kilogram">
@@ -159,95 +143,3 @@
         </div>
     @endif
 </div>
-
-
-@push('styles')
-    <style>
-        :root {
-            --primary: rgba(33, 37, 41);
-            --primary-light: rgba(239,84,84,.12);
-        }
-
-        /* ── CARD ── */
-        .card { border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
-        .card-header { background: #fff; border-bottom: 1px solid var(--border); border-radius: 12px 12px 0 0 !important; padding: 16px 20px; }
-        .card-header .card-title { font-size: .95rem; font-weight: 600; margin: 0; }
-
-        /* ── BADGES ── */
-        .badge-active { background: rgba(34,197,94,.12); color: #16a34a; }
-        .badge-inactive { background: rgba(107,114,128,.12); color: #6b7280; }
-        .badge-expired, .badge-cancelled, .badge-suspended { background: rgba(239,68,68,.12); color: #dc2626; }
-        .badge-used { background: rgba(59,130,246,.12); color: #2563eb; }
- 
-        /* ── AVATAR ── */
-        .avatar { width: 38px; height: 38px; border-radius: 8px; object-fit: cover; }
-        .avatar-placeholder {
-            width: 38px; height: 38px; border-radius: 8px;
-            background: var(--primary-light); color: var(--primary);
-            display: inline-flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: .875rem;
-        }
- 
-        /* ── MODAL ── */
-        .modal-header { border-bottom: 1px solid var(--border); }
-        .modal-footer { border-top: 1px solid var(--border); }
-        .modal-title { font-weight: 600; font-size: 1rem; }
- 
-        /* ── FORM ── */
-        .form-label { font-size: .8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
-        .form-control, .form-select {
-            border-radius: 8px; border: 1px solid var(--border);
-            font-size: .875rem; padding: .45rem .75rem;
-            transition: border-color .2s, box-shadow .2s;
-        }
-        .form-control:focus, .form-select:focus {
-            border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light);
-        }
-        .form-check-input:checked { background-color: var(--primary); border-color: var(--primary); }
- 
-        /* Color picker */
-        .color-input-wrap { display: flex; align-items: center; gap: 8px; }
-        .color-input-wrap input[type="color"] {
-            width: 40px; height: 38px; padding: 2px; border-radius: 8px;
-            cursor: pointer; border: 1px solid var(--border);
-        }
- 
-        /* Buttons */
-        .btn-primary { background: var(--primary); border-color: var(--primary); }
-        .btn-primary:hover, .btn-primary:focus { background: #d63e3e; border-color: #d63e3e; }
-        .btn-sm { font-size: .78rem; padding: .3rem .65rem; border-radius: 6px; }
-        .btn-icon { width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 7px; }
- 
-        /* Stat cards */
-        .stat-card { border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 16px; }
-        .stat-icon { width: 48px; height: 48px; border-radius: 10px; display: grid; place-items: center; font-size: 1.4rem; }
-        .stat-label { font-size: .75rem; color: var(--text-muted); font-weight: 500; }
-        .stat-value { font-size: 1.5rem; font-weight: 700; line-height: 1; }
- 
-        /* ID Card Preview */
-        .id-card-preview {
-            width: 325px; min-height: 200px; border-radius: 14px; overflow: hidden;
-            box-shadow: 0 8px 32px rgba(0,0,0,.15); margin: 0 auto;
-            position: relative; font-family: 'Inter', sans-serif;
-        }
-        .id-card-preview .card-header-band { padding: 16px; text-align: center; }
-        .id-card-preview .card-body-area { padding: 14px 16px; display: flex; gap: 14px; }
-        .id-card-preview .card-photo {
-            width: 80px; height: 95px; border-radius: 8px;
-            object-fit: cover; border: 3px solid rgba(255,255,255,.5);
-        }
- 
-        /* Print */
-        @media print {
-            .sidebar, .topbar, .no-print { display: none !important; }
-            .main-content { margin: 0; padding: 0; }
-            .print-area { display: block !important; }
-        }
- 
-        .alert { border-radius: 10px; font-size: .875rem; }
- 
-        /* Subject rows */
-        .subject-row { background: var(--bg); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
- 
-    </style>
-@endpush

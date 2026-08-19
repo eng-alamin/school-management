@@ -12,11 +12,7 @@ use Illuminate\Database\Eloquent\Scope;
 class BranchScope implements Scope
 {
     protected const BRANCH_EXEMPT_ROLES = [
-        User::ROLE_ADMIN,
-        User::ROLE_ACCOUNTANT,
-        User::ROLE_TEACHER,
-        User::ROLE_STUDENT,
-        User::ROLE_PARENT,
+        User::ROLE_SUPER_ADMIN,
     ];
 
     public function apply(Builder $builder, Model $model): void
@@ -31,21 +27,10 @@ class BranchScope implements Scope
             return;
         }
 
-        if (!feature_enabled(Feature::BRANCH_MODULE)) {
-            $mainBranchId = self::resolveMainBranchId($user);
+        $branchId = $user->branch_id
+            ?? Branch::resolveMainBranchId($user->institution_id);
 
-            if (empty($mainBranchId)) {
-                $builder->whereRaw('1 = 0');
-
-                return;
-            }
-
-            $builder->where($model->getTable() . '.branch_id', $mainBranchId);
-
-            return;
-        }
-
-        if (empty($user->branch_id)) {
+        if (empty($branchId)) {
             $builder->whereRaw('1 = 0');
 
             return;
@@ -53,29 +38,7 @@ class BranchScope implements Scope
 
         $builder->where(
             $model->getTable() . '.branch_id',
-            $user->branch_id
+            $branchId
         );
-    }
-
-    protected static function resolveMainBranchId(User $user): ?int
-    {
-        static $cache = [];
-
-        $institutionId = $user->institution_id;
-
-        if (empty($institutionId)) {
-            return null;
-        }
-
-        if (array_key_exists($institutionId, $cache)) {
-            return $cache[$institutionId];
-        }
-
-        $mainBranchId = Branch::withoutGlobalScopes()
-            ->where('institution_id', $institutionId)
-            ->where('is_main', true)
-            ->value('id');
-
-        return $cache[$institutionId] = $mainBranchId;
     }
 }

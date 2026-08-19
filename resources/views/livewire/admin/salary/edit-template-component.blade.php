@@ -196,28 +196,28 @@
                             <tr style="border-bottom:1px solid var(--border)">
                                 <td style="padding:10px 4px;font-size:.85rem;color:var(--muted)">Basic Salary</td>
                                 <td style="padding:10px 4px;text-align:right;font-size:.85rem">
-                                    <span style="color:var(--muted);margin-right:6px">$</span>
+                                    <span style="color:var(--muted);margin-right:6px">৳</span>
                                     <span>{{ number_format((float) $basic_salary, 0) }}</span>
                                 </td>
                             </tr>
                             <tr style="border-bottom:1px solid var(--border)">
                                 <td style="padding:10px 4px;font-size:.85rem;color:var(--muted)">Total Allowance</td>
                                 <td style="padding:10px 4px;text-align:right;font-size:.85rem">
-                                    <span style="color:var(--muted);margin-right:6px">$</span>
+                                    <span style="color:var(--muted);margin-right:6px">৳</span>
                                     <span>{{ number_format($this->totalAllowance, 0) }}</span>
                                 </td>
                             </tr>
                             <tr style="border-bottom:1px solid var(--border)">
                                 <td style="padding:10px 4px;font-size:.85rem;color:var(--muted)">Total Deductions</td>
                                 <td style="padding:10px 4px;text-align:right;font-size:.85rem">
-                                    <span style="color:var(--muted);margin-right:6px">$</span>
+                                    <span style="color:var(--muted);margin-right:6px">৳</span>
                                     <span>{{ number_format($this->totalDeduction, 0) }}</span>
                                 </td>
                             </tr>
                             <tr>
                                 <td style="padding:12px 4px;font-size:.9rem;font-weight:700;color:var(--text)">Net Salary</td>
                                 <td style="padding:12px 4px;text-align:right;font-size:.9rem;font-weight:700;color:var(--text)">
-                                    <span style="color:var(--muted);margin-right:6px">$</span>
+                                    <span style="color:var(--muted);margin-right:6px">৳</span>
                                     <span>{{ number_format($this->netSalary, 0) }}</span>
                                 </td>
                             </tr>

@@ -29,8 +29,11 @@
                     </div>
                 @endif
 
-                <a href="{{ route('admin.office-accounting.expense.add') }}" class="btn btn-primary">
-                    <span class="material-icons-round">add</span> Add Expense
+                <a href="{{ route($routePrefix . 'office-accounting.expense.add') }}" class="btn btn-primary">
+                    <span>
+                        <span class="material-icons-round">add</span> 
+                        <span>Add Expense</span>
+                    </span>
                 </a>
             </div>
         </div>

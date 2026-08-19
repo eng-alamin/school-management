@@ -26,14 +26,23 @@
                     </div>
                 @endif
 
-                <a href="{{ route('admin.exam.terms') }}" target="_blank" class="btn-sm btn-outline">
-                    <span class="material-icons-round fs-6">history_edu</span> Terms
+                <a href="{{ route($routePrefix . 'exam.terms') }}" target="_blank" class="btn btn-primary">
+                    <span>
+                        <span class="material-icons-round fs-6">history_edu</span> 
+                        <span>Terms</span>
+                    </span>
                 </a>
-                <a href="{{ route('admin.exam.types') }}" target="_blank" class="btn-sm btn-outline">
-                    <span class="material-icons-round fs-6">check_circle</span> Types
+                <a href="{{ route($routePrefix . 'exam.types') }}" target="_blank" class="btn btn-primary">
+                    <span>
+                        <span class="material-icons-round fs-6">check_circle</span> 
+                        <span>Types</span>
+                    </span>
                 </a>
-                <button class="btn-sm btn-outline bg-dark text-white" wire:click="openCreate">
-                    <span class="material-icons-round">add</span> Add Exam
+                <button class="btn btn-primary" wire:click="openCreate">
+                    <span>
+                        <span class="material-icons-round">add</span> 
+                        <span>Add Exam</span>
+                    </span>
                 </button>
             </div>
         </div>
@@ -62,9 +71,6 @@
                             <td class="text-muted">{{ $setups->firstItem() + $i }}</td>
                             <td><strong>{{ $setup->name }}</strong></td>
                              <td>
-                                {{-- FIX: class/section relation নাম ছিল না — real relation
-                                     academicClass/academicSection ব্যবহার করা হলো।
-                                     Section না থাকলে "All Section" না দেখিয়ে শুধু class name দেখানো হচ্ছে। --}}
                                 @if($setup->classAssign)
                                     <span class="badge bg-info-subtle text-dark">
                                         {{ $setup->classAssign->academicClass->name ?? '—' }}
@@ -284,8 +290,8 @@
                             <div class="d-flex align-items-center justify-content-between mb-2">
                                 <label class="form-label mb-0">Class Select <span class="text-danger">*</span></label>
                                 <div>
-                                    <button type="button" class="btn btn-sm btn-outline-dark" wire:click="selectAllClasses">Select All</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="deselectAllClasses">Clear</button>
+                                    <button type="button" class="btn btn-primary btn-sm" wire:click="selectAllClasses">Select All</button>
+                                    <button type="button" class="btn btn-secondary btn-sm" wire:click="deselectAllClasses">Clear</button>
                                 </div>
                             </div>
 

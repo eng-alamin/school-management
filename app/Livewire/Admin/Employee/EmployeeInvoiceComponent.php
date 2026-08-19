@@ -29,6 +29,8 @@ class EmployeeInvoiceComponent extends Component
 
     public $officeAccounts = [];
 
+    public string $routePrefix = '';
+
     public function mount(int $id)
     {
         $this->employee = Employee::with([
@@ -40,7 +42,21 @@ class EmployeeInvoiceComponent extends Component
         $this->paymentDate    = now()->format('Y-m-d');
         $this->officeAccounts = OfficeAccount::orderBy('name')->get();
 
+        $this->routePrefix = $this->resolveRoutePrefix();
         $this->loadSalaryPayments();
+    }
+
+    protected function resolveRoutePrefix(): string
+    {
+        $routeName = request()->route()?->getName();
+
+        if ($routeName && str_contains($routeName, '.')) {
+            return explode('.', $routeName)[0] . '.';
+        }
+
+        $segment = request()->segment(1);
+
+        return $segment ? $segment . '.' : '';
     }
 
     private function loadSalaryPayments(): void

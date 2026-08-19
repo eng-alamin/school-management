@@ -1,4 +1,4 @@
-{{-- resources/views/livewire/admin/biometric/index-user-mapping-component.blade.php --}}
+{{-- resources/views/livewire/adming-component.blade.php --}}
 <div>
 
     <div class="card">
@@ -40,8 +40,8 @@
                     @endif
 
                     <a wire:navigate
-                       href="{{ route('admin.biometric.mapping.create', ['device_id' => $selectedDeviceId]) }}"
-                       class="btn-outline bg-dark text-white">
+                       href="{{ route($routePrefix . 'biometric.mapping.create', ['device_id' => $selectedDeviceId]) }}"
+                       class="btn btn-primary">
                         <span class="material-icons-round">add</span> <span id="newSectionBtn">Add Mapping</span>
                     </a>
                 @endif
@@ -121,7 +121,7 @@
 
                                 <td>
                                     <div class="d-flex gap-1">
-                                        <a wire:navigate href="{{ route('admin.biometric.mapping.edit', $mapping->id) }}" class="act-btn edit" title="Edit">
+                                        <a wire:navigate href="{{ route($routePrefix . 'biometric.mapping.edit', $mapping->id) }}" class="act-btn edit" title="Edit">
                                             <span class="material-icons-round">edit</span>
                                         </a>
                                         <button class="act-btn delete" title="Delete" wire:click="confirmDelete({{ $mapping->id }})">
@@ -136,7 +136,7 @@
                                     <span class="material-icons-round d-block mb-2" style="font-size:2.5rem;opacity:.25;">link_off</span>
                                     <span data-en="No mappings found for this device. "
                                           data-bn="এই device-এর জন্য কোনো mapping নেই। ">এই device-এর জন্য কোনো mapping নেই। </span>
-                                    <a wire:navigate href="{{ route('admin.biometric.mapping.create', ['device_id' => $selectedDeviceId]) }}"
+                                    <a wire:navigate href="{{ route('biometric.mapping.create', ['device_id' => $selectedDeviceId]) }}"
                                        data-en="Add one now" data-bn="এখনই যোগ করো">এখনই যোগ করো</a><span data-en="." data-bn="।">।</span>
                                 </td>
                             </tr>
@@ -220,9 +220,5 @@
         .act-btn.edit:hover { background: rgba(37,99,235,.08); }
         .act-btn.delete { color: #dc2626; }
         .act-btn.delete:hover { background: rgba(220,38,38,.08); }
-
-        .btn-primary { background: var(--primary); border-color: var(--primary); }
-        .btn-primary:hover, .btn-primary:focus { background: #d63e3e; border-color: #d63e3e; }
-        .btn-sm { font-size: .78rem; padding: .3rem .65rem; border-radius: 6px; }
     </style>
 @endpush

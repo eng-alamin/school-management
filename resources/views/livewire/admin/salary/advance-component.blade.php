@@ -55,7 +55,7 @@
                         @forelse($advances as $i => $advance)
                             <tr>
                                 <td class="text-muted">{{ $advances->firstItem() + $i }}</td>
-                                <td><a class="text-primary" href="{{ route('admin.employee.view', ['id' => $advance->employee->id]) }}" target="_blank">{{ $advance->employee->employee_id ?? '—' }}</a></td>
+                                <td><a class="text-primary" href="{{ route($routePrefix . 'employee.view', ['id' => $advance->employee->id]) }}" target="_blank">{{ $advance->employee->employee_id ?? '—' }}</a></td>
                                 <td>{{ $advance->employee->name ?? 'N/A' }}</td>
                                 <td>{{ $advance->advance_date->format('d M, Y') }}</td>
                                 <td>৳{{ number_format($advance->amount, 0) }}</td>
@@ -86,7 +86,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="text-center py-5 text-muted">
+                                <td colspan="9" class="text-center py-5 text-muted">
                                     <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
                                     No salary advances found.
                                 </td>

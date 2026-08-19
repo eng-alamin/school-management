@@ -39,9 +39,6 @@ class Branch extends Model
     */
     protected static function booted(): void
     {
-        // Branch rows are always scoped to their parent institution.
-        // Applied directly (not via BelongsToInstitution trait) because
-        // Branch itself has no institution-independent identity.
         static::addGlobalScope(new InstitutionScope());
 
         static::creating(function (Branch $branch) {
@@ -50,8 +47,6 @@ class Branch extends Model
             }
         });
 
-        // Prevent deleting the Main Branch — every institution must
-        // always retain exactly one main branch.
         static::deleting(function (Branch $branch) {
             if ($branch->is_main) {
                 throw new \RuntimeException('The main branch cannot be deleted.');
@@ -100,5 +95,23 @@ class Branch extends Model
             ->logOnly(['name', 'code', 'is_active'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
+    }
+
+    public static function resolveMainBranchId(?int $institutionId): ?int
+    {
+        static $cache = [];
+
+        if (empty($institutionId)) {
+            return null;
+        }
+
+        if (array_key_exists($institutionId, $cache)) {
+            return $cache[$institutionId];
+        }
+
+        return $cache[$institutionId] = static::withoutGlobalScopes()
+            ->where('institution_id', $institutionId)
+            ->where('is_main', true)
+            ->value('id');
     }
 }

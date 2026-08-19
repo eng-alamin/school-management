@@ -273,7 +273,7 @@ class StudentFineComponent extends Component
             ? StudentFine::with('student', 'creator', 'feeInvoice')->find($this->viewId)
             : null;
 
-        return view('livewire.branch.student-accounting.student-fine-component')
+        return view('livewire.admin.student-accounting.student-fine-component')
             ->with([
                 'studentFines' => $studentFines,
                 'students'     => $students,

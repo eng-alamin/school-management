@@ -28,8 +28,12 @@ class CreateUserMappingComponent extends Component
     public ?int $selectedPersonId = null;
     public array $personResults = [];
 
+    public string $routePrefix = '';
+
     public function mount(): void
     {
+        $this->routePrefix = $this->resolveRoutePrefix();
+
         if (! $this->deviceId) {
             abort(404, 'Device not specified.');
         }
@@ -37,6 +41,19 @@ class CreateUserMappingComponent extends Component
         // Scoped lookup: a foreign/forged device_id 404s instead of silently working.
         $this->device = BiometricDevice::where('institution_id', institution()->id)
             ->findOrFail($this->deviceId);
+    }
+
+    protected function resolveRoutePrefix(): string
+    {
+        $routeName = request()->route()?->getName();
+
+        if ($routeName && str_contains($routeName, '.')) {
+            return explode('.', $routeName)[0] . '.';
+        }
+
+        $segment = request()->segment(1);
+
+        return $segment ? $segment . '.' : '';
     }
 
     protected function attendableClass(): string

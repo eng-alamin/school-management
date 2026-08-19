@@ -26,7 +26,7 @@ class EnrollmentComponent extends Component
             ->orderByDesc('id')
             ->get();
 
-        return view('livewire.branch.student.enrollment-component')
+        return view('livewire.admin.student.enrollment-component')
             ->with('student', $this->student)
             ->with('enrollments', $enrollments)
             ->layout('layouts.branch.app', [

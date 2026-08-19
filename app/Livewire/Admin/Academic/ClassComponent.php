@@ -39,6 +39,26 @@ class ClassComponent extends Component
     public array $sectionIds = [];
     public array $previousSectionIds = []; 
 
+    public string $routePrefix = '';
+
+    public function mount(): void
+    {
+        $this->routePrefix = $this->resolveRoutePrefix();
+    }
+
+    protected function resolveRoutePrefix(): string
+    {
+        $routeName = request()->route()?->getName();
+
+        if ($routeName && str_contains($routeName, '.')) {
+            return explode('.', $routeName)[0] . '.';
+        }
+
+        $segment = request()->segment(1);
+
+        return $segment ? $segment . '.' : '';
+    }
+
     protected function rules(): array
     {
         $institutionId = auth()->user()->institution_id;

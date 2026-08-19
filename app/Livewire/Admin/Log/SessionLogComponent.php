@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Log;
 
 use Livewire\Component;
+use App\Models\Branch;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -12,16 +13,14 @@ class SessionLogComponent extends Component
 {
     public string $currentSessionId = '';
     public ?int $institutionId = null;
+    public ?int $branchId = null;
 
     public function mount(): void
     {
-        // Guard 1: শুধুমাত্র 'admin' role এই component access করতে পারবে।
         if (! Auth::check() || Auth::user()->role !== 'admin') {
             throw new AccessDeniedHttpException('Unauthorized access to session log.');
         }
 
-        // Guard 2: admin-এর অবশ্যই institution_id থাকতে হবে। এটাই সেই কলাম
-        // যেটা দিয়ে বাকি সব query institution-scoped রাখা হবে।
         $institutionId = Auth::user()->institution_id;
 
         if (blank($institutionId)) {
@@ -29,16 +28,23 @@ class SessionLogComponent extends Component
         }
 
         $this->institutionId    = $institutionId;
+        $this->branchId          = $this->resolveActiveBranchId();
         $this->currentSessionId = session()->getId();
+    }
+
+    protected function resolveActiveBranchId(): ?int
+    {
+        $user = Auth::user();
+
+        return $user->branch_id
+            ?? Branch::resolveMainBranchId($user->institution_id);
     }
 
     protected function getOnlineSessions(): \Illuminate\Support\Collection
     {
-        // sessions টেবিলে institution_id কলাম নেই, তাই আগে এই institution-এর
-        // user-দের id বের করে নিতে হবে, তারপর সেই user_id দিয়ে sessions ফিল্টার করতে হবে।
-        // এভাবেই অন্য institution-এর session/user এখানে কখনো আসবে না।
         $institutionUsers = DB::table('users')
             ->where('institution_id', $this->institutionId)
+            ->when($this->branchId, fn($q) => $q->where('branch_id', $this->branchId))
             ->select('id', 'name', 'avatar', 'role')
             ->get()
             ->keyBy('id');
@@ -77,14 +83,13 @@ class SessionLogComponent extends Component
             return;
         }
 
-        // নিজের institution-এর বাইরের কোনো session ভুলেও delete না হয়ে যায়,
-        // তাই delete করার আগে session-টা এই institution-এর user-এরই কিনা যাচাই করা হচ্ছে।
         $belongsToInstitution = DB::table('sessions')
             ->where('id', $sessionId)
             ->whereIn('user_id', function ($query) {
                 $query->select('id')
                     ->from('users')
-                    ->where('institution_id', $this->institutionId);
+                    ->where('institution_id', $this->institutionId)
+                    ->when($this->branchId, fn($q) => $q->where('branch_id', $this->branchId));
             })
             ->exists();
 
@@ -107,7 +112,8 @@ class SessionLogComponent extends Component
             ->whereIn('user_id', function ($query) {
                 $query->select('id')
                     ->from('users')
-                    ->where('institution_id', $this->institutionId);
+                    ->where('institution_id', $this->institutionId)
+                    ->when($this->branchId, fn($q) => $q->where('branch_id', $this->branchId));
             })
             ->delete();
 
