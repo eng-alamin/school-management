@@ -60,7 +60,7 @@
                     <button wire:click="filter"
                             wire:loading.attr="disabled"
                             wire:target="filter"
-                            class="btn-primary w-100 d-flex justify-content-center align-items-center"
+                            class="btn btn-primary w-100 d-flex justify-content-center align-items-center"
                             type="button">
                         <span wire:loading.remove wire:target="filter">
                             <span class="material-icons-round" style="font-size:16px;vertical-align:middle;margin-right:4px">filter_alt</span> Filter
@@ -95,14 +95,12 @@
                         </div>
                     @endif
 
-                    {{-- Print --}}
-                    <button class="btn-outline" onclick="printTable()">
-                        <span class="material-icons-round" style="font-size:16px">print</span> Print
-                    </button>
-
                     {{-- Reset --}}
-                    <button class="btn-outline" type="button" wire:click="resetForm">
-                        <span class="material-icons-round" style="font-size:16px">refresh</span> Reset
+                    <button class="btn btn-primary" type="button" wire:click="resetForm">
+                        <span>
+                            <span class="material-icons-round">refresh</span>
+                            <span>Reset</span>
+                        </span>
                     </button>
                 </div>
             </div>
@@ -203,52 +201,6 @@
     </div>
 
 </div>
-
-@push('scripts')
-<script>
-    function exportStudentCSV() {
-        const table = document.getElementById('studentTable');
-        if (!table) return;
-        let csv = [];
-        const rows = table.querySelectorAll('tr');
-        rows.forEach(row => {
-            const cols = row.querySelectorAll('th:not(.no-print), td:not(.no-print)');
-            const rowData = Array.from(cols).map(col => `"${col.innerText.trim()}"`);
-            csv.push(rowData.join(','));
-        });
-        const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'students.csv';
-        a.click();
-    }
-
-    function printTable() {
-        const table = document.getElementById('studentTable');
-        if (!table) return;
-
-        const clone = table.cloneNode(true);
-        clone.querySelectorAll('.no-print').forEach(el => el.remove());
-
-        const win = window.open('', '', 'width=900,height=700');
-        win.document.write(`
-            <html><head><title>Student List</title>
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-            <style>
-                body { padding: 20px; font-size: 13px; }
-                table { width: 100%; border-collapse: collapse; }
-                th, td { border: 1px solid #dee2e6; padding: 8px 10px; font-size: 12px; }
-                th { background: #f8f9fa; font-weight: 600; }
-            </style>
-            </head><body>${clone.outerHTML}</body></html>
-        `);
-        win.document.close();
-        win.focus();
-        win.print();
-        win.close();
-    }
-</script>
-@endpush
 
 @push('scripts')
 <script>

@@ -56,7 +56,7 @@
                         </select>
                     </div>
                 @endif
-                <button class="btn-outline bg-dark text-white" wire:click="openCreate">
+                <button class="btn btn-primary" wire:click="openCreate">
                     <span class="material-icons-round">add</span> <span id="newSectionBtn">Add Notice</span>
                 </button>
             </div>
@@ -420,9 +420,6 @@
 
 @push('styles')
     <style>
-        /* ── BADGES ── */
-        .badge-active   { background: rgba(34,197,94,.12);  color: #16a34a; }
-        .badge-inactive { background: rgba(107,114,128,.12); color: #6b7280; }
 
         /* ── AVATAR ── */
         .avatar-placeholder {
@@ -448,9 +445,5 @@
         }
         .form-check-input:checked { background-color: var(--primary); border-color: var(--primary); }
 
-        /* Buttons */
-        .btn-primary { background: var(--primary); border-color: var(--primary); }
-        .btn-primary:hover, .btn-primary:focus { background: #d63e3e; border-color: #d63e3e; }
-        .btn-sm { font-size: .78rem; padding: .3rem .65rem; border-radius: 6px; }
     </style>
 @endpush

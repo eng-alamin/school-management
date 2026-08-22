@@ -163,27 +163,3 @@
     </div>
 
 </div>
-
-@push('styles')
-<style>
-    /* ── AVATAR ── */
-    .avatar-placeholder {
-        width: 38px; height: 38px; border-radius: 8px;
-        display: inline-flex; align-items: center; justify-content: center;
-        font-weight: 700; font-size: .875rem; flex-shrink: 0;
-    }
-
-    /* ── TABLE ── */
-    .fw-500 { font-weight: 500; }
-
-    .form-label { font-size: .8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
-    .form-control, .form-select {
-        border-radius: 8px; border: 1px solid var(--border);
-        font-size: .875rem; padding: .45rem .75rem;
-        transition: border-color .2s, box-shadow .2s;
-    }
-    .form-control:focus, .form-select:focus {
-        border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light);
-    }
-</style>
-@endpush

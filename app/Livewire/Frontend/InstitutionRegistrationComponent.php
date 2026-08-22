@@ -51,8 +51,8 @@ class InstitutionRegistrationComponent extends Component
         $this->phone                = $pending['phone'] ?? '';
         $this->admin_name           = $pending['admin_name'] ?? '';
         $this->admin_email          = $pending['admin_email'] ?? '';
-        $this->password              = $pending['password'] ?? '1234';
-        $this->password_confirmation = $pending['password'] ?? '1234';
+        $this->password              = $pending['password'] ?? '12345678';
+        $this->password_confirmation = $pending['password'] ?? '12345678';
 
         $this->existing_logo_path = session('pending_logo');
 
@@ -161,7 +161,6 @@ class InstitutionRegistrationComponent extends Component
         $this->stepTwoValidation();
 
         DB::transaction(function () {
-            // 1. Create the institution record
             $institution = Institution::create([
                 'name'     => $this->institution_name,
                 'type'     => $this->institution_type,
@@ -173,7 +172,6 @@ class InstitutionRegistrationComponent extends Component
                 'status'   => true,
             ]);
 
-            // 2. Store logo if uploaded
             if ($this->logo) {
                 $path = $this->logo->storeAs(
                     'logos',
@@ -183,18 +181,21 @@ class InstitutionRegistrationComponent extends Component
                 $institution->update(['system_logo' => 'storage/' . $path]);
             }
 
-            // 3. Create the super-admin user
+            // ✅ Defaults seed + main branch তৈরি (একসাথেই)
+            $branch = InstitutionDefaultsService::create($institution);
+
             $user = User::create([
                 'name'            => $this->admin_name,
                 'email'           => $this->admin_email,
                 'password'        => $this->password,
-                'role'            => 'admin',
+                'role'            => User::ROLE_ADMIN,   // magic string বাদ, constant
                 'institution_id'  => $institution->id,
+                'branch_id'       => $branch->id,        // ✅ এখন আর null থাকবে না
             ]);
 
-            // 4. Create Invoice
             Invoice::create([
                 'institution_id' => $institution->id,
+                'branch_id'      => $branch->id,
                 'type'           => 'registration',
                 'invoice_no'     => 'REG_' . strtoupper(uniqid()),
                 'total_amount'   => (float) setting('register_fee', 0),
@@ -203,7 +204,6 @@ class InstitutionRegistrationComponent extends Component
 
             Auth::login($user);
             session()->regenerate();
-
         });
 
         return redirect()->route('admin.dashboard')->with('success', 'Institution setup complete!!');

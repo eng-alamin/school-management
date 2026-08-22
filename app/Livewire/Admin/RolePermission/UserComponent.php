@@ -9,7 +9,7 @@ use App\Models\Employee;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
 class UserComponent extends Component
@@ -24,9 +24,12 @@ class UserComponent extends Component
     public string $sortField = 'name';
     public string $sortDirection = 'asc';
 
+    protected array $sortableFields = ['name'];
+
     // ══ Assign Role Modal ══
     public bool $showRoleModal = false;
     public ?int $assigningEmployeeId = null;
+    public ?int $assigningEmployeeBranchId = null;
     public $selectedRoles = [];
 
     private function institutionId(): int
@@ -67,8 +70,9 @@ class UserComponent extends Component
             ->with('user.roles')
             ->findOrFail($employeeId);
 
-        $this->assigningEmployeeId = $employee->id;
-        $this->selectedRoles       = $employee->user?->roles->pluck('name')->toArray() ?? [];
+        $this->assigningEmployeeId       = $employee->id;
+        $this->assigningEmployeeBranchId = $employee->branch_id;
+        $this->selectedRoles             = $employee->user?->roles->pluck('name')->toArray() ?? [];
         $this->resetErrorBag();
 
         $this->showRoleModal = true;
@@ -76,9 +80,10 @@ class UserComponent extends Component
 
     public function closeRoleModal(): void
     {
-        $this->showRoleModal       = false;
-        $this->assigningEmployeeId = null;
-        $this->selectedRoles       = [];
+        $this->showRoleModal             = false;
+        $this->assigningEmployeeId       = null;
+        $this->assigningEmployeeBranchId = null;
+        $this->selectedRoles             = [];
         $this->resetErrorBag();
     }
 
@@ -101,17 +106,23 @@ class UserComponent extends Component
     public function assignRoles(): void
     {
         $institutionId = $this->institutionId();
+        $employeeBranchId = $this->assigningEmployeeBranchId;
 
+        // Roles assignable to this employee: strictly scoped to the
+        // employee's own branch (no institution-wide roles exist anymore).
         $this->validate([
             'selectedRoles'   => 'array',
             'selectedRoles.*' => Rule::exists('roles', 'name')
                 ->where('guard_name', 'web')
-                ->where('institution_id', $institutionId),
+                ->where('institution_id', $institutionId)
+                ->where('branch_id', $employeeBranchId),
         ]);
 
-        // Defense-in-depth: re-verify role names actually belong to this institution's guard.
+        // Defense-in-depth: re-verify role names actually belong to this
+        // institution's guard AND are scoped to this employee's branch.
         $validRoleNames = Role::where('guard_name', 'web')
             ->where('institution_id', $institutionId)
+            ->where('branch_id', $employeeBranchId)
             ->whereIn('name', $this->selectedRoles)
             ->pluck('name')
             ->all();
@@ -131,6 +142,7 @@ class UserComponent extends Component
                 if (!$user) {
                     $user = User::create([
                         'institution_id' => $institutionId,
+                        'branch_id'      => $employee->branch_id,
                         'name'           => $employee->name,
                         'username'       => $this->generateUniqueUsername($employee->name),
                         'email'          => $employee->email,
@@ -184,8 +196,11 @@ class UserComponent extends Component
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
+        // Roles available for the currently-open assign modal: only roles
+        // scoped to the employee being edited's own branch.
         $roles = Role::where('institution_id', $institutionId)
             ->where('guard_name', 'web')
+            ->where('branch_id', $this->assigningEmployeeBranchId)
             ->orderBy('name')
             ->get();
 
@@ -196,4 +211,4 @@ class UserComponent extends Component
                 'title' => 'User Role Assignment | ' . institution()->name,
             ]);
     }
-} 
+}

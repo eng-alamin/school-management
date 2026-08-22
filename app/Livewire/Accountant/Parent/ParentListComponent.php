@@ -20,6 +20,26 @@ class ParentListComponent extends Component
     public bool  $confirmDelete = false;
     public ?int  $deleteId      = null;
 
+    public string $routePrefix = '';
+
+    public function mount(): void
+    {
+        $this->routePrefix = $this->resolveRoutePrefix();
+    }
+
+    protected function resolveRoutePrefix(): string
+    {
+        $routeName = request()->route()?->getName();
+
+        if ($routeName && str_contains($routeName, '.')) {
+            return explode('.', $routeName)[0] . '.';
+        }
+
+        $segment = request()->segment(1);
+
+        return $segment ? $segment . '.' : '';
+    }
+
     public function confirmDeleteRecord(int $id): void
     {
         $this->deleteId      = $id;
@@ -50,7 +70,7 @@ class ParentListComponent extends Component
             ->latest()
             ->paginate($this->perPage);
 
-        return view('livewire.accountant.parent.parent-list-component')
+        return view('livewire.admin.parent.parent-list-component')
             ->with('parents', $parents)
             ->layout('layouts.accountant.app', [
                 'title' => 'Parent List | ' . institution()->name,

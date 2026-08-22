@@ -106,24 +106,3 @@
 
     </div>
 </div>
-
-@push('styles')
-<style>
-    .card { border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
-
-    .session-icon-wrap {
-        width: 42px; height: 42px; border-radius: 10px;
-        background: var(--bs-light, #f8f9fa);
-        border: 1px solid var(--border, #e5e7eb);
-        display: flex; align-items: center; justify-content: center;
-        flex-shrink: 0;
-        color: #6c757d;
-    }
-    .session-icon-active {
-        background: rgba(25,135,84,.1);
-        border-color: rgba(25,135,84,.3);
-        color: #198754;
-    }
-    .session-icon-wrap .material-icons-round { font-size: 1.3rem; }
-</style>
-@endpush

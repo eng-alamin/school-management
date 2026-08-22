@@ -16,6 +16,26 @@ class ImportantComponent extends Component
 
     protected $queryString = ['search'];
 
+    public string $routePrefix = '';
+
+    public function mount(): void
+    {
+        $this->routePrefix = $this->resolveRoutePrefix();
+    }
+
+    protected function resolveRoutePrefix(): string
+    {
+        $routeName = request()->route()?->getName();
+
+        if ($routeName && str_contains($routeName, '.')) {
+            return explode('.', $routeName)[0] . '.';
+        }
+
+        $segment = request()->segment(1);
+
+        return $segment ? $segment . '.' : '';
+    }
+
     /* ------------------------------------------------------------------ */
 
     public function updatingSearch(): void
@@ -76,7 +96,7 @@ class ImportantComponent extends Component
             ->latest()
             ->paginate(15);
 
-        return view('livewire.accountant.mailbox.important-component', compact('messages'))
+        return view('livewire.admin.mailbox.important-component', compact('messages'))
             ->layout('layouts.accountant.app', [
                 'title' => 'MailBox | ' . institution()->name,
             ]);

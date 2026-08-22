@@ -5,7 +5,7 @@ namespace App\Livewire\Admin\RolePermission;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\DB;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
 
 class IndexComponent extends Component
 {
@@ -133,6 +133,7 @@ class IndexComponent extends Component
         $roles = Role::query()
             ->where('institution_id', $institutionId)
             ->where('guard_name', 'web')
+            ->with('branch:id,name')
             ->withCount('permissions')
             ->when($this->search, function ($q) {
                 $q->where(fn($sub) => $sub->where('name', 'like', "%{$this->search}%"));
@@ -142,7 +143,7 @@ class IndexComponent extends Component
 
         $viewingRole = $this->viewingRoleId
             ? Role::where('institution_id', $institutionId)
-                ->with('permissions')
+                ->with(['permissions', 'branch:id,name'])
                 ->find($this->viewingRoleId)
             : null;
 

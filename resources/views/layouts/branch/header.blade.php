@@ -91,7 +91,7 @@
       </div>
 
       <!-- Notifications -->
-      {{-- @livewire('notification-bell') --}}
+      @livewire('notification-bell')
 
       <!-- Profile Avatar -->
       <div class="topnav-dropdown-wrap">

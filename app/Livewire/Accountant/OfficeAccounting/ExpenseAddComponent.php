@@ -6,23 +6,23 @@ use Livewire\Component;
 use App\Models\OfficeAccount;
 use App\Models\OfficeHead;
 use App\Models\OfficeExpense;
-
+use Illuminate\Support\Facades\DB;
 use Livewire\WithFileUploads;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Validation\Rule;
+use Illuminate\Contracts\Validation\Validator;
 
 class ExpenseAddComponent extends Component
 {
     use WithFileUploads;
 
-    public $account_id  = '';
-    public $head_id     = '';
-    public $pay_via     = '';
-    public $reference   = '';
-    public $amount      = '';
-    public $date        = '';
+    public $account_id = '';
+    public $head_id = '';
+    public $pay_via = 'cash';
+    public $reference = '';
+    public $amount = '';
+    public $date = '';
     public $description = '';
-    public $attachment  = null;
+    public $attachment = null;
 
     public function mount()
     {
@@ -33,24 +33,27 @@ class ExpenseAddComponent extends Component
     {
         $this->reset();
         $this->date = now()->format('Y-m-d');
+        $this->resetValidation();
     }
 
-    protected function failedValidation($validator)
+    protected function failedValidation(Validator $validator)
     {
-        $this->dispatch('validation-failed');
+        $this->dispatch('toast', type: 'error', message: $validator->errors()->first());
+
+        throw new ValidationException($validator);
     }
 
     public function rules()
     {
         return [
-            'account_id'  => 'required|exists:office_accounts,id',
-            'head_id'     => 'required|exists:office_heads,id',
-            'pay_via'     => 'nullable|string|max:100',
-            'reference'   => 'nullable|string|max:255',
-            'amount'      => 'required|numeric|min:0',
-            'date'        => 'required|date',
+            'account_id' => 'required|exists:office_accounts,id',
+            'head_id' => 'nullable|exists:office_heads,id',
+            'pay_via' => 'nullable|string|max:100',
+            'reference' => 'nullable|string|max:255',
+            'amount' => 'required|numeric|min:0',
+            'date' => 'required|date',
             'description' => 'nullable|string',
-            'attachment'  => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'attachment' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
         ];
     }
 
@@ -61,37 +64,50 @@ class ExpenseAddComponent extends Component
 
     public function save()
     {
-        try {
-            $this->validate($this->rules());
+        $this->validate($this->rules());
 
+        DB::beginTransaction();
+
+        try {
             $attachmentPath = $this->attachment?->store('office-expenses', 'public');
 
-            OfficeExpense::create([
-                'account_id'  => $this->account_id,
-                'head_id'     => $this->head_id ?: null,
-                'pay_via'     => $this->pay_via ?: null,
-                'reference'   => $this->reference ?: null,
-                'amount'      => $this->amount,
-                'date'        => $this->date,
+            $expense = OfficeExpense::create([
+                'institution_id' => institution()->id,
+                'account_id' => $this->account_id,
+                'head_id' => $this->head_id ?: null,
+                'voucher_no' => OfficeExpense::generateVoucherNo(institution()->id),
+                'pay_via' => $this->pay_via ?: null,
+                'reference' => $this->reference ?: null,
+                'amount' => $this->amount,
+                'date' => $this->date,
                 'description' => $this->description ?: null,
-                'attachment'  => $attachmentPath,
+                'attachment' => $attachmentPath,
+                'created_by' => auth()->id(),
             ]);
+
+            activity()
+                ->performedOn($expense)
+                ->withProperties(['institution_id' => institution()->id])
+                ->log('Office Expense Created');
+
+            DB::commit();
 
             $this->dispatch('toast', type: 'success', message: 'Expense created successfully!');
             $this->resetForm();
+            $this->redirect(route('admin.office-accounting.expense.list'), navigate: true);
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            DB::rollBack();
             $this->dispatch('toast', type: 'error', message: 'An error occurred while creating the expense.');
-            throw $e;
         }
     }
 
     public function render()
     {
-        $accounts = OfficeAccount::all();
-        $heads    = OfficeHead::all();
+        $accounts = OfficeAccount::where('is_active', true)->get();
+        $heads = OfficeHead::where('type', 'expense')->where('is_active', true)->get();
 
-        return view('livewire.accountant.office-accounting.expense-add-component')
+        return view('livewire.admin.office-accounting.expense-add-component')
             ->with('accounts', $accounts)
             ->with('heads', $heads)
             ->layout('layouts.accountant.app', [

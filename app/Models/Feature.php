@@ -9,7 +9,7 @@ use App\Traits\BelongsToBranch;
 class Feature extends Model
 {
     use BelongsToInstitution;
-    use BelongsToBranch;
+    // use BelongsToBranch;
 
     protected $fillable = ['institution_id', 'feature_key', 'is_active'];
 

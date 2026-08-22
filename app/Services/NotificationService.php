@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Branch;
 use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Support\Collection;
@@ -18,7 +19,7 @@ class NotificationService
         array  $data     = [],
         string $priority = 'normal'
     ): Notification {
-        // BelongsToInstitution trait creating hook এ institution_id auto set করবে
+        // BelongsToInstitution / BelongsToBranch trait creating hook এ institution_id, branch_id auto set করবে
         return $user->notifications()->create([
             'type'     => $type,
             'title'    => $title,
@@ -28,25 +29,27 @@ class NotificationService
         ]);
     }
 
-    // ─── একটা role এর সবাইকে পাঠান ──────────────────────────────────────────
+    // ─── একটা role এর সবাইকে পাঠান (branch-aware) ──────────────────────────
 
     public static function sendToRole(
-        int    $institutionId,
-        string $role,
-        string $type,
-        string $title,
-        string $message,
-        array  $data     = [],
-        string $priority = 'normal'
+        int     $institutionId,
+        string  $role,
+        string  $type,
+        string  $title,
+        string  $message,
+        array   $data     = [],
+        string  $priority = 'normal',
+        ?int    $branchId = null
     ): int {
-        $users = User::where('institution_id', $institutionId)
-            ->where('role', $role)
-            ->get();
+        $query = User::where('institution_id', $institutionId)
+            ->where('role', $role);
 
-        return self::sendToMany($users, $type, $title, $message, $data, $priority);
+        self::applyBranchFilter($query, $institutionId, $branchId);
+
+        return self::sendToMany($query->get(), $type, $title, $message, $data, $priority);
     }
 
-    // ─── একাধিক role কে পাঠান ────────────────────────────────────────────────
+    // ─── একাধিক role কে পাঠান (branch-aware) ────────────────────────────────
 
     public static function sendToRoles(
         int    $institutionId,
@@ -55,16 +58,18 @@ class NotificationService
         string $title,
         string $message,
         array  $data     = [],
-        string $priority = 'normal'
+        string $priority = 'normal',
+        ?int   $branchId = null
     ): int {
-        $users = User::where('institution_id', $institutionId)
-            ->whereIn('role', $roles)
-            ->get();
+        $query = User::where('institution_id', $institutionId)
+            ->whereIn('role', $roles);
 
-        return self::sendToMany($users, $type, $title, $message, $data, $priority);
+        self::applyBranchFilter($query, $institutionId, $branchId);
+
+        return self::sendToMany($query->get(), $type, $title, $message, $data, $priority);
     }
 
-    // ─── institution এর সবাইকে পাঠান ──────────────────────────────────────────────
+    // ─── institution এর সবাইকে পাঠান (branch-aware) ─────────────────────────
 
     public static function sendToAll(
         int    $institutionId,
@@ -72,14 +77,54 @@ class NotificationService
         string $title,
         string $message,
         array  $data     = [],
-        string $priority = 'normal'
+        string $priority = 'normal',
+        ?int   $branchId = null
     ): int {
-        $users = User::where('institution_id', $institutionId)->get();
+        $query = User::where('institution_id', $institutionId);
 
-        return self::sendToMany($users, $type, $title, $message, $data, $priority);
+        self::applyBranchFilter($query, $institutionId, $branchId);
+
+        return self::sendToMany($query->get(), $type, $title, $message, $data, $priority);
     }
 
-    // ─── Bulk insert — insert() Eloquent bypass করে তাই institution_id manually ──
+    // ─── নির্দিষ্ট একটা Branch এর সবাইকে পাঠান (shortcut) ────────────────────
+
+    public static function sendToBranch(
+        int    $institutionId,
+        int    $branchId,
+        string $type,
+        string $title,
+        string $message,
+        array  $data     = [],
+        string $priority = 'normal'
+    ): int {
+        return self::sendToAll($institutionId, $type, $title, $message, $data, $priority, $branchId);
+    }
+
+    // ─── Branch filter helper ────────────────────────────────────────────────
+    // $branchId দেওয়া থাকলে শুধু সেই branch (null branch_id থাকা user-দের Main
+    // Branch হিসেবে ধরা হয়) — না দিলে institution-এর সব branch।
+
+    protected static function applyBranchFilter($query, int $institutionId, ?int $branchId): void
+    {
+        if ($branchId === null) {
+            return; // সব branch — filter দরকার নেই
+        }
+
+        $mainBranchId = Branch::resolveMainBranchId($institutionId);
+
+        $query->where(function ($q) use ($branchId, $mainBranchId) {
+            $q->where('branch_id', $branchId);
+
+            // branch_id null মানে Main Branch হিসেবে fallback — শুধু তখনই include
+            // করব যদি target branch টাই Main Branch হয়
+            if ($branchId === $mainBranchId) {
+                $q->orWhereNull('branch_id');
+            }
+        });
+    }
+
+    // ─── Bulk insert — insert() Eloquent bypass করে তাই institution_id/branch_id manually ──
 
     public static function sendToMany(
         Collection $users,
@@ -95,7 +140,8 @@ class NotificationService
 
         $now     = now();
         $inserts = $users->map(fn(User $user) => [
-            'institution_id'       => $user->institution_id, // insert() এ hook কাজ করে না, manually দিতে হবে
+            'institution_id'  => $user->institution_id, // insert() এ hook কাজ করে না, manually দিতে হবে
+            'branch_id'       => $user->branch_id, // insert() এ hook কাজ করে না, manually দিতে হবে
             'notifiable_id'   => $user->id,
             'notifiable_type' => User::class,
             'type'            => $type,
@@ -161,7 +207,9 @@ class NotificationService
         );
     }
 
-    public static function newAdmission(int $institutionId, string $studentName): int
+    // newAdmission এখন branch-aware — student যে branch এ ভর্তি হয়েছে শুধু সেই
+    // branch এর admin-দের পাঠানো হয় (branchId না দিলে সব branch এর admin)
+    public static function newAdmission(int $institutionId, string $studentName, ?int $branchId = null): int
     {
         return self::sendToRole(
             $institutionId,
@@ -169,7 +217,9 @@ class NotificationService
             'admission',
             'New Admission',
             "{$studentName} নতুন ভর্তি হয়েছে।",
-            ['icon' => 'person_add', 'url' => route('admin.students.index')]
+            ['icon' => 'person_add', 'url' => route('admin.students.index')],
+            'normal',
+            $branchId
         );
     }
 
@@ -177,7 +227,8 @@ class NotificationService
         int    $institutionId,
         array  $roles,
         string $title,
-        string $message
+        string $message,
+        ?int   $branchId = null
     ): int {
         return self::sendToRoles(
             $institutionId,
@@ -185,7 +236,9 @@ class NotificationService
             'announcement',
             $title,
             $message,
-            ['icon' => 'campaign']
+            ['icon' => 'campaign'],
+            'normal',
+            $branchId
         );
     }
 }

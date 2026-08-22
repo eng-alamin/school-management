@@ -1,6 +1,6 @@
 <div>
     {{-- ===== INSTITUTION HERO ===== --}}
-    <section class="hero-section">
+    <section class="hero-section" wire:ignore>
         <div class="container position-relative">
             <div class="row align-items-center g-4">
                 <div class="col-lg-8">
@@ -71,7 +71,7 @@
     </section>
 
     {{-- ===== STATS STRIP ===== --}}
-    <section class="stats-section" id="stats-section">
+    <section class="stats-section" id="stats-section" wire:ignore>
         <div class="container position-relative">
             <div class="row g-4">
                 <div class="col-lg-3 col-md-6 col-6">

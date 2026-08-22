@@ -99,20 +99,10 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('livewire:initialized', () => {
-
-            // ✅ Initial load এ সব ঠিক করো
-            setTimeout(() => initAllFields(), 100);
-
-            // ✅ Livewire update এর পর
-            Livewire.hook('morph.updated', ({ el }) => {
-                setTimeout(() => initAllFields(), 50);
-            });
-
+        (function() {
+            // ── Text is-filled ──
             function initAllFields() {
-
-                // ── 1. Text is-filled ──
-                document.querySelectorAll('.input-group-outline input, .input-group-outline').forEach(function(input) {
+                document.querySelectorAll('.input-group-outline input').forEach(function(input) {
                     var group = input.closest('.input-group');
                     if (!group) return;
 
@@ -139,6 +129,22 @@
                 });
             }
 
-        });
+            document.addEventListener('livewire:initialized', () => {
+                setTimeout(initAllFields, 100);
+            });
+
+            document.addEventListener('livewire:navigated', () => {
+                setTimeout(initAllFields, 100);
+            });
+
+
+            if (!window.MorphHookRegistered) {
+                window.MorphHookRegistered = true;
+                Livewire.hook('morph.updated', () => {
+                    setTimeout(initAllFields, 50);
+                });
+            }
+
+        })();
     </script>
 @endpush

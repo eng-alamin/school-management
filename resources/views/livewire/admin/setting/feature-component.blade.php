@@ -1,6 +1,5 @@
 {{-- resources/views/livewire/admin/setting/feature-component.blade.php --}}
 <div>
-
     <div class="card">
 
         {{-- floating header --}}

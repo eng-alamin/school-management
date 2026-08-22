@@ -75,10 +75,10 @@
 
     <!-- Profile Tabs -->
     <ul class="nav profile-tabs border-bottom mt-4 flex-nowrap overflow-auto no-print" wire:ignore>
-        <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.student.overview') ? 'active' : '' }}" href="{{ route('admin.student.overview', ['id' => $student->id]) }}">Overview</a></li>
-        <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.student.invoice') ? 'active' : '' }}" href="{{ route('admin.student.invoice', ['id' => $student->id]) }}">Invoice</a></li>
-        <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.student.account') ? 'active' : '' }}"href="{{ route('admin.student.account', ['id' => $student->id]) }}">Account</a></li>
-        <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.student.attendance') ? 'active' : '' }}" href="{{ route('admin.student.attendance', ['id' => $student->id]) }}">Attendance</a></li>
-        <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.student.enrollment') ? 'active' : '' }}" href="{{ route('admin.student.enrollment', ['id' => $student->id]) }}">Enrollment</a></li>
+        <li class="nav-item"><a class="nav-link {{ request()->routeIs($routePrefix . 'student.overview') ? 'active' : '' }}" href="{{ route($routePrefix . 'student.overview', ['id' => $student->id]) }}">Overview</a></li>
+        <li class="nav-item"><a class="nav-link {{ request()->routeIs($routePrefix . 'student.invoice') ? 'active' : '' }}" href="{{ route($routePrefix . 'student.invoice', ['id' => $student->id]) }}">Invoice</a></li>
+        <li class="nav-item"><a class="nav-link {{ request()->routeIs($routePrefix . 'student.account') ? 'active' : '' }}"href="{{ route($routePrefix . 'student.account', ['id' => $student->id]) }}">Account</a></li>
+        <li class="nav-item"><a class="nav-link {{ request()->routeIs($routePrefix . 'student.attendance') ? 'active' : '' }}" href="{{ route($routePrefix . 'student.attendance', ['id' => $student->id]) }}">Attendance</a></li>
+        <li class="nav-item"><a class="nav-link {{ request()->routeIs($routePrefix . 'student.enrollment') ? 'active' : '' }}" href="{{ route($routePrefix . 'student.enrollment', ['id' => $student->id]) }}">Enrollment</a></li>
     </ul>
 </div>

@@ -175,9 +175,12 @@
                         Photo
                     </label>
                     <div class="photo-upload-box">
-                        @if($photo_upload)
+                        @if($photo_upload && in_array(strtolower($photo_upload->getClientOriginalExtension()), ['jpg', 'jpeg', 'png']))
                             <img src="{{ $photo_upload->temporaryUrl() }}" 
                                 style="max-height:80px;max-width:100%;object-fit:contain;margin-bottom:6px">
+                        @elseif($photo_upload)
+                            <span class="material-icons-round">broken_image</span>
+                            <span class="lbl">Preview not available for this file type</span>
                         @else
                             <span class="material-icons-round">image</span>
                             <span class="lbl">Click to upload</span>
@@ -187,6 +190,7 @@
                     </div>
                     @error('photo_upload') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
+
             </div>
         </div>
 
@@ -307,39 +311,86 @@
     <script>
         document.addEventListener('livewire:initialized', () => {
 
-            // ✅ resetForm() call howar por wire:ignore select/date input gulo manually reset koro
-            Livewire.on('form-reset', () => {
+            // ✅ Initial load এ সব ঠিক করো
+            setTimeout(() => initAllFields(), 100);
 
-                // -- Native select gulo khali koro (Role, Designation, Department, Religion) --
-                document.querySelectorAll('.input-group-outline select').forEach(function (select) {
-                    select.value = '';
+            // ✅ Livewire update এর পর
+            Livewire.hook('morph.updated', ({ el }) => {
+                setTimeout(() => initAllFields(), 50);
+            });
 
+            function initAllFields() {
+
+                // ── 1. Text/Textarea is-filled ──
+                document.querySelectorAll('.input-group-outline input, .input-group-outline textarea').forEach(function(input) {
+                    var group = input.closest('.input-group');
+                    if (!group) return;
+
+                    // value থাকলে is-filled দাও
+                    if (input.value && input.value.trim() !== '') {
+                        group.classList.add('is-filled');
+                    } else {
+                        group.classList.remove('is-filled');
+                    }
+
+                    if (input._materialInit) return;
+                    input._materialInit = true;
+
+                    input.addEventListener('focus', function() {
+                        group.classList.add('is-focused');
+                    });
+                    input.addEventListener('blur', function() {
+                        group.classList.remove('is-focused');
+                        group.classList.toggle('is-filled', !!input.value.trim());
+                    });
+                    input.addEventListener('input', function() {
+                        group.classList.toggle('is-filled', !!input.value.trim());
+                    });
+                });
+
+                // ── 2. Select is-filled + value set ──
+                document.querySelectorAll('.input-group-outline select').forEach(function(select) {
                     var group = select.closest('.input-group');
-                    if (group) group.classList.remove('is-filled');
+                    if (!group) return;
 
-                    // Custom select UI (bootstrap-select er moto wrapper) thakle rebuild koro
-                    var wrapper = select.parentNode.querySelector('.custom-select-wrapper');
-                    if (wrapper) wrapper.remove();
+                    // selected value থাকলে is-filled দাও
+                    if (select.value && select.value !== '') {
+                        group.classList.add('is-filled');
+                    } else {
+                        group.classList.remove('is-filled');
+                    }
+
+                    if (select._materialInit) return;
+                    select._materialInit = true;
+
+                    select.addEventListener('change', function() {
+                        group.classList.toggle('is-filled', !!select.value);
+                    });
+                    select.addEventListener('focus', function() {
+                        group.classList.add('is-focused');
+                    });
+                    select.addEventListener('blur', function() {
+                        group.classList.remove('is-focused');
+                    });
+                });
+
+                // ── 3. Custom Select rebuild ──
+                document.querySelectorAll('.input-group-outline .form-select').forEach(function(select) {
+                    // পুরনো custom wrapper থাকলে remove করো
+                    var old = select.parentNode.querySelector('.custom-select-wrapper');
+                    if (old) old.remove();
                     select.style.display = '';
+
                     if (typeof buildCustomSelect === 'function') {
                         buildCustomSelect(select);
                     }
                 });
 
-                // -- Date input gulo khali koro (Joining Date, DOB) --
-                document.querySelectorAll('.input-group-outline input[type="date"], .input-group-outline input[type="datetime-local"]').forEach(function (input) {
-                    input.value = '';
-
-                    var group = input.closest('.input-group');
-                    if (group) group.classList.remove('is-filled');
-
-                    // Flatpickr/custom datepicker use korle oitao reset koro
-                    if (input._flatpickr) {
-                        input._flatpickr.clear();
-                    }
-                });
-
-            });
+                // ── 4. Datepicker ──
+                if (typeof _initDatepickers === 'function') {
+                    _initDatepickers();
+                }
+            }
 
         });
     </script>

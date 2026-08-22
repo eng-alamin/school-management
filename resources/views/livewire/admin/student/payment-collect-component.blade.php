@@ -115,48 +115,6 @@
     </div>
 </div>
 
-@push('styles')
-    <style>
-        :root {
-            --primary: rgba(33, 37, 41);
-            --primary-light: rgba(239,84,84,.12);
-        }
-
-        .card { border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
-
-        .form-control:focus, .form-select:focus {
-            border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light);
-        }
-
-        .table-loader {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-        }
-        .table-loader thead th {
-            padding: 10px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 12px;
-            white-space: nowrap;
-            border-bottom: 1px solid rgba(0,0,0,.08);
-        }
-        .table-loader tbody td {
-            padding: 9px 10px;
-            vertical-align: middle;
-            font-size: 13px;
-        }
-        .pay-total-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: 14px;
-            padding: 10px;
-            background: rgba(224,82,82,.06);
-            border-radius: 6px;
-        }
-    </style>
-@endpush
-
 @push('scripts')
     <script>
         document.addEventListener('livewire:initialized', () => {

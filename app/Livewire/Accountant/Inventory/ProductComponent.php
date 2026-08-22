@@ -38,6 +38,26 @@ class ProductComponent extends Component
     public string $sales_price = '0';
     public string $remarks = '';
 
+    public string $routePrefix = '';
+
+    public function mount(): void
+    {
+        $this->routePrefix = $this->resolveRoutePrefix();
+    }
+
+    protected function resolveRoutePrefix(): string
+    {
+        $routeName = request()->route()?->getName();
+
+        if ($routeName && str_contains($routeName, '.')) {
+            return explode('.', $routeName)[0] . '.';
+        }
+
+        $segment = request()->segment(1);
+
+        return $segment ? $segment . '.' : '';
+    }
+
     protected function rules(): array
     {
         return [
@@ -157,7 +177,7 @@ class ProductComponent extends Component
         $categories = InventoryCategory::orderBy('name')->get();
         $units       = InventoryUnit::orderBy('name')->get();
 
-        return view('livewire.accountant.inventory.product-component')
+        return view('livewire.admin.inventory.product-component')
             ->with('products', $products)
             ->with('categories', $categories)
             ->with('units', $units)

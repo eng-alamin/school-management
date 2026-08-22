@@ -215,16 +215,6 @@
     </div>
 </div>
 
-@push('styles')
-<style>
-    .form-section { padding: 20px 28px; }
-    .form-footer { background: #fff; border-top: 1px solid var(--border); padding: 16px 28px; }
-    .form-check-input:checked { background-color: #212529; border-color: #212529; }
-    thead th { font-size: .72rem; font-weight: 600; letter-spacing: .03em; padding: 10px 12px; }
-    tbody td { padding: 8px 12px; vertical-align: middle; }
-</style>
-@endpush
-
 @push('scripts')
 <script>
     document.addEventListener('livewire:initialized', () => {

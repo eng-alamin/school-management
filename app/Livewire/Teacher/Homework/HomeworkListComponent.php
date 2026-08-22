@@ -4,6 +4,7 @@ namespace App\Livewire\Teacher\Homework;
 
 use Livewire\Component;
 use Livewire\WithPagination;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Homework;
 use App\Models\AcademicClass;
@@ -36,6 +37,11 @@ class HomeworkListComponent extends Component
         $this->resetPage();
     }
 
+    public function updatedPerPage(): void
+    {
+        $this->resetPage();
+    }
+
     public function updatedFilterClass($value): void
     {
         $this->filterSection     = '';
@@ -44,12 +50,16 @@ class HomeworkListComponent extends Component
 
         if (!$value) return;
 
+        $institutionId = institution()->id;
+
         // Only show sections this teacher actually teaches for the selected
         // class — matches the same scoping used on the Add/Edit forms.
-        $myAssignIds = AcademicClassAssignDetail::where('teacher_id', auth()->id())
+        $myAssignIds = AcademicClassAssignDetail::where('institution_id', $institutionId)
+            ->where('teacher_id', auth()->id())
             ->pluck('academic_class_assign_id');
 
         $assigns = AcademicClassAssign::with('section')
+            ->where('institution_id', $institutionId)
             ->where('class_id', $value)
             ->whereNotNull('section_id')
             ->whereIn('id', $myAssignIds)
@@ -90,20 +100,46 @@ class HomeworkListComponent extends Component
 
     public function deleteRecord(): void
     {
-        // Ownership check: without filtering by teacher_id, any teacher could
-        // delete another teacher's homework just by knowing its id (IDOR).
+        // Ownership + institution check: without this, any teacher could
+        // delete another teacher's (or another institution's) homework just
+        // by knowing its id (IDOR).
         $homework = Homework::where('id', $this->deleteId)
+            ->where('institution_id', institution()->id)
             ->where('teacher_id', auth()->id())
             ->first();
 
-        if ($homework) {
-            if ($homework->attachment) {
-                Storage::disk('public')->delete($homework->attachment);
-            }
-            $homework->delete();
-            $this->dispatch('toast', type: 'success', message: 'Homework deleted successfully.');
-        } else {
+        if (!$homework) {
+            $this->confirmDelete = false;
+            $this->deleteId      = null;
             $this->dispatch('toast', type: 'error', message: 'Homework not found or not allowed.');
+            return;
+        }
+
+        $attachmentPath = $homework->attachment;
+        $title          = $homework->title;
+
+        try {
+            DB::transaction(function () use ($homework, $title) {
+                // Activity log delete-এর আগে, পরে না
+                activity()
+                    ->performedOn($homework)
+                    ->causedBy(auth()->user())
+                    ->tap(fn($a) => $a->institution_id = institution()->id)
+                    ->log('Homework "' . $title . '" deleted');
+
+                $homework->delete();
+            });
+
+            // DB delete committed successfully → এখন attachment মুছে ফেলা নিরাপদ
+            if ($attachmentPath) {
+                Storage::disk('public')->delete($attachmentPath);
+            }
+
+            $this->dispatch('toast', type: 'success', message: 'Homework deleted successfully.');
+
+        } catch (\Throwable $e) {
+            $this->dispatch('toast', type: 'error', message: 'Delete failed: ' . $e->getMessage());
+            report($e);
         }
 
         $this->confirmDelete = false;
@@ -112,21 +148,26 @@ class HomeworkListComponent extends Component
 
     public function render()
     {
-        // Filter dropdown only offers classes this teacher is assigned to —
-        // previously it listed every class in the institution, so picking one
-        // the teacher doesn't teach silently returned an empty (confusing) list.
-        $myAssignIds = AcademicClassAssignDetail::where('teacher_id', auth()->id())
+        $institutionId = institution()->id;
+
+        // Filter dropdown শুধু এই teacher যেসব class পড়ায় সেগুলাই দেখাবে
+        $myAssignIds = AcademicClassAssignDetail::where('institution_id', $institutionId)
+            ->where('teacher_id', auth()->id())
             ->pluck('academic_class_assign_id');
 
-        $classIds = AcademicClassAssign::whereIn('id', $myAssignIds)
+        $classIds = AcademicClassAssign::where('institution_id', $institutionId)
+            ->whereIn('id', $myAssignIds)
             ->distinct()
             ->pluck('class_id');
 
-        $classes = AcademicClass::whereIn('id', $classIds)
+        $classes = AcademicClass::where('institution_id', $institutionId)
+            ->whereIn('id', $classIds)
             ->orderBy('name')
             ->get();
 
-        $homeworks = Homework::with(['class', 'section', 'subject'])->where('teacher_id', auth()->id())
+        $homeworks = Homework::with(['class', 'section', 'subject'])
+            ->where('institution_id', $institutionId)
+            ->where('teacher_id', auth()->id())
             ->when($this->search, fn($q) =>
                 $q->where('title', 'like', '%' . $this->search . '%')
             )

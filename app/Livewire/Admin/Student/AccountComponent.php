@@ -21,8 +21,12 @@ class AccountComponent extends Component
     public $password;
     public $password_confirmation;
 
+    public string $routePrefix = '';
+
     public function mount(int $id)
     {
+        $this->routePrefix = $this->resolveRoutePrefix();
+
         $this->student = Student::with('user')
             ->where('institution_id', auth()->user()->institution_id)
             ->findOrFail($id);
@@ -37,6 +41,19 @@ class AccountComponent extends Component
         $this->username = $this->user->username;
         $this->email    = $this->user->email;
         $this->phone    = $this->user->phone;
+    }
+
+    protected function resolveRoutePrefix(): string
+    {
+        $routeName = request()->route()?->getName();
+
+        if ($routeName && str_contains($routeName, '.')) {
+            return explode('.', $routeName)[0] . '.';
+        }
+
+        $segment = request()->segment(1);
+
+        return $segment ? $segment . '.' : '';
     }
 
     public function updateAccount()

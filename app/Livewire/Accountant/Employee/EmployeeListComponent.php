@@ -12,32 +12,40 @@ class EmployeeListComponent extends Component
 
     protected string $paginationTheme = 'bootstrap';
 
-    // List
     public string $search = '';
     public int $perPage = 10;
     public string $sortField = 'id';
     public string $sortDirection = 'desc';
 
-    // Delete
     public bool $confirmDelete = false;
     public ?int $deleteId = null;
 
-    // Status Update
     public bool $showStatusModal = false;
     public ?int $statusId = null;
     public string $newStatus = '';
 
-    /**
-     * Whitelist — must match the enum values defined in the employees
-     * migration exactly (active, inactive, resigned, terminated).
-     */
     protected array $statusOptions = ['active', 'inactive', 'resigned', 'terminated'];
-
-    /**
-     * Only these columns are allowed to be sorted on.
-     * Prevents SQL errors / column-injection from arbitrary wire:click values.
-     */
     protected array $sortableFields = ['id', 'name', 'email', 'mobile'];
+
+    public string $routePrefix = '';
+
+    public function mount(): void
+    {
+        $this->routePrefix = $this->resolveRoutePrefix();
+    }
+
+    protected function resolveRoutePrefix(): string
+    {
+        $routeName = request()->route()?->getName();
+
+        if ($routeName && str_contains($routeName, '.')) {
+            return explode('.', $routeName)[0] . '.';
+        }
+
+        $segment = request()->segment(1);
+
+        return $segment ? $segment . '.' : '';
+    }
 
     public function updatingSearch(): void
     {
@@ -46,9 +54,6 @@ class EmployeeListComponent extends Component
 
     public function sortBy(string $field): void
     {
-        // BUG FIX: guard against unknown/invalid columns (previously "phone" was
-        // passed here, but the actual DB column is "mobile" — sorting by it
-        // caused an "Unknown column" SQL error).
         if (!in_array($field, $this->sortableFields, true)) {
             return;
         }
@@ -73,7 +78,6 @@ class EmployeeListComponent extends Component
     {
         $employee = Employee::findOrFail($this->deleteId);
 
-        // Activity logging before delete, not after — row must still exist for the log.
         activity()
             ->performedOn($employee)
             ->withProperties([
@@ -90,10 +94,6 @@ class EmployeeListComponent extends Component
         $this->dispatch('toast', type: 'success', message: 'Employee deleted successfully!');
     }
 
-    /**
-     * Status icon click korle eta call hobe — modal open kore, current
-     * status ta preselect kore rakhe.
-     */
     public function openStatusModal(int $id): void
     {
         $employee = Employee::findOrFail($id);
@@ -140,12 +140,7 @@ class EmployeeListComponent extends Component
 
     public function render()
     {
-        $employees = Employee::with('designation', 'department', 'user')
-            // BUG FIX: OR conditions wrapped inside a single where() closure so
-            // they cannot leak past the BelongsToInstitution global scope.
-            // Previously the orWhere() chain was applied directly on the query
-            // builder, which could bypass institution_id scoping and expose
-            // other institutions' employee data during search.
+        $query = Employee::with('designation', 'department', 'user')
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->where('name', 'like', "%{$this->search}%")
@@ -155,11 +150,13 @@ class EmployeeListComponent extends Component
                         ->orWhereHas('designation', fn($q2) => $q2->where('name', 'like', "%{$this->search}%"))
                         ->orWhereHas('department', fn($q2) => $q2->where('name', 'like', "%{$this->search}%"));
                 });
-            })
+            });
+
+        $employees = $query
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
-        return view('livewire.accountant.employee.employee-list-component')
+        return view('livewire.admin.employee.employee-list-component')
             ->with('employees', $employees)
             ->with('statusOptions', $this->statusOptions)
             ->layout('layouts.accountant.app', [

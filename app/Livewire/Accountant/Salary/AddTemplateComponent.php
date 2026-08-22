@@ -4,11 +4,14 @@ namespace App\Livewire\Accountant\Salary;
 
 use Livewire\Component;
 use App\Models\SalaryTemplate;
-use App\Models\SalaryTemplateAllowance;
-use App\Models\SalaryTemplateDeduction;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Contracts\Validation\Validator;
 
 class AddTemplateComponent extends Component
 {
+    public string $name          = '';
     public string $salary_grade  = '';
     public string $basic_salary  = '';
     public string $overtime_rate = '';
@@ -66,14 +69,17 @@ class AddTemplateComponent extends Component
 
     public function resetForm(): void
     {
-        $this->reset(['salary_grade', 'basic_salary', 'overtime_rate']);
+        $this->reset(['name', 'salary_grade', 'basic_salary', 'overtime_rate']);
         $this->allowances = [['name' => '', 'amount' => '']];
         $this->deductions = [['name' => '', 'amount' => '']];
+        $this->resetValidation();
     }
 
-    protected function failedValidation($validator)
+    protected function failedValidation(Validator $validator)
     {
-        $this->dispatch('validation-failed');
+        $this->dispatch('toast', type: 'error', message: $validator->errors()->first());
+
+        throw new ValidationException($validator);
     }
 
     // ─── Rules ────────────────────────────────────────────────────────────────
@@ -81,6 +87,13 @@ class AddTemplateComponent extends Component
     public function rules(): array
     {
         return [
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('salary_templates', 'name')
+                    ->where(fn ($query) => $query->where('institution_id', institution()->id)),
+            ],
             'salary_grade'          => 'required|string|max:255',
             'basic_salary'          => 'required|numeric|min:0',
             'overtime_rate'         => 'nullable|numeric|min:0',
@@ -100,10 +113,14 @@ class AddTemplateComponent extends Component
 
     public function save(): void
     {
-        try {
-            $this->validate($this->rules());
+        $this->validate($this->rules());
 
+        DB::beginTransaction();
+
+        try {
             $template = SalaryTemplate::create([
+                'institution_id'  => institution()->id,
+                'name'            => $this->name,
                 'salary_grade'    => $this->salary_grade,
                 'basic_salary'    => $this->basic_salary,
                 'overtime_rate'   => $this->overtime_rate ?: null,
@@ -115,8 +132,9 @@ class AddTemplateComponent extends Component
             foreach ($this->allowances as $allowance) {
                 if (!empty($allowance['name'])) {
                     $template->allowances()->create([
-                        'name'   => $allowance['name'],
-                        'amount' => $allowance['amount'] ?? 0,
+                        'institution_id' => institution()->id,
+                        'name'           => $allowance['name'],
+                        'amount'         => $allowance['amount'] ?? 0,
                     ]);
                 }
             }
@@ -124,18 +142,26 @@ class AddTemplateComponent extends Component
             foreach ($this->deductions as $deduction) {
                 if (!empty($deduction['name'])) {
                     $template->deductions()->create([
-                        'name'   => $deduction['name'],
-                        'amount' => $deduction['amount'] ?? 0,
+                        'institution_id' => institution()->id,
+                        'name'           => $deduction['name'],
+                        'amount'         => $deduction['amount'] ?? 0,
                     ]);
                 }
             }
 
+            activity()
+                ->performedOn($template)
+                ->withProperties(['institution_id' => institution()->id])
+                ->log('Salary Template Created');
+
+            DB::commit();
+
             $this->dispatch('toast', type: 'success', message: 'Salary template created successfully!');
             $this->resetForm();
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            DB::rollBack();
             $this->dispatch('toast', type: 'error', message: 'An error occurred while creating the template.');
-            throw $e;
         }
     }
 
@@ -143,7 +169,7 @@ class AddTemplateComponent extends Component
 
     public function render()
     {
-        return view('livewire.accountant.salary.add-template-component')
+        return view('livewire.admin.salary.add-template-component')
             ->layout('layouts.accountant.app', [
                 'title' => 'Salary Template | ' . institution()->name,
             ]);

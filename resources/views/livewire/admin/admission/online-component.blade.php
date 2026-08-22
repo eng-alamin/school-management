@@ -297,7 +297,7 @@
 
                 <div class="modal-box-footer">
                     <button type="button" class="btn-outline" wire:click="closeFeeModal">Cancel</button>
-                    <button type="button" class="btn-primary" wire:click="generateInvoiceAndApprove" wire:loading.attr="disabled" wire:target="generateInvoiceAndApprove">
+                    <button type="button" class="btn btn-primary" wire:click="generateInvoiceAndApprove" wire:loading.attr="disabled" wire:target="generateInvoiceAndApprove">
                         <span wire:loading.remove wire:target="generateInvoiceAndApprove">Confirm &amp; Generate Invoice</span>
                         <span wire:loading wire:target="generateInvoiceAndApprove">Processing...</span>
                     </button>
@@ -386,7 +386,7 @@
 
                 <div class="modal-box-footer">
                     <button type="button" class="btn-outline" wire:click="skipPayment">Skip / Later</button>
-                    <button type="button" class="btn-primary" wire:click="confirmPayment" wire:loading.attr="disabled" wire:target="confirmPayment">
+                    <button type="button" class="btn btn-primary" wire:click="confirmPayment" wire:loading.attr="disabled" wire:target="confirmPayment">
                         <span wire:loading.remove wire:target="confirmPayment">Confirm Payment</span>
                         <span wire:loading wire:target="confirmPayment">Processing...</span>
                     </button>
@@ -397,100 +397,6 @@
     @endif
 
 </div>
-
-@push('styles')
-<style>
-    :root { --primary: rgba(33,37,41); --primary-light: rgba(239,84,84,.12); }
-    .card { border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
-    .card-header { background: #fff; border-bottom: 1px solid var(--border); border-radius: 12px 12px 0 0 !important; padding: 16px 20px; }
-    .form-select { border-radius: 8px; border: 1px solid var(--border); font-size: .875rem; }
-
-    /* ── Shared Modal Styles (Fee Confirm + Payment Collect) ── */
-    .modal-dark-overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.65);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1055;
-        padding: 20px;
-    }
-
-    .modal-box {
-        background: #fff;
-        border-radius: 12px;
-        width: 100%;
-        max-width: 480px;
-        max-height: 90vh;
-        overflow-y: auto;
-        box-shadow: 0 10px 40px rgba(0,0,0,.25);
-    }
-
-    .modal-box-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 16px 20px;
-        border-bottom: 1px solid var(--border, #eee);
-    }
-
-    .modal-box-header h5 { margin: 0; font-size: .95rem; font-weight: 600; }
-
-    .modal-box-close {
-        background: none;
-        border: none;
-        font-size: 1.4rem;
-        line-height: 1;
-        cursor: pointer;
-        color: #888;
-    }
-
-    .modal-box-body { padding: 16px 20px; }
-
-    .fee-item-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 10px 0;
-        border-bottom: 1px solid #f0f0f0;
-        font-size: .88rem;
-        cursor: pointer;
-    }
-
-    .fee-item-left { display: flex; align-items: center; gap: 10px; }
-    .fee-item-left input[type="checkbox"] { width: 16px; height: 16px; }
-
-    .fee-total-row {
-        font-weight: 700;
-        border-bottom: none;
-        border-top: 2px solid #eee;
-        margin-top: 4px;
-        padding-top: 12px;
-        cursor: default;
-    }
-
-    .modal-box-footer {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-        padding: 14px 20px;
-        border-top: 1px solid var(--border, #eee);
-    }
-
-    /* Payment Collect table + total */
-    .pay-total-row {
-        display: flex;
-        justify-content: space-between;
-        font-size: 14px;
-        padding: 10px;
-        background: rgba(224,82,82,.06);
-        border-radius: 6px;
-    }
-    .btn-primary { background: var(--primary, #ef4444); color: #fff; border: none; border-radius: 8px; padding: 8px 18px; font-weight: 600; }
-    .btn-outline { background: transparent; border: 1px solid var(--border, #e5e7eb); border-radius: 8px; padding: 8px 18px; }
-</style>
-@endpush
 
 @push('scripts')
 <script>

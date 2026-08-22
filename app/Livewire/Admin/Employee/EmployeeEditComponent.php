@@ -121,11 +121,18 @@ class EmployeeEditComponent extends Component
             'name' => 'required',
             'mobile' => 'nullable|string|max:20',
             'email'    => ['nullable', Rule::unique('users', 'email')->ignore($this->userId)],
-            'photo_upload' => 'nullable|image|max:2048',
+            'photo_upload' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
 
             'username'    => ['required', Rule::unique('users', 'username')->ignore($this->userId)],
             'password'    => 'nullable|min:8',
         ];
+    }
+
+    public function updatedPhotoUpload($value): void
+    {
+        $this->validateOnly('photo_upload', [
+            'photo_upload' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
     }
 
     public function getSelectedDesignationNameProperty(): ?string

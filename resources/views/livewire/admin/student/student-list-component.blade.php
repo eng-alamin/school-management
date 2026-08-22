@@ -159,7 +159,7 @@
                             <td colspan="10" class="text-center py-5 text-muted">
                                 <span class="material-icons-round d-block mb-2" style="font-size:2.5rem;opacity:.2">groups</span>
                                 <span>No students found.</span> <br><br>
-                                <a href="{{ route($routePrefix . 'student.add') }}" class="btn btn-primary btn-sm">Add one now</a>.
+                                <a href="{{ route($routePrefix . 'student.add') }}" class="btn btn-primary btn-sm px-4">Add one now</a>.
                             </td>
                         </tr>
                         @endforelse
@@ -267,15 +267,6 @@
     @endif
 
 </div>
-
-@push('styles')
-<style>
-    @media print {
-        .no-print, .card-header, .card-footer { display: none !important; }
-        .card { box-shadow: none; border: none; }
-    }
-</style>
-@endpush
 
 @push('scripts')
 <script>

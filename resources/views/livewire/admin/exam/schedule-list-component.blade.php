@@ -192,17 +192,6 @@
     @endif
 </div>
 
-
-@push('styles')
-    <style>
-        @media print {
-            .sidebar, .topbar, .no-print { display: none !important; }
-            .main-content { margin: 0; padding: 0; }
-            .print-area { display: block !important; }
-        }
-    </style>
-@endpush
-
 @push('scripts')
     <script>
         function printScheduleDetails() {

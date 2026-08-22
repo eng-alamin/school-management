@@ -188,24 +188,3 @@
     @endif
 
 </div>
-
-
-@push('styles')
-    <style>
-        /* ── BADGES ── */
-        .badge-active   { background: rgba(34,197,94,.12);  color: #16a34a; }
-        .badge-inactive { background: rgba(107,114,128,.12); color: #6b7280; }
-
-        /* ── FORM ── */
-        .form-label { font-size: .8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
-        .form-control, .form-select {
-            border-radius: 8px; border: 1px solid var(--border);
-            font-size: .875rem; padding: .45rem .75rem;
-            transition: border-color .2s, box-shadow .2s;
-        }
-        .form-control:focus, .form-select:focus {
-            border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light);
-        }
-        .form-check-input:checked { background-color: var(--primary); border-color: var(--primary); }
-    </style>
-@endpush

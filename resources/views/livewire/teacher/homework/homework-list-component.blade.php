@@ -55,8 +55,11 @@
                     </div>
                 @endif
 
-                <a href="{{ route('teacher.homework.add') }}" class="btn-outline bg-dark text-white">
-                    <span class="material-icons-round">add</span> New Homework
+                <a href="{{ route('teacher.homework.add') }}" class="btn btn-primary">
+                    <span>
+                        <span class="material-icons-round">add</span>
+                        <span> New Homework</span>
+                    </span>
                 </a>
 
             </div>

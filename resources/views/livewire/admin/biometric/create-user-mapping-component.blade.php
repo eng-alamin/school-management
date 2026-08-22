@@ -84,29 +84,3 @@
     </div>
 
 </div>
-
-@push('styles')
-    <style>
-        .person-search-results {
-            position: absolute;
-            z-index: 1060;
-            width: 100%;
-            max-height: 220px;
-            overflow-y: auto;
-            background: #fff;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,.08);
-            margin-top: 2px;
-        }
-        .person-search-results button {
-            width: 100%;
-            text-align: left;
-            border: none;
-            background: none;
-            padding: 8px 12px;
-            font-size: .82rem;
-        }
-        .person-search-results button:hover { background: #f8f9fc; }
-    </style>
-@endpush

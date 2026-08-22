@@ -17,7 +17,7 @@
 
                 <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
                     <span class="fw-bold fs-5" data-en="Profile Details" data-bn="প্রোফাইলের বিবরণ">Profile Details</span>
-                    <a href="{{ route('admin.profile.setting', ['id' => $user->id]) }}" class="btn-outline bg-dark text-white" data-en="Edit Profile" data-bn="প্রোফাইল সম্পাদনা">
+                    <a href="{{ route('admin.profile.setting', ['id' => $user->id]) }}" class="btn btn-primary" data-en="Edit Profile" data-bn="প্রোফাইল সম্পাদনা">
                         Edit Profile
                     </a>
                 </div>

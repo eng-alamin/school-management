@@ -160,8 +160,20 @@ class FeeTypeComponent extends Component
         $this->resetValidation();
     }
 
+    protected function isProtectedFeeType(string $code): bool
+    {
+        return in_array($code, ['monthly_fee', 'admission_fee', 'registration_fee']);
+    }
+
     public function confirmDeleteRecord(int $id): void
     {
+        $feeType = FeeType::findOrFail($id);
+
+        if ($this->isProtectedFeeType($feeType->code)) {
+            $this->dispatch('toast', type: 'error', message: 'এই Fee Type সিস্টেম ডিফল্ট, ডিলিট করা যাবে না।');
+            return;
+        }
+
         $this->deleteId = $id;
         $this->confirmDelete = true;
     }
@@ -229,7 +241,7 @@ class FeeTypeComponent extends Component
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
-        return view('livewire.accountant.student-accounting.fee-type-component')
+        return view('livewire.admin.student-accounting.fee-type-component')
             ->with('feeTypes', $feeTypes)
             ->layout('layouts.accountant.app', [
                 'title' => 'Fee Type | ' . institution()->name,

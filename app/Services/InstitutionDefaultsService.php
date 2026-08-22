@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Carbon\Carbon;
 use App\Models\Institution;
+use App\Models\Branch;
 use App\Models\Feature;
 use App\Models\InventoryCategory;
 use App\Models\InventoryUnit;
@@ -30,51 +31,58 @@ use App\Models\EventType;
 
 class InstitutionDefaultsService
 {
-    public static function create(Institution $institution): void
+    public static function create(Institution $institution): Branch
     {
-        self::createFeatures($institution);
+        $branch = self::resolveMainBranch($institution);
 
-        self::createInventoryCategories($institution);
-        self::createInventoryUnits($institution);
+        self::createFeatures($institution, $branch);
 
-        self::createDepartments($institution);
-        self::createDesignations($institution);
+        self::createInventoryCategories($institution, $branch);
+        self::createInventoryUnits($institution, $branch);
 
-        self::createAcademicSession($institution);
-        self::createAcademicGroups($institution);
-        self::createAcademicSections($institution);
-        self::createAcademicSubjects($institution);
-        self::createAcademicClasses($institution);
-        self::assignSectionsToClasses($institution);
-        self::createAcademicAssigns($institution);
+        self::createDepartments($institution, $branch);
+        self::createDesignations($institution, $branch);
 
-        self::createExamTerms($institution);
-        self::createExamTypes($institution);
-        self::createExamMarks($institution);
-        self::createExamHalls($institution);
-        self::createExamGrades($institution);
+        self::createAcademicSession($institution, $branch);
+        self::createAcademicGroups($institution, $branch);
+        self::createAcademicSections($institution, $branch);
+        self::createAcademicSubjects($institution, $branch);
+        self::createAcademicClasses($institution, $branch);
+        self::assignSectionsToClasses($institution, $branch);
+        self::createAcademicAssigns($institution, $branch);
 
-        self::createFeeTypes($institution);
-        self::createLeaveCategories($institution);
+        self::createExamTerms($institution, $branch);
+        self::createExamTypes($institution, $branch);
+        self::createExamMarks($institution, $branch);
+        self::createExamHalls($institution, $branch);
+        self::createExamGrades($institution, $branch);
 
-        self::createOfficeHeads($institution);
-        self::createOfficeAccounts($institution);
+        self::createFeeTypes($institution, $branch);
+        self::createLeaveCategories($institution, $branch);
 
-        self::createEventTypes($institution);
+        self::createOfficeHeads($institution, $branch);
+        self::createOfficeAccounts($institution, $branch);
+
+        self::createEventTypes($institution, $branch);
+
+        return $branch;
     }
 
-    /**
-     * Institution create howar shomoy default feature flag gulo
-     * (module toggle) seed kore. Notun feature add korte hole
-     * ei array te shudhu key add korle hobe.
-     */
+    private static function resolveMainBranch(Institution $institution): Branch
+    {
+        return Branch::withoutGlobalScopes()
+            ->where('institution_id', $institution->id)
+            ->where('is_main', true)
+            ->firstOrFail();
+    }
+
     private static function createFeatures(Institution $institution): void
     {
         $features = [
-            'inventory_module' => true,
-            'card_module'      => true,
-            'certificate_module' => true,
-            'branch_module'    => false,
+            'inventory_module'    => false,
+            'card_module'         => true,
+            'certificate_module'  => true,
+            'branch_module'       => false,
         ];
 
         foreach ($features as $featureKey => $isActive) {
@@ -90,7 +98,7 @@ class InstitutionDefaultsService
         }
     }
 
-    private static function createInventoryCategories(Institution $institution): void
+    private static function createInventoryCategories(Institution $institution, Branch $branch): void
     {
         $categories = [
             'Sports',
@@ -105,11 +113,13 @@ class InstitutionDefaultsService
         foreach ($categories as $category) {
             InventoryCategory::firstOrCreate([
                 'institution_id' => $institution->id,
+                'branch_id'      => $branch->id,
                 'name'           => $category,
             ]);
         }
     }
-    private static function createInventoryUnits(Institution $institution): void
+
+    private static function createInventoryUnits(Institution $institution, Branch $branch): void
     {
         $units = [
             'KG',
@@ -121,11 +131,13 @@ class InstitutionDefaultsService
         foreach ($units as $unit) {
             InventoryUnit::firstOrCreate([
                 'institution_id' => $institution->id,
+                'branch_id'      => $branch->id,
                 'name'           => $unit,
             ]);
         }
-    }   
-    private static function createDepartments(Institution $institution): void
+    }
+
+    private static function createDepartments(Institution $institution, Branch $branch): void
     {
         $departments = [
             'Administration',
@@ -143,11 +155,13 @@ class InstitutionDefaultsService
         foreach ($departments as $department) {
             EmployeeDepartment::firstOrCreate([
                 'institution_id' => $institution->id,
-                'name' => $department,
+                'branch_id'      => $branch->id,
+                'name'           => $department,
             ]);
         }
     }
-    private static function createDesignations(Institution $institution): void
+
+    private static function createDesignations(Institution $institution, Branch $branch): void
     {
         $designations = [
             'Principal',
@@ -164,24 +178,28 @@ class InstitutionDefaultsService
         foreach ($designations as $designation) {
             EmployeeDesignation::firstOrCreate([
                 'institution_id' => $institution->id,
-                'name' => $designation,
+                'branch_id'      => $branch->id,
+                'name'           => $designation,
             ]);
         }
     }
-    private static function createAcademicSession(Institution $institution): void
+
+    private static function createAcademicSession(Institution $institution, Branch $branch): void
     {
         $year = Carbon::now()->year;
 
         AcademicSession::firstOrCreate([
             'institution_id' => $institution->id,
-            'name' => $year,
+            'branch_id'      => $branch->id,
+            'name'           => $year,
         ], [
             'start_date' => Carbon::now()->startOfYear()->toDateString(),
             'end_date'   => Carbon::now()->endOfYear()->toDateString(),
             'is_current' => true,
         ]);
     }
-     private static function createAcademicGroups(Institution $institution): void
+
+    private static function createAcademicGroups(Institution $institution, Branch $branch): void
     {
         $groups = [
             'General'          => true,
@@ -189,11 +207,12 @@ class InstitutionDefaultsService
             'Business Studies' => false,
             'Humanities'       => false,
         ];
- 
+
         foreach ($groups as $name => $isCurrent) {
             AcademicGroup::firstOrCreate(
                 [
                     'institution_id' => $institution->id,
+                    'branch_id'      => $branch->id,
                     'name'           => $name,
                 ],
                 [
@@ -202,7 +221,8 @@ class InstitutionDefaultsService
             );
         }
     }
-    private static function createAcademicSections(Institution $institution): void
+
+    private static function createAcademicSections(Institution $institution, Branch $branch): void
     {
         $sections = [
             'A',
@@ -212,11 +232,13 @@ class InstitutionDefaultsService
         foreach ($sections as $section) {
             AcademicSection::firstOrCreate([
                 'institution_id' => $institution->id,
-                'name' => $section,
+                'branch_id'      => $branch->id,
+                'name'           => $section,
             ]);
         }
     }
-    private static function createAcademicSubjects(Institution $institution): void
+
+    private static function createAcademicSubjects(Institution $institution, Branch $branch): void
     {
         $subjects = [
             'Bangla',
@@ -226,8 +248,6 @@ class InstitutionDefaultsService
             'Physics',
             'Chemistry',
             'Biology',
-            'Higher Mathematics',
-            'Information and Communication Technology (ICT)',
             'Social Science',
             'History',
             'Geography',
@@ -236,7 +256,7 @@ class InstitutionDefaultsService
             'Business Studies',
             'Finance and Banking',
             'Agriculture',
-            'Islam and Moral Education',
+            'Islam Education',
             'Physical Education',
             'Arts and Crafts',
         ];
@@ -244,11 +264,13 @@ class InstitutionDefaultsService
         foreach ($subjects as $subject) {
             AcademicSubject::firstOrCreate([
                 'institution_id' => $institution->id,
-                'name' => $subject,
+                'branch_id'      => $branch->id,
+                'name'           => $subject,
             ]);
         }
     }
-    private static function createAcademicClasses(Institution $institution): void
+
+    private static function createAcademicClasses(Institution $institution, Branch $branch): void
     {
         $classes = [
             ['name' => 'Play',     'numeric' => 0,  'has_section' => false],
@@ -274,22 +296,26 @@ class InstitutionDefaultsService
             AcademicClass::updateOrCreate(
                 [
                     'institution_id' => $institution->id,
-                    'name' => $class['name'],
+                    'branch_id'      => $branch->id,
+                    'name'           => $class['name'],
                 ],
                 [
-                    'numeric' => $class['numeric'],
-                    'has_section' => $class['has_section'],
+                    'numeric'      => $class['numeric'],
+                    'has_section'  => $class['has_section'],
                 ]
             );
         }
     }
-    private static function assignSectionsToClasses(Institution $institution): void
+
+    private static function assignSectionsToClasses(Institution $institution, Branch $branch): void
     {
         $sections = AcademicSection::where('institution_id', $institution->id)
+            ->where('branch_id', $branch->id)
             ->whereIn('name', ['A', 'B'])
             ->get();
 
         $classes = AcademicClass::where('institution_id', $institution->id)
+            ->where('branch_id', $branch->id)
             ->where('has_section', true)
             ->get();
 
@@ -297,30 +323,41 @@ class InstitutionDefaultsService
             foreach ($sections as $section) {
                 AcademicClassSection::firstOrCreate([
                     'institution_id' => $institution->id,
+                    'branch_id'      => $branch->id,
                     'class_id'       => $class->id,
                     'section_id'     => $section->id,
                 ]);
             }
         }
     }
-    private static function createAcademicAssigns(Institution $institution): void
+
+    private static function createAcademicAssigns(Institution $institution, Branch $branch): void
     {
-        $subjects = AcademicSubject::where('institution_id', $institution->id)->take(3)->get();
-        $classes = AcademicClass::with('sections')->where('institution_id', $institution->id)->get();
+        $subjects = AcademicSubject::where('institution_id', $institution->id)
+            ->where('branch_id', $branch->id)
+            ->take(3)
+            ->get();
+
+        $classes = AcademicClass::with('sections')
+            ->where('institution_id', $institution->id)
+            ->where('branch_id', $branch->id)
+            ->get();
 
         foreach ($classes as $class) {
             // যেসব class-এর section নেই
             if (! $class->has_section) {
                 $classAssign = AcademicClassAssign::firstOrCreate([
                     'institution_id' => $institution->id,
+                    'branch_id'      => $branch->id,
                     'class_id'       => $class->id,
                     'section_id'     => null,
                 ]);
                 foreach ($subjects as $subject) {
                     AcademicClassAssignDetail::firstOrCreate([
-                        'institution_id'            => $institution->id,
-                        'academic_class_assign_id'  => $classAssign->id,
-                        'subject_id'                => $subject->id,
+                        'institution_id'           => $institution->id,
+                        'branch_id'                => $branch->id,
+                        'academic_class_assign_id' => $classAssign->id,
+                        'subject_id'               => $subject->id,
                     ]);
                 }
                 continue;
@@ -331,21 +368,24 @@ class InstitutionDefaultsService
 
                 $classAssign = AcademicClassAssign::firstOrCreate([
                     'institution_id' => $institution->id,
+                    'branch_id'      => $branch->id,
                     'class_id'       => $class->id,
                     'section_id'     => $section->id,
                 ]);
 
                 foreach ($subjects as $subject) {
                     AcademicClassAssignDetail::firstOrCreate([
-                        'institution_id'            => $institution->id,
-                        'academic_class_assign_id'  => $classAssign->id,
-                        'subject_id'                => $subject->id,
+                        'institution_id'           => $institution->id,
+                        'branch_id'                => $branch->id,
+                        'academic_class_assign_id' => $classAssign->id,
+                        'subject_id'               => $subject->id,
                     ]);
                 }
             }
         }
     }
-    private static function createExamTerms(Institution $institution): void
+
+    private static function createExamTerms(Institution $institution, Branch $branch): void
     {
         $terms = [
             'First Term',
@@ -359,11 +399,13 @@ class InstitutionDefaultsService
         foreach ($terms as $term) {
             ExamTerm::firstOrCreate([
                 'institution_id' => $institution->id,
-                'name' => $term,
+                'branch_id'      => $branch->id,
+                'name'           => $term,
             ]);
         }
     }
-    private static function createExamTypes(Institution $institution): void
+
+    private static function createExamTypes(Institution $institution, Branch $branch): void
     {
         $types = [
             'Mark',
@@ -374,11 +416,13 @@ class InstitutionDefaultsService
         foreach ($types as $type) {
             ExamType::firstOrCreate([
                 'institution_id' => $institution->id,
-                'name' => $type,
+                'branch_id'      => $branch->id,
+                'name'           => $type,
             ]);
         }
     }
-    private static function createExamMarks(Institution $institution): void
+
+    private static function createExamMarks(Institution $institution, Branch $branch): void
     {
         $marks = [
             'Written Exam',
@@ -393,11 +437,13 @@ class InstitutionDefaultsService
         foreach ($marks as $mark) {
             ExamMark::firstOrCreate([
                 'institution_id' => $institution->id,
-                'name' => $mark,
+                'branch_id'      => $branch->id,
+                'name'           => $mark,
             ]);
         }
     }
-    private static function createExamHalls(Institution $institution): void
+
+    private static function createExamHalls(Institution $institution, Branch $branch): void
     {
         $halls = [
             ['hall_no' => 'Hall A', 'no_of_seat' => 50],
@@ -408,13 +454,15 @@ class InstitutionDefaultsService
         foreach ($halls as $hall) {
             ExamHall::firstOrCreate([
                 'institution_id' => $institution->id,
-                'hall_no' => $hall['hall_no'],
+                'branch_id'      => $branch->id,
+                'hall_no'        => $hall['hall_no'],
             ], [
                 'no_of_seat' => $hall['no_of_seat'],
             ]);
         }
     }
-    private static function createExamGrades(Institution $institution): void
+
+    private static function createExamGrades(Institution $institution, Branch $branch): void
     {
         $grades = [
             ['name' => 'A+', 'point' => 5.0, 'min' => 80, 'max' => 100, 'remark' => 'Excellent'],
@@ -430,56 +478,60 @@ class InstitutionDefaultsService
             ExamGrade::firstOrCreate(
                 [
                     'institution_id' => $institution->id,
-                    'name' => $grade['name'],
+                    'branch_id'      => $branch->id,
+                    'name'           => $grade['name'],
                 ],
                 [
-                    'grade_point' => $grade['point'],
+                    'grade_point'    => $grade['point'],
                     'min_percentage' => $grade['min'],
                     'max_percentage' => $grade['max'],
-                    'remarks' => $grade['remark'],
+                    'remarks'        => $grade['remark'],
                 ]
             );
         }
     }
-    private static function createFeeTypes(Institution $institution): void
+
+    private static function createFeeTypes(Institution $institution, Branch $branch): void
     {
         $feeTypes = [
-
-            ['name' => 'Monthly Fee',        'code' => 'monthly_fee'],
-            ['name' => 'Admission Fee',      'code' => 'admission_fee'],
-            ['name' => 'Registration Fee',   'code' => 'registration_fee'],
-            ['name' => 'Exam Fee',           'code' => 'exam_fee'],
+            ['name' => 'Monthly Fee',      'code' => 'monthly_fee'],
+            ['name' => 'Admission Fee',    'code' => 'admission_fee'],
+            ['name' => 'Registration Fee', 'code' => 'registration_fee'],
+            ['name' => 'Exam Fee',         'code' => 'exam_fee'],
         ];
 
         foreach ($feeTypes as $feeType) {
             FeeType::firstOrCreate(
                 [
                     'institution_id' => $institution->id,
-                    'code'       => $feeType['code'],
+                    'branch_id'      => $branch->id,
+                    'code'           => $feeType['code'],
                 ],
                 [
-                    'name'           => $feeType['name'],
+                    'name' => $feeType['name'],
                 ]
             );
         }
     }
-    private static function createLeaveCategories(Institution $institution): void
+
+    private static function createLeaveCategories(Institution $institution, Branch $branch): void
     {
         $leaveCategories = [
-            ['name' => 'Illness',          'role' => 'admin',   'days' => 10],
-            ['name' => 'Illness',          'role' => 'teacher', 'days' => 20],
-            ['name' => 'Tour',             'role' => 'student', 'days' => 5],
-            ['name' => 'Medical Leave',    'role' => 'admin',   'days' => 10],
-            ['name' => 'Medical Leave',    'role' => 'teacher', 'days' => 20],
-            ['name' => 'Medical Leave',    'role' => 'student', 'days' => 20],
-            ['name' => 'Casual Leave',     'role' => 'teacher', 'days' => 10],
-            ['name' => 'Maternity Leave',  'role' => 'teacher', 'days' => 60],
+            ['name' => 'Illness',         'role' => 'admin',   'days' => 10],
+            ['name' => 'Illness',         'role' => 'teacher', 'days' => 20],
+            ['name' => 'Tour',            'role' => 'student', 'days' => 5],
+            ['name' => 'Medical Leave',   'role' => 'admin',   'days' => 10],
+            ['name' => 'Medical Leave',   'role' => 'teacher', 'days' => 20],
+            ['name' => 'Medical Leave',   'role' => 'student', 'days' => 20],
+            ['name' => 'Casual Leave',    'role' => 'teacher', 'days' => 10],
+            ['name' => 'Maternity Leave', 'role' => 'teacher', 'days' => 60],
         ];
 
         foreach ($leaveCategories as $leave) {
             LeaveCategory::firstOrCreate(
                 [
                     'institution_id' => $institution->id,
+                    'branch_id'      => $branch->id,
                     'name'           => $leave['name'],
                     'role'           => $leave['role'],
                 ],
@@ -493,7 +545,8 @@ class InstitutionDefaultsService
             );
         }
     }
-    private static function createOfficeHeads(Institution $institution): void
+
+    private static function createOfficeHeads(Institution $institution, Branch $branch): void
     {
         $officeHeads = [
             ['name' => 'Salary Payments',         'type' => 'expense'],
@@ -506,15 +559,17 @@ class InstitutionDefaultsService
             OfficeHead::firstOrCreate(
                 [
                     'institution_id' => $institution->id,
+                    'branch_id'      => $branch->id,
                     'name'           => $head['name'],
                 ],
                 [
-                    'type'           => $head['type'],
+                    'type' => $head['type'],
                 ]
             );
         }
     }
-    private static function createOfficeAccounts(Institution $institution): void
+
+    private static function createOfficeAccounts(Institution $institution, Branch $branch): void
     {
         $officeAccounts = [
             ['name' => 'Main Account', 'number' => '5555441000144'],
@@ -525,15 +580,17 @@ class InstitutionDefaultsService
             OfficeAccount::updateOrCreate(
                 [
                     'institution_id' => $institution->id,
+                    'branch_id'      => $branch->id,
                     'name'           => $account['name'],
                 ],
                 [
-                    'number'         => $account['number'],
+                    'number' => $account['number'],
                 ]
             );
         }
     }
-    private static function createEventTypes(Institution $institution): void
+
+    private static function createEventTypes(Institution $institution, Branch $branch): void
     {
         $eventTypes = [
             'Special Festival',
@@ -546,6 +603,7 @@ class InstitutionDefaultsService
         foreach ($eventTypes as $eventType) {
             EventType::firstOrCreate([
                 'institution_id' => $institution->id,
+                'branch_id'      => $branch->id,
                 'name'           => $eventType,
             ]);
         }

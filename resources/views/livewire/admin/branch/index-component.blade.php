@@ -38,7 +38,7 @@
                         </select>
                     </div>
                 @endif
-                <button class="btn-outline bg-dark text-white" wire:click="openCreate">
+                <button class="btn btn-primary" wire:click="openCreate">
                     <span class="material-icons-round">add</span> <span id="newSectionBtn">Add Branch</span>
                 </button>
             </div>
@@ -310,37 +310,3 @@
     @endif
 
 </div>
-
-
-@push('styles')
-    <style>
-        /* ── BADGES ── */
-        .badge-active   { background: rgba(34,197,94,.12);  color: #16a34a; }
-        .badge-inactive { background: rgba(107,114,128,.12); color: #6b7280; }
-
-        /* ── AVATAR ── */
-        .avatar-placeholder {
-            width: 38px; height: 38px; border-radius: 8px;
-            background: var(--primary-light); color: var(--primary);
-            display: inline-flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: .875rem;
-        }
-        .branch-avatar-main    { background: rgba(37,99,235,.12); color: #2563eb; }
-        .branch-avatar-default { background: rgba(107,114,128,.12); color: #6b7280; }
-
-        /* ── FORM ── */
-        .form-label { font-size: .8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
-        .form-control, .form-select {
-            border-radius: 8px; border: 1px solid var(--border);
-            font-size: .875rem; padding: .45rem .75rem;
-            transition: border-color .2s, box-shadow .2s;
-        }
-        .form-control:focus, .form-select:focus {
-            border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light);
-        }
-        .form-check-input:checked { background-color: var(--primary); border-color: var(--primary); }
-
-        /* Disabled action buttons */
-        .act-btn[disabled] { opacity: .35; cursor: not-allowed; pointer-events: none; }
-    </style>
-@endpush

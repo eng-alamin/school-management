@@ -18,6 +18,26 @@ class InboxComponent extends Component
 
     protected $queryString = ['search'];
 
+    public string $routePrefix = '';
+
+    public function mount(): void
+    {
+        $this->routePrefix = $this->resolveRoutePrefix();
+    }
+
+    protected function resolveRoutePrefix(): string
+    {
+        $routeName = request()->route()?->getName();
+
+        if ($routeName && str_contains($routeName, '.')) {
+            return explode('.', $routeName)[0] . '.';
+        }
+
+        $segment = request()->segment(1);
+
+        return $segment ? $segment . '.' : '';
+    }
+
     /* ------------------------------------------------------------------ */
 
     public function updatingSearch(): void
@@ -115,7 +135,7 @@ class InboxComponent extends Component
 
         $unreadCount = Message::inbox($userId)->where('is_read', false)->count();
 
-        return view('livewire.teacher.mailbox.inbox-component', compact('messages', 'unreadCount'))
+        return view('livewire.admin.mailbox.inbox-component', compact('messages', 'unreadCount'))
             ->layout('layouts.teacher.app', [
                 'title' => 'MailBox | ' . institution()->name,
             ]);

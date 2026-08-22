@@ -172,20 +172,22 @@
 
         <!-- Form Footer -->
         <div class="form-footer">
-            <button class="btn-outline" type="button" wire:click="resetForm">
-                <span class="material-icons-round" style="font-size:16px">refresh</span> Reset
+            <button class="btn btn-primary" type="button" wire:click="resetForm">
+                <span class="material-icons-round" style="font-size:16px">refresh</span> 
+                <span>Reset</span>
             </button>
 
-            <button class="btn-primary" type="button"
+            <button class="btn btn-primary" type="button"
                     wire:click="save"
                     wire:loading.attr="disabled"
                     wire:target="save">
                 <span wire:loading.remove wire:target="save">
-                    <span class="material-icons-round">save</span> Save
+                    <span class="material-icons-round">save</span>
+                    <span>Save</span>
                 </span>
                 <span wire:loading wire:target="save">
                     <span class="material-icons-round" style="font-size:16px;animation:spin .7s linear infinite">sync</span>
-                    Saving...
+                    <span>Saving...</span>
                 </span>
             </button>
         </div>

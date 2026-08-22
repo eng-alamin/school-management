@@ -4,7 +4,11 @@ namespace App\Livewire\Accountant\OfficeAccounting;
 
 use Livewire\Component;
 use App\Models\OfficeAccount;
+use Illuminate\Support\Facades\DB;
 use Livewire\WithPagination;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Contracts\Validation\Validator;
 
 class AccountComponent extends Component
 {
@@ -33,11 +37,33 @@ class AccountComponent extends Component
     protected function rules(): array
     {
         return [
-            'name'    => 'required|string|max:255',
-            'number'  => 'nullable|string|max:255',
-            'description'     => 'nullable|string',
+            'name' => 'required|string|max:255',
+            'number' => [
+                'nullable', 'string', 'max:255',
+                Rule::unique('office_accounts', 'number')
+                    ->where('institution_id', institution()->id)
+                    ->ignore($this->editId),
+            ],
+            'description' => 'nullable|string',
             'opening_balance' => 'nullable|numeric|min:0',
         ];
+    }
+
+    protected function messages(): array
+    {
+        return [
+            'number.unique' => 'This account number has already been used.',
+        ];
+    }
+
+    /**
+     * Dispatch validation errors as toast (project standard pattern)
+     */
+    protected function failedValidation(Validator $validator)
+    {
+        $this->dispatch('toast', type: 'error', message: $validator->errors()->first());
+
+        throw new ValidationException($validator);
     }
 
     public function updatingSearch(): void
@@ -67,35 +93,55 @@ class AccountComponent extends Component
     public function openEdit(int $id): void
     {
         $record = OfficeAccount::findOrFail($id);
-        $this->editId           = $id;
-        $this->name     = $record->name;
-        $this->number   = $record->number ?? '';
-        $this->description      = $record->description ?? '';
-        $this->opening_balance  = $record->opening_balance;
-        $this->showModal        = true;
+
+        $this->editId          = $record->id;
+        $this->name            = $record->name;
+        $this->number          = $record->number ?? '';
+        $this->description     = $record->description ?? '';
+        $this->opening_balance = (string) $record->opening_balance;
+        $this->showModal       = true;
     }
 
     public function save(): void
     {
         $this->validate();
 
-        $data = [
-            'name'    => $this->name,
-            'number'  => $this->number ?: null,
-            'description'     => $this->description ?: null,
-            'opening_balance' => $this->opening_balance ?? 0,
-        ];
+        DB::beginTransaction();
 
-        if ($this->editId) {
-            OfficeAccount::findOrFail($this->editId)->update($data);
-            session()->flash('success', 'Account updated successfully!');
-        } else {
-            OfficeAccount::create($data);
-            session()->flash('success', 'Account created successfully!');
+        try {
+            $data = [
+                'institution_id'  => institution()->id,
+                'name'            => $this->name,
+                'number'          => $this->number ?: null,
+                'description'     => $this->description ?: null,
+                'opening_balance' => $this->opening_balance ?: 0,
+            ];
+
+            if ($this->editId) {
+                $account = OfficeAccount::findOrFail($this->editId);
+                $account->update($data);
+                $message = 'Data updated successfully!';
+            } else {
+                $account = OfficeAccount::create($data);
+                $message = 'Data created successfully!';
+            }
+
+            activity()
+                ->performedOn($account)
+                ->withProperties(['institution_id' => institution()->id])
+                ->log($this->editId ? 'Office Account Updated' : 'Office Account Created');
+
+            DB::commit();
+
+            $this->dispatch('toast', type: 'success', message: $message);
+
+            $this->showModal = false;
+            $this->resetForm();
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            $this->dispatch('toast', type: 'error', message: 'Something went wrong!');
         }
-
-        $this->showModal = false;
-        $this->resetForm();
     }
 
     private function resetForm(): void
@@ -112,20 +158,65 @@ class AccountComponent extends Component
 
     public function deleteRecord(): void
     {
-        OfficeAccount::findOrFail($this->deleteId)->delete();
-        $this->confirmDelete = false;
-        $this->deleteId = null;
-        session()->flash('success', 'Account deleted successfully!');
+        DB::beginTransaction();
+
+        try {
+            $account = OfficeAccount::findOrFail($this->deleteId);
+            $account->delete();
+
+            activity()
+                ->performedOn($account)
+                ->withProperties(['institution_id' => institution()->id])
+                ->log('Office Account Deleted');
+
+            DB::commit();
+
+            $this->confirmDelete = false;
+            $this->deleteId = null;
+
+            $this->dispatch('toast', type: 'success', message: 'Data deleted successfully!');
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            $this->dispatch('toast', type: 'error', message: 'Something went wrong!');
+        }
+    }
+
+    public function toggleStatus(int $id): void
+    {
+        DB::beginTransaction();
+
+        try {
+            $account = OfficeAccount::findOrFail($id);
+            $account->is_active = ! $account->is_active;
+            $account->save();
+
+            activity()
+                ->performedOn($account)
+                ->withProperties(['institution_id' => institution()->id])
+                ->log('Office Account Status Updated');
+
+            DB::commit();
+
+            $this->dispatch('toast', type: 'success', message: 'Status updated successfully!');
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            $this->dispatch('toast', type: 'error', message: 'Something went wrong!');
+        }
     }
 
     public function render()
     {
         $accounts = OfficeAccount::query()
-            ->when($this->search, fn($q) => $q->where('name', 'like', "%{$this->search}%"))
+            ->when($this->search, fn ($q) => $q->where(function ($q) {
+                $q->where('name', 'like', "%{$this->search}%")
+                  ->orWhere('number', 'like', "%{$this->search}%");
+            }))
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
-        return view('livewire.accountant.office-accounting.account-component')
+        return view('livewire.admin.office-accounting.account-component')
             ->with('accounts', $accounts)
             ->layout('layouts.accountant.app', [
                 'title' => 'Office Accounting - Account | ' . institution()->name,

@@ -113,7 +113,7 @@ class SupplierComponent extends Component
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
-        return view('livewire.accountant.inventory.supplier-component')
+        return view('livewire.admin.inventory.supplier-component')
             ->with('suppliers', $suppliers)
             ->layout('layouts.accountant.app', [
                 'title' => 'Inventory Supplier | ' . institution()->name,

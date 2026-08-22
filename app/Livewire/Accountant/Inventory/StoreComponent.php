@@ -129,7 +129,7 @@ class StoreComponent extends Component
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
-        return view('livewire.accountant.inventory.store-component')
+        return view('livewire.admin.inventory.store-component')
             ->with('stores', $stores)
             ->layout('layouts.accountant.app', [
                 'title' => 'Inventory Store | ' . institution()->name,

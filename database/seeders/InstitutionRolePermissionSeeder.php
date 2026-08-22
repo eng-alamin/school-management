@@ -42,8 +42,8 @@ class InstitutionRolePermissionSeeder extends Seeder
         'inventory_store'        => ['view', 'create', 'edit', 'delete'],
         'inventory_supplier'     => ['view', 'create', 'edit', 'delete'],
         'inventory_product'      => ['view', 'create', 'edit', 'delete'],
-        'inventory_purchase'     => ['view', 'create', 'edit'],
-        'inventory_sale'         => ['view', 'create', 'edit'],
+        'inventory_purchase'     => ['view', 'create', 'edit', 'delete'],
+        'inventory_sale'         => ['view', 'create', 'edit', 'delete'],
 
         // Admission
         'admission'               => ['view', 'create'],

@@ -12,19 +12,23 @@ class SubjectComponent extends Component
 {
     use WithPagination;
 
-    protected string $paginationTheme = 'bootstrap';
+    public string $paginationTheme = 'bootstrap';
 
     public string $search = '';
     public int $perPage = 10;
 
-    public function updatingSearch(): void
+    public function updatedSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedPerPage(): void
     {
         $this->resetPage();
     }
 
     public function render()
     {
-        /** @var Student|null $student */
         $student = auth()->user()->student;
 
         $assign  = $this->getClassAssign($student);
@@ -38,13 +42,6 @@ class SubjectComponent extends Component
         ]);
     }
 
-    /**
-     * Ekta class-e multiple section thakte pare, ebong prottek section-er
-     * jonno alada AcademicClassAssign row thake (migration-er unique
-     * constraint: institution_id + class_id + section_id). Tai shudhu
-     * class_id diye filter korle wrong section-er assign chole ashte
-     * pare — student-er nijer section_id-o match kora hocche.
-     */
     private function getClassAssign(?Student $student): ?AcademicClassAssign
     {
         if (! $student?->class_id) {
@@ -52,18 +49,12 @@ class SubjectComponent extends Component
         }
 
         return AcademicClassAssign::with(['class', 'section'])
+            ->where('institution_id', $student->institution_id)
             ->where('class_id', $student->class_id)
             ->where('section_id', $student->section_id)
             ->first();
     }
 
-    /**
-     * Subject list ebong prottek subject-er nijer teacher
-     * (academic_class_assign_details.teacher_id) details() relation
-     * theke ana hocche — AcademicTeacherAssign model ekhane ar
-     * lagche na, karon schema onujayi teacher assignment class-wise na,
-     * subject-wise.
-     */
     private function getSubjectDetails(?AcademicClassAssign $assign): LengthAwarePaginator
     {
         if (! $assign) {

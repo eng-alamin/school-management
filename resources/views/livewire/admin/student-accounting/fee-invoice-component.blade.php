@@ -90,7 +90,7 @@
                         <tr wire:key="student-{{ $student->id }}">
                             <td class="text-muted">{{ $students->firstItem() + $i }}</td>
                             <td>
-                                <a href="{{ route('admin.student.overview', ['id' => $student->id]) }}" class="text-decoration-none" title="View Student Overview">
+                                <a href="{{ route($routePrefix . 'student.overview', ['id' => $student->id]) }}" class="text-decoration-none" title="View Student Overview">
                                     {{ $student->name }}
                                 </a>
                             </td>
@@ -129,7 +129,7 @@
                             </td>
                             <td>
                                 <div class="d-flex gap-1">
-                                    <a href="{{ route('admin.student.invoice', ['id' => $student->id]) }}"
+                                    <a href="{{ route($routePrefix . 'student.invoice', ['id' => $student->id]) }}"
                                        target="_blank"
                                        class="act-btn view"
                                        title="View Invoice">
@@ -159,48 +159,3 @@
     </div>
 
 </div>
-
-@push('styles')
-<style>
-    /* ── Fee Tag ── */
-    .fee-tag {
-        display: inline-block;
-        background: rgba(255,255,255,.06);
-        border-radius: 4px;
-        padding: 1px 7px;
-        font-size: 11px;
-        margin: 1px 2px 1px 0;
-        white-space: nowrap;
-    }
-
-    /* ── Amount ── */
-    .amount-text {
-        font-weight: 600;
-        font-size: 13px;
-        color: #e05252;
-    }
-
-    /* ── Status Badge ── */
-    .status-badge {
-        display: inline-block;
-        font-size: 11px;
-        font-weight: 600;
-        padding: 2px 10px;
-        border-radius: 20px;
-        text-transform: uppercase;
-        letter-spacing: .4px;
-    }
-    .status-badge.paid {
-        background: rgba(34,197,94,.15);
-        color: #22c55e;
-    }
-    .status-badge.partial {
-        background: rgba(234,179,8,.15);
-        color: #eab308;
-    }
-    .status-badge.unpaid {
-        background: rgba(239,68,68,.15);
-        color: #ef4444;
-    }
-</style>
-@endpush

@@ -2,10 +2,12 @@
 
 namespace App\Livewire\Accountant\Notice;
 
-use App\Models\Notice;
 use Livewire\Component;
+use App\Models\Notice;
+use App\Models\User;
 use Livewire\WithPagination;
 use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use App\Services\NotificationService;
 use sms_net_bd\SMS;
@@ -17,43 +19,44 @@ class NoticeComponent extends Component
     protected string $paginationTheme = 'bootstrap';
 
     // List
-    public string $search          = '';
-    public string $filterAudience  = '';
-    public string $filterPriority  = '';
-    public string $filterStatus    = '';
-    public int    $perPage         = 10;
+    public string $search = '';
+    public string $filterAudience = '';
+    public string $filterPriority = '';
+    public string $filterStatus = '';
+    public int $perPage = 10;
 
     // Modal
-    public bool      $showModal     = false;
-    public bool      $showViewModal = false;
-    public bool      $confirmDelete = false;
-    public ?int      $deleteId      = null;
-    public ?Notice   $viewRecord    = null;
+    public bool $showModal = false;
+    public bool $showViewModal = false;
+    public bool $confirmDelete = false;
+    public ?int $deleteId = null;
+    public ?Notice $viewRecord = null;
 
     // Form
-    public ?int    $editId                  = null;
-    public string  $title                   = '';
-    public string  $description             = '';
-    public string  $audience                = 'all';
-    public string  $priority                = 'medium';
-    public string  $status                  = 'active';
-    public string  $published_at            = '';
-    public string  $expires_at              = '';
-    public         $attachment              = null;
-    public string  $existingAttachment      = '';
-    public string  $existingAttachmentName  = '';
+    public ?int $editId = null;
+    public string $title = '';
+    public string $description = '';
+    public string $audience = 'all';
+    public string $priority = 'medium';
+    public string $status = 'active';
+    public string $published_at = '';
+    public string $expires_at = '';
+    public $attachment = null;
+    public string $existingAttachment = '';
+    public string $existingAttachmentName = '';
+    public bool $sendSms = false;
 
     protected function rules(): array
     {
         return [
-            'title'        => 'required|min:3|max:255',
-            'description'  => 'required|min:10',
-            'audience'     => 'required|in:all,accountant,teacher,student',
-            'priority'     => 'required|in:low,medium,high,urgent',
-            'status'       => 'required|in:active,inactive',
+            'title' => 'required|min:3|max:255',
+            'description' => 'required|min:10',
+            'audience' => 'required|in:all,teacher,student,parent',
+            'priority' => 'required|in:low,medium,high,urgent',
+            'status' => 'required|in:active,inactive',
             'published_at' => 'required|date',
-            'expires_at'   => 'nullable|date|after:published_at',
-            'attachment'   => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120',
+            'expires_at' => 'nullable|date|after:published_at',
+            'attachment' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120',
         ];
     }
 
@@ -62,38 +65,38 @@ class NoticeComponent extends Component
         $this->published_at = today()->toDateString();
     }
 
-    public function updatingSearch(): void         { $this->resetPage(); }
+    public function updatingSearch(): void { $this->resetPage(); }
     public function updatingFilterAudience(): void { $this->resetPage(); }
     public function updatingFilterPriority(): void { $this->resetPage(); }
-    public function updatingFilterStatus(): void   { $this->resetPage(); }
+    public function updatingFilterStatus(): void { $this->resetPage(); }
 
     public function openCreate(): void
     {
         $this->resetForm();
-        $this->editId    = null;
+        $this->editId = null;
         $this->showModal = true;
     }
 
     public function openEdit(int $id): void
     {
         $record = Notice::findOrFail($id);
-        $this->editId                 = $id;
-        $this->title                  = $record->title;
-        $this->description            = $record->description;
-        $this->audience               = $record->audience;
-        $this->priority               = $record->priority;
-        $this->status                 = $record->status;
-        $this->published_at           = $record->published_at->toDateString();
-        $this->expires_at             = $record->expires_at?->toDateString() ?? '';
-        $this->existingAttachment     = $record->attachment ?? '';
+        $this->editId = $id;
+        $this->title = $record->title;
+        $this->description = $record->description;
+        $this->audience = $record->audience;
+        $this->priority = $record->priority;
+        $this->status = $record->status;
+        $this->published_at = $record->published_at->toDateString();
+        $this->expires_at = $record->expires_at?->toDateString() ?? '';
+        $this->existingAttachment = $record->attachment ?? '';
         $this->existingAttachmentName = $record->attachment_name ?? '';
-        $this->attachment             = null;
-        $this->showModal              = true;
+        $this->attachment = null;
+        $this->showModal = true;
     }
 
     public function openView(int $id): void
     {
-        $this->viewRecord    = Notice::with('creator')->findOrFail($id);
+        $this->viewRecord = Notice::with('creator')->findOrFail($id);
         $this->showViewModal = true;
     }
 
@@ -101,145 +104,251 @@ class NoticeComponent extends Component
     {
         $this->validate();
 
-        $attachmentPath = $this->existingAttachment;
-        $attachmentName = $this->existingAttachmentName;
+        DB::beginTransaction();
 
-        if ($this->attachment) {
-            if ($attachmentPath) {
-                Storage::disk('public')->delete($attachmentPath);
+        try {
+            $attachmentPath = $this->existingAttachment;
+            $attachmentName = $this->existingAttachmentName;
+
+            if ($this->attachment) {
+                if ($attachmentPath) {
+                    Storage::disk('public')->delete($attachmentPath);
+                }
+                $attachmentPath = $this->attachment->store('notices', 'public');
+                $attachmentName = $this->attachment->getClientOriginalName();
             }
-            $attachmentPath = $this->attachment->store('notices', 'public');
-            $attachmentName = $this->attachment->getClientOriginalName();
+
+            $data = [
+                'created_by' => auth()->id(),
+                'title' => $this->title,
+                'description' => $this->description,
+                'audience' => $this->audience,
+                'priority' => $this->priority,
+                'status' => $this->status,
+                'published_at' => $this->published_at,
+                'expires_at' => $this->expires_at ?: null,
+                'attachment' => $attachmentPath ?: null,
+                'attachment_name' => $attachmentName ?: null,
+            ];
+
+            $isNew = ! $this->editId;
+
+            if ($this->editId) {
+                $record = Notice::findOrFail($this->editId);
+                $record->update($data);
+
+                activity()
+                    ->causedBy(auth()->user())
+                    ->performedOn($record)
+                    ->withProperties(['icon' => 'campaign', 'type' => 'notice'])
+                    ->tap(function ($activity) use ($record) {
+                        $activity->institution_id = $record->institution_id;
+                        $activity->branch_id = $record->branch_id;
+                    })
+                    ->log('Notice updated: ' . $record->title);
+            } else {
+                $record = Notice::create($data);
+
+                activity()
+                    ->causedBy(auth()->user())
+                    ->performedOn($record)
+                    ->withProperties(['icon' => 'campaign', 'type' => 'notice'])
+                    ->tap(function ($activity) use ($record) {
+                        $activity->institution_id = $record->institution_id;
+                        $activity->branch_id = $record->branch_id;
+                    })
+                    ->log('New notice created: ' . $record->title);
+            }
+
+            DB::commit();
+
+            // Notification এবং SMS commit এর পরে পাঠানো হচ্ছে, এবং শুধু নতুন
+            // Notice তৈরির সময় (Edit করলে বারবার পাঠানো ঠিক না)।
+            if ($isNew) {
+                $targetUsers = $this->getTargetUsers($this->audience);
+
+                $notificationMessage = \Str::limit(strip_tags($this->description), 150);
+
+                if ($this->audience === 'all') {
+                    NotificationService::sendToAll(
+                        auth()->user()->institution_id,
+                        'announcement',
+                        $this->title,
+                        $notificationMessage,
+                        ['icon' => 'campaign'],
+                        $this->priority === 'urgent' ? 'high' : 'normal'
+                    );
+                } else {
+                    NotificationService::sendToRole(
+                        auth()->user()->institution_id,
+                        $this->audience,
+                        'announcement',
+                        $this->title,
+                        $notificationMessage,
+                        ['icon' => 'campaign'],
+                        $this->priority === 'urgent' ? 'high' : 'normal'
+                    );
+                }
+
+                if(setting('sms_enabled') == '1' && $this->sendSms) {
+                    $this->sendSmsToUsers($targetUsers, $this->title, $notificationMessage);
+
+                }
+            }
+
+            $this->dispatch('toast', type: 'success', message: $isNew ? 'Data created successfully!' : 'Data updated successfully!');
+
+            $this->showModal = false;
+            $this->resetForm();
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            $this->dispatch('toast', type: 'error', message: 'Something went wrong!');
+        }
+    }
+
+    private function getTargetUsers(string $audience)
+    {
+        $query = User::where('institution_id', auth()->user()->institution_id);
+
+        if ($audience !== 'all') {
+            $query->where('role', $audience);
         }
 
-        $data = [
-            'created_by'      => auth()->id(),
-            'title'           => $this->title,
-            'description'     => $this->description,
-            'audience'        => $this->audience,
-            'priority'        => $this->priority,
-            'status'          => $this->status,
-            'published_at'    => $this->published_at,
-            'expires_at'      => $this->expires_at ?: null,
-            'attachment'      => $attachmentPath ?: null,
-            'attachment_name' => $attachmentName ?: null,
-        ];
+        return $query->whereNotNull('phone')->where('phone', '!=', '')->get();
+    }
+
+    private function sendSmsToUsers($users, string $title, string $message): void
+    {
+        if ($users->isEmpty()) {
+            return;
+        }
 
         $sms = new SMS();
+        $smsText = "{$title}: {$message}";
 
-        if ($this->editId) {
-            $record = Notice::findOrFail($this->editId);
-            $record->update($data);
-
-            // ── Activity Log ───────────────────────────────────────
-            activity()
-                ->causedBy(auth()->user())
-                ->performedOn($record)
-                ->withProperties(['icon' => 'campaign', 'type' => 'notice'])
-                ->tap(function ($activity) use ($record) {
-                    $activity->institution_id = $record->institution_id;
-                })
-                ->log('Notice updated: ' . $record->title);
-
-            $this->dispatch('toast', type: 'success', message: 'Data updated successfully!');
-        } else {
-            $record = Notice::create($data);
-
-            NotificationService::sendToAll(auth()->user()->institution_id, 'announcement', 'Notice', $this->title, [], 'high');
-
-            // ── Activity Log ───────────────────────────────────────
-            activity()
-                ->causedBy(auth()->user())
-                ->performedOn($record)
-                ->withProperties(['icon' => 'campaign', 'type' => 'notice'])
-                ->tap(function ($activity) use ($record) {
-                    $activity->institution_id = $record->institution_id;
-                })
-                ->log('New notice created: ' . $record->title);
-
-            // $response = $sms->sendSMS(
-            //     "Hello, this is a test SMS!",
-            //     "01795041057"
-            // );
-
-            $this->dispatch('toast', type: 'success', message: 'Data created successfully!');
+        foreach ($users as $user) {
+            try {
+                $sms->sendSMS($smsText, $user->phone);
+            } catch (\Throwable $e) {
+                continue;
+            }
         }
-
-        $this->showModal = false;
-        $this->resetForm();
     }
 
     public function confirmDeleteRecord(int $id): void
     {
-        $this->deleteId      = $id;
+        $this->deleteId = $id;
         $this->confirmDelete = true;
     }
 
     public function deleteRecord(): void
     {
-        $record = Notice::findOrFail($this->deleteId);
+        DB::beginTransaction();
 
-        // ── Activity Log ───────────────────────────────────────────
-        activity()
-            ->causedBy(auth()->user())
-            ->performedOn($record)
-            ->withProperties(['icon' => 'campaign', 'type' => 'notice'])
-            ->tap(function ($activity) use ($record) {
-                    $activity->institution_id = $record->institution_id;
-                })
-            ->log('Notice deleted: ' . $record->title);
+        try {
+            $record = Notice::findOrFail($this->deleteId);
+            $attachmentPath = $record->attachment;
 
-        if ($record->attachment) {
-            Storage::disk('public')->delete($record->attachment);
-        }
-        $record->delete();
-        $this->confirmDelete = false;
-        $this->deleteId      = null;
-        $this->dispatch('toast', type: 'success', message: 'Data deleted successfully!');
-    }
-
-    public function toggleStatus(int $id): void
-    {
-        $record = Notice::findOrFail($id);
-        $newStatus = $record->status === 'active' ? 'inactive' : 'active';
-        $record->update(['status' => $newStatus]);
-
-        // ── Activity Log ───────────────────────────────────────────
-        activity()
-            ->causedBy(auth()->user())
-            ->performedOn($record)
-            ->withProperties(['icon' => 'campaign', 'type' => 'notice'])
-            ->tap(function ($activity) use ($record) {
-                    $activity->institution_id = $record->institution_id;
-                })
-            ->log('Notice status changed to ' . $newStatus . ': ' . $record->title);
-
-        $this->dispatch('toast', type: 'success', message: 'Data updated successfully!');
-    }
-
-    public function removeAttachment(): void
-    {
-        if ($this->editId && $this->existingAttachment) {
-            Storage::disk('public')->delete($this->existingAttachment);
-            $record = Notice::findOrFail($this->editId);
-            $record->update([
-                'attachment'      => null,
-                'attachment_name' => null,
-            ]);
-
-            // ── Activity Log ───────────────────────────────────────
             activity()
                 ->causedBy(auth()->user())
                 ->performedOn($record)
                 ->withProperties(['icon' => 'campaign', 'type' => 'notice'])
                 ->tap(function ($activity) use ($record) {
                     $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+                ->log('Notice deleted: ' . $record->title);
+
+            $record->delete();
+
+            DB::commit();
+
+            if ($attachmentPath) {
+                Storage::disk('public')->delete($attachmentPath);
+            }
+
+            $this->confirmDelete = false;
+            $this->deleteId = null;
+
+            $this->dispatch('toast', type: 'success', message: 'Data deleted successfully!');
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            $this->dispatch('toast', type: 'error', message: 'Something went wrong!');
+        }
+    }
+
+    public function toggleStatus(int $id): void
+    {
+        DB::beginTransaction();
+
+        try {
+            $record = Notice::findOrFail($id);
+            $newStatus = $record->status === 'active' ? 'inactive' : 'active';
+            $record->update(['status' => $newStatus]);
+
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'campaign', 'type' => 'notice'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+                ->log('Notice status changed to ' . $newStatus . ': ' . $record->title);
+
+            DB::commit();
+
+            $this->dispatch('toast', type: 'success', message: 'Data updated successfully!');
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            $this->dispatch('toast', type: 'error', message: 'Something went wrong!');
+        }
+    }
+
+    public function removeAttachment(): void
+    {
+        if (! $this->editId || ! $this->existingAttachment) {
+            return;
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $record = Notice::findOrFail($this->editId);
+            $attachmentPath = $record->attachment;
+
+            $record->update([
+                'attachment' => null,
+                'attachment_name' => null,
+            ]);
+
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'campaign', 'type' => 'notice'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
                 })
                 ->log('Attachment removed from notice: ' . $record->title);
 
-            $this->existingAttachment     = '';
+            DB::commit();
+
+            if ($attachmentPath) {
+                Storage::disk('public')->delete($attachmentPath);
+            }
+
+            $this->existingAttachment = '';
             $this->existingAttachmentName = '';
+
             $this->dispatch('toast', type: 'success', message: 'Data removed successfully!');
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            $this->dispatch('toast', type: 'error', message: 'Something went wrong!');
         }
     }
 
@@ -249,10 +358,11 @@ class NoticeComponent extends Component
             'title', 'description', 'expires_at', 'attachment',
             'existingAttachment', 'existingAttachmentName', 'editId',
         ]);
-        $this->audience     = 'all';
-        $this->priority     = 'medium';
-        $this->status       = 'active';
+        $this->audience = 'all';
+        $this->priority = 'medium';
+        $this->status = 'active';
         $this->published_at = today()->toDateString();
+        $this->sendSms = false;
         $this->resetValidation();
     }
 
@@ -267,11 +377,11 @@ class NoticeComponent extends Component
             )
             ->when($this->filterAudience, fn ($q) => $q->where('audience', $this->filterAudience))
             ->when($this->filterPriority, fn ($q) => $q->where('priority', $this->filterPriority))
-            ->when($this->filterStatus,   fn ($q) => $q->where('status', $this->filterStatus))
+            ->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus))
             ->latest()
             ->paginate($this->perPage);
 
-        return view('livewire.accountant.notice.notice-component')
+        return view('livewire.admin.notice.notice-component')
             ->with('notices', $notices)
             ->layout('layouts.accountant.app', [
                 'title' => 'Notice Board | ' . institution()->name,

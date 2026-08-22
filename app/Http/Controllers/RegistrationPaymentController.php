@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Library\SslCommerz\SslCommerzNotification;
 use Illuminate\Support\Facades\Auth;
+use App\Services\InstitutionDefaultsService;
 
 class RegistrationPaymentController extends Controller
 {
@@ -53,8 +54,7 @@ class RegistrationPaymentController extends Controller
             'value_a'          => $tran_id,
         ];
 
-        // meta তে সব data রাখো — session হারালেও কাজ করবে (fail/cancel/mobile session loss সবক্ষেত্রেই)
-        // institution_id, month, year ফাঁকা থাকবে — registration এর সময় এগুলো প্রযোজ্য নয়
+
         Invoice::withoutGlobalScopes()->create([
             'invoice_no'     => 'REG_' . strtoupper(uniqid()),
             'transaction_id' => $tran_id,
@@ -63,14 +63,17 @@ class RegistrationPaymentController extends Controller
             'payable_amount' => $fee,
             'status'         => 'pending',
             'meta'           => json_encode([
-                'institution_name' => $data['institution_name'],
-                'institution_type' => $data['institution_type'] ?? '',
-                'email'            => $data['email'],
-                'phone'            => $data['phone'],
-                'admin_name'       => $data['admin_name'],
-                'admin_email'      => $data['admin_email'],
-                'password'         => $data['password'],
-                'system_logo'             => session('pending_logo'),
+                'institution_name'     => $data['institution_name'],
+                'institution_type'     => $data['institution_type'] ?? '',
+                'institution_medium'   => $data['institution_medium'] ?? '',
+                'institution_division' => $data['institution_division'] ?? '',
+                'institution_district' => $data['institution_district'] ?? '',
+                'email'                => $data['email'],
+                'phone'                => $data['phone'],
+                'admin_name'           => $data['admin_name'],
+                'admin_email'          => $data['admin_email'],
+                'password'             => $data['password'],
+                'system_logo'          => session('pending_logo'),
             ]),
         ]);
 
@@ -153,6 +156,9 @@ class RegistrationPaymentController extends Controller
                 $institution = Institution::create([
                     'name'     => $meta['institution_name'],
                     'type'     => $meta['institution_type'] ?? null,
+                    'medium'   => $meta['institution_medium'] ?? null,   // আগের #3 fix ও এখানে লাগবে
+                    'division' => $meta['institution_division'] ?? null,
+                    'district' => $meta['institution_district'] ?? null,
                     'email'    => $meta['email'],
                     'phone'    => $meta['phone'],
                     'status'   => true,
@@ -162,18 +168,22 @@ class RegistrationPaymentController extends Controller
                     $institution->update(['system_logo' => $meta['system_logo']]);
                 }
 
+                $branch = InstitutionDefaultsService::create($institution);
+
                 $user = User::create([
                     'name'           => $meta['admin_name'],
                     'email'          => $meta['admin_email'],
                     'password'       => $meta['password'],
-                    'role'           => 'admin',
+                    'role'           => User::ROLE_ADMIN,
                     'institution_id' => $institution->id,
+                    'branch_id'      => $branch->id,
                 ]);
 
                 Invoice::withoutGlobalScopes()
                     ->where('transaction_id', $tran_id)
                     ->update([
                         'institution_id' => $institution->id,
+                        'branch_id'      => $branch->id,
                         'status'         => 'paid',
                         'paid_at'        => now(),
                         'payment_method' => 'sslcommerz',
@@ -185,8 +195,7 @@ class RegistrationPaymentController extends Controller
             Auth::login($user);
             $request->session()->regenerate();
 
-            return redirect()->route('admin.dashboard')
-                ->with('success', 'Institue Installed Sucessfully!');
+            return redirect()->route('admin.dashboard')->with('success', 'Institue Installed Sucessfully!');
 
         } catch (\Exception $e) {
             Log::error('Registration failed after payment', [
@@ -285,7 +294,6 @@ class RegistrationPaymentController extends Controller
             return;
         }
 
-        // ✅ session abar bhore dao — form field gulo age moto thakbe
         session(['pending_registration' => [
             'institution_name' => $meta['institution_name'] ?? null,
             'institution_type' => $meta['institution_type'] ?? null,

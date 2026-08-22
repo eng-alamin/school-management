@@ -88,11 +88,18 @@ class EmployeeAddComponent extends Component
             'name'         => 'required',
             'mobile'       => 'nullable|string|max:20',
             'email'        => 'nullable|unique:users,email',
-            'photo_upload' => 'nullable|image|max:2048',
+            'photo_upload' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'employee_id'  => 'nullable|unique:employees,employee_id',
             'username'     => 'required|unique:users,username',
             'password'     => 'nullable|min:8',
         ];
+    }
+
+    public function updatedPhotoUpload($value): void
+    {
+        $this->validateOnly('photo_upload', [
+            'photo_upload' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
     }
 
     public function getSelectedDesignationNameProperty(): ?string

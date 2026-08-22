@@ -225,58 +225,8 @@
     </div>
     @endif
 
-</div>{{-- /mat-card --}}
+</div>
 
-
-@push('styles')
-<style>
-    /* ── Status badges ── */
-    .status-badge {
-        display: inline-block;
-        padding: 3px 10px;
-        border-radius: 4px;
-        font-size: 11px;
-        font-weight: 600;
-        border: 1px solid;
-        white-space: nowrap;
-    }
-    .status-paid    { color: #16a34a; border-color: #16a34a; background: rgba(22,163,74,.08); }
-    .status-unpaid  { color: #2563eb; border-color: #2563eb; background: rgba(37,99,235,.08); }
-    .status-partial { color: #d97706; border-color: #d97706; background: rgba(217,119,6,.08);  }
-    .status-nodata  { color: #6b7280; border-color: #6b7280; background: rgba(107,114,128,.08); }
-    .status-pending { color: #7c3aed; border-color: #7c3aed; background: rgba(124,58,237,.08);  }
-
-    /* ── Action buttons ── */
-    .action-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 5px 12px;
-        border-radius: 5px;
-        font-size: 12px;
-        font-weight: 600;
-        border: none;
-        cursor: pointer;
-        transition: opacity .15s;
-        white-space: nowrap;
-    }
-    .action-btn:hover { opacity: .85; }
-    .btn-payslip { background: #1f2937; color: #fff; }
-    .btn-paynow  { background: var(--primary, #e74c3c); color: #fff; }
-
-    /* ── Footer ── */
-    .form-footer {
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        padding-top: 20px;
-        margin-top: 16px;
-        gap: 12px;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-</style>
-@endpush
 
 @push('scripts')
     <script>

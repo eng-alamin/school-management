@@ -132,8 +132,7 @@
                 <div class="modal-content border-0" style="border-radius:16px;overflow:hidden;">
 
                     {{-- Header --}}
-                    <div class="modal-header border-0 text-white"
-                         style="background:linear-gradient(135deg,#4338ca 0%,#7c3aed 100%);padding:20px 24px;">
+                    <div class="modal-header border-0 text-white bg-dark">
                         <div>
                             <h5 class="mb-1 fw-700">{{ $viewRecord->name }}</h5>
                             <span class="badge bg-white text-dark" style="font-size:.72rem;font-weight:600;">

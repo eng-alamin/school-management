@@ -10,7 +10,7 @@
                     </div>
                 </div>
 
-                <button onclick="printableArea()" class="btn-outline bg-dark text-white">
+                <button onclick="printableArea()" class="btn btn-primary">
                     <span class="material-icons-round" style="font-size:16px">print</span>
                     <span>Print</span>
                 </button>

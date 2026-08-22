@@ -183,7 +183,7 @@
       </li>
 
       <li class="nav1-item">
-        <div class="nav1-link {{ str_contains(request()->url(), 'student-accounting') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
+        <div class="nav1-link {{ str_contains(request()->url(), 'branch/student-accounting') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
           <span class="material-icons-round nav-icon">account_balance_wallet</span>
           <span class="nav-label" id="nav-student-accounting">Student Accounting</span>
           <span class="material-icons-round nav-arrow">expand_more</span>

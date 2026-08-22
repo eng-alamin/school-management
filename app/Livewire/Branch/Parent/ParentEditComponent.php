@@ -118,7 +118,7 @@ class ParentEditComponent extends Component
             'income' => 'nullable|numeric',
             'education' => 'nullable|string|max:255',
             'mobile' => 'required|string|max:20',
-            'email' => 'nullable|email',
+            'email' => 'nullable|email|unique:users,email',
 
             'photo_upload' => 'nullable|image|max:2048',
 

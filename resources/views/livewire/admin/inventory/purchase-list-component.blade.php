@@ -150,20 +150,3 @@
     @endif
 
 </div>
-
-@push('styles')
-    <style>
-        .card { border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
-        .card-header { background: #fff; border-bottom: 1px solid var(--border); border-radius: 12px 12px 0 0 !important; padding: 16px 20px; }
-
-        .badge-active   { background: rgba(34,197,94,.12);   color: #16a34a; }
-        .badge-inactive { background: rgba(107,114,128,.12);  color: #6b7280; }
-        .badge-used     { background: rgba(59,130,246,.12);   color: #2563eb; }
-        .badge-pending  { background: rgba(245,158,11,.12);   color: #d97706; }
-        .badge-received { background: rgba(139,92,246,.12);   color: #7c3aed; }
-
-        .btn-sm { font-size: .78rem; padding: .3rem .65rem; border-radius: 6px; }
-
-
-    </style>
-@endpush

@@ -6,6 +6,7 @@ use Livewire\Component;
 use App\Models\User;
 use App\Models\Guardian;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
@@ -30,6 +31,8 @@ class ParentAddComponent extends Component
     public $username;
     public $password;
 
+    public bool $usernameManuallyEdited = false;
+
     public function rules()
     {
         return [
@@ -41,7 +44,7 @@ class ParentAddComponent extends Component
             'income' => 'nullable|numeric',
             'education' => 'nullable|string|max:255',
             'mobile' => 'required|string|max:20',
-            'email' => 'nullable|email',
+            'email' => 'nullable|email|unique:users,email',
 
             'photo_upload'       => 'nullable|image|max:2048',
 
@@ -50,9 +53,45 @@ class ParentAddComponent extends Component
         ];
     }
 
+    public function updatedName($value): void
+    {
+        if (!$this->usernameManuallyEdited) {
+            $this->username = $this->generateUniqueUsername($value);
+        }
+    }
+
+    public function updatedUsername(): void
+    {
+        $this->usernameManuallyEdited = true;
+    }
+
+    private function generateUniqueUsername(?string $name): ?string
+    {
+        if (!$name || trim($name) === '') {
+            return null;
+        }
+
+        $base = Str::slug($name, '_');
+
+        if ($base === '') {
+            return null;
+        }
+
+        $username = $base;
+        $counter = 1;
+
+        while (User::where('username', $username)->exists()) {
+            $username = $base . '_' . $counter;
+            $counter++;
+        }
+
+        return $username;
+    }
+
     public function resetForm()
     {
         $this->reset();
+        $this->usernameManuallyEdited = false;
     }
 
     protected function failedValidation($validator)
@@ -124,7 +163,7 @@ class ParentAddComponent extends Component
 
     public function render()
     {
-        return view('livewire.accountant.parent.parent-add-component')
+        return view('livewire.admin.parent.parent-add-component')
             ->layout('layouts.accountant.app', [
                 'title' => 'Create Parent | ' . institution()->name,
             ]);

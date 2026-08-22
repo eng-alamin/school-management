@@ -137,7 +137,7 @@
                             @empty
                                 <div class="col-12">
                                     <p class="text-muted mb-0">
-                                        Kono role toiri kora nai. <a href="{{ route('role-permission.create') }}" wire:navigate>Notun role banan</a> shobar age.
+                                        Kono role toiri kora nai. <a href="{{ route('admin.role-permission.create') }}" class="text-primary" wire:navigate>New role</a> shobar age.
                                     </p>
                                 </div>
                             @endforelse

@@ -79,6 +79,8 @@ class StudentAddComponent extends Component
         'monthly_fee'      => true,
     ];
 
+    // User model এ এখনো BelongsToBranch trait নেই, তাই branch_id auto-fill
+    // হয় না — এই resolved id সব User::create() কলে explicit পাঠাতে হবে।
     private function resolveActiveBranchId(): ?int
     {
         $user = auth()->user();
@@ -447,11 +449,14 @@ class StudentAddComponent extends Component
             $this->validate($this->rules(), $this->messages());
 
             $institutionId = auth()->user()->institution_id;
+            $branchId      = $this->resolveActiveBranchId();
 
             $userPassword = $this->password ?: '12345678';
 
+            // User model এ এখনো BelongsToBranch trait নেই, তাই auto-fill হয় না।
             $user = User::create([
                 'institution_id' => $institutionId,
+                'branch_id'      => $branchId,
                 'role'     => 'student',
                 'name'     => $this->name,
                 'username' => $this->username,
@@ -516,8 +521,6 @@ class StudentAddComponent extends Component
 
             $sectionId = $this->selectedClassHasSection ? ($this->section_id ?: null) : null;
 
-            // branch_id সেট করার দরকার নেই — BelongsToBranch trait এর
-            // creating() hook স্বয়ংক্রিয়ভাবে branch_id বসিয়ে দেয়।
             $student = Student::create([
                 'user_id' => $user->id,
 
@@ -571,6 +574,7 @@ class StudentAddComponent extends Component
 
                 $userGuardian = User::create([
                     'institution_id' => $institutionId,
+                'branch_id'      => $branchId,
                     'role'     => 'parent',
                     'name'     => $this->guardian_name,
                     'username' => $this->guardian_username,
@@ -747,15 +751,8 @@ class StudentAddComponent extends Component
             ->where('is_status', true)
             ->get();
 
-        // NOTE: Guardian::all() এ কোনো manual institution/branch filter নেই।
-        // যদি Guardian model BelongsToInstitution/BelongsToBranch trait
-        // ব্যবহার করে, এই query global scope দ্বারা automatic filtered —
-        // তাহলে এটা এখন নিরাপদ। Guardian model এ trait না থাকলে এটা এখনো
-        // cross-institution data leak, confirm করে জানাবেন।
         $guardians = Guardian::all();
 
-        // FIX: namespace App\Livewire\Branch\Student হলেও view path 'admin'
-        // folder পয়েন্ট করছিল — এটা branch এর নিজস্ব view path এ ঠিক করা হলো।
         return view('livewire.admin.student.student-add-component', [
             'sessions'  => $sessions,
             'classes'   => $classes,

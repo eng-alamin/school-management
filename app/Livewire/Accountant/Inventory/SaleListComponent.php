@@ -22,6 +22,26 @@ class SaleListComponent extends Component
     public bool  $confirmDelete = false;
     public ?int  $deleteId      = null;
 
+    public string $routePrefix = '';
+
+    public function mount(): void
+    {
+        $this->routePrefix = $this->resolveRoutePrefix();
+    }
+
+    protected function resolveRoutePrefix(): string
+    {
+        $routeName = request()->route()?->getName();
+
+        if ($routeName && str_contains($routeName, '.')) {
+            return explode('.', $routeName)[0] . '.';
+        }
+
+        $segment = request()->segment(1);
+
+        return $segment ? $segment . '.' : '';
+    }
+
     public function updatingSearch(): void
     {
         $this->resetPage();
@@ -65,7 +85,7 @@ class SaleListComponent extends Component
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
-        return view('livewire.accountant.inventory.sale-list-component')
+        return view('livewire.admin.inventory.sale-list-component')
             ->with('sales', $sales)
             ->layout('layouts.accountant.app', [
                 'title' => 'Sales | ' . institution()->name,

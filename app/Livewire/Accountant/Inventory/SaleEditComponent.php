@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 
 class SaleEditComponent extends Component
 {
- // ── Route model ──
+    // ── Route model ──
     public int $saleId;
 
     // ── Sale header fields ──
@@ -33,6 +33,13 @@ class SaleEditComponent extends Component
     public string $pay_via         = '';
     public string $remarks         = '';
 
+    // ── Tracks whether Received Amount already holds a meaningful value
+    //    (loaded from DB, or manually edited by the user).
+    //    Defaults to TRUE here (unlike Add) because on Edit we load a real,
+    //    previously saved received_amount from the database — it must NEVER
+    //    be silently overwritten by auto-sync during recalculation. ──
+    public bool $receivedAmountTouched = true;
+
     // ── Line items ──
     public array $items = [];
 
@@ -42,7 +49,7 @@ class SaleEditComponent extends Component
             'role'                    => 'required|string|in:student,teacher,staff,other',
             'class_id'                => 'nullable|integer',
             'saleable_id'             => 'required|integer',
-            'bill_no'                 => "required|string|max:255|unique:inventory_sales,bill_no,{$this->saleId}",
+            'bill_no'                 => 'required|string|max:255|unique:inventory_sales,bill_no,' . $this->saleId . ',id,institution_id,' . institution()->id,
             'date'                    => 'required|date',
             'received_amount'         => 'nullable|numeric|min:0',
             'pay_via'                 => 'nullable|string|max:100',
@@ -72,7 +79,9 @@ class SaleEditComponent extends Component
 
     public function mount(int $id): void
     {
-        $sale = InventorySale::with('items')->findOrFail($id);
+        $sale = InventorySale::with('items')
+            ->where('institution_id', institution()->id)
+            ->findOrFail($id);
 
         $this->saleId          = $sale->id;
         $this->role            = $sale->role ?? '';
@@ -84,9 +93,15 @@ class SaleEditComponent extends Component
         $this->pay_via         = $sale->pay_via ?? '';
         $this->remarks         = $sale->remarks ?? '';
 
+        // The received_amount above is a real, previously saved value —
+        // mark it as "touched" so the recalculate() call below (and any
+        // future item edits) never silently overwrite it with net_payable.
+        $this->receivedAmountTouched = true;
+
         // Resolve class_id for student role
         if ($this->role === 'student') {
-            $student = Student::find($sale->saleable_id);
+            $student = Student::where('institution_id', institution()->id)
+                ->find($sale->saleable_id);
             $this->class_id = $student?->class_id ?? '';
         }
 
@@ -134,9 +149,11 @@ class SaleEditComponent extends Component
 
         // Auto-fill unit price when product is selected
         if ($field === 'product_id' && !empty($value)) {
-            $product = InventoryProduct::find($value);
+            $product = InventoryProduct::where('institution_id', institution()->id)
+                ->find($value);
+
             if ($product) {
-                $this->items[$index]['unit_price'] = $product->price ?? 0;
+                $this->items[$index]['unit_price'] = $product->sales_price ?? 0;
             }
         }
 
@@ -144,9 +161,11 @@ class SaleEditComponent extends Component
         $this->recalculate();
     }
 
-    // ── Recalculate when received amount changes ──
+    // ── Recalculate when received amount changes, and lock auto-sync
+    //    since the user has now manually taken control of this field ──
     public function updatedReceivedAmount(): void
     {
+        $this->receivedAmountTouched = true;
         $this->recalculate();
     }
 
@@ -189,6 +208,14 @@ class SaleEditComponent extends Component
         $this->sub_total      = collect($this->items)->sum(fn($i) => (float)($i['unit_price'] ?? 0) * (int)($i['quantity'] ?? 1));
         $this->total_discount = collect($this->items)->sum(fn($i) => (float)($i['discount'] ?? 0));
         $this->net_payable    = max(0, $this->sub_total - $this->total_discount);
+
+        // ── Received Amount শুধু তখনই Net Payable-এর সমান অটো-সেট হবে
+        //    যখন এটা কখনো "touched" হয়নি (নতুন/blank state) — Edit-এ
+        //    যেহেতু mount() থেকেই touched = true সেট করা থাকে, তাই এখানে
+        //    এই ব্লক কার্যত কখনো existing সংরক্ষিত ভ্যালু ওভাররাইট করবে না ──
+        if (!$this->receivedAmountTouched) {
+            $this->received_amount = $this->net_payable;
+        }
     }
 
     // ── Determine saleable_type from role ──
@@ -220,7 +247,8 @@ class SaleEditComponent extends Component
 
             $due = max(0, $this->net_payable - (float) $this->received_amount);
 
-            $sale = InventorySale::findOrFail($this->saleId);
+            $sale = InventorySale::where('institution_id', institution()->id)
+                ->findOrFail($this->saleId);
 
             $sale->update([
                 'role'            => $this->role,
@@ -245,31 +273,36 @@ class SaleEditComponent extends Component
                 ->values()
                 ->toArray();
 
-            // Delete removed items
+            // Delete removed items (scoped to this sale + institution)
             InventorySaleItem::where('sale_id', $sale->id)
+                ->where('institution_id', institution()->id)
                 ->whereNotIn('id', $keptIds)
                 ->delete();
 
             // Update existing / create new
             foreach ($this->items as $item) {
                 if (!empty($item['id'])) {
-                    InventorySaleItem::where('id', $item['id'])->update([
-                        'category_id' => $item['category_id'] ?: null,
-                        'product_id'  => $item['product_id'],
-                        'unit_price'  => $item['unit_price'],
-                        'quantity'    => $item['quantity'],
-                        'discount'    => $item['discount'] ?? 0,
-                        'total_price' => $item['total_price'],
-                    ]);
+                    InventorySaleItem::where('id', $item['id'])
+                        ->where('sale_id', $sale->id)
+                        ->where('institution_id', institution()->id)
+                        ->update([
+                            'category_id' => $item['category_id'] ?: null,
+                            'product_id'  => $item['product_id'],
+                            'unit_price'  => $item['unit_price'],
+                            'quantity'    => $item['quantity'],
+                            'discount'    => $item['discount'] ?? 0,
+                            'total_price' => $item['total_price'],
+                        ]);
                 } else {
                     InventorySaleItem::create([
-                        'sale_id'     => $sale->id,
-                        'category_id' => $item['category_id'] ?: null,
-                        'product_id'  => $item['product_id'],
-                        'unit_price'  => $item['unit_price'],
-                        'quantity'    => $item['quantity'],
-                        'discount'    => $item['discount'] ?? 0,
-                        'total_price' => $item['total_price'],
+                        'institution_id' => institution()->id,
+                        'sale_id'        => $sale->id,
+                        'category_id'    => $item['category_id'] ?: null,
+                        'product_id'     => $item['product_id'],
+                        'unit_price'     => $item['unit_price'],
+                        'quantity'       => $item['quantity'],
+                        'discount'       => $item['discount'] ?? 0,
+                        'total_price'    => $item['total_price'],
                     ]);
                 }
             }
@@ -277,6 +310,7 @@ class SaleEditComponent extends Component
 
         $this->dispatch('date-updated', date: $this->date);
         $this->dispatch('toast', type: 'success', message: 'Data updated successfully!');
+        $this->redirectRoute('accountant.inventory.sale.list', navigate: true);
     }
 
     public function render()
@@ -285,18 +319,19 @@ class SaleEditComponent extends Component
 
         if ($this->role === 'student') {
             $saleables = Student::query()
+                ->where('institution_id', institution()->id)
                 ->when($this->class_id, fn($q) => $q->where('class_id', $this->class_id))
-                ->orderBy('name')
+                ->orderBy('id')
                 ->get(['id', 'name']);
         } elseif ($this->role === 'teacher') {
-            $saleables = User::where('school_id', auth()->user()->school_id)->where('role', 'teacher')->orderBy('name')->get(['id', 'name']);
+            $saleables = User::where('institution_id', institution()->id)->where('role', 'teacher')->orderBy('name')->get(['id', 'name']);
         } elseif ($this->role === 'staff') {
-            $saleables = User::where('school_id', auth()->user()->school_id)->where('role', 'staff')->orderBy('name')->get(['id', 'name']);
+            $saleables = User::where('institution_id', institution()->id)->where('role', 'staff')->orderBy('name')->get(['id', 'name']);
         }
 
-        return view('livewire.accountant.inventory.sale-edit-component', [
-            'categories' => InventoryCategory::with('products')->orderBy('name')->get(),
-            'classes'    => AcademicClass::orderBy('name')->get(),
+        return view('livewire.admin.inventory.sale-edit-component', [
+            'categories' => InventoryCategory::where('institution_id', institution()->id)->with('products')->orderBy('name')->get(),
+            'classes'    => AcademicClass::where('institution_id', institution()->id)->orderBy('id')->get(),
             'saleables'  => $saleables,
         ])->layout('layouts.accountant.app', [
             'title' => 'Edit Sale | ' . institution()->name,

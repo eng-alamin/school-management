@@ -28,6 +28,7 @@ class NotificationBell extends Component
     {
         // BelongsToInstitution InstitutionScope automatically institution filter করবে
         Notification::whereKey($id)
+            ->where('institution_id', auth()->user()->institution_id)
             ->where('notifiable_id', auth()->id())
             ->where('notifiable_type', auth()->user()::class)
             ->first()
@@ -42,6 +43,7 @@ class NotificationBell extends Component
     public function delete(int $id): void
     {
         Notification::whereKey($id)
+            ->where('institution_id', auth()->user()->institution_id)
             ->where('notifiable_id', auth()->id())
             ->where('notifiable_type', auth()->user()::class)
             ->delete();

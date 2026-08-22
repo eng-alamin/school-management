@@ -5,7 +5,10 @@ namespace App\Livewire\Accountant\Event;
 use Livewire\Component;
 use App\Models\EventType;
 use App\Models\Event;
+use App\Models\AcademicClassAssign;
 use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
 
@@ -15,7 +18,7 @@ class EditComponent extends Component
 
     public $title = '';
     public $is_holiday = false;
-    public $type = '';
+    public $event_type_id = '';
     public $audience = '';
     public $date_from = '';
     public $date_to = '';
@@ -25,19 +28,21 @@ class EditComponent extends Component
     public $image_upload = null;
 
     public $selectedClasses = [];
-    public $selectedSections = []; 
+    public $selectedSections = [];
 
     public $event_id;
 
     public function mount(int $id): void
     {
-        $event = Event::with(['eventClasses', 'eventSections'])->findOrFail($id);
+        $event = Event::with(['eventClasses', 'eventSections'])
+            ->where('institution_id', auth()->user()->institution_id)
+            ->findOrFail($id);
 
         $this->event_id      = $event->id;
 
         $this->title         = $event->title;
         $this->is_holiday    = $event->is_holiday;
-        $this->type          = $event->type;
+        $this->event_type_id = $event->event_type_id;
         $this->audience      = $event->audience;
         $this->date_from     = $event->date_from;
         $this->date_to       = $event->date_to;
@@ -51,10 +56,10 @@ class EditComponent extends Component
         ])->toArray();
 
         $this->selectedSections = $event->eventSections->map(fn($s) => [
-            'class_id'    => $s->class_id,
-            'class_name'  => $s->class_name,
-            'section_id'  => $s->section_id,
-            'section_name'=> $s->section_name,
+            'class_id'     => $s->class_id,
+            'class_name'   => $s->class_name,
+            'section_id'   => $s->section_id,
+            'section_name' => $s->section_name,
         ])->toArray();
     }
 
@@ -65,10 +70,17 @@ class EditComponent extends Component
 
     public function rules()
     {
+        $institutionId = auth()->user()->institution_id;
+
         return [
             'title'            => 'required|string|max:255',
             'is_holiday'       => 'boolean',
-            'type'             => 'required|string|max:100',
+            'event_type_id'    => [
+                'required',
+                Rule::exists('event_types', 'id')->where(
+                    fn($q) => $q->where('institution_id', $institutionId)
+                ),
+            ],
             'audience'         => ['required', Rule::in(['everyone', 'class', 'section'])],
             'date_from'        => 'required|date',
             'date_to'          => 'nullable|date|after_or_equal:date_from',
@@ -95,15 +107,17 @@ class EditComponent extends Component
 
     public function update()
     {
+        DB::beginTransaction();
+
         try {
             $this->validate($this->rules());
 
-            $event = Event::findOrFail($this->event_id);
+            $event = Event::where('institution_id', auth()->user()->institution_id)
+                ->findOrFail($this->event_id);
 
-            // 🖼️ Image replace logic
+            // Image replace logic
             if ($this->image_upload) {
-                // পুরানো image delete
-                if ($event->image && \Storage::disk('public')->exists($event->image)) {
+                if ($event->image && Storage::disk('public')->exists($event->image)) {
                     Storage::disk('public')->delete($event->image);
                 }
 
@@ -112,24 +126,23 @@ class EditComponent extends Component
                 $imagePath = $event->image;
             }
 
-            // 🧾 Update main event
             $event->update([
-                'title'        => $this->title,
-                'is_holiday'   => $this->is_holiday,
-                'type'         => $this->type,
-                'audience'     => $this->audience,
-                'date_from'    => $this->date_from,
-                'date_to'      => $this->date_to,
-                'description'  => $this->description,
-                'show_website' => $this->show_website,
-                'image'        => $imagePath,
+                'title'         => $this->title,
+                'is_holiday'    => $this->is_holiday,
+                'event_type_id' => $this->event_type_id,
+                'audience'      => $this->audience,
+                'date_from'     => $this->date_from,
+                'date_to'       => $this->date_to,
+                'description'   => $this->description,
+                'show_website'  => $this->show_website,
+                'image'         => $imagePath,
             ]);
 
-            // 🧹 Old relations delete
+            // Old relations delete
             $event->eventClasses()->delete();
             $event->eventSections()->delete();
 
-            // 🎯 Selected Class
+            // Selected Class
             if ($this->audience === 'class') {
                 foreach ($this->selectedClasses as $class) {
                     $event->eventClasses()->create([
@@ -139,7 +152,7 @@ class EditComponent extends Component
                 }
             }
 
-            // 🎯 Selected Section
+            // Selected Section
             if ($this->audience === 'section') {
                 foreach ($this->selectedSections as $section) {
                     $event->eventSections()->create([
@@ -161,9 +174,13 @@ class EditComponent extends Component
                 })
                 ->log('Event updated: ' . $event->title);
 
+            DB::commit();
+
             $this->dispatch('toast', type: 'success', message: 'Event updated successfully!');
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
             $this->dispatch('toast', type: 'error', message: 'An error occurred while updating the event.');
             throw $e;
         }
@@ -171,15 +188,38 @@ class EditComponent extends Component
 
     public function render()
     {
-        $classes = \App\Models\AcademicClass::with('sections')->get();
-        $sections = \App\Models\AcademicSection::all();
+        $institutionId = auth()->user()->institution_id;
 
-        return view('livewire.accountant.event.edit-component')
+        // BUG FIX: same as AddComponent — class/section options now come
+        // from academic_class_assigns, scoped by institution_id, instead of
+        // raw unscoped AcademicClass/AcademicSection tables.
+        $classAssigns = AcademicClassAssign::with(['class', 'section'])
+            ->where('institution_id', $institutionId)
+            ->get();
+
+        $classes = $classAssigns->pluck('class')->filter()->unique('id')->values();
+
+        $classesWithSections = $classAssigns
+            ->whereNotNull('section_id')
+            ->groupBy('class_id')
+            ->map(function ($rows) {
+                $first = $rows->first();
+                return (object) [
+                    'id'       => $first->class_id,
+                    'name'     => $first->class?->name,
+                    'sections' => $rows->pluck('section')->filter()->values(),
+                ];
+            })
+            ->values();
+
+        $eventTypes = EventType::where('institution_id', $institutionId)->get();
+
+        return view('livewire.admin.event.edit-component')
             ->with('classes', $classes)
-            ->with('sections', $sections)
+            ->with('classesWithSections', $classesWithSections)
+            ->with('eventTypes', $eventTypes)
             ->layout('layouts.accountant.app', [
                 'title' => 'Edit Event | ' . institution()->name,
             ]);
     }
-
 }

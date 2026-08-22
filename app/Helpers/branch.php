@@ -25,7 +25,7 @@ if (! function_exists('currentBranchId')) {
 
         $user = Auth::user();
 
-        if (in_array($user->role, [User::ROLE_ADMIN, User::ROLE_SUPER_ADMIN], true)) {
+        if (in_array($user->role, [User::ROLE_SUPER_ADMIN], true)) {
             return null;
         }
 

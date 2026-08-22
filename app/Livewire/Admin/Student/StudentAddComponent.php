@@ -79,6 +79,8 @@ class StudentAddComponent extends Component
         'monthly_fee'      => true,
     ];
 
+    // User model এ এখনো BelongsToBranch trait নেই, তাই branch_id auto-fill
+    // হয় না — এই resolved id সব User::create() কলে explicit পাঠাতে হবে।
     private function resolveActiveBranchId(): ?int
     {
         $user = auth()->user();
@@ -447,11 +449,13 @@ class StudentAddComponent extends Component
             $this->validate($this->rules(), $this->messages());
 
             $institutionId = auth()->user()->institution_id;
+            $branchId      = $this->resolveActiveBranchId();
 
             $userPassword = $this->password ?: '12345678';
 
             $user = User::create([
                 'institution_id' => $institutionId,
+                'branch_id'      => $branchId,
                 'role'     => 'student',
                 'name'     => $this->name,
                 'username' => $this->username,
@@ -569,6 +573,7 @@ class StudentAddComponent extends Component
 
                 $userGuardian = User::create([
                     'institution_id' => $institutionId,
+                    'branch_id'      => $branchId,
                     'role'     => 'parent',
                     'name'     => $this->guardian_name,
                     'username' => $this->guardian_username,
@@ -610,7 +615,7 @@ class StudentAddComponent extends Component
             if ($invoice) {
                 $this->dispatch('toast', type: 'success', message: 'Student created successfully!');
 
-                return redirect()->route('branch.students.payment-collect', ['invoice' => $invoice->id]);
+                return redirect()->route('admin.students.payment-collect', ['invoice' => $invoice->id]);
             }
 
             $this->resetForm();

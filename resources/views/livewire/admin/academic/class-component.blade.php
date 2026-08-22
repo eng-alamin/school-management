@@ -234,30 +234,6 @@
 </div>
 
 @push('styles')
-<style>
-    :root {
-        --primary: rgba(33, 37, 41);
-        --primary-light: rgba(239,84,84,.12);
-    }
-
-    .card { border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
-    .card-header { background: #fff; border-bottom: 1px solid var(--border); border-radius: 12px 12px 0 0 !important; padding: 16px 20px; }
-
-    .form-label { font-size: .8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
-    .form-control, .form-select {
-        border-radius: 8px; border: 1px solid var(--border);
-        font-size: .875rem; padding: .45rem .75rem;
-        transition: border-color .2s, box-shadow .2s;
-    }
-    .form-control:focus, .form-select:focus {
-        border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light);
-    }
-
-    .btn-sm { font-size: .78rem; padding: .3rem .65rem; border-radius: 6px; }
-</style>
-@endpush
-
-@push('styles')
         {{-- selectpicker --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css">
 @endpush

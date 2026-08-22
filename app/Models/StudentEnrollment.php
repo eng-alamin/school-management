@@ -15,6 +15,7 @@ class StudentEnrollment extends Model
     
     protected $fillable = [
         'institution_id',
+        'branch_id',
         'student_id',
         'class_id',
         'section_id',

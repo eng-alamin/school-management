@@ -5,7 +5,8 @@ namespace App\Livewire\Admin\RolePermission;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
+use App\Models\Branch;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\PermissionRegistrar;
 use App\Livewire\Admin\RolePermission\Concerns\InteractsWithPermissionMatrix;
@@ -21,9 +22,17 @@ class CreateComponent extends Component
         return auth()->user()->institution_id;
     }
 
+    private function activeBranchId(): ?int
+    {
+        $institutionId = $this->institutionId();
+
+        return auth()->user()->branch_id ?? Branch::resolveMainBranchId($institutionId);
+    }
+
     public function rules(): array
     {
         $institutionId = $this->institutionId();
+        $branchId       = $this->activeBranchId();
 
         return [
             'name' => [
@@ -32,7 +41,8 @@ class CreateComponent extends Component
                 'max:100',
                 Rule::unique('roles', 'name')
                     ->where('guard_name', 'web')
-                    ->where('institution_id', $institutionId),
+                    ->where('institution_id', $institutionId)
+                    ->where('branch_id', $branchId),
             ],
             'selectedPermissions'   => 'array',
             'selectedPermissions.*' => Rule::exists('permissions', 'name')->where('guard_name', 'web'),
@@ -79,7 +89,9 @@ class CreateComponent extends Component
                 // Ensure Spatie's team context matches the current institution
                 app(PermissionRegistrar::class)->setPermissionsTeamId($institutionId);
 
-                // institution_id is auto-filled by Spatie's team scoping
+                // institution_id is auto-filled by Spatie's team scoping;
+                // branch_id is auto-filled by the BelongsToBranch trait on
+                // App\Models\Role — do not pass either explicitly here.
                 $role = Role::create([
                     'name'       => $this->name,
                     'guard_name' => 'web',
@@ -92,8 +104,9 @@ class CreateComponent extends Component
                     ->causedBy(auth()->user())
                     ->tap(fn($activity) => $activity->institution_id = $institutionId)
                     ->withProperties([
-                        'icon' => 'add_moderator',
-                        'type' => 'role_created',
+                        'icon'      => 'add_moderator',
+                        'type'      => 'role_created',
+                        'branch_id' => $role->branch_id,
                     ])
                     ->log('Role created: ' . $role->name);
             });

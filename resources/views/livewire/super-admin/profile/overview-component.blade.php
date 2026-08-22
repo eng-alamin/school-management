@@ -17,7 +17,7 @@
 
                 <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
                     <span class="fw-bold fs-5">Profile Details</span>
-                    <a href="{{ route('admin.profile.setting', ['id' => $user->id]) }}" class="btn-outline bg-dark text-white">
+                    <a href="{{ route('admin.profile.setting', ['id' => $user->id]) }}" class="btn btn-primary">
                         Edit Profile
                     </a>
                 </div>

@@ -181,38 +181,6 @@
     </div>
 </div>
 
-@push('styles')
-<style>
-    .schedule-input {
-        border: 1px solid #3d3d3d;
-        padding: 6px 10px;
-        border-radius: 4px;
-        font-size: 12px;
-        outline: none;
-        width: 100%;
-        transition: border-color 0.2s;
-        background: transparent;
-        color: inherit;
-    }
-    .schedule-input:focus {
-        border-color: #e05252;
-    }
-    .schedule-input-empty {
-        border-color: #e05252;
-        border-style: dashed;
-    }
-    .form-footer {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding-top: 20px;
-        margin-top: 16px;
-        flex-wrap: wrap;
-        gap: 12px;
-    }
-</style>
-@endpush
-
 @push('scripts')
 <script>
     document.addEventListener('livewire:initialized', () => {

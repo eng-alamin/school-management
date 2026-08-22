@@ -9,8 +9,12 @@ class OverviewComponent extends Component
 {
     public $student;
 
+    public string $routePrefix = '';
+
     public function mount(int $id)
     {
+        $this->routePrefix = $this->resolveRoutePrefix();
+        
         $this->student = Student::with([
             'session',
             'class',
@@ -21,6 +25,19 @@ class OverviewComponent extends Component
         ])
             ->where('institution_id', auth()->user()->institution_id)
             ->findOrFail($id);
+    }
+
+    protected function resolveRoutePrefix(): string
+    {
+        $routeName = request()->route()?->getName();
+
+        if ($routeName && str_contains($routeName, '.')) {
+            return explode('.', $routeName)[0] . '.';
+        }
+
+        $segment = request()->segment(1);
+
+        return $segment ? $segment . '.' : '';
     }
 
     public function render()

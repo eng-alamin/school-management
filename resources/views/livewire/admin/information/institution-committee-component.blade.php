@@ -355,29 +355,3 @@
     @endif
 
 </div>
-
-
-@push('styles')
-    <style>
-        /* ── AVATAR (photo) ── */
-        .avatar-placeholder {
-            width: 38px; height: 38px; border-radius: 50%;
-            object-fit: cover; border: 2px solid var(--border);
-        }
-        .member-avatar-active { border-color: #16a34a; }
-        .member-avatar-former { border-color: #9ca3af; opacity: .85; }
-
-        /* ── FORM ── */
-        .form-label { font-size: .8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
-        .form-control, .form-select {
-            border-radius: 8px; border: 1px solid var(--border);
-            font-size: .875rem; padding: .45rem .75rem;
-            transition: border-color .2s, box-shadow .2s;
-        }
-        .form-control:focus, .form-select:focus {
-            border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light);
-        }
-        .form-check-input:checked { background-color: var(--primary); border-color: var(--primary); }
-
-    </style>
-@endpush

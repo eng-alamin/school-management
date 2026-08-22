@@ -10,10 +10,27 @@ class EnrollmentComponent extends Component
 {
     public Student $student;
 
+    public string $routePrefix = '';
+
     public function mount(int $id)
     {
+        $this->routePrefix = $this->resolveRoutePrefix();
+
         $this->student = Student::where('institution_id', auth()->user()->institution_id)
             ->findOrFail($id);
+    }
+
+    protected function resolveRoutePrefix(): string
+    {
+        $routeName = request()->route()?->getName();
+
+        if ($routeName && str_contains($routeName, '.')) {
+            return explode('.', $routeName)[0] . '.';
+        }
+
+        $segment = request()->segment(1);
+
+        return $segment ? $segment . '.' : '';
     }
 
     public function render()

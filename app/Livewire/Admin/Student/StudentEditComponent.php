@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Student;
 
 use Livewire\Component;
+use App\Models\Branch;
 use App\Models\User;
 use App\Models\Student;
 use App\Models\Guardian;
@@ -80,10 +81,23 @@ class StudentEditComponent extends Component
 
     private const DEFAULT_GUARDIAN_PASSWORD = '12345678';
 
+    private function resolveActiveBranchId(): ?int
+    {
+        $user = auth()->user();
+
+        return $user->branch_id
+            ?? Branch::resolveMainBranchId($user->institution_id);
+    }
+
     public function mount($id)
     {
-        $this->studentId = $id;
-        $this->student   = Student::with('user', 'guardians')->findOrFail($id);
+        $institutionId = auth()->user()->institution_id;
+
+        $this->student = Student::with('user', 'guardians')
+            ->where('institution_id', $institutionId)
+            ->findOrFail($id);
+
+        $this->studentId = $this->student->id;
 
         $this->userId = $this->student->user_id;
 
@@ -158,23 +172,12 @@ class StudentEditComponent extends Component
         }
     }
 
-    /**
-     * Class change handler (edit form). Resets section_id and reloads
-     * has_section state so switching classes mid-edit behaves the same
-     * as on the Add form.
-     */
     public function updatedClassId($value): void
     {
         $this->section_id = null;
         $this->loadSectionsForClass($value);
     }
 
-    /**
-     * Name change hole -> Username auto-generate hobe, KINTU shudhu tokhoni
-     * jokhon usernameManuallyEdited flag manually 'false' kora hoyeche
-     * (mane user nijer hoyeche Username field ta clear/reset kore notun
-     * suggestion চেয়েছে). Default e existing student-er username protected thake.
-     */
     public function updatedName($value): void
     {
         if (!$this->usernameManuallyEdited) {
@@ -182,20 +185,11 @@ class StudentEditComponent extends Component
         }
     }
 
-    /**
-     * User Username field e hate diye change korle flag lock hoye jabe,
-     * jate porer name change eta overwrite na kore.
-     */
     public function updatedUsername(): void
     {
         $this->usernameManuallyEdited = true;
     }
 
-    /**
-     * Ekhane user "notun suggestion chai" bolte chaile, Username field khali
-     * kore ei button/action call korte parbe (blade e optional button hisebe
-     * jog kora jete pare) — flag off kore dile abar Name theke auto-suggest hobe.
-     */
     public function enableUsernameAutoSuggest(): void
     {
         $this->usernameManuallyEdited = false;
@@ -220,11 +214,6 @@ class StudentEditComponent extends Component
         $this->guardian_username = $this->generateUniqueUsername($this->guardian_name);
     }
 
-    /**
-     * Name theke unique username slug generate kore.
-     * "Abc 123" -> "abc_123". Duplicate thakle "_1", "_2"... suffix add hobe.
-     * $ignoreUserId dile nijer current username-ke duplicate hisebe dhora hobe na.
-     */
     private function generateUniqueUsername(?string $name, ?int $ignoreUserId = null): ?string
     {
         if (!$name || trim($name) === '') {
@@ -256,9 +245,21 @@ class StudentEditComponent extends Component
     {
         $institutionId = auth()->user()->institution_id;
 
+        $branchId = $this->student->branch_id
+            ?? Branch::resolveMainBranchId($institutionId);
+
         return [
             'session_id'  => 'required',
-            'registration_no' => ['nullable', Rule::unique('students', 'registration_no')->ignore($this->studentId)],
+
+            'registration_no' => [
+                'nullable',
+                Rule::unique('students', 'registration_no')
+                    ->ignore($this->studentId)
+                    ->where(fn($q) => $q
+                        ->where('institution_id', $institutionId)
+                        ->where('branch_id', $branchId)
+                    ),
+            ],
 
             'class_id' => [
                 'required',
@@ -288,7 +289,18 @@ class StudentEditComponent extends Component
             'username'    => ['required', Rule::unique('users', 'username')->ignore($this->userId)],
             'password'    => 'nullable',
 
-            'guardian_id'       => $this->guardian_exists ? 'required' : 'nullable',
+            'guardian_id' => $this->guardian_exists
+                ? [
+                    'required',
+                    Rule::exists('guardians', 'id')->where(function ($q) use ($institutionId) {
+                        $q->whereIn(
+                            'user_id',
+                            User::where('institution_id', $institutionId)->pluck('id')
+                        );
+                    }),
+                ]
+                : 'nullable',
+
             'guardian_name'     => !$this->guardian_exists ? 'required' : 'nullable',
             'guardian_relation' => !$this->guardian_exists ? 'required' : 'nullable',
             'guardian_mobile'   => !$this->guardian_exists ? 'required|digits_between:10,15' : 'nullable|digits_between:10,15',
@@ -307,11 +319,6 @@ class StudentEditComponent extends Component
         ];
     }
 
-    /**
-     * BUG FIX: Age শুধু event dispatch হতো, ValidationException throw hoto na —
-     * mane validation fail hole o update() logic egiye jete parto. Ekhon parent
-     * exception properly throw kora hocche, tai validation shothikbhabe block korbe.
-     */
     protected function failedValidation($validator)
     {
         $this->dispatch('validation-failed');
@@ -329,9 +336,17 @@ class StudentEditComponent extends Component
     {
         DB::beginTransaction();
 
+        $oldStudentPhotoToDelete  = null;
+        $oldGuardianPhotoToDelete = null;
+
         try {
 
             $this->validate($this->rules(), $this->messages());
+
+            $institutionId = auth()->user()->institution_id;
+
+            $user = User::where('institution_id', $institutionId)
+                ->findOrFail($this->userId);
 
             $userData = [
                 'name'     => $this->name,
@@ -343,7 +358,6 @@ class StudentEditComponent extends Component
                 $userData['password'] = $this->password;
             }
 
-            $user = User::findOrFail($this->userId);
             $user->update($userData);
 
             $sectionId = $this->selectedClassHasSection ? ($this->section_id ?: null) : null;
@@ -375,14 +389,8 @@ class StudentEditComponent extends Component
             ];
 
             if ($this->student_photo_upload) {
-
-                $oldPhoto = $this->student->photo;
-
+                $oldStudentPhotoToDelete = $this->student->photo;
                 $studentData['photo'] = $this->student_photo_upload->store('students', 'public');
-
-                if ($oldPhoto) {
-                    Storage::disk('public')->delete($oldPhoto);
-                }
             }
 
             $this->student->update($studentData);
@@ -390,14 +398,14 @@ class StudentEditComponent extends Component
             activity()
                 ->performedOn($this->student)
                 ->causedBy(auth()->user())
-                ->withProperties(['institution_id' => auth()->user()->institution_id])
+                ->withProperties(['institution_id' => $institutionId])
                 ->log('Student updated');
 
             if ($this->guardian_exists) {
 
                 $this->student->guardians()->sync([
                     $this->guardian_id => [
-                        'institution_id' => auth()->user()->institution_id
+                        'institution_id' => $institutionId,
                     ]
                 ]);
 
@@ -408,7 +416,8 @@ class StudentEditComponent extends Component
                     : self::DEFAULT_GUARDIAN_PASSWORD;
 
                 $userGuardian = User::create([
-                    'institution_id' => auth()->user()->institution_id,
+                    'institution_id' => $institutionId,
+                    'branch_id'      => $this->resolveActiveBranchId(),
                     'role'     => 'parent',
                     'name'     => $this->guardian_name,
                     'username' => $this->guardian_username,
@@ -432,14 +441,8 @@ class StudentEditComponent extends Component
                 ];
 
                 if ($this->guardian_photo_upload) {
-
-                    $oldPhoto = $this->guardian->photo;
-
+                    $oldGuardianPhotoToDelete = $this->guardian?->photo;
                     $guardianData['photo'] = $this->guardian_photo_upload->store('guardians', 'public');
-
-                    if ($oldPhoto) {
-                        Storage::disk('public')->delete($oldPhoto);
-                    }
                 }
 
                 $guardian = Guardian::create($guardianData);
@@ -447,17 +450,24 @@ class StudentEditComponent extends Component
                 activity()
                     ->performedOn($guardian)
                     ->causedBy(auth()->user())
-                    ->withProperties(['institution_id' => auth()->user()->institution_id])
+                    ->withProperties(['institution_id' => $institutionId])
                     ->log('Guardian created (from student edit)');
 
                 $this->student->guardians()->sync([
                     $guardian->id => [
-                        'institution_id' => auth()->user()->institution_id
+                        'institution_id' => $institutionId,
                     ]
                 ]);
             }
 
             DB::commit();
+
+            if ($oldStudentPhotoToDelete) {
+                Storage::disk('public')->delete($oldStudentPhotoToDelete);
+            }
+            if ($oldGuardianPhotoToDelete) {
+                Storage::disk('public')->delete($oldGuardianPhotoToDelete);
+            }
 
             $this->dispatch('date-updated', field: 'admission_date', date: $this->admission_date);
             $this->dispatch('date-updated', field: 'dob', date: $this->dob);

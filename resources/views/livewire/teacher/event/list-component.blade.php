@@ -28,7 +28,7 @@
                     </div>
                 @endif
 
-                <a href="{{ route('teacher.event.add') }}" class="btn-sm btn-outline bg-dark text-white">
+                <a href="{{ route('teacher.event.add') }}" class="btn btn-primary">
                     <span class="material-icons-round">add</span> Add Event
                 </a>
             </div>

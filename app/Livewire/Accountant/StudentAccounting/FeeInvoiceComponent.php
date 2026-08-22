@@ -27,9 +27,25 @@ class FeeInvoiceComponent extends Component
 
     public array $availableSections = [];
 
-    // ── Delete Confirm ──
-    public bool $confirmDelete = false;
-    public ?int $deleteId      = null;
+    public string $routePrefix = '';
+
+    public function mount(): void
+    {
+        $this->routePrefix = $this->resolveRoutePrefix();
+    }
+
+    protected function resolveRoutePrefix(): string
+    {
+        $routeName = request()->route()?->getName();
+
+        if ($routeName && str_contains($routeName, '.')) {
+            return explode('.', $routeName)[0] . '.';
+        }
+
+        $segment = request()->segment(1);
+
+        return $segment ? $segment . '.' : '';
+    }
 
     public function updatingSearch(): void
     {
@@ -72,60 +88,13 @@ class FeeInvoiceComponent extends Component
         }
     }
 
-    public function confirmDeleteRecord(int $id): void
-    {
-        $this->deleteId      = $id;
-        $this->confirmDelete = true;
-    }
-
-    // ── শুধু Invoice ডিলিট হবে — Items cascadeOnDelete দিয়ে অটো মুছবে ──
-    public function deleteRecord(): void
-    {
-        DB::beginTransaction();
-
-        try {
-            $invoices = FeeInvoice::where('student_id', $this->deleteId)->get();
-
-            if ($invoices->isEmpty()) {
-                DB::rollBack();
-                $this->confirmDelete = false;
-                $this->deleteId = null;
-                $this->dispatch('toast', type: 'warning', message: 'No invoice found.');
-                return;
-            }
-
-            $student = Student::find($this->deleteId);
-
-            FeeInvoice::where('student_id', $this->deleteId)->delete();
-
-            activity()
-                ->withProperties([
-                    'icon'           => 'delete',
-                    'type'           => 'delete',
-                    'institution_id' => institution()->id,
-                ])
-                ->log('Deleted ' . $invoices->count() . ' Fee Invoice(s) for Student: ' . ($student->name ?? $this->deleteId));
-
-            DB::commit();
-
-            $this->confirmDelete = false;
-            $this->deleteId      = null;
-
-            $this->dispatch('toast', type: 'success', message: 'All invoices deleted successfully!');
-
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            $this->dispatch('toast', type: 'error', message: 'Something went wrong!');
-        }
-    }
-
     public function render()
     {
         $classes = AcademicClass::whereIn('id', AcademicClassAssign::distinct()->pluck('class_id'))
             ->orderBy('name')
             ->get();
 
-        $students = Student::with(['class', 'section', 'feeInvoices.items.feeGroupItem.feeType'])
+        $students = Student::with(['class', 'section', 'feeInvoices.items.feeSetup.feeType'])
             ->whereHas('feeInvoices')
             ->when($this->search, fn ($q) => $q->where(function ($q2) {
                 $q2->where('name', 'like', '%' . $this->search . '%')
@@ -141,7 +110,7 @@ class FeeInvoiceComponent extends Component
             ->orderBy($this->sortField, $this->sortDir)
             ->paginate($this->perPage);
 
-        return view('livewire.accountant.student-accounting.fee-invoice-component')
+        return view('livewire.admin.student-accounting.fee-invoice-component')
             ->with([
                 'classes'  => $classes,
                 'students' => $students,

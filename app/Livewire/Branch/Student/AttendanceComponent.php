@@ -50,8 +50,12 @@ class AttendanceComponent extends Component
      */
     public bool $isCurrentMonth = true;
 
+    public string $routePrefix = '';
+
     public function mount(int $id)
     {
+        $this->routePrefix = $this->resolveRoutePrefix();
+
         // Institution-scoped lookup to prevent cross-institution (IDOR) access,
         // same pattern used in StudentOverviewComponent.
         $this->student = Student::where('institution_id', auth()->user()->institution_id)
@@ -59,6 +63,19 @@ class AttendanceComponent extends Component
 
         $this->filterMonth = now()->format('Y-m');
         $this->loadAttendance();
+    }
+
+    protected function resolveRoutePrefix(): string
+    {
+        $routeName = request()->route()?->getName();
+
+        if ($routeName && str_contains($routeName, '.')) {
+            return explode('.', $routeName)[0] . '.';
+        }
+
+        $segment = request()->segment(1);
+
+        return $segment ? $segment . '.' : '';
     }
 
     public function updatedFilterMonth()

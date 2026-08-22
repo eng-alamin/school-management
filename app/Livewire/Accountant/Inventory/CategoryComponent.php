@@ -5,12 +5,15 @@ namespace App\Livewire\Accountant\Inventory;
 use Livewire\Component;
 use App\Models\InventoryCategory;
 use Livewire\WithPagination;
+use Illuminate\Validation\Rule;
 
 class CategoryComponent extends Component
 {
     use WithPagination;
 
     protected string $paginationTheme = 'bootstrap';
+
+    protected const SORTABLE_FIELDS = ['id', 'name'];
 
     // List
     public string $search = '';
@@ -30,7 +33,13 @@ class CategoryComponent extends Component
     protected function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
+            'required',
+            'string',
+            'max:255',
+            Rule::unique('inventory_categories', 'name')
+                ->where('institution_id', institution()->id)
+                ->where('branch_id', auth()->user()->branch_id)
+                ->ignore($this->editId),
         ];
     }
 
@@ -41,6 +50,10 @@ class CategoryComponent extends Component
 
     public function sortBy(string $field): void
     {
+        if (!in_array($field, self::SORTABLE_FIELDS, true)) {
+            return;
+        }
+        
         if ($this->sortField === $field) {
             $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
         } else {
@@ -92,20 +105,6 @@ class CategoryComponent extends Component
         $this->resetValidation();
     }
 
-    public function render()
-    {
-        $categories = InventoryCategory::query()
-            ->when($this->search, fn($q) => $q->where('name', 'like', "%{$this->search}%"))
-            ->orderBy($this->sortField, $this->sortDirection)
-            ->paginate($this->perPage);
-
-        return view('livewire.accountant.inventory.category-component')
-            ->with('categories', $categories)
-            ->layout('layouts.accountant.app', [
-                'title' => 'Inventory Category | ' . institution()->name,
-            ]);
-    }
-
     public function confirmDeleteRecord(int $id): void
     {
         $this->deleteId = $id;
@@ -119,5 +118,19 @@ class CategoryComponent extends Component
         $this->confirmDelete = false;
         $this->deleteId = null;
         $this->dispatch('toast', type: 'success', message: 'Data deleted successfully!');
+    }
+
+    public function render()
+    {
+        $categories = InventoryCategory::query()
+            ->when($this->search, fn($q) => $q->where('name', 'like', "%{$this->search}%"))
+            ->orderBy($this->sortField, $this->sortDirection)
+            ->paginate($this->perPage);
+
+        return view('livewire.admin.inventory.category-component')
+            ->with('categories', $categories)
+            ->layout('layouts.accountant.app', [
+                'title' => 'Inventory Category | ' . institution()->name,
+            ]);
     }
 }

@@ -6,7 +6,6 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Student;
 use App\Models\AcademicClass;
-use App\Models\AcademicSection;
 use App\Models\AcademicClassAssign;
 
 class StudentListComponent extends Component
@@ -15,61 +14,91 @@ class StudentListComponent extends Component
 
     protected string $paginationTheme = 'bootstrap';
 
-    // Filter
+    public $search    = '';
+    public $perPage   = 10;
+    public $sortField = 'created_at';
+    public $sortDir   = 'desc';
+
     public $filterClass   = '';
     public $filterSection = '';
-    public string $search = '';
-    public int $perPage   = 10;
-    public bool $hasFilter = false;
+
+    public array $availableSections = [];
 
     // Delete
     public bool $confirmDelete = false;
     public ?int $deleteId      = null;
 
-    public function updatingSearch(): void { $this->resetPage(); }
+    // Status Update
+    public bool $showStatusModal = false;
+    public ?int $statusId        = null;
+    public string $newStatus     = '';
 
-    public function getAvailableClasses()
+    protected array $statusOptions = ['active', 'inactive', 'graduated', 'transferred', 'dropped_out'];
+
+    public string $routePrefix = '';
+
+    public function mount(): void
     {
-        return AcademicClass::whereIn('id', AcademicClassAssign::distinct()->pluck('class_id'))
-            ->orderBy('name')
-            ->get();
+        $this->routePrefix = $this->resolveRoutePrefix();
     }
 
-    public function getAvailableSections()
+    protected function resolveRoutePrefix(): string
     {
-        if (!$this->filterClass) return [];
+        $routeName = request()->route()?->getName();
 
-        return AcademicSection::whereIn('id',
-            AcademicClassAssign::where('class_id', $this->filterClass)->pluck('section_id')
-        )->orderBy('name')->get();
+        if ($routeName && str_contains($routeName, '.')) {
+            return explode('.', $routeName)[0] . '.';
+        }
+
+        $segment = request()->segment(1);
+
+        return $segment ? $segment . '.' : '';
     }
 
-    public function updatedFilterClass(): void
+    public function updatedSearch(): void
     {
-        $this->filterSection = '';
-        $this->hasFilter     = false;
         $this->resetPage();
     }
 
-    public function updatedFilterSection(): void
+    // ── Class filter change → sections reload, page reset ──
+    public function updatedFilterClass($value): void
     {
-        $this->hasFilter = false;
+        $this->filterSection     = '';
+        $this->availableSections = [];
         $this->resetPage();
-    }
 
-    public function filter(): void
-    {
-        if (!$this->filterClass) {
-            $this->dispatch('toast', type: 'error', message: 'Please select a class.');
+        if (!$value) {
             return;
         }
 
-        $this->validate([
-            'filterClass'   => 'required|exists:academic_classes,id',
-            'filterSection' => 'nullable',
-        ]);
+        $assigns = AcademicClassAssign::with('section')
+            ->where('class_id', $value)
+            ->whereNotNull('section_id')
+            ->get();
 
-        $this->hasFilter = true;
+        $this->availableSections = $assigns
+            ->filter(fn($a) => $a->section)
+            ->map(fn($a) => ['id' => $a->section->id, 'name' => $a->section->name])
+            ->unique('id')
+            ->values()
+            ->toArray();
+    }
+
+    // ── Section filter change → just reset page, table auto-refresh hobe ──
+    public function updatedFilterSection(): void
+    {
+        $this->resetPage();
+    }
+
+    public function sortBy($field): void
+    {
+        if ($this->sortField === $field) {
+            $this->sortDir = $this->sortDir === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortField = $field;
+            $this->sortDir   = 'asc';
+        }
+
         $this->resetPage();
     }
 
@@ -84,46 +113,90 @@ class StudentListComponent extends Component
         try {
             $student = Student::findOrFail($this->deleteId);
             $student->user()->delete();
+
             $this->confirmDelete = false;
             $this->deleteId      = null;
+
             $this->dispatch('toast', type: 'success', message: 'Student deleted successfully!');
         } catch (\Exception $e) {
             $this->dispatch('toast', type: 'error', message: 'Delete failed: ' . $e->getMessage());
         }
     }
 
-    public function resetForm(): void
+    /**
+     * Status icon click korle eta call hobe — modal open kore, current
+     * status ta preselect kore rakhe.
+     */
+    public function openStatusModal(int $id): void
     {
-        $this->filterClass   = '';
-        $this->filterSection = '';
-        $this->search        = '';
-        $this->hasFilter     = false;
-        $this->confirmDelete = false;
-        $this->deleteId      = null;
-        $this->resetPage();
-        $this->resetValidation();
+        $student = Student::findOrFail($id);
+
+        $this->statusId        = $student->id;
+        $this->newStatus       = $student->status;
+        $this->showStatusModal = true;
+    }
+
+    public function closeStatusModal(): void
+    {
+        $this->showStatusModal = false;
+        $this->statusId        = null;
+        $this->newStatus       = '';
+    }
+
+    public function updateStatus(): void
+    {
+        $this->validate([
+            'statusId'  => 'required|integer|exists:students,id',
+            'newStatus' => 'required|string|in:' . implode(',', $this->statusOptions),
+        ]);
+
+        $student   = Student::findOrFail($this->statusId);
+        $oldStatus = $student->status;
+
+        $student->update(['status' => $this->newStatus]);
+
+        activity()
+            ->performedOn($student)
+            ->withProperties([
+                'institution_id' => $student->institution_id,
+                'icon' => 'toggle_on',
+                'type' => 'student',
+                'old_status' => $oldStatus,
+                'new_status' => $this->newStatus,
+            ])
+            ->log('Student status changed: ' . $student->name . ' (' . $oldStatus . ' → ' . $this->newStatus . ')');
+
+        $this->dispatch('toast', type: 'success', message: 'Status updated successfully!');
+
+        $this->closeStatusModal();
     }
 
     public function render()
     {
-        $students = Student::with(['guardians', 'class', 'section'])
-            ->when($this->hasFilter, function ($q) {
-                $q->where('class_id', $this->filterClass);
-                if ($this->filterSection && $this->filterSection !== 'all') {
-                    $q->where('section_id', $this->filterSection);
-                }
-            })
+        $classes = AcademicClass::whereIn('id', AcademicClassAssign::distinct()->pluck('class_id'))
+            ->orderBy('name')
+            ->get();
+
+        $query = Student::with(['guardians', 'class', 'section'])
+            ->when($this->filterClass, fn($q) =>
+                $q->where('class_id', $this->filterClass)
+            )
+            ->when($this->filterSection && $this->filterSection !== 'all', fn($q) =>
+                $q->where('section_id', $this->filterSection)
+            )
             ->when($this->search, fn($q) => $q->where(fn($q) => $q
                 ->where('name', 'like', "%{$this->search}%")
-                ->orWhere('register_no', 'like', "%{$this->search}%")
+                ->orWhere('student_id', 'like', "%{$this->search}%")
+                ->orWhere('registration_no', 'like', "%{$this->search}%")
                 ->orWhere('roll_no', 'like', "%{$this->search}%")))
-            ->latest()
-            ->paginate($this->perPage);
+            ->orderBy($this->sortField, $this->sortDir);
 
-        return view('livewire.accountant.student.student-list-component')
+        $students = $query->paginate($this->perPage);
+
+        return view('livewire.admin.student.student-list-component')
             ->with('students', $students)
-            ->with('classes', $this->getAvailableClasses())
-            ->with('sections', $this->getAvailableSections())
+            ->with('classes', $classes)
+            ->with('statusOptions', $this->statusOptions)
             ->layout('layouts.accountant.app', [
                 'title' => 'Student List | ' . institution()->name,
             ]);

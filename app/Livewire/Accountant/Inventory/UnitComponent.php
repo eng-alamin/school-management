@@ -99,7 +99,7 @@ class UnitComponent extends Component
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
-        return view('livewire.accountant.inventory.unit-component')
+        return view('livewire.admin.inventory.unit-component')
             ->with('units', $units)
             ->layout('layouts.accountant.app', [
                 'title' => 'Inventory Unit | ' . institution()->name,

@@ -26,11 +26,6 @@
                         </select>
                     </div>
                 @endif
-
-                {{-- Print --}}
-                <button class="btn-outline" onclick="printTable()">
-                    <span class="material-icons-round" style="font-size:16px">print</span> Print
-                </button>
             </div>
         </div>
 
@@ -124,66 +119,3 @@
     @endif
 
 </div>
-
-@push('styles')
-<style>
-    :root { --primary: rgba(33,37,41); --primary-light: rgba(239,84,84,.12); }
-    .card { border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
-    .card-header { background: #fff; border-bottom: 1px solid var(--border); border-radius: 12px 12px 0 0 !important; padding: 16px 20px; }
-    .form-label { font-size: .8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
-    .form-control, .form-select { border-radius: 8px; border: 1px solid var(--border); font-size: .875rem; padding: .45rem .75rem; }
-    .table th { font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); }
-    .table td { vertical-align: middle; font-size: .875rem; }
-
-    @@media print {
-        .no-print, .card-header, .card-footer { display: none !important; }
-        .card { box-shadow: none; border: none; }
-    }
-</style>
-@endpush
-
-@push('scripts')
-<script>
-    function exportParentCSV() {
-        const table = document.getElementById('parentTable');
-        if (!table) return;
-        let csv = [];
-        const rows = table.querySelectorAll('tr');
-        rows.forEach(row => {
-            const cols = row.querySelectorAll('th:not(.no-print), td:not(.no-print)');
-            const rowData = Array.from(cols).map(col => `"${col.innerText.trim()}"`);
-            csv.push(rowData.join(','));
-        });
-        const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'parents.csv';
-        a.click();
-    }
-
-    function printTable() {
-        const table = document.getElementById('parentTable');
-        if (!table) return;
-
-        const clone = table.cloneNode(true);
-        clone.querySelectorAll('.no-print').forEach(el => el.remove());
-
-        const win = window.open('', '', 'width=900,height=700');
-        win.document.write(`
-            <html><head><title>Parent List</title>
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-            <style>
-                body { padding: 20px; font-size: 13px; }
-                table { width: 100%; border-collapse: collapse; }
-                th, td { border: 1px solid #dee2e6; padding: 8px 10px; font-size: 12px; }
-                th { background: #f8f9fa; font-weight: 600; }
-            </style>
-            </head><body>${clone.outerHTML}</body></html>
-        `);
-        win.document.close();
-        win.focus();
-        win.print();
-        win.close();
-    }
-</script>
-@endpush

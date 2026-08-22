@@ -18,6 +18,26 @@ class ComposeComponent extends Component
 
     public array $userSuggestions = [];
 
+    public string $routePrefix = '';
+
+    public function mount(): void
+    {
+        $this->routePrefix = $this->resolveRoutePrefix();
+    }
+
+    protected function resolveRoutePrefix(): string
+    {
+        $routeName = request()->route()?->getName();
+
+        if ($routeName && str_contains($routeName, '.')) {
+            return explode('.', $routeName)[0] . '.';
+        }
+
+        $segment = request()->segment(1);
+
+        return $segment ? $segment . '.' : '';
+    }
+
     /* ------------------------------------------------------------------ */
 
     protected array $rules = [
@@ -94,7 +114,7 @@ class ComposeComponent extends Component
 
     public function render()
     {
-        return view('livewire.teacher.mailbox.compose-component')
+        return view('livewire.admin.mailbox.compose-component')
             ->layout('layouts.teacher.app', [
                 'title' => 'MailBox | ' . institution()->name,
             ]);

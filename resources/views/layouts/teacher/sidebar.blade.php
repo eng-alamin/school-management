@@ -40,7 +40,7 @@
       </li>
 
       <li class="nav1-item">
-        <a class="nav1-link {{ Route::is('teacher.student.list', 'teacher.student.edit') == true ? 'active' : '' }}" href="{{route('teacher.student.list') }}">
+        <a class="nav1-link {{ Route::is('teacher.student.list', 'teacher.student.edit', 'teacher.student.overview',) == true ? 'active' : '' }}" href="{{route('teacher.student.list') }}">
           <span class="material-icons-round nav-icon">school</span>
           <span class="nav-label" id="nav-students">Students</span>
         </a>

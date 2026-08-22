@@ -28,7 +28,7 @@
                     </div>
                 @endif
 
-                <a href="{{ route($routePrefix . 'employee.add') }}"class="btn btn-primary btn-sm">
+                <a href="{{ route($routePrefix . 'employee.add') }}" class="btn btn-primary btn-sm">
                     <span>
                         <span class="material-icons-round">add</span> 
                         <span>New Employee</span>

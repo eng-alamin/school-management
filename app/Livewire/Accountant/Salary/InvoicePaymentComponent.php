@@ -111,17 +111,35 @@ class InvoicePaymentComponent extends Component
                 ->map(fn($d) => ['name' => $d->name, 'amount' => (float) $d->amount])
                 ->toArray();
         }
+
+        // Append salary advance deduction as a deduction row, mirroring how
+        // overtime is appended as an allowance row above.
+        $advanceDeduction = (float) ($this->payment['advance_deduction'] ?? 0);
+        if ($advanceDeduction > 0) {
+            $this->deductions[] = [
+                'name'   => 'Salary Advance Deduction',
+                'amount' => $advanceDeduction,
+            ];
+        }
     }
 
     private function loadSchoolInfo(): void
     {
-        $setting = DB::table('settings')->first();
-        if ($setting) {
-            $this->schoolName    = $setting->school_name    ?? $setting->name    ?? '';
-            $this->schoolAddress = $setting->address        ?? '';
-            $this->schoolPhone   = $setting->phone          ?? '';
-            $this->schoolEmail   = $setting->email          ?? '';
-            $this->schoolLogo    = $setting->logo           ?? '';
+        // FIX: 'settings' table does NOT have an institution_id column — school
+        // info actually lives directly on the 'institutions' table, keyed by
+        // its own primary id. The previous query incorrectly assumed a
+        // 'settings' table scoped by institution_id, which doesn't exist and
+        // threw "Unknown column 'institution_id'".
+        $institution = DB::table('institutions')
+            ->where('id', institution()->id)
+            ->first();
+
+        if ($institution) {
+            $this->schoolName    = $institution->name    ?? '';
+            $this->schoolAddress = $institution->address ?? '';
+            $this->schoolPhone   = $institution->phone   ?? '';
+            $this->schoolEmail   = $institution->email   ?? '';
+            $this->schoolLogo    = $institution->logo    ?? '';
         }
     }
 
@@ -150,7 +168,7 @@ class InvoicePaymentComponent extends Component
 
     public function render()
     {
-        return view('livewire.accountant.salary.invoice-payment-component')
+        return view('livewire.admin.salary.invoice-payment-component')
             ->layout('layouts.accountant.app', [
                 'title' => 'Salary Payslip | ' . institution()->name,
             ]);

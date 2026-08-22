@@ -86,10 +86,3 @@
     </div>
 
 </div>
-
-@push('styles')
-<style>
-    .card { border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
-    .card-header { background: #fff; border-bottom: 1px solid var(--border); border-radius: 12px 12px 0 0 !important; padding: 16px 20px; }
-</style>
-@endpush

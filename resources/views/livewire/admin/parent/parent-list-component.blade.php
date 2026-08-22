@@ -140,23 +140,6 @@
 
 </div>
 
-@push('styles')
-<style>
-    :root { --primary: rgba(33,37,41); --primary-light: rgba(239,84,84,.12); }
-    .card { border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
-    .card-header { background: #fff; border-bottom: 1px solid var(--border); border-radius: 12px 12px 0 0 !important; padding: 16px 20px; }
-    .form-label { font-size: .8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
-    .form-control, .form-select { border-radius: 8px; border: 1px solid var(--border); font-size: .875rem; padding: .45rem .75rem; }
-    .table th { font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); }
-    .table td { vertical-align: middle; font-size: .875rem; }
-
-    @@media print {
-        .no-print, .card-header, .card-footer { display: none !important; }
-        .card { box-shadow: none; border: none; }
-    }
-</style>
-@endpush
-
 @push('scripts')
 <script>
     function printTable() {

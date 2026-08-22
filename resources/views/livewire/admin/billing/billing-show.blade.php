@@ -274,42 +274,6 @@
 
 </div>
 
-
-@push('styles')
-    <style>
-        /* ── BADGES ── */
-        .badge-pending  { background: rgba(217,119,6,.12); color: #d97706; }
-        .badge-overdue  { background: rgba(220,38,38,.12); color: #dc2626; }
-
-        /* ── AVATAR ── */
-        .avatar-placeholder {
-            width: 38px; height: 38px; border-radius: 8px;
-            display: inline-flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: .875rem;
-        }
-        .invoice-avatar-paid    { background: rgba(34,197,94,.12);  color: #16a34a; }
-        .invoice-avatar-pending { background: rgba(217,119,6,.12);  color: #d97706; }
-        .invoice-avatar-overdue { background: rgba(220,38,38,.12);  color: #dc2626; }
-        .invoice-avatar-failed  { background: rgba(220,38,38,.12);  color: #dc2626; }
-        .invoice-avatar-free    { background: rgba(34,197,94,.12);  color: #16a34a; }
-
-        /* ── USAGE ESTIMATE BOX ── */
-        .usage-estimate-box {
-            background: linear-gradient(135deg, #fff5f5 0%, #fef2f2 100%);
-            border: 1px solid #fecaca;
-            border-radius: 12px;
-            padding: 16px 20px;
-            margin-bottom: 16px;
-        }
-
-        /* ── PAY NOW LOADING ── */
-        .pay-now-btn.loading {
-            pointer-events: none;
-            opacity: .75;
-        }
-    </style>
-@endpush
-
 @push('scripts')
     <script>
         function handlePayNow(el) {

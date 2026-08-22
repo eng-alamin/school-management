@@ -73,8 +73,7 @@
                                             wire:click="openViewModal({{ $role->id }})">
                                         <span class="material-icons-round">visibility</span>
                                     </button>
-                                    <a href="{{ route('admin.role-permission.edit', $role->id) }}" wire:navigate
-                                       class="act-btn edit" title="Edit">
+                                    <a href="{{ route('admin.role-permission.edit', $role->id) }}" wire:navigate class="act-btn edit" title="Edit">
                                         <span class="material-icons-round">drive_file_rename_outline</span>
                                     </a>
                                     <button class="act-btn delete" title="Delete"
