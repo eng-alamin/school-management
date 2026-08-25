@@ -17,6 +17,7 @@ class BiometricDeviceUserMapping extends Model
 
     protected $fillable = [
         'institution_id',
+        'branch_id',
         'biometric_device_id',
         'device_user_id',
         'card_number',

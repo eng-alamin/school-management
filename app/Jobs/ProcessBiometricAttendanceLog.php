@@ -94,7 +94,9 @@ class ProcessBiometricAttendanceLog implements ShouldQueue
         }
 
         // existing row lock করে নিচ্ছি race-condition এড়াতে (একই সময়ে ২টা punch job একসাথে চললে)
+        // institution_id + branch_id উভয়ই explicit filter করা হচ্ছে (defense-in-depth, IDOR/cross-branch protection)
         $attendance = Attendance::where('institution_id', $this->log->institution_id)
+            ->where('branch_id', $this->log->branch_id)
             ->where('attendable_type', $attendableType)
             ->where('attendable_id', $attendableId)
             ->where('date', $date)
@@ -105,6 +107,7 @@ class ProcessBiometricAttendanceLog implements ShouldQueue
         if (! $attendance) {
             Attendance::create([
                 'institution_id' => $this->log->institution_id,
+                'branch_id' => $this->log->branch_id,
                 'date' => $date,
                 'type' => $type,
                 'attendable_type' => $attendableType,

@@ -16,6 +16,7 @@ class BiometricDeviceCommand extends Model
 
     protected $fillable = [
         'institution_id',
+        'branch_id',
         'biometric_device_id',
         'command_id',
         'command_text',

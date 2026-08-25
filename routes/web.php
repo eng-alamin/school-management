@@ -654,7 +654,7 @@ Route::middleware(['auth', 'role:admin', 'billing.check'])->prefix('admin/setup-
     });
 
 // Ministry
-Route::middleware(['auth', 'role:ministry'])->prefix('ministry')->name('ministry.')->group(function () {
+Route::middleware(['auth', 'role:ministry', 'permission.team'])->prefix('ministry')->name('ministry.')->group(function () {
     Route::get('/dashboard',\App\Livewire\Ministry\DashboardComponent::class)->name('dashboard');
 
     // Institution
@@ -719,8 +719,6 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('superadmin')->name('sup
     Route::get('/backups', \App\Livewire\SuperAdmin\BackupComponent::class)->name('backups');
     Route::get('/settings', \App\Livewire\SuperAdmin\Settings\SystemSettingsComponent::class)->name('settings');
     Route::get('/pricingrates', \App\Livewire\SuperAdmin\Settings\PricingRateComponent::class)->name('pricingrates');
-
-    Route::get('/biometric-devices', \App\Livewire\SuperAdmin\BiometricDeviceComponent::class)->name('biometric-devices');
 
     // Profile
     Route::get('/profile/overview', \App\Livewire\SuperAdmin\Profile\OverviewComponent::class)->name('profile.overview');

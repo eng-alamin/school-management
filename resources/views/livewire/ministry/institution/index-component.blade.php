@@ -194,11 +194,10 @@
                 </table>
             </div>
 
-            @if($institutions->hasPages())
-                <div class="px-3 py-3 border-top">
-                    {{ $institutions->links() }}
-                </div>
-            @endif
+            <div class="card-footer border-0 bg-white d-flex align-items-center justify-content-between flex-wrap gap-2 py-2 px-3">
+                <small class="text-muted">Showing {{ $institutions->firstItem() ?? 0 }}–{{ $institutions->lastItem() ?? 0 }} of {{ $institutions->total() }}</small>
+                {{ $institutions->links('vendor.pagination.custom') }}
+            </div>
 
         </div>
     </div>

@@ -39,16 +39,21 @@ return new class extends Migration
             );
         });
 
-        DB::statement(<<<'SQL'
+        // MySQL এ শুধু VIRTUAL সাপোর্ট করে, PostgreSQL এ শুধু STORED সাপোর্ট করে (PG 12+)।
+        // তাই driver অনুযায়ী আলাদা keyword বসাতে হচ্ছে।
+        $driver = DB::connection()->getDriverName();
+        $generatedKeyword = $driver === 'pgsql' ? 'STORED' : 'VIRTUAL';
+
+        DB::statement(<<<SQL
             ALTER TABLE invoices
             ADD COLUMN invoice_no_active VARCHAR(255)
-            GENERATED ALWAYS AS (CASE WHEN deleted_at IS NULL THEN invoice_no ELSE NULL END) VIRTUAL
+            GENERATED ALWAYS AS (CASE WHEN deleted_at IS NULL THEN invoice_no ELSE NULL END) {$generatedKeyword}
         SQL);
 
-        DB::statement(<<<'SQL'
+        DB::statement(<<<SQL
             ALTER TABLE invoices
             ADD COLUMN transaction_id_active VARCHAR(255)
-            GENERATED ALWAYS AS (CASE WHEN deleted_at IS NULL THEN transaction_id ELSE NULL END) VIRTUAL
+            GENERATED ALWAYS AS (CASE WHEN deleted_at IS NULL THEN transaction_id ELSE NULL END) {$generatedKeyword}
         SQL);
 
         Schema::table('invoices', function (Blueprint $table) {

@@ -22,9 +22,13 @@ return new class extends Migration
 
         });
 
+        // PostgreSQL এ UNSIGNED টাইপ নেই, তাই driver অনুযায়ী column type আলাদা করা হচ্ছে।
+        $driver = DB::connection()->getDriverName();
+        $columnType = $driver === 'pgsql' ? 'BIGINT' : 'BIGINT UNSIGNED';
+
         DB::statement("
             ALTER TABLE academic_class_assigns
-            ADD COLUMN section_id_for_unique BIGINT UNSIGNED
+            ADD COLUMN section_id_for_unique {$columnType}
             GENERATED ALWAYS AS (COALESCE(section_id, 0)) STORED
         ");
 

@@ -12,7 +12,7 @@ class BiometricAttendanceLog extends Model
 {
     use BelongsToInstitution;
     use BelongsToBranch;
-    use SoftDeletes;
+    // use SoftDeletes;
 
     public const VERIFY_MODE_PASSWORD = 0;
     public const VERIFY_MODE_FINGERPRINT = 1;
@@ -21,6 +21,7 @@ class BiometricAttendanceLog extends Model
 
     protected $fillable = [
         'institution_id',
+        'branch_id',
         'biometric_device_id',
         'device_user_id',
         'attendable_type',

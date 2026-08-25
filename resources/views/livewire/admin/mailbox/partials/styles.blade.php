@@ -1,40 +1,26 @@
 {{-- resources/views/livewire/admin/mailbox/partials/styles.blade.php --}}
 {{-- Shared styles for the whole Mailbox module. Included once per page. --}}
+{{-- Refactored to consume the global theme.css design-token system (--primary,
+     --card, --border, --surface-2, etc.) instead of a standalone --mb-* set,
+     so this module inherits dark-mode / light-mode automatically. --}}
 
 @once
 <style>
 /* ═══════════════════════════════════════════════════════════════
    MAILBOX MODULE — SHARED STYLES (Bootstrap 5 friendly)
+   Uses tokens defined in theme.css :root / body.dark-mode — no local
+   color variables are declared here.
    ═══════════════════════════════════════════════════════════════ */
-
-:root {
-    --mb-primary: #ec4899;
-    --mb-primary-dark: #db2777;
-    --mb-primary-light: #f472b6;
-    /* --mb-primary: #4f46e5;
-    --mb-primary-dark: #4338ca;
-    --mb-primary-light: #818cf8; */
-    --mb-success: #10b981;
-    --mb-warning: #f59e0b;
-    --mb-danger: #ef4444;
-    --mb-muted: #94a3b8;
-    --mb-border: #e6e9f0;
-    --mb-bg-soft: #f8fafc;
-    --mb-text: #1e293b;
-    --mb-radius: 14px;
-    --mb-radius-sm: 10px;
-    --mb-shadow: 0 4px 24px rgba(15, 23, 42, .06);
-}
 
 /* ── Layout ────────────────────────────────────────────────── */
 .mailbox-wrapper {
     display: flex;
-    background: #fff;
-    border-radius: var(--mb-radius);
-    box-shadow: var(--mb-shadow);
+    background: var(--card);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow);
     overflow: hidden;
     min-height: 80vh;
-    border: 1px solid var(--mb-border);
+    border: 1px solid var(--border);
 }
 
 /* ── Sidebar ───────────────────────────────────────────────── */
@@ -44,8 +30,8 @@
     padding: 22px 14px;
     display: flex;
     flex-direction: column;
-    border-right: 1px solid var(--mb-border);
-    background: var(--mb-bg-soft);
+    border-right: 1px solid var(--border);
+    background: var(--surface-2);
 }
 .compose-btn {
     display: flex;
@@ -54,21 +40,21 @@
     gap: 10px;
     margin: 0 0 22px;
     padding: 12px 18px;
-    color: #fff !important;
-    background: linear-gradient(135deg, var(--mb-primary), var(--mb-primary-light));
-    border-radius: var(--mb-radius-sm);
+    color: var(--white) !important;
+    background: linear-gradient(135deg, var(--grad-dark-start), var(--grad-dark-end));
+    border-radius: var(--radius-sm);
     font-weight: 600;
     font-size: .92rem;
     text-decoration: none;
-    box-shadow: 0 6px 16px rgba(79, 70, 229, .28);
+    box-shadow: var(--shadow-md);
     transition: transform .15s, box-shadow .15s;
     border: none;
 }
 .compose-btn:hover,
 .compose-btn.active {
     transform: translateY(-1px);
-    box-shadow: 0 8px 20px rgba(79, 70, 229, .38);
-    color: #fff !important;
+    box-shadow: var(--shadow-hover);
+    color: var(--white) !important;
 }
 .sidebar-nav { display: flex; flex-direction: column; gap: 2px; }
 .nav-item {
@@ -76,18 +62,18 @@
     align-items: center;
     gap: 12px;
     padding: 10px 14px;
-    border-radius: var(--mb-radius-sm);
-    color: #64748b !important;
+    border-radius: var(--radius-sm);
+    color: var(--muted) !important;
     text-decoration: none;
     font-size: .9rem;
     font-weight: 500;
     transition: background .15s, color .15s;
 }
 .nav-item i { width: 16px; text-align: center; font-size: .9rem; }
-.nav-item:hover { background: #eef2ff; color: var(--mb-primary-dark) !important; }
+.nav-item:hover { background: var(--primary-100); color: var(--primary-dark) !important; }
 .nav-item.active {
-    background: #eef2ff;
-    color: var(--mb-primary) !important;
+    background: var(--primary-100);
+    color: var(--primary) !important;
     font-weight: 700;
 }
 .nav-item .badge { margin-left: auto; font-size: .68rem; padding: 3px 7px; border-radius: 10px; font-weight: 700; }
@@ -107,7 +93,7 @@
 .mailbox-header h4 {
     font-size: 1.2rem;
     font-weight: 700;
-    color: var(--mb-text);
+    color: var(--heading);
     margin: 0;
 }
 
@@ -118,28 +104,29 @@
     left: 13px;
     top: 50%;
     transform: translateY(-50%);
-    color: var(--mb-muted);
+    color: var(--muted);
     font-size: .85rem;
     pointer-events: none;
 }
 .search-input {
     padding-left: 36px;
-    border-radius: 50px;
-    border: 1px solid var(--mb-border);
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border);
     font-size: .88rem;
     width: 250px;
-    background: var(--mb-bg-soft);
+    background: var(--surface-2);
+    color: var(--ink);
 }
 .search-input:focus {
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, .14);
-    border-color: var(--mb-primary);
-    background: #fff;
+    box-shadow: 0 0 0 3px var(--primary-100);
+    border-color: var(--primary);
+    background: var(--card);
 }
 
 /* ── Message list ─────────────────────────────────────────── */
 .message-list {
-    border: 1px solid var(--mb-border);
-    border-radius: var(--mb-radius-sm);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
     overflow: hidden;
 }
 .message-row {
@@ -147,14 +134,14 @@
     align-items: center;
     gap: 14px;
     padding: 14px 18px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--divider);
     cursor: pointer;
     transition: background .15s;
-    background: #fff;
+    background: var(--card);
 }
 .message-row:last-child { border-bottom: none; }
-.message-row:hover { background: var(--mb-bg-soft); }
-.message-row.unread { background: #eef2ff; border-left: 3px solid var(--mb-primary); }
+.message-row:hover { background: var(--surface-2); }
+.message-row.unread { background: var(--primary-50); border-left: 3px solid var(--primary); }
 .message-row.trashed { opacity: .75; }
 
 /* ── Avatars ──────────────────────────────────────────────── */
@@ -162,25 +149,25 @@
 .meta-avatar {
     width: 40px; height: 40px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--mb-primary), var(--mb-primary-light));
-    color: #fff;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: var(--white);
     display: flex; align-items: center; justify-content: center;
     font-weight: 700; font-size: .9rem;
     flex-shrink: 0;
 }
 
 .meta-avatar { width: 44px; height: 44px; }
-.sent-avatar    { background: linear-gradient(135deg, #95044c, #f26bb1); }
-.trashed-avatar { background: linear-gradient(135deg, #94a3b8, #cbd5e1); }
+.sent-avatar    { background: linear-gradient(135deg, var(--pink), var(--pink-light)); }
+.trashed-avatar { background: linear-gradient(135deg, var(--muted-2), var(--scrollbar-thumb)); }
 
 /* ── Row info ─────────────────────────────────────────────── */
 .msg-info { flex: 1; min-width: 0; }
 .msg-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 3px; gap: 8px; }
-.msg-from { font-weight: 600; font-size: .9rem; color: var(--mb-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.msg-date { font-size: .76rem; color: var(--mb-muted); white-space: nowrap; }
-.msg-subject { font-size: .88rem; color: #374151; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.msg-excerpt  { font-size: .8rem; color: var(--mb-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.message-row.unread .msg-subject { font-weight: 700; color: var(--mb-text); }
+.msg-from { font-weight: 600; font-size: .9rem; color: var(--heading); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.msg-date { font-size: .76rem; color: var(--muted); white-space: nowrap; }
+.msg-subject { font-size: .88rem; color: var(--text-1); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.msg-excerpt  { font-size: .8rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.message-row.unread .msg-subject { font-weight: 700; color: var(--heading); }
 
 /* ── Row action buttons ───────────────────────────────────── */
 .msg-actions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
@@ -190,21 +177,21 @@
     border: none;
     background: transparent;
     border-radius: 50%;
-    color: var(--mb-muted);
+    color: var(--muted);
     font-size: .88rem;
     transition: background .15s, color .15s, transform .15s;
     cursor: pointer;
 }
-.msg-icon-btn:hover { background: #eef2ff; transform: scale(1.08); }
-.msg-icon-btn.text-warning { color: var(--mb-warning); }
-.msg-icon-btn.text-danger:hover { background: #fee2e2; color: var(--mb-danger); }
-.msg-icon-btn.text-success:hover { background: #dcfce7; color: var(--mb-success); }
+.msg-icon-btn:hover { background: var(--primary-100); transform: scale(1.08); }
+.msg-icon-btn.text-warning { color: var(--warning); }
+.msg-icon-btn.text-danger:hover { background: var(--danger-100); color: var(--danger); }
+.msg-icon-btn.text-success:hover { background: var(--success-100); color: var(--success); }
 
 /* ── Message view ─────────────────────────────────────────── */
 .message-view {
-    background: var(--mb-bg-soft);
-    border: 1px solid var(--mb-border);
-    border-radius: var(--mb-radius-sm);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
     overflow: hidden;
 }
 .message-view-header {
@@ -212,28 +199,28 @@
     align-items: center;
     justify-content: space-between;
     padding: 14px 20px;
-    background: #fff;
-    border-bottom: 1px solid var(--mb-border);
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
     flex-wrap: wrap;
     gap: 8px;
 }
 .message-view-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .message-view-body { padding: 26px 28px; }
-.message-subject { font-size: 1.15rem; font-weight: 700; color: var(--mb-text); margin-bottom: 18px; }
+.message-subject { font-size: 1.15rem; font-weight: 700; color: var(--heading); margin-bottom: 18px; }
 .message-meta { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 4px; }
-.message-body-text { line-height: 1.75; color: #374151; white-space: pre-wrap; word-break: break-word; }
+.message-body-text { line-height: 1.75; color: var(--text-1); white-space: pre-wrap; word-break: break-word; }
 
 /* ── Reply form ───────────────────────────────────────────── */
-.reply-form { border-top: 1px solid var(--mb-border); padding: 20px 28px 24px; background: #fff; }
+.reply-form { border-top: 1px solid var(--border); padding: 20px 28px 24px; background: var(--card); }
 
 /* ── Trash notice ─────────────────────────────────────────── */
 .trash-notice {
-    background: #fef3c7;
-    border: 1px solid #fcd34d;
-    border-radius: var(--mb-radius-sm);
+    background: var(--warning-100);
+    border: 1px solid var(--warning);
+    border-radius: var(--radius-sm);
     padding: 10px 16px;
     font-size: .88rem;
-    color: #92400e;
+    color: var(--warning);
 }
 
 /* ── Empty state ──────────────────────────────────────────── */
@@ -243,7 +230,7 @@
     align-items: center;
     justify-content: center;
     padding: 80px 20px;
-    color: var(--mb-muted);
+    color: var(--muted);
     text-align: center;
 }
 .empty-state i { font-size: 3rem; margin-bottom: 16px; opacity: .35; }
@@ -251,22 +238,22 @@
 
 /* ── Compose form ─────────────────────────────────────────── */
 .compose-form-card {
-    background: #fff;
-    border: 1px solid var(--mb-border);
-    border-radius: var(--mb-radius-sm);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
     padding: 26px 28px;
-    box-shadow: var(--mb-shadow);
+    box-shadow: var(--shadow);
 }
 .btn-send {
-    background: linear-gradient(135deg, var(--mb-primary), var(--mb-primary-light));
-    color: #fff;
+    background: linear-gradient(135deg, var(--grad-dark-start), var(--grad-dark-end));
+    color: var(--white);
     border: none;
     padding: 10px 22px;
-    border-radius: 50px;
+    border-radius: var(--radius-pill);
     font-weight: 600;
-    box-shadow: 0 6px 16px rgba(79, 70, 229, .28);
+    box-shadow: var(--shadow-md);
 }
-.btn-send:hover { color: #fff; box-shadow: 0 8px 20px rgba(79, 70, 229, .38); }
+.btn-send:hover { color: var(--white); box-shadow: var(--shadow-hover); }
 .compose-actions { display: flex; align-items: center; }
 
 /* Selected recipient badge */
@@ -275,16 +262,16 @@
     align-items: center;
     gap: 8px;
     padding: 8px 14px;
-    background: #eef2ff;
-    color: var(--mb-primary-dark);
-    border-radius: 50px;
+    background: var(--primary-100);
+    color: var(--primary-dark);
+    border-radius: var(--radius-pill);
     font-weight: 600;
     font-size: .88rem;
 }
 .btn-clear-user {
     border: none;
     background: transparent;
-    color: var(--mb-primary-dark);
+    color: var(--primary-dark);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -293,7 +280,7 @@
     font-size: .75rem;
     cursor: pointer;
 }
-.btn-clear-user:hover { background: rgba(79, 70, 229, .15); }
+.btn-clear-user:hover { background: var(--hover-tint); }
 
 /* Recipient suggestions dropdown */
 .suggestions-dropdown {
@@ -302,10 +289,10 @@
     left: 0;
     right: 0;
     margin-top: 4px;
-    background: #fff;
-    border: 1px solid var(--mb-border);
-    border-radius: var(--mb-radius-sm);
-    box-shadow: var(--mb-shadow);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow);
     max-height: 260px;
     overflow-y: auto;
     z-index: 20;
@@ -318,53 +305,25 @@
     cursor: pointer;
     transition: background .15s;
 }
-.suggestion-item:hover { background: var(--mb-bg-soft); }
+.suggestion-item:hover { background: var(--surface-2); }
 .suggestion-avatar {
     width: 32px; height: 32px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--mb-primary), var(--mb-primary-light));
-    color: #fff;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: var(--white);
     display: flex; align-items: center; justify-content: center;
     font-weight: 700; font-size: .78rem;
     flex-shrink: 0;
 }
 .suggestion-info { display: flex; flex-direction: column; min-width: 0; }
-.suggestion-name { font-size: .88rem; font-weight: 600; color: var(--mb-text); }
-.suggestion-email { font-size: .76rem; color: var(--mb-muted); }
+.suggestion-name { font-size: .88rem; font-weight: 600; color: var(--heading); }
+.suggestion-email { font-size: .76rem; color: var(--muted); }
 
-/* ── Dark mode (scoped to mailbox only) ───────────────────── */
-body.dark-mode .mailbox-wrapper {
-    background: #0f172a;
-    border-color: rgba(255,255,255,.08);
-}
-body.dark-mode .mailbox-sidebar { background: #0b1220; border-color: rgba(255,255,255,.08); }
-body.dark-mode .nav-item { color: #94a3b8 !important; }
-body.dark-mode .nav-item:hover,
-body.dark-mode .nav-item.active { background: rgba(99,102,241,.16); color: #a5b4fc !important; }
-body.dark-mode .mailbox-header h4 { color: #e2e8f0; }
-body.dark-mode .message-list,
-body.dark-mode .message-view,
-body.dark-mode .compose-form-card,
-body.dark-mode .suggestions-dropdown { background: #0f172a; border-color: rgba(255,255,255,.08); }
-body.dark-mode .message-row,
-body.dark-mode .message-view-header,
-body.dark-mode .reply-form { background: #0f172a; border-color: rgba(255,255,255,.06); }
-body.dark-mode .message-row:hover { background: #16213a; }
-body.dark-mode .message-row.unread { background: rgba(99,102,241,.12); }
-body.dark-mode .msg-from,
-body.dark-mode .msg-subject,
-body.dark-mode .message-subject,
-body.dark-mode .message-body-text { color: #e2e8f0; }
-body.dark-mode .search-input { background: #16213a; border-color: rgba(255,255,255,.1); color: #e2e8f0; }
-body.dark-mode .suggestion-item:hover { background: #16213a; }
-
-body.dark-mode .mailbox-wrapper .form-control,
-body.dark-mode .mailbox-wrapper textarea.form-control {
-    background: #16213a !important;
-    border-color: rgba(255,255,255,.12) !important;
-    color: #e2e8f0 !important;
-}
-body.dark-mode .mailbox-wrapper .form-control::placeholder { color: #64748b; }
+/* ── Dark mode ─────────────────────────────────────────────
+   Not needed here: every color above is a var() from theme.css,
+   and body.dark-mode already redefines --card, --border, --surface-2,
+   --heading, --muted, --primary-100, etc. globally. The mailbox
+   module inherits dark mode automatically with zero overrides. ── */
 
 /* ── Responsive ───────────────────────────────────────────── */
 @media (max-width: 768px) {

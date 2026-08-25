@@ -23,6 +23,7 @@ class BiometricCommandService
 
         return BiometricDeviceCommand::create([
             'institution_id' => $device->institution_id,
+            'branch_id' => $device->branch_id,
             'biometric_device_id' => $device->id,
             'card_number' => $cardNumber,
             'command_id' => $commandId,
@@ -47,6 +48,7 @@ class BiometricCommandService
 
             $commands[] = BiometricDeviceCommand::create([
                 'institution_id' => $device->institution_id,
+                'branch_id' => $device->branch_id,
                 'biometric_device_id' => $device->id,
                 'command_id' => $commandId,
                 'command_text' => $commandText,

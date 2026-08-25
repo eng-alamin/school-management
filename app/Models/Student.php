@@ -86,4 +86,9 @@ class Student extends Model
     {
         return $this->morphMany(LeaveApplication::class, 'applicable');
     }
+
+    public function biometricMappings()
+    {
+        return $this->morphMany(BiometricDeviceUserMapping::class, 'attendable');
+    }
 }

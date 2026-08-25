@@ -196,6 +196,7 @@ class DeviceAttendanceController extends Controller
                     ],
                     [
                         'institution_id' => $device->institution_id,
+                        'branch_id' => $device->branch_id,
                         'verify_mode' => $parsed['verify_mode'],
                         'in_out_mode' => $parsed['in_out_mode'],
                         'work_code' => $parsed['work_code'],
