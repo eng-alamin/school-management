@@ -49,20 +49,24 @@
 
                 <!-- Right Side -->
                 <div class="col-md-2">
-                    <select class="form-select form-select-sm" wire:model.live="filterStatus">
-                        <option value="">All Status</option>
-                        @foreach($statusOptions as $status)
-                            <option value="{{ $status }}">{{ \App\Models\Invoice::statusMeta($status)['label'] }}</option>
-                        @endforeach
-                    </select>
+                    <div class="input-group input-group-outline">
+                        <select class="form-select form-select-sm" wire:model.live="filterStatus">
+                            <option value="">All Status</option>
+                            @foreach($statusOptions as $status)
+                                <option value="{{ $status }}">{{ \App\Models\Invoice::statusMeta($status)['label'] }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
                 <div class="col-md-2">
-                    <select class="form-select form-select-sm" wire:model.live="filterYear">
-                        <option value="">All Years</option>
-                        @foreach($availableYears as $year)
-                            <option value="{{ $year }}">{{ $year }}</option>
-                        @endforeach
-                    </select>
+                    <div class="input-group input-group-outline">
+                        <select class="form-select form-select-sm" wire:model.live="filterYear">
+                            <option value="">All Years</option>
+                            @foreach($availableYears as $year)
+                                <option value="{{ $year }}">{{ $year }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
                 
                 @if($invoices->total() > 12)

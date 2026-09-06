@@ -22,19 +22,26 @@
                 <!-- Right Side -->
                 @if($types->total() > 10)
                     <div class="col-md-2">
-                        <select class="form-select form-select-sm" wire:model.live="perPage">
-                            <option value="10">10 / page</option>
-                            <option value="25">25 / page</option>
-                            <option value="50">50 / page</option>
-                        </select>
+                        <div class="input-group input-group-outline">
+                            <select class="form-select form-select-sm" wire:model.live="perPage">
+                                <option value="10">10 / page</option>
+                                <option value="25">25 / page</option>
+                                <option value="50">50 / page</option>
+                            </select>
+                        </div>
                     </div>
                 @endif
                 <button type="button" class="btn btn-primary" onclick="history.back()">
-                    <span class="material-icons-round">arrow_back</span>
-                    Back
+                    <span>
+                        <span class="material-icons-round">arrow_back</span>
+                        <span>Back</span>
+                    </span>
                 </button>
                 <button class="btn btn-primary" wire:click="openCreate">
-                    <span class="material-icons-round">add</span> <span id="newSectionBtn">Add Type</span>
+                    <span>
+                        <span class="material-icons-round">add</span> 
+                        <span id="newSectionBtn">Add Type</span>
+                    </span>
                 </button>
 
             </div>
@@ -101,8 +108,10 @@
                         <form wire:submit.prevent="save">
                             <div class="row g-3">
                                 <div class="col-md-12">
-                                    <label class="form-label">Name <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model.defer="name" placeholder="e.g. Type One">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model.defer="name">
+                                    </div>
                                     @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                             </div>

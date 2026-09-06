@@ -34,8 +34,8 @@ class ProductComponent extends Component
     public ?int $purchase_unit_id = null;
     public ?int $sales_unit_id = null;
     public string $unit_ratio = '1';
-    public string $purchase_price = '0';
-    public string $sales_price = '0';
+    public string $purchase_price;
+    public string $sales_price;
     public string $remarks = '';
 
     public string $routePrefix = '';
@@ -160,8 +160,8 @@ class ProductComponent extends Component
             'unit_ratio', 'purchase_price', 'sales_price', 'remarks', 'editId',
         ]);
         $this->unit_ratio     = '1';
-        $this->purchase_price = '0';
-        $this->sales_price    = '0';
+        $this->purchase_price = '';
+        $this->sales_price    = '';
         $this->resetValidation();
     }
 

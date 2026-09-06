@@ -20,7 +20,7 @@
         <button wire:click="refreshQueue"
                 wire:loading.attr="disabled"
                 wire:target="refreshQueue"
-                class="btn-primary">
+                class="btn btn-primary">
 
             <span wire:loading.remove wire:target="refreshQueue">
                 <span class="material-icons-round" style="font-size:16px;vertical-align:middle;margin-right:4px">refresh</span>

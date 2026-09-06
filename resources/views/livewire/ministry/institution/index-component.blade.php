@@ -29,71 +29,82 @@
         <div class="inst-filter-card">
             <div class="row g-2 align-items-end">
 
-                <div class="col-12 col-md-3">
-                    <label class="inst-filter-label" data-en="Search" data-bn="খুঁজুন">Search</label>
+                <div class="col-12 col-md-12 mb-2">
                     <input type="text" wire:model.live.debounce.400ms="search"
                            class="form-control form-control-sm"
-                           data-en-ph="Name, EIIN, email..." data-bn-ph="নাম, ইআইআইএন, ইমেইল..."
-                           placeholder="Name, EIIN, email...">
+                           data-en-ph="Search by Name, EIIN, email..." data-bn-ph="খুঁজুন নাম, ইআইআইএন, ইমেইল..."
+                           placeholder="Search by Name, EIIN, email...">
                 </div>
 
                 <div class="col-6 col-md-2">
-                    <label class="inst-filter-label" data-en="Division" data-bn="বিভাগ">Division</label>
-                    <select wire:model.live="division" class="form-select form-select-sm">
-                        <option value="" data-en="All" data-bn="সকল">All</option>
-                        @foreach($this->divisions as $key => $label)
-                            <option value="{{ $key }}">{{ $label }}</option>
-                        @endforeach
-                    </select>
+                    <div class="input-group input-group-outline">
+                        <label class="form-label" data-en="Division" data-bn="বিভাগ">Division</label>
+                        <select wire:model.live="division" class="form-select form-select-sm">
+                            <option value="" data-en="All" data-bn="সকল">All</option>
+                            @foreach($this->divisions as $key => $label)
+                                <option value="{{ $key }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
 
                 <div class="col-6 col-md-2">
-                    <label class="inst-filter-label" data-en="District" data-bn="জেলা">District</label>
-                    <select wire:model.live="district" class="form-select form-select-sm">
-                        <option value="" data-en="All" data-bn="সকল">All</option>
-                        @foreach($this->districts as $d)
-                            <option value="{{ $d }}">{{ $d }}</option>
-                        @endforeach
-                    </select>
+                    <div class="input-group input-group-outline">
+                        <label class="form-label" data-en="District" data-bn="জেলা">District</label>
+                        <select wire:model.live="district" class="form-select form-select-sm">
+                            <option value="" data-en="All" data-bn="সকল">All</option>
+                            @foreach($this->districts as $d)
+                                <option value="{{ $d }}">{{ $d }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
 
                 <div class="col-6 col-md-2">
-                    <label class="inst-filter-label" data-en="Type" data-bn="ধরন">Type</label>
-                    <select wire:model.live="type" class="form-select form-select-sm">
-                        <option value="" data-en="All" data-bn="সকল">All</option>
-                        @foreach($this->types as $t)
-                            <option value="{{ $t }}">{{ ucfirst($t) }}</option>
-                        @endforeach
-                    </select>
+                    <div class="input-group input-group-outline">
+                        <label class="form-label" data-en="Type" data-bn="ধরন">Type</label>
+                        <select wire:model.live="type" class="form-select form-select-sm">
+                            <option value="" data-en="All" data-bn="সকল">All</option>
+                            @foreach($this->types as $t)
+                                <option value="{{ $t }}">{{ ucfirst($t) }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
 
                 <div class="col-6 col-md-2">
-                    <label class="inst-filter-label" data-en="Medium" data-bn="মাধ্যম">Medium</label>
-                    <select wire:model.live="medium" class="form-select form-select-sm">
-                        <option value="" data-en="All" data-bn="সকল">All</option>
-                        @foreach($this->mediums as $key => $label)
-                            <option value="{{ $key }}">{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="col-6 col-md-1">
-                    <label class="inst-filter-label" data-en="Status" data-bn="অবস্থা">Status</label>
-                    <select wire:model.live="status" class="form-select form-select-sm">
-                        <option value="" data-en="All" data-bn="সকল">All</option>
-                        <option value="1" data-en="Active" data-bn="সক্রিয়">Active</option>
-                        <option value="0" data-en="Inactive" data-bn="নিষ্ক্রিয়">Inactive</option>
-                    </select>
+                    <div class="input-group input-group-outline">
+                        <label class="form-label" data-en="Medium" data-bn="মাধ্যম">Medium</label>
+                        <select wire:model.live="medium" class="form-select form-select-sm">
+                            <option value="" data-en="All" data-bn="সকল">All</option>
+                            @foreach($this->mediums as $key => $label)
+                                <option value="{{ $key }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
 
                 <div class="col-6 col-md-2">
-                    <label class="inst-filter-label" data-en="Verification" data-bn="যাচাই">Verification</label>
-                    <select wire:model.live="verificationStatus" class="form-select form-select-sm">
-                        <option value="" data-en="All" data-bn="সকল">All</option>
-                        @foreach($this->verificationStatuses as $key => $label)
-                            <option value="{{ $key }}">{{ $label }}</option>
-                        @endforeach
-                    </select>
+                    <div class="input-group input-group-outline">
+                        <label class="form-label" data-en="Status" data-bn="অবস্থা">Status</label>
+                        <select wire:model.live="status" class="form-select form-select-sm">
+                            <option value="" data-en="All" data-bn="সকল">All</option>
+                            <option value="1" data-en="Active" data-bn="সক্রিয়">Active</option>
+                            <option value="0" data-en="Inactive" data-bn="নিষ্ক্রিয়">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-2">
+                    <div class="input-group input-group-outline">
+                        <label class="form-label" data-en="Verification" data-bn="যাচাই">Verification</label>
+                        <select wire:model.live="verificationStatus" class="form-select form-select-sm">
+                            <option value="" data-en="All" data-bn="সকল">All</option>
+                            @foreach($this->verificationStatuses as $key => $label)
+                                <option value="{{ $key }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
 
             </div>
@@ -206,6 +217,11 @@
 
 @push('styles')
 <style>
+    .custom-select-trigger {
+        min-height: 30px !important;
+        height: 36px !important;
+    }
+
     .inst-wrap { background: var(--body-bg); min-height: 100vh; }
 
     .inst-pill-row {

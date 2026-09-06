@@ -17,13 +17,15 @@
                 </div>
 
                 @if($departments->total() > 10)
-                    <div class="col-md-2">
+                <div class="col-md-2">
+                    <div class="input-group input-group-outline">
                         <select class="form-select form-select-sm" wire:model.live="perPage">
                             <option value="10">10 / page</option>
                             <option value="25">25 / page</option>
                             <option value="50">50 / page</option>
                         </select>
                     </div>
+                </div>
                 @endif
 
                 <button class="btn btn-primary" wire:click="openCreate">
@@ -32,6 +34,7 @@
                         <span id="newDepartmentBtn">New Department</span>
                     </span>
                 </button>
+                
             </div>
         </div>
 
@@ -95,8 +98,10 @@
                     <div class="modal-body">
                         <div class="row g-3">
                             <div class="col-md-12">
-                                <label class="form-label"><span id="dept-lbl-name">Name</span> <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model.defer="name" placeholder="e.g. Science">
+                                <div class="input-group input-group-outline">
+                                    <label class="form-label"><span id="dept-lbl-name">Name</span> <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model.defer="name">
+                                </div>
                                 @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                         </div>

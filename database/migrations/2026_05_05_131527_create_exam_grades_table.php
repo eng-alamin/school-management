@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('exam_grades', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
-            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->decimal('grade_point', 3, 2);
             $table->decimal('min_percentage', 5, 2);

@@ -21,16 +21,21 @@
 
                 @if($advances->total() > 10)
                     <div class="col-md-2">
-                        <select class="form-select form-select-sm" wire:model.live="perPage">
-                            <option value="10">10 / page</option>
-                            <option value="25">25 / page</option>
-                            <option value="50">50 / page</option>
-                        </select>
+                        <div class="input-group input-group-outline">
+                            <select class="form-select form-select-sm" wire:model.live="perPage">
+                                <option value="10">10 / page</option>
+                                <option value="25">25 / page</option>
+                                <option value="50">50 / page</option>
+                            </select>
+                        </div>
                     </div>
                 @endif
 
                 <button type="button" class="btn btn-primary" wire:click="openCreate">
-                    <span class="material-icons-round">add</span> Issue Advance
+                    <span>
+                        <span class="material-icons-round">add</span>
+                        <span>Issue Advance</span>
+                    </span>
                 </button>
             </div>
         </div>
@@ -116,37 +121,47 @@
                     <div class="modal-body">
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label">Employee <span class="text-danger">*</span></label>
-                                <select wire:model="employee_id" class="form-select form-select-sm">
-                                    <option value="">-- Select Employee --</option>
-                                    @foreach($employees as $emp)
-                                        <option value="{{ $emp->id }}">{{ $emp->name }} ({{ $emp->employee_id ?? '—' }})</option>
-                                    @endforeach
-                                </select>
+                                <div class="input-group input-group-outline">
+                                    <label class="form-label">Employee <span class="text-danger">*</span></label>
+                                    <select wire:model="employee_id" class="form-select form-select-sm">
+                                        <option value="">-- Select Employee --</option>
+                                        @foreach($employees as $emp)
+                                            <option value="{{ $emp->id }}">{{ $emp->name }} ({{ $emp->employee_id ?? '—' }})</option>
+                                        @endforeach
+                                    </select>
+                                </div>
                                 @error('employee_id') <span class="text-danger small">{{ $message }}</span> @enderror
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label">Advance Date <span class="text-danger">*</span></label>
-                                <input type="date" wire:model="advance_date" class="form-control form-control-sm">
+                                <div class="input-group input-group-outline">
+                                    <label class="form-label">Advance Date <span class="text-danger">*</span></label>
+                                    <input type="date" wire:model="advance_date" class="form-control form-control-sm">
+                                </div>
                                 @error('advance_date') <span class="text-danger small">{{ $message }}</span> @enderror
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label">Amount <span class="text-danger">*</span></label>
-                                <input type="number" min="1" step="0.01" wire:model="amount" class="form-control form-control-sm">
+                                <div class="input-group input-group-outline">
+                                    <label class="form-label">Amount <span class="text-danger">*</span></label>
+                                    <input type="number" min="1" step="0.01" wire:model="amount" class="form-control form-control-sm">
+                                </div>
                                 @error('amount') <span class="text-danger small">{{ $message }}</span> @enderror
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label">Monthly Installment <span class="text-muted">(optional)</span></label>
-                                <input type="number" min="0.01" step="0.01" wire:model="installment_amount" class="form-control form-control-sm" placeholder="Leave empty to deduct full amount at once">
+                                <div class="input-group input-group-outline">
+                                    <label class="form-label">Monthly Installment <span class="text-muted">(optional)</span></label>
+                                    <input type="number" min="0.01" step="0.01" wire:model="installment_amount" class="form-control form-control-sm">
+                                </div>
                                 @error('installment_amount') <span class="text-danger small">{{ $message }}</span> @enderror
                             </div>
 
                             <div class="col-md-12">
-                                <label class="form-label">Reason</label>
-                                <textarea wire:model="reason" class="form-control form-control-sm" rows="2"></textarea>
+                                <div class="input-group input-group-outline">
+                                    <label class="form-label">Reason</label>
+                                    <textarea wire:model="reason" class="form-control form-control-sm" rows="2"></textarea>
+                                </div>
                                 @error('reason') <span class="text-danger small">{{ $message }}</span> @enderror
                             </div>
                         </div>

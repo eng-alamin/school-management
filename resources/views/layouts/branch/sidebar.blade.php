@@ -135,6 +135,20 @@
       </li>
 
       <li class="nav1-item">
+        <div class="nav1-link {{ str_contains(request()->url(), 'branch/question-papers') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
+          <span class="material-icons-round nav-icon">quiz</span>
+          <span class="nav-label" id="nav-question-paper">Question Paper</span>
+          <span class="material-icons-round nav-arrow">expand_more</span>
+        </div>
+        <div class="nav2-collapse {{ str_contains(request()->url(), 'branch/question-papers') == true ? 'show' : '' }}">
+          <ul>
+            <li class="nav2-item"><a href="{{route('branch.question-papers.index') }}" class="nav2-link {{ str_contains(request()->url(), 'branch/question-papers') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-question-papers">Question Papers</span></a></li>
+            <li class="nav2-item"><a href="{{route('branch.question-papers.print.authorization') }}" class="nav2-link {{ str_contains(request()->url(), 'branch/question-papers/print') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-print-authorization">Print Authorization</span></a></li>
+          </ul>
+        </div>
+      </li>
+
+      <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), 'exam/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
           <span class="material-icons-round nav-icon">quiz</span>
           <span class="nav-label" id="nav-exam-master">Exam Master</span>

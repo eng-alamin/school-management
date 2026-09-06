@@ -18,15 +18,41 @@ use Spatie\Permission\PermissionRegistrar;
  *   - 'edit'   => edit/update routes exist
  *   - 'delete' => a delete action exists for that module (toggle/remove)
  *
+ * IMPORTANT — NAMING / GUARD ISOLATION:
+ * This project uses a SINGLE session guard ('web') for every panel
+ * (Admin, Branch, Ministry, etc.) — differentiated by the `role` column
+ * on `users` + App\Http\Middleware\RoleMiddleware, NOT by separate
+ * Laravel auth guards. Because every panel shares guard_name = 'web',
+ * permission NAMES are the only thing that separates one panel's
+ * permissions from another's.
+ *
+ * To make that isolation explicit and collision-proof, every permission
+ * seeded here is namespaced with an 'institution.' prefix:
+ *
+ *      institution.{module}.{action}   e.g. institution.branch.view
+ *
+ * Ministry Panel permissions use a parallel 'ministry.' prefix (see
+ * MinistryRolePermissionSeeder). This guarantees the two permission sets
+ * can NEVER collide by name, even though they share the same guard.
+ *
  * IMPORTANT:
  * - Permissions are GLOBAL (not team/institution scoped) — only `roles`
  *   and the pivot tables are team-scoped by Spatie's teams feature.
  * - This seeder is idempotent (firstOrCreate) — safe to re-run whenever
  *   new modules/routes are added.
- * - Naming convention: '{module}.{action}'.
+ * - MODULE_LABELS / PARENT_GROUPS keys are UNPREFIXED module keys (used
+ *   only for UI display + grouping) — the 'institution.' prefix is added
+ *   only when building the actual permission NAME in run().
  */
 class InstitutionRolePermissionSeeder extends Seeder
 {
+    /**
+     * Prefix applied to every permission name seeded by this class.
+     * Kept as a constant so Blade/Livewire code and other seeders can
+     * reference it instead of hardcoding the literal string.
+     */
+    public const PREFIX = 'institution.';
+
     /**
      * module_key => [actions...]
      * Order mirrors the route file's group order for easy cross-checking.
@@ -170,6 +196,7 @@ class InstitutionRolePermissionSeeder extends Seeder
 
     /**
      * Human-readable labels for the UI matrix (Module column).
+     * Keys are UNPREFIXED module keys — used for display/grouping only.
      * Falls back to Str::headline($key) in the UI if a key is missing here.
      */
     public const MODULE_LABELS = [
@@ -267,9 +294,10 @@ class InstitutionRolePermissionSeeder extends Seeder
      * exactly 1 child render as a flat row (no expand arrow) since there is
      * nothing to expand into.
      *
-     * This is a pure UI/query-layer grouping — it does NOT change any
-     * permission name in the database, so existing role→permission
-     * assignments are completely unaffected.
+     * Keys are UNPREFIXED module keys — this is a pure UI/query-layer
+     * grouping and does NOT change any permission name in the database.
+     * When querying/displaying, build the actual permission name as
+     * self::PREFIX . "{$module_key}.{$action}".
      *
      * group_key => ['label' => ..., 'children' => [module_key, ...]]
      */
@@ -418,12 +446,17 @@ class InstitutionRolePermissionSeeder extends Seeder
         foreach (self::PERMISSIONS as $module => $actions) {
             foreach ($actions as $action) {
                 Permission::firstOrCreate([
-                    'name'       => "{$module}.{$action}",
+                    // 'institution.' prefix keeps this permission set
+                    // collision-proof against Ministry Panel permissions,
+                    // even though both share guard_name = 'web'.
+                    'name'       => self::PREFIX . "{$module}.{$action}",
                     'guard_name' => 'web',
                 ]);
             }
         }
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+        $this->command?->info('Institution roles ও permissions সফলভাবে তৈরি হয়েছে।');
     }
 }

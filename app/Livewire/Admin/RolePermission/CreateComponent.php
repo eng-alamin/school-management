@@ -9,6 +9,7 @@ use App\Models\Role;
 use App\Models\Branch;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\PermissionRegistrar;
+use Database\Seeders\InstitutionRolePermissionSeeder;
 use App\Livewire\Admin\RolePermission\Concerns\InteractsWithPermissionMatrix;
 
 class CreateComponent extends Component
@@ -45,7 +46,23 @@ class CreateComponent extends Component
                     ->where('branch_id', $branchId),
             ],
             'selectedPermissions'   => 'array',
-            'selectedPermissions.*' => Rule::exists('permissions', 'name')->where('guard_name', 'web'),
+            // Only 'institution.*' permissions may be selected from the
+            // Admin panel matrix. Without this prefix filter, a tampered
+            // client-side payload containing a Ministry permission name
+            // (e.g. 'ministry.institution.approve') would pass validation,
+            // since Ministry permissions also live under guard_name='web'.
+            //
+            // IMPORTANT: Rule::exists()->where() only supports 2-arg
+            // equality ($column, $value) — passing a 3rd arg (an operator
+            // like 'like') is SILENTLY IGNORED, which previously collapsed
+            // this into `where('name', 'like')` i.e. `name = 'like'`,
+            // matching nothing and failing validation on every submit.
+            // A Closure is required to run a real LIKE condition here.
+            'selectedPermissions.*' => Rule::exists('permissions', 'name')
+                ->where(function ($query) {
+                    $query->where('guard_name', 'web')
+                          ->where('name', 'like', InstitutionRolePermissionSeeder::PREFIX . '%');
+                }),
         ];
     }
 
@@ -77,8 +94,12 @@ class CreateComponent extends Component
         $institutionId = $this->institutionId();
 
         // Defense-in-depth: re-verify the permission names actually belong
-        // to the fixed global permission list (guard=web) before persisting.
+        // to the fixed global 'institution.*' permission list (guard=web)
+        // before persisting. Scoping by the 'institution.' prefix here is
+        // what stops a Ministry permission name from ever being synced to
+        // an Institution-level role, since both share guard_name='web'.
         $validPermissionNames = Permission::where('guard_name', 'web')
+            ->where('name', 'like', InstitutionRolePermissionSeeder::PREFIX . '%')
             ->whereIn('name', $this->selectedPermissions)
             ->pluck('name')
             ->all();

@@ -8,6 +8,7 @@ use Illuminate\Validation\Rule;
 use App\Models\Role;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\PermissionRegistrar;
+use Database\Seeders\InstitutionRolePermissionSeeder;
 use App\Livewire\Admin\RolePermission\Concerns\InteractsWithPermissionMatrix;
 
 class EditComponent extends Component
@@ -57,7 +58,21 @@ class EditComponent extends Component
                     ->ignore($this->roleId),
             ],
             'selectedPermissions'   => 'array',
-            'selectedPermissions.*' => Rule::exists('permissions', 'name')->where('guard_name', 'web'),
+            // Only 'institution.*' permissions may be selected from the
+            // Admin panel matrix — see CreateComponent for why this prefix
+            // filter is required (guard_name alone can't separate Ministry
+            // vs Institution permissions since both use 'web').
+            //
+            // IMPORTANT: Rule::exists()->where() only supports 2-arg
+            // equality ($column, $value) — a 3rd arg (operator) is SILENTLY
+            // IGNORED, previously collapsing this into `name = 'like'`,
+            // matching nothing and failing validation on every submit.
+            // A Closure is required to run a real LIKE condition here.
+            'selectedPermissions.*' => Rule::exists('permissions', 'name')
+                ->where(function ($query) {
+                    $query->where('guard_name', 'web')
+                          ->where('name', 'like', InstitutionRolePermissionSeeder::PREFIX . '%');
+                }),
         ];
     }
 
@@ -83,8 +98,10 @@ class EditComponent extends Component
         $branchId       = $this->branch_id;
 
         // Defense-in-depth: re-verify the permission names actually belong
-        // to the fixed global permission list (guard=web) before persisting.
+        // to the fixed global 'institution.*' permission list (guard=web)
+        // before persisting.
         $validPermissionNames = Permission::where('guard_name', 'web')
+            ->where('name', 'like', InstitutionRolePermissionSeeder::PREFIX . '%')
             ->whereIn('name', $this->selectedPermissions)
             ->pluck('name')
             ->all();

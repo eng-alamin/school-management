@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('guardians', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
+            $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
             $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('name');
@@ -30,9 +30,8 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->unique(['user_id', 'deleted_at'], 'guardians_user_id_deleted_at_unique');
- 
-            $table->index(['institution_id'], 'guardians_institution_idx');
+            $table->unique(['user_id', 'deleted_at'], 'guardians_use_del_unique');
+            $table->index(['institution_id', 'branch_id'], 'guardians_ins_bra_idx');
         });
     }
 

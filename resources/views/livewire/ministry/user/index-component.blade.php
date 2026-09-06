@@ -23,36 +23,38 @@
         <div class="usr-filter-card">
             <div class="row g-2 align-items-end">
                 <div class="col-12 col-md-4">
-                    <label class="usr-filter-label" data-en="Search" data-bn="খুঁজুন">Search</label>
                     <input type="text" class="form-control form-control-sm"
                            data-en-ph="Search by name, username, email or phone..." data-bn-ph="নাম, ইউজারনেম, ইমেইল বা ফোন দিয়ে খুঁজুন..."
                            placeholder="Search by name, username, email or phone..."
                            wire:model.live.debounce.400ms="search">
                 </div>
                 <div class="col-6 col-md-3">
-                    <label class="usr-filter-label" data-en="Role" data-bn="রোল">Role</label>
-                    <select class="form-select form-select-sm no-custom-select" wire:model.live="roleFilter">
-                        <option value="" data-en="All Roles" data-bn="সকল রোল">All Roles</option>
-                        @foreach ($this->ministryRoles as $roleName)
-                            <option value="{{ $roleName }}">{{ $roleName }}</option>
-                        @endforeach
-                    </select>
+                    <div class="input-group input-group-outline">
+                        <select class="form-select form-select-sm no-custom-select" wire:model.live="roleFilter">
+                            <option value="" data-en="All Roles" data-bn="সকল রোল">All Roles</option>
+                            @foreach ($this->ministryRoles as $roleName)
+                                <option value="{{ $roleName }}">{{ $roleName }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
                 <div class="col-6 col-md-3">
-                    <label class="usr-filter-label" data-en="Status" data-bn="অবস্থা">Status</label>
-                    <select class="form-select form-select-sm no-custom-select" wire:model.live="statusFilter">
-                        <option value="" data-en="All Status" data-bn="সকল অবস্থা">All Status</option>
-                        <option value="active" data-en="Active" data-bn="সক্রিয়">Active</option>
-                        <option value="inactive" data-en="Inactive" data-bn="নিষ্ক্রিয়">Inactive</option>
-                    </select>
+                    <div class="input-group input-group-outline">
+                        <select class="form-select form-select-sm no-custom-select" wire:model.live="statusFilter">
+                            <option value="" data-en="All Status" data-bn="সকল অবস্থা">All Status</option>
+                            <option value="active" data-en="Active" data-bn="সক্রিয়">Active</option>
+                            <option value="inactive" data-en="Inactive" data-bn="নিষ্ক্রিয়">Inactive</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="col-6 col-md-2">
-                    <label class="usr-filter-label" data-en="Per Page" data-bn="প্রতি পৃষ্ঠায়">Per Page</label>
-                    <select class="form-select form-select-sm no-custom-select" wire:model.live="perPage">
-                        <option value="10" data-en="10 / page" data-bn="১০ / পৃষ্ঠা">10 / page</option>
-                        <option value="25" data-en="25 / page" data-bn="২৫ / পৃষ্ঠা">25 / page</option>
-                        <option value="50" data-en="50 / page" data-bn="৫০ / পৃষ্ঠা">50 / page</option>
-                    </select>
+                    <div class="input-group input-group-outline">
+                        <select class="form-select form-select-sm no-custom-select" wire:model.live="perPage">
+                            <option value="10" data-en="10 / page" data-bn="১০ / পৃষ্ঠা">10 / page</option>
+                            <option value="25" data-en="25 / page" data-bn="২৫ / পৃষ্ঠা">25 / page</option>
+                            <option value="50" data-en="50 / page" data-bn="৫০ / পৃষ্ঠা">50 / page</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
@@ -265,6 +267,11 @@
 
     @push('styles')
         <style>
+            .custom-select-trigger {
+                min-height: 30px !important;
+                height: 36px !important;
+            }
+
             .usr-wrap { background: var(--body-bg); min-height: 100vh; }
 
             .usr-add-btn {

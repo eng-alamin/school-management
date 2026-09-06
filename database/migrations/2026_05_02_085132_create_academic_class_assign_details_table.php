@@ -13,14 +13,14 @@ return new class extends Migration
     {
         Schema::create('academic_class_assign_details', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
-            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
             $table->foreignId('academic_class_assign_id')->constrained('academic_class_assigns')->cascadeOnDelete();
             $table->foreignId('subject_id')->constrained('academic_subjects')->cascadeOnDelete();
             $table->foreignId('teacher_id')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
 
-            $table->unique(['academic_class_assign_id', 'subject_id'], 'class_assign_subject_unique');
+            $table->unique(['academic_class_assign_id', 'subject_id'], 'ac_cl_as_de_ass_sub_unique');
         });
     }
 

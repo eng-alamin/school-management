@@ -222,7 +222,8 @@ class PurchaseEditComponent extends Component
             }
         });
 
-        $this->dispatch('toast', type: 'success', message: 'Data updated successfully!');
+        session()->flash('toast_success', 'Data updated successfully!');
+        $this->redirectRoute('admin.inventory.purchase.list', navigate: true);
     }
 
     public function render()

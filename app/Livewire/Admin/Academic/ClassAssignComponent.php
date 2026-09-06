@@ -7,9 +7,12 @@ use Livewire\WithPagination;
 use App\Models\AcademicClassAssign;
 use App\Models\AcademicClassAssignDetail;
 use App\Models\AcademicClass;
+use App\Models\AcademicSession;
 use App\Models\AcademicSubject;
+use App\Models\Branch;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\QueryException;
 use Illuminate\Validation\Rule;
 
 class ClassAssignComponent extends Component
@@ -20,6 +23,9 @@ class ClassAssignComponent extends Component
 
     // ── Sort/Search allowlist (security: raw column injection thekano jonno) ──
     private const SORTABLE_FIELDS = ['id', 'class_name', 'section_name'];
+
+    // Pagination whitelist (security: DoS thekano jonno, arbitrary perPage allow kora jabe na)
+    private const PER_PAGE_OPTIONS = [10, 25, 50];
 
     // List
     public string $search = '';
@@ -49,9 +55,35 @@ class ClassAssignComponent extends Component
     // Selected class-er has_section flag, blade e section dropdown show/hide korar jonno
     public bool $selectedClassHasSection = true;
 
+    // Current active academic session — cache kore rakha holo jate baar baar
+    // query na chole. Eita mount() e resolve kora hoy.
+    public ?int $currentSessionId = null;
+
+    public function mount(): void
+    {
+        $this->currentSessionId = $this->resolveCurrentSessionId();
+    }
+
+    private function resolveCurrentSessionId(): ?int
+    {
+        return AcademicSession::query()
+            ->where('institution_id', institution()->id)
+            ->where('branch_id', $this->activeBranchId())
+            ->active() // scopeActive() -> is_current = true
+            ->value('id');
+    }
+
+    private function activeBranchId(): ?int
+    {
+        return auth()->user()->branch_id
+            ?? Branch::resolveMainBranchId(institution()->id);
+    }
+
     protected function rules(): array
     {
         $institutionId = institution()->id;
+        $branchId      = $this->activeBranchId();
+        $sessionId     = $this->currentSessionId;
 
         return [
             'class_id' => [
@@ -61,11 +93,12 @@ class ClassAssignComponent extends Component
                 Rule::unique('academic_class_assigns', 'class_id')
                     ->where(fn ($query) => $query
                         ->where('institution_id', $institutionId)
+                        ->where('branch_id', $branchId)
+                        ->where('session_id', $sessionId)
                         ->where('section_id', $this->section_id ?: null))
                     ->ignore($this->editId),
             ],
 
-            // Class-e section thakle (selectedClassHasSection = true) section_id required
             'section_id' => [
                 Rule::requiredIf($this->selectedClassHasSection),
                 'nullable',
@@ -73,16 +106,12 @@ class ClassAssignComponent extends Component
                     ->where(fn ($q) => $q->where('institution_id', $institutionId)),
             ],
 
-            // Comeconpokkhe 1ta subject select kora lagbe
             'subject_array'   => 'required|array|min:1',
             'subject_array.*' => [
                 'required',
                 'integer',
                 Rule::exists('academic_subjects', 'id')
                     ->where(fn ($q) => $q->where('institution_id', $institutionId)),
-                // Prottek selected subject-er jonno teacher select kora required —
-                // Livewire checkbox check korle teacher_array-te key tairi nao hote pare,
-                // tai eikhane manually check kora hocche.
                 function ($attribute, $value, $fail) {
                     if (empty($this->teacher_array[$value])) {
                         $fail('Please assign a teacher for the selected subject.');
@@ -96,6 +125,7 @@ class ClassAssignComponent extends Component
                 'integer',
                 Rule::exists('users', 'id')
                     ->where(fn ($q) => $q->where('institution_id', $institutionId)
+                        ->where('branch_id', $branchId)
                         ->where('role', User::ROLE_TEACHER)),
             ],
         ];
@@ -104,7 +134,7 @@ class ClassAssignComponent extends Component
     protected function messages(): array
     {
         return [
-            'class_id.unique'     => 'This class and section combination has already been assigned.',
+            'class_id.unique'     => 'This class and section combination has already been assigned for the current session.',
             'class_id.exists'     => 'Selected class is invalid.',
             'section_id.required' => 'This class has sections. Please select a section.',
             'section_id.exists'   => 'Selected section is invalid.',
@@ -118,6 +148,15 @@ class ClassAssignComponent extends Component
 
     public function updatingSearch(): void
     {
+        $this->resetPage();
+    }
+
+    public function updatedPerPage($value): void
+    {
+        if (! in_array((int) $value, self::PER_PAGE_OPTIONS, true)) {
+            $this->perPage = 10;
+        }
+
         $this->resetPage();
     }
 
@@ -144,7 +183,6 @@ class ClassAssignComponent extends Component
         }
     }
 
-    // Checkbox theke subject uncheck korle, oi subject er teacher_array entry o clean kore dao
     public function updatedSubjectArray(): void
     {
         $this->teacher_array = collect($this->teacher_array)
@@ -154,7 +192,6 @@ class ClassAssignComponent extends Component
 
     public function sortBy(string $field): void
     {
-        // ── Allowlist check: sortable field na hole silently ignore ──
         if (! in_array($field, self::SORTABLE_FIELDS, true)) {
             return;
         }
@@ -171,6 +208,8 @@ class ClassAssignComponent extends Component
 
     public function openCreate(): void
     {
+        abort_unless((bool) $this->currentSessionId, 422, 'No active academic session found. Please set a current session first.');
+
         $this->resetForm();
         $this->editId = null;
         $this->showModal = true;
@@ -179,10 +218,12 @@ class ClassAssignComponent extends Component
     public function openEdit(int $id): void
     {
         $institutionId = institution()->id;
+        $branchId      = $this->activeBranchId();
 
-        // Defense-in-depth: institution_id explicitly check kora holo (IDOR protection)
         $record = AcademicClassAssign::with('details')
             ->where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
+            ->where('session_id', $this->currentSessionId)
             ->findOrFail($id);
 
         $this->editId     = $id;
@@ -210,47 +251,76 @@ class ClassAssignComponent extends Component
 
     public function save(): void
     {
+        abort_unless((bool) $this->currentSessionId, 422, 'No active academic session found. Please set a current session first.');
+
         $this->validate();
 
         $institutionId = institution()->id;
+        $branchId      = $this->activeBranchId();
+        $sessionId     = $this->currentSessionId;
 
-        // Class-e section na thakle, kokhono section_id set kora jabe na (data integrity)
         $sectionId = $this->selectedClassHasSection ? ($this->section_id ?: null) : null;
 
-        DB::transaction(function () use ($institutionId, $sectionId) {
-            $data = [
-                'institution_id' => $institutionId,
-                'class_id'       => $this->class_id,
-                'section_id'     => $sectionId,
-            ];
+        try {
+            DB::transaction(function () use ($institutionId, $branchId, $sessionId, $sectionId) {
+                $data = [
+                    'institution_id' => $institutionId,
+                    'branch_id'      => $branchId,
+                    'session_id'     => $sessionId,
+                    'class_id'       => $this->class_id,
+                    'section_id'     => $sectionId,
+                ];
 
-            if ($this->editId) {
-                $assign = AcademicClassAssign::where('institution_id', $institutionId)
-                    ->findOrFail($this->editId);
-                $assign->update($data);
-            } else {
-                $assign = AcademicClassAssign::create($data);
+                if ($this->editId) {
+                    $assign = AcademicClassAssign::where('institution_id', $institutionId)
+                        ->where('branch_id', $branchId)
+                        ->where('session_id', $sessionId)
+                        ->findOrFail($this->editId);
+                    $assign->update($data);
+                } else {
+                    $assign = AcademicClassAssign::create($data);
+                }
+
+                $assign->details()->delete();
+
+                foreach ($this->subject_array as $subjectId) {
+                    AcademicClassAssignDetail::create([
+                        'institution_id'            => $institutionId,
+                        'branch_id'                 => $branchId,
+                        'academic_class_assign_id'  => $assign->id,
+                        'subject_id'                => $subjectId,
+                        'teacher_id'                => $this->teacher_array[$subjectId] ?? null,
+                    ]);
+                }
+
+                if (function_exists('activity')) {
+                    activity()
+                        ->causedBy(auth()->user())
+                        ->performedOn($assign)
+                        ->tap(fn ($a) => $a->institution_id = $institutionId)
+                        ->withProperties([
+                            'icon'       => 'assignment_ind',
+                            'type'       => $this->editId ? 'class_assign_updated' : 'class_assign_created',
+                            'class_id'   => $assign->class_id,
+                            'section_id' => $assign->section_id,
+                            'session_id' => $assign->session_id,
+                        ])
+                        ->log($this->editId ? 'Updated class assignment' : 'Created class assignment');
+                }
+            });
+        } catch (QueryException $e) {
+            if ((int) $e->getCode() === 23000) {
+                $this->dispatch(
+                    'toast',
+                    type: 'error',
+                    message: 'This class and section combination was just assigned by someone else. Please refresh and try again.'
+                );
+
+                return;
             }
 
-            $assign->details()->delete();
-
-            foreach ($this->subject_array as $subjectId) {
-                AcademicClassAssignDetail::create([
-                    'institution_id'            => $institutionId,
-                    'academic_class_assign_id'  => $assign->id,
-                    'subject_id'                => $subjectId,
-                    'teacher_id'                => $this->teacher_array[$subjectId] ?? null,
-                ]);
-            }
-
-            if (function_exists('activity')) {
-                activity()
-                    ->causedBy(auth()->user())
-                    ->performedOn($assign)
-                    ->withProperties(['class_id' => $assign->class_id, 'section_id' => $assign->section_id])
-                    ->log($this->editId ? 'Updated class assignment' : 'Created class assignment');
-            }
-        });
+            throw $e;
+        }
 
         $this->dispatch(
             'toast',
@@ -271,12 +341,14 @@ class ClassAssignComponent extends Component
     public function deleteRecord(): void
     {
         $institutionId = institution()->id;
+        $branchId      = $this->activeBranchId();
 
-        // Defense-in-depth: institution_id explicitly check kora holo (IDOR protection)
         $assign = AcademicClassAssign::where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
+            ->where('session_id', $this->currentSessionId)
             ->findOrFail($this->deleteId);
 
-        DB::transaction(function () use ($assign) {
+        DB::transaction(function () use ($assign, $institutionId) {
             $assign->details()->delete();
 
             $className   = $assign->academicClass?->name;
@@ -287,7 +359,13 @@ class ClassAssignComponent extends Component
             if (function_exists('activity')) {
                 activity()
                     ->causedBy(auth()->user())
-                    ->withProperties(['class_name' => $className, 'section_name' => $sectionName])
+                    ->tap(fn ($a) => $a->institution_id = $institutionId)
+                    ->withProperties([
+                        'icon'         => 'assignment_late',
+                        'type'         => 'class_assign_deleted',
+                        'class_name'   => $className,
+                        'section_name' => $sectionName,
+                    ])
                     ->log('Deleted class assignment');
             }
         });
@@ -307,8 +385,8 @@ class ClassAssignComponent extends Component
     public function render()
     {
         $institutionId = institution()->id;
+        $branchId      = $this->activeBranchId();
 
-        // ── Sort field -> actual qualified column mapping ──
         $sortColumnMap = [
             'id'           => 'academic_class_assigns.id',
             'class_name'   => 'ac.name',
@@ -320,10 +398,11 @@ class ClassAssignComponent extends Component
             ->select('academic_class_assigns.*')
             ->leftJoin('academic_classes as ac', 'ac.id', '=', 'academic_class_assigns.class_id')
             ->leftJoin('academic_sections as asec', 'asec.id', '=', 'academic_class_assigns.section_id')
-            ->with(['academicClass', 'academicSection', 'details.subject', 'details.teacher'])
+            ->with(['academicClass', 'academicSection', 'session', 'details.subject', 'details.teacher'])
             ->where('academic_class_assigns.institution_id', $institutionId)
+            ->where('academic_class_assigns.branch_id', $branchId)
+            ->where('academic_class_assigns.session_id', $this->currentSessionId)
             ->when($this->search, fn ($q) => $q->where(function ($q) {
-                // ── OR condition always wrapped in closure (institution scope leak thekano) ──
                 $q->where('ac.name', 'like', "%{$this->search}%")
                   ->orWhere('asec.name', 'like', "%{$this->search}%");
             }))
@@ -332,8 +411,10 @@ class ClassAssignComponent extends Component
 
         $classes  = AcademicClass::where('institution_id', $institutionId)->orderBy('id')->get();
         $subjects = AcademicSubject::where('institution_id', $institutionId)->orderBy('name')->pluck('name', 'id');
+
         $teachers = User::where('role', User::ROLE_TEACHER)
             ->where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
             ->orderBy('name')
             ->pluck('name', 'id');
 

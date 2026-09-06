@@ -19,15 +19,20 @@
 
                 @if($accounts->total() > 10)
                     <div class="col-md-2">
-                        <select class="form-select form-select-sm" wire:model.live="perPage">
-                            <option value="10">10 / page</option>
-                            <option value="25">25 / page</option>
-                            <option value="50">50 / page</option>
-                        </select>
+                        <div class="input-group input-group-outline">
+                            <select class="form-select form-select-sm" wire:model.live="perPage">
+                                <option value="10">10 / page</option>
+                                <option value="25">25 / page</option>
+                                <option value="50">50 / page</option>
+                            </select>
+                        </div>
                     </div>
                 @endif
                 <button class="btn btn-primary" wire:click="openCreate">
-                    <span class="material-icons-round">add</span> <span id="newSectionBtn">Add Account</span>
+                    <span>
+                        <span class="material-icons-round">add</span> 
+                        <span id="newSectionBtn">Add Account</span>
+                    </span>
                 </button>
             </div>
         </div>
@@ -118,30 +123,34 @@
                             <div class="row g-3">
 
                                 <div class="col-md-12">
-                                    <label class="form-label">Account Name <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control @error('name') is-invalid @enderror"
-                                           wire:model.defer="name" placeholder="e.g. Cash in Hand">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Account Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model.defer="name">
+                                    </div>
                                     @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-12">
-                                    <label class="form-label">Account Number</label>
-                                    <input type="text" class="form-control @error('number') is-invalid @enderror"
-                                           wire:model.defer="number" placeholder="e.g. 1001">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Account Number</label>
+                                        <input type="text" class="form-control @error('number') is-invalid @enderror" wire:model.defer="number">
+                                    </div>
                                     @error('number') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-12">
-                                    <label class="form-label">Opening Balance</label>
-                                    <input type="number" step="0.01" class="form-control @error('opening_balance') is-invalid @enderror"
-                                           wire:model.defer="opening_balance" placeholder="0.00">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Opening Balance</label>
+                                        <input type="number" step="0.01" class="form-control @error('opening_balance') is-invalid @enderror" wire:model.defer="opening_balance">
+                                    </div>
                                     @error('opening_balance') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-12">
-                                    <label class="form-label">Description</label>
-                                    <textarea class="form-control @error('description') is-invalid @enderror"
-                                              wire:model.defer="description" rows="3" placeholder="Optional description..."></textarea>
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Description</label>
+                                        <textarea class="form-control @error('description') is-invalid @enderror" wire:model.defer="description" rows="3"></textarea>
+                                    </div>
                                     @error('description') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 

@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('students', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
-            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
  
             // Academic
@@ -51,11 +51,11 @@ return new class extends Migration
  
             $table->unique(['user_id', 'deleted_at'], 'students_user_id_deleted_at_unique');
  
-            $table->unique(['institution_id', 'student_id', 'deleted_at'], 'students_institution_student_id_unique');
-            $table->unique(['institution_id', 'registration_no', 'deleted_at'], 'students_institution_registration_no_unique');
+            $table->unique(['institution_id', 'branch_id', 'student_id', 'deleted_at'], 'students_ins_bra_stu_del_unique');
+            $table->unique(['institution_id', 'branch_id', 'registration_no', 'deleted_at'], 'students_ins_bra_reg_del_unique');
  
-            $table->index(['institution_id', 'status', 'deleted_at'], 'students_institution_status_idx');
-            $table->index(['institution_id', 'class_id', 'section_id', 'group_id', 'deleted_at'], 'students_institution_class_section_group_idx');
+            $table->index(['institution_id', 'branch_id', 'status', 'deleted_at'], 'students_ins_bra_sta_idx');
+            $table->index(['institution_id', 'branch_id', 'class_id', 'section_id', 'group_id', 'deleted_at'], 'students_ins_bra_cla_sec_gro_idx');
         });
     }
 

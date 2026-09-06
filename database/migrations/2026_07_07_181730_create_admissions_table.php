@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('admissions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
             $table->foreignId('guardian_user_id')->nullable()->constrained('users')->nullOnDelete();
 
             $table->boolean('is_new')->default(false);

@@ -15,6 +15,11 @@ class AcademicClassAssign extends Model
 
     protected $guarded = [];
 
+    public function session(): BelongsTo
+    {
+        return $this->belongsTo(AcademicSession::class, 'session_id');
+    }
+
     // pore class() remove korbo
     public function class(): BelongsTo
     {

@@ -19,11 +19,13 @@
 
                 @if($feeTypes->total() > 10)
                     <div class="col-md-2">
-                        <select class="form-select form-select-sm" wire:model.live="perPage">
-                            <option value="10">10 / page</option>
-                            <option value="25">25 / page</option>
-                            <option value="50">50 / page</option>
-                        </select>
+                        <div class="input-group input-group-outline">
+                            <select class="form-select form-select-sm" wire:model.live="perPage">
+                                <option value="10">10 / page</option>
+                                <option value="25">25 / page</option>
+                                <option value="50">50 / page</option>
+                            </select>
+                        </div>
                     </div>
                 @endif
                 <button class="btn btn-primary" wire:click="openCreate">
@@ -133,23 +135,26 @@
                             <div class="row g-3">
 
                                 <div class="col-md-12">
-                                    <label class="form-label">Fee Name <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control @error('name') is-invalid @enderror"
-                                           wire:model.live="name" placeholder="e.g. Tuition Fee">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Fee Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model.live="name">
+                                    </div>
                                     @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-12">
-                                    <label class="form-label">Fee Code</label>
-                                    <input type="text" disabled class="form-control @error('code') is-invalid @enderror"
-                                           wire:model.defer="code">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Fee Code</label>
+                                        <input type="text" disabled class="form-control @error('code') is-invalid @enderror" wire:model.defer="code">
+                                    </div>
                                     @error('code') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-12">
-                                    <label class="form-label">Description</label>
-                                    <textarea class="form-control @error('description') is-invalid @enderror"
-                                              wire:model.defer="description" rows="3" placeholder="Optional description..."></textarea>
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Description</label>
+                                        <textarea class="form-control @error('description') is-invalid @enderror" wire:model.defer="description" rows="3"></textarea>
+                                    </div>
                                     @error('description') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 

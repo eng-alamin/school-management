@@ -22,72 +22,80 @@
                     </div>
                 </div>
 
-                <div class=row>
-                    <div class="{{ $filterType === 'student' ? 'col-md-3' : 'col-md-4' }}">
-                        <select class="form-select form-select-sm" wire:model.live="selectedDeviceId">
-                            <option value="">-- All Devices --</option>
-                            @foreach ($devices as $device)
-                                <option value="{{ $device->id }}">{{ $device->device_name }} ({{ $device->device_serial }})</option>
-                            @endforeach
-                        </select>
+                    <div class="{{ $filterType === 'student' ? 'col-md-2' : 'col-md-3' }}">
+                        <div class="input-group input-group-outline">
+                            <select class="form-select form-select-sm" wire:model.live="selectedDeviceId">
+                                <option value="">-- All Devices --</option>
+                                @foreach ($devices as $device)
+                                    <option value="{{ $device->id }}">{{ $device->device_name }} ({{ $device->device_serial }})</option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
 
                     <div class="{{ $filterType === 'student' ? 'col-md-2' : 'col-md-3' }}">
-                        <select class="form-select form-select-sm" wire:model.live="filterType">
-                            <option value="">-- All Type --</option>
-                            <option value="student">Student</option>
-                            <option value="employee">Employee</option>
-                        </select>
+                        <div class="input-group input-group-outline">
+                            <select class="form-select form-select-sm" wire:model.live="filterType">
+                                <option value="">-- All Type --</option>
+                                <option value="student">Student</option>
+                                <option value="employee">Employee</option>
+                            </select>
+                        </div>
                     </div>
 
                     @if($filterType === 'student')
                         <div class="col-md-2">
-                            <select class="form-select form-select-sm" wire:model.live="filterClassId">
-                                <option value="">-- All Class --</option>
-                                @foreach($filterClasses as $c)
-                                    <option value="{{ $c->id }}">{{ $c->name }}</option>
-                                @endforeach
-                            </select>
+                            <div class="input-group input-group-outline">
+                                <select class="form-select form-select-sm" wire:model.live="filterClassId">
+                                    <option value="">-- All Class --</option>
+                                    @foreach($filterClasses as $c)
+                                        <option value="{{ $c->id }}">{{ $c->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
 
                         <div class="col-md-2">
-                            <select class="form-select form-select-sm" wire:model.live="filterSectionId"
-                                    @disabled(!$filterClassId || !$filterClassHasSection)>
-                                @if(!$filterClassId)
-                                    <option value="">Select class first</option>
-                                @elseif(!$filterClassHasSection)
-                                    <option value="">N/A</option>
-                                @else
-                                    <option value="">-- All Section --</option>
-                                    @if($filterSections->count() > 1)
-                                        <option value="all">All Section</option>
+                            <div class="input-group input-group-outline">
+                                <select class="form-select form-select-sm" wire:model.live="filterSectionId" @disabled(!$filterClassId || !$filterClassHasSection)>
+                                    @if(!$filterClassId)
+                                        <option value="">Select class first</option>
+                                    @elseif(!$filterClassHasSection)
+                                        <option value="">N/A</option>
+                                    @else
+                                        <option value="">-- All Section --</option>
+                                        @if($filterSections->count() > 1)
+                                            <option value="all">All Section</option>
+                                        @endif
+                                        @foreach($filterSections as $s)
+                                            <option value="{{ $s->id }}">{{ $s->name }}</option>
+                                        @endforeach
                                     @endif
-                                    @foreach($filterSections as $s)
-                                        <option value="{{ $s->id }}">{{ $s->name }}</option>
-                                    @endforeach
-                                @endif
-                            </select>
+                                </select>
+                            </div>
                         </div>
                     @endif
 
                     @if($mappings->total() > 10)
                         <div class="col-md-2">
-                            <select class="form-select form-select-sm" wire:model.live="perPage">
-                                <option value="10">10 / page</option>
-                                <option value="25">25 / page</option>
-                                <option value="50">50 / page</option>
-                            </select>
+                            <div class="input-group input-group-outline">
+                                <select class="form-select form-select-sm" wire:model.live="perPage">
+                                    <option value="10">10 / page</option>
+                                    <option value="25">25 / page</option>
+                                    <option value="50">50 / page</option>
+                                </select>
+                            </div>
                         </div>
                     @endif
 
-                    <div class="{{ $filterType === 'student' ? 'col-md-3' : 'col-md-4' }}">
-                        <a href="{{ route($routePrefix . 'biometric.mapping.create', $selectedDeviceId !== '' ? ['device_id' => $selectedDeviceId] : []) }}"
-                            class="btn btn-primary">
-                            <span class="material-icons-round">add</span> <span id="newSectionBtn">Add Mapping</span>
+                    <div class="{{ $filterType === 'student' ? 'col-md-2' : 'col-md-3' }}">
+                        <a href="{{ route($routePrefix . 'biometric.mapping.create', $selectedDeviceId !== '' ? ['device_id' => $selectedDeviceId] : []) }}" class="btn btn-primary">
+                            <span>
+                                <span class="material-icons-round">add</span> 
+                                <span id="newSectionBtn">Add Mapping</span>
+                            </span>
                         </a>
                     </div>
-
-                </div>
 
             </div>
         </div>

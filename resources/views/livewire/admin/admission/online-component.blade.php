@@ -24,46 +24,50 @@
                     </div>
                 </div>
 
-                {{-- Class filter --}}
-                <div>
-                    <select wire:model.live="filterClass" class="form-select form-select-sm" style="min-width:140px">
-                        <option value="">All Classes</option>
-                        @foreach ($classes as $c)
-                            <option value="{{ $c->id }}">{{ $c->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                {{-- Session filter --}}
-                <div>
-                    <select wire:model.live="filterSession" class="form-select form-select-sm" style="min-width:140px">
-                        <option value="">All Sessions</option>
-                        @foreach ($sessions as $s)
-                            <option value="{{ $s->id }}">{{ $s->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                {{-- Status filter --}}
-                <div>
-                    <select wire:model.live="filterStatus" class="form-select form-select-sm" style="min-width:140px">
-                        <option value="">All Status</option>
-                        <option value="pending">Pending</option>
-                        <option value="approved">Approved</option>
-                        <option value="rejected">Rejected</option>
-                    </select>
-                </div>
-
-                {{-- Per page --}}
                 @if($admissions->total() > 10)
-                    <div>
+                <div class="col-md-2">
+                    <div class="input-group input-group-outline">
                         <select class="form-select form-select-sm" wire:model.live="perPage">
                             <option value="10">10 / page</option>
                             <option value="25">25 / page</option>
                             <option value="50">50 / page</option>
                         </select>
                     </div>
+                </div>
                 @endif
+
+                <div class="col-md-2">
+                    <div class="input-group input-group-outline">
+                        <select wire:model.live="filterClass" class="form-select form-select-sm">
+                            <option value="">All Classes</option>
+                            @foreach ($classes as $c)
+                                <option value="{{ $c->id }}">{{ $c->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <div class="input-group input-group-outline">
+                        <select wire:model.live="filterSession" class="form-select form-select-sm">
+                            <option value="">All Sessions</option>
+                            @foreach ($sessions as $s)
+                                <option value="{{ $s->id }}">{{ $s->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <div class="input-group input-group-outline">
+                        <select wire:model.live="filterStatus" class="form-select form-select-sm">
+                            <option value="">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="approved">Approved</option>
+                            <option value="rejected">Rejected</option>
+                        </select>
+                    </div>
+                </div>
 
             </div>
         </div>

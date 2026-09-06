@@ -6,6 +6,8 @@ use Livewire\Component;
 use App\Models\AcademicClassSchedule;
 use App\Models\AcademicClassAssignDetail;
 use App\Models\AcademicSubject;
+use App\Models\AcademicSession;
+use App\Models\Branch;
 use App\Models\User;
 use Illuminate\Validation\Rule;
 
@@ -17,15 +19,40 @@ class TeacherScheduleComponent extends Component
     public array $scheduleGrid = [];
     public array $days         = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
+
+    public ?int $currentSessionId = null;
+
+    public function mount(): void
+    {
+        $this->currentSessionId = $this->resolveCurrentSessionId();
+    }
+
+    private function resolveCurrentSessionId(): ?int
+    {
+        return AcademicSession::query()
+            ->where('institution_id', institution()->id)
+            ->where('branch_id', $this->activeBranchId())
+            ->active() // scopeActive() -> is_current = true
+            ->value('id');
+    }
+
+    private function activeBranchId(): ?int
+    {
+        return auth()->user()->branch_id
+            ?? Branch::resolveMainBranchId(institution()->id);
+    }
+
     public function filter(): void
     {
         $institutionId = institution()->id;
+        $branchId      = $this->activeBranchId();
 
         $this->validate([
             'teacher_id' => [
                 'required',
                 Rule::exists('users', 'id')
                     ->where(fn ($q) => $q->where('institution_id', $institutionId)
+                        ->where('branch_id', $branchId)
                         ->where('role', User::ROLE_TEACHER)),
             ],
         ]);
@@ -33,11 +60,11 @@ class TeacherScheduleComponent extends Component
         $this->hasSchedule  = false;
         $this->scheduleGrid = [];
 
-        // এই teacher যে class+section এ assign আছে সেগুলো বের করো
-        // academic_class_assign_details.teacher_id দিয়ে (defense-in-depth: institution_id explicit)
         $assignDetails = AcademicClassAssignDetail::with('classAssign')
             ->where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
             ->where('teacher_id', $this->teacher_id)
+            ->whereHas('classAssign', fn ($q) => $q->where('session_id', $this->currentSessionId))
             ->get();
 
         if ($assignDetails->isEmpty()) {
@@ -61,8 +88,11 @@ class TeacherScheduleComponent extends Component
         $classIds = $classSectionPairs->pluck('class_id')->unique()->values();
 
         // Ekbare shob relevant class-er schedule load kora holo (N+1 thekano)
+        // branch_id + session_id scope shohokare.
         $schedules = AcademicClassSchedule::with(['academicClass', 'academicSection'])
             ->where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
+            ->where('session_id', $this->currentSessionId)
             ->whereIn('class_id', $classIds)
             ->get()
             ->filter(function ($schedule) use ($classSectionPairs) {
@@ -141,9 +171,9 @@ class TeacherScheduleComponent extends Component
 
     public function render()
     {
-        // Teacher role এর সব user
         $teachers = User::where('role', User::ROLE_TEACHER)
             ->where('institution_id', institution()->id)
+            ->where('branch_id', $this->activeBranchId())
             ->orderBy('name')
             ->get(['id', 'name']);
 

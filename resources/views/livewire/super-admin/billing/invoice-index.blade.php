@@ -55,39 +55,51 @@
                 </div>
 
                 <!-- Right Side -->
-                <div class="col-md-2">
-                    <select class="form-select form-select-sm" wire:model.live="filterStatus">
-                        <option value="">All Status</option>
-                        <option value="paid">Paid</option>
-                        <option value="pending">Pending</option>
-                        <option value="overdue">Overdue</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <select class="form-select form-select-sm" wire:model.live="filterMonth">
-                        <option value="">All Months</option>
-                        @for($m = 1; $m <= 12; $m++)
-                            <option value="{{ $m }}">{{ \Carbon\Carbon::create()->month($m)->format('F') }}</option>
-                        @endfor
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <select class="form-select form-select-sm" wire:model.live="filterYear">
-                        <option value="">All Years</option>
-                        @foreach($availableYears as $year)
-                            <option value="{{ $year }}">{{ $year }}</option>
-                        @endforeach
-                    </select>
-                </div>
                 @if($invoices->total() > 15)
                     <div class="col-md-2">
-                        <select class="form-select form-select-sm" wire:model.live="perPage">
-                            <option value="15">15 / page</option>
-                            <option value="25">25 / page</option>
-                            <option value="50">50 / page</option>
-                        </select>
+                        <div class="input-group input-group-outline">
+                            <select class="form-select form-select-sm" wire:model.live="perPage">
+                                <option value="15">15 / page</option>
+                                <option value="25">25 / page</option>
+                                <option value="50">50 / page</option>
+                            </select>
+                        </div>
                     </div>
                 @endif
+
+                <div class="col-md-2">
+                    <div class="input-group input-group-outline">
+                        <select class="form-select form-select-sm" wire:model.live="filterStatus">
+                            <option value="">All Status</option>
+                            <option value="paid">Paid</option>
+                            <option value="pending">Pending</option>
+                            <option value="overdue">Overdue</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <div class="input-group input-group-outline">
+                        <select class="form-select form-select-sm" wire:model.live="filterMonth">
+                            <option value="">All Months</option>
+                            @for($m = 1; $m <= 12; $m++)
+                                <option value="{{ $m }}">{{ \Carbon\Carbon::create()->month($m)->format('F') }}</option>
+                            @endfor
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="col-md-2">
+                    <div class="input-group input-group-outline">
+                        <select class="form-select form-select-sm" wire:model.live="filterYear">
+                            <option value="">All Years</option>
+                            @foreach($availableYears as $year)
+                                <option value="{{ $year }}">{{ $year }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+
             </div>
         </div>
 
@@ -357,48 +369,3 @@
     @endif
 
 </div>
-
-
-@push('styles')
-    <style>
-        /* ── BADGES ── */
-        .badge-active   { background: rgba(34,197,94,.12);  color: #16a34a; }
-        .badge-pending  { background: rgba(217,119,6,.12);  color: #d97706; }
-        .badge-overdue  { background: rgba(220,38,38,.12);  color: #dc2626; }
-        .badge-free     { background: rgba(220,38,38,.12);  color: #0280ce; }
-
-        /* ── AVATAR ── */
-        .avatar-placeholder {
-            width: 38px; height: 38px; border-radius: 8px;
-            display: inline-flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: .875rem;
-        }
-        .invoice-avatar-paid    { background: rgba(34,197,94,.12);  color: #16a34a; }
-        .invoice-avatar-pending { background: rgba(217,119,6,.12);  color: #d97706; }
-        .invoice-avatar-overdue { background: rgba(220,38,38,.12);  color: #dc2626; }
-        .invoice-avatar-free    { background: rgba(220,38,38,.12);  color: #0280ce; }
-
-        /* ── STAT BOXES ── */
-        .stat-box {
-            display: flex; align-items: center; gap: 12px;
-            padding: 14px 16px; border-radius: 12px; margin-bottom: 16px;
-        }
-        .stat-box .material-icons-round { font-size: 2rem; }
-        .stat-label { font-size: .72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; }
-        .stat-value { font-size: 1.2rem; font-weight: 700; color: var(--dark); }
-
-        .stat-paid    { background: #f0fdf4; }
-        .stat-paid .material-icons-round    { color: #16a34a; }
-
-        .stat-pending { background: #fffbeb; }
-        .stat-pending .material-icons-round { color: #d97706; }
-
-        .stat-overdue { background: #fef2f2; }
-        .stat-overdue .material-icons-round { color: #dc2626; }
-
-        /* Buttons */
-        .btn-primary { background: var(--primary); border-color: var(--primary); }
-        .btn-primary:hover, .btn-primary:focus { background: #d63e3e; border-color: #d63e3e; }
-        .btn-sm { font-size: .78rem; padding: .3rem .65rem; border-radius: 6px; }
-    </style>
-@endpush

@@ -7,6 +7,10 @@ use App\Http\Controllers\DeviceAttendanceController;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 
+// follow permission can 
+// Route::get('/chapters', \App\Livewire\QuestionBank\ChapterComponent::class)->name('chapters')->middleware('can:question-bank.view');
+// Route::get('/exams/{examId}/subjects/{subjectId}/builder', QuestionPaperBuilderComponent::class)->middleware('permission:institution.question_paper.manage')->name('builder');
+
 Route::middleware('guest')->group(function () {
     Route::get('login', \App\Livewire\Auth\LoginComponent::class)->name('login');
     Route::get('forgot-password', \App\Livewire\Auth\ForgotPasswordComponent::class)->name('forgot.password');
@@ -169,6 +173,10 @@ Route::middleware(['auth', 'role:teacher', 'billing.check'])->group(function () 
     Route::get('teacher/notices', \App\Livewire\Teacher\Notice\NoticeComponent::class)->name('teacher.notices');
     Route::get('teacher/notifications', \App\Livewire\Teacher\Notifications\Index::class)->name('teacher.notifications.index');
     
+    // QuestionPaper
+    Route::get('teacher/question-papers/', \App\Livewire\Teacher\QuestionPaper\QuestionPaperIndexComponent::class)->name('teacher.question-papers.index');
+    Route::get('teacher/question-papers/exams/{examId}/subjects/{subjectId}/print', \App\Livewire\Teacher\QuestionPaper\QuestionPaperPrintComponent::class)->where(['examId' => '[1-9][0-9]*', 'subjectId' => '[1-9][0-9]*'])->name('teacher.question-papers.print');
+ 
     // Grievances
     Route::get('/grievances/index', \App\Livewire\Teacher\Grievance\IndexComponent::class)->name('teacher.grievances.index');
     Route::get('/grievances/create', \App\Livewire\Teacher\Grievance\CreateComponent::class)->name('teacher.grievances.create');
@@ -351,6 +359,15 @@ Route::middleware(['auth', 'role:branch', 'billing.check', 'permission.team'])->
     Route::get('/branch/homework/list', \App\Livewire\Branch\Homework\HomeworkListComponent::class)->name('branch.homework.list');
     Route::get('/branch/homework/edit/{id}', \App\Livewire\Branch\Homework\HomeworkEditComponent::class)->name('branch.homework.edit');
 
+    // QuestionPaper
+    Route::get('branch/question-papers/', \App\Livewire\Branch\QuestionPaper\QuestionPaperIndexComponent::class)->name('branch.question-papers.index');
+    Route::get('branch/question-papers/print-authorizations', \App\Livewire\Branch\QuestionPaper\QuestionPaperPrintAuthorizationComponent::class)->name('branch.question-papers.print.authorization');
+    Route::get('branch/question-papers/{paperId}', \App\Livewire\Branch\QuestionPaper\QuestionPaperPreviewComponent::class)->name('branch.question-papers.preview');
+    Route::get('branch/question-papers/exams/{examId}/subjects/{subjectId}/builder', \App\Livewire\Branch\QuestionPaper\QuestionPaperBuilderComponent::class)->name('branch.question-papers.builder');
+    Route::get('branch/question-papers/exams/{examId}/subjects/{subjectId}/builder/{paperId}', \App\Livewire\Branch\QuestionPaper\QuestionPaperBuilderComponent::class)->name('branch.question-papers.builder.edit');
+    Route::get('branch/question-papers/exams/{examId}/subjects/{subjectId}/print', \App\Livewire\Branch\QuestionPaper\QuestionPaperPrintComponent::class)->where(['examId' => '[1-9][0-9]*', 'subjectId' => '[1-9][0-9]*'])->name('branch.question-papers.print');
+
+
     // Exam
     Route::get('/branch/exam/terms', \App\Livewire\Branch\Exam\TermComponent::class)->name('branch.exam.terms');
     Route::get('/branch/exam/halls', \App\Livewire\Branch\Exam\HallComponent::class)->name('branch.exam.halls');
@@ -462,6 +479,209 @@ Route::middleware(['auth', 'role:branch', 'billing.check', 'permission.team'])->
     Route::get('branch/profile/loginlog', \App\Livewire\Branch\Profile\LoginlogComponent::class)->name('branch.profile.loginlog');
 });
 
+// IT Support
+Route::middleware(['auth', 'role:it_support', 'billing.check'])->prefix('itsupport')->name('itsupport.')->group(function () { 
+
+    Route::get('/dashboard', \App\Livewire\ITSupport\Profile\OverviewComponent::class)->name('profile.overview');
+    Route::get('/branches', \App\Livewire\ITSupport\Branch\IndexComponent::class)->name('branches');
+
+    // Inventory
+    Route::get('/inventory/units', \App\Livewire\ITSupport\Inventory\UnitComponent::class)->name('inventory.units');
+    Route::get('/inventory/categories', \App\Livewire\ITSupport\Inventory\CategoryComponent::class)->name('inventory.categories');
+    Route::get('/inventory/stores', \App\Livewire\ITSupport\Inventory\StoreComponent::class)->name('inventory.stores');
+    Route::get('/inventory/suppliers', \App\Livewire\ITSupport\Inventory\SupplierComponent::class)->name('inventory.suppliers');
+    Route::get('/inventory/products', \App\Livewire\ITSupport\Inventory\ProductComponent::class)->name('inventory.products');
+    Route::get('/inventory/purchase/list', \App\Livewire\ITSupport\Inventory\PurchaseListComponent::class)->name('inventory.purchase.list');
+    Route::get('/inventory/purchase/add', \App\Livewire\ITSupport\Inventory\PurchaseAddComponent::class)->name('inventory.purchase.add');
+    Route::get('/inventory/purchase/{id}/edit', \App\Livewire\ITSupport\Inventory\PurchaseEditComponent::class)->name('inventory.purchase.edit');
+    Route::get('/inventory/sale/list', \App\Livewire\ITSupport\Inventory\SaleListComponent::class)->name('inventory.sale.list');
+    Route::get('/inventory/sale/add', \App\Livewire\ITSupport\Inventory\SaleAddComponent::class)->name('inventory.sale.add');
+    Route::get('/inventory/sale/{id}/edit', \App\Livewire\ITSupport\Inventory\SaleEditComponent::class)->name('inventory.sale.edit');
+    
+    // Admission
+    Route::get('online-admission', \App\Livewire\ITSupport\Admission\OnlineComponent::class)->name('admission.online');
+
+    // Student
+    Route::get('/student/add', \App\Livewire\ITSupport\Student\StudentAddComponent::class)->name('student.add');
+    Route::get('/student/list', \App\Livewire\ITSupport\Student\StudentListComponent::class)->name('student.list');
+    Route::get('/student/{id}/edit', \App\Livewire\ITSupport\Student\StudentEditComponent::class)->name('student.edit');
+    Route::get('/student/{id}/overview', \App\Livewire\ITSupport\Student\OverviewComponent::class)->name('student.overview');
+    Route::get('/student/{id}/invoice', \App\Livewire\ITSupport\Student\InvoiceComponent::class)->name('student.invoice');
+    Route::get('/student/payment-collect/{invoice}', \App\Livewire\ITSupport\Student\PaymentCollectComponent::class)->name('students.payment-collect');
+    Route::get('/student/{id}/account', \App\Livewire\ITSupport\Student\AccountComponent::class)->name('student.account');
+    Route::get('/student/{id}/attendance', \App\Livewire\ITSupport\Student\AttendanceComponent::class)->name('student.attendance');
+    Route::get('/student/{id}/enrollment', \App\Livewire\ITSupport\Student\EnrollmentComponent::class)->name('student.enrollment');
+
+    // Parent
+    Route::get('/parent/list', \App\Livewire\ITSupport\Parent\ParentListComponent::class)->name('parent.list');
+    Route::get('/parent/add', \App\Livewire\ITSupport\Parent\ParentAddComponent::class)->name('parent.add');
+    Route::get('/parent/edit/{id}', \App\Livewire\ITSupport\Parent\ParentEditComponent::class)->name('parent.edit');
+    Route::get('/parent/{id}/overview', \App\Livewire\ITSupport\Parent\ParentOverviewComponent::class)->name('parent.overview');
+    Route::get('/parent/{id}/child', \App\Livewire\ITSupport\Parent\ParentChildComponent::class)->name('parent.child');
+    Route::get('/parent/{id}/account', \App\Livewire\ITSupport\Parent\ParentAccountComponent::class)->name('parent.account');
+
+    // Employee
+    Route::get('/employee/departments', \App\Livewire\ITSupport\Employee\DepartmentComponent::class)->name('employee.departments');
+    Route::get('/employee/designations', \App\Livewire\ITSupport\Employee\DesignationComponent::class)->name('employee.designations');
+    Route::get('/employee/list', \App\Livewire\ITSupport\Employee\EmployeeListComponent::class)->name('employee.list');
+    Route::get('/employee/add', \App\Livewire\ITSupport\Employee\EmployeeAddComponent::class)->name('employee.add');
+    Route::get('/employee/{id}/edit', \App\Livewire\ITSupport\Employee\EmployeeEditComponent::class)->name('employee.edit');
+    Route::get('/employee/{id}/view', \App\Livewire\ITSupport\Employee\EmployeeViewComponent::class)->name('employee.view');
+    Route::get('/employee/{id}/account', \App\Livewire\ITSupport\Employee\EmployeeAccountComponent::class)->name('employee.account');
+    Route::get('/employee/{id}/invoices', \App\Livewire\ITSupport\Employee\EmployeeInvoiceComponent::class)->name('employee.invoices');
+
+    // Academic
+    Route::get('/academic/sessions', \App\Livewire\ITSupport\Academic\SessionComponent::class)->name('academic.sessions');
+    Route::get('/academic/groups', \App\Livewire\ITSupport\Academic\GroupComponent::class)->name('academic.groups');
+    Route::get('/academic/classes', \App\Livewire\ITSupport\Academic\ClassComponent::class)->name('academic.classes');
+    Route::get('/academic/sections', \App\Livewire\ITSupport\Academic\SectionComponent::class)->name('academic.sections');
+    Route::get('/academic/subjects', \App\Livewire\ITSupport\Academic\SubjectComponent::class)->name('academic.subjects');
+    Route::get('/academic/class-assign', \App\Livewire\ITSupport\Academic\ClassAssignComponent::class)->name('academic.class-assign');
+    Route::get('/academic/class-schedule/create', \App\Livewire\ITSupport\Academic\ClassScheduleCreateComponent::class)->name('academic.class-schedule.create');
+    Route::get('/academic/class-schedule/list', \App\Livewire\ITSupport\Academic\ClassScheduleListComponent::class)->name('academic.class-schedule.list');
+    Route::get('/academic/teacher-schedule', \App\Livewire\ITSupport\Academic\TeacherScheduleComponent::class)->name('academic.teacher-schedule');
+    Route::get('/academic/substitute-teacher', \App\Livewire\ITSupport\Academic\SubstituteTeacherComponent::class)->name('academic.substitute-teacher');
+    Route::get('/academic/student-promotion', \App\Livewire\ITSupport\Academic\StudentPromotionComponent::class)->name('academic.student-promotion');
+    Route::get('/academic/student-enrollment', \App\Livewire\ITSupport\Academic\StudentEnrollmentComponent::class)->name('academic.student-enrollment');
+
+    // Homework
+    Route::get('/homework/add', \App\Livewire\ITSupport\Homework\HomeworkAddComponent::class)->name('homework.add');
+    Route::get('/homework/list', \App\Livewire\ITSupport\Homework\HomeworkListComponent::class)->name('homework.list');
+    Route::get('/homework/edit/{id}', \App\Livewire\ITSupport\Homework\HomeworkEditComponent::class)->name('homework.edit');
+
+    // QuestionPaper
+    Route::get('/question-papers/', \App\Livewire\ITSupport\QuestionPaper\QuestionPaperIndexComponent::class)->name('question-papers.index');
+    Route::get('/question-papers/print-authorizations', \App\Livewire\ITSupport\QuestionPaper\QuestionPaperPrintAuthorizationComponent::class)->name('question-papers.print.authorization');
+    Route::get('/question-papers/print-logs', \App\Livewire\ITSupport\QuestionPaper\QuestionPaperPrintLogComponent::class)->name('question-papers.print.logs');
+    Route::get('/question-papers/{paperId}', \App\Livewire\ITSupport\QuestionPaper\QuestionPaperPreviewComponent::class)->name('question-papers.preview');
+    Route::get('/question-papers/exams/{examId}/subjects/{subjectId}/builder', \App\Livewire\ITSupport\QuestionPaper\QuestionPaperBuilderComponent::class)->name('question-papers.builder');
+    Route::get('/question-papers/exams/{examId}/subjects/{subjectId}/builder/{paperId}', \App\Livewire\ITSupport\QuestionPaper\QuestionPaperBuilderComponent::class)->name('admin.question-papers.builder.edit');
+    Route::get('/question-papers/exams/{examId}/subjects/{subjectId}/print', \App\Livewire\ITSupport\QuestionPaper\QuestionPaperPrintComponent::class)->where(['examId' => '[1-9][0-9]*', 'subjectId' => '[1-9][0-9]*'])->name('admin.question-papers.print');
+
+    // Exam
+    Route::get('/exam/terms', \App\Livewire\ITSupport\Exam\TermComponent::class)->name('exam.terms');
+    Route::get('/exam/halls', \App\Livewire\ITSupport\Exam\HallComponent::class)->name('exam.halls');
+    Route::get('/exam/marks', \App\Livewire\ITSupport\Exam\MarkComponent::class)->name('exam.marks');    
+    Route::get('/exam/types', \App\Livewire\ITSupport\Exam\TypeComponent::class)->name('exam.types');    
+    Route::get('/exam/setups', \App\Livewire\ITSupport\Exam\ExamSetupComponent::class)->name('exam.setups');
+    Route::get('/exam/schedule/add', \App\Livewire\ITSupport\Exam\ScheduleAddComponent::class)->name('exam.schedule.add');       
+    Route::get('/exam/schedule/list', \App\Livewire\ITSupport\Exam\ScheduleListComponent::class)->name('exam.schedule.list');    
+    Route::get('/exam/entries', \App\Livewire\ITSupport\Exam\EntryComponent::class)->name('exam.entries');    
+    Route::get('/exam/positions', \App\Livewire\ITSupport\Exam\PositionComponent::class)->name('exam.positions');    
+    Route::get('/exam/grades', \App\Livewire\ITSupport\Exam\GradeComponent::class)->name('exam.grades');
+
+    // Attendance
+    Route::get('/attendance/students', \App\Livewire\ITSupport\Attendance\StudentComponent::class)->name('attendance.students');
+    Route::get('/attendance/employees', \App\Livewire\ITSupport\Attendance\EmployeeComponent::class)->name('attendance.employees');
+    Route::get('/attendance/exams', \App\Livewire\ITSupport\Attendance\ExamComponent::class)->name('attendance.exams');
+    Route::get('/attendance/duty-assign', \App\Livewire\ITSupport\Attendance\AttendanceDutyAssignComponent::class)->name('attendance.duty-assign');
+    Route::get('/attendance/exam-duty-assign', \App\Livewire\ITSupport\Attendance\ExamDutyAssignComponent::class)->name('attendance.exam-duty-assign');
+    
+    // Biometric
+    Route::get('/biometric/devices', \App\Livewire\ITSupport\Biometric\BiometricDeviceComponent::class)->name('biometric.devices');
+    Route::get('/biometric/mapping/index', \App\Livewire\ITSupport\Biometric\IndexUserMappingComponent::class)->name('biometric.mapping.index');
+    Route::get('/biometric/mapping/create', \App\Livewire\ITSupport\Biometric\CreateUserMappingComponent::class)->name('biometric.mapping.create');
+    Route::get('/biometric/mapping/{id}/edit', \App\Livewire\ITSupport\Biometric\EditUserMappingComponent::class)->name('biometric.mapping.edit');
+
+    // StudentAccounting
+    Route::get('/student-accounting/fee-types', \App\Livewire\ITSupport\StudentAccounting\FeeTypeComponent::class)->name('student-accounting.fee.types');
+    Route::get('/student-accounting/fee-setups', \App\Livewire\ITSupport\StudentAccounting\FeeSetupComponent::class)->name('student-accounting.fee.setups');
+    Route::get('/student-accounting/fee-fines', \App\Livewire\ITSupport\StudentAccounting\FeeFineComponent::class)->name('student-accounting.fee.fines');
+    Route::get('/student-accounting/student-fines', \App\Livewire\ITSupport\StudentAccounting\StudentFineComponent::class)->name('student-accounting.student.fines');
+    Route::get('/student-accounting/fee-invoices', \App\Livewire\ITSupport\StudentAccounting\FeeInvoiceComponent::class)->name('student-accounting.fee.invoices');
+
+    // OfficeAccounting
+    Route::get('office-accounting/accounts', \App\Livewire\ITSupport\OfficeAccounting\AccountComponent::class)->name('office-accounting.accounts');
+    Route::get('office-accounting/voucher-head', \App\Livewire\ITSupport\OfficeAccounting\HeadComponent::class)->name('office-accounting.heads');
+    Route::get('office-accounting/deposit-add', \App\Livewire\ITSupport\OfficeAccounting\DepositAddComponent::class)->name('office-accounting.deposit.add');
+    Route::get('office-accounting/{id}/deposit-edit', \App\Livewire\ITSupport\OfficeAccounting\DepositEditComponent::class)->name('office-accounting.deposit.edit');
+    Route::get('office-accounting/deposit-list', \App\Livewire\ITSupport\OfficeAccounting\DepositListComponent::class)->name('office-accounting.deposit.list');
+    Route::get('office-accounting/expense-add', \App\Livewire\ITSupport\OfficeAccounting\ExpenseAddComponent::class)->name('office-accounting.expense.add');
+    Route::get('office-accounting/{id}/expense-edit', \App\Livewire\ITSupport\OfficeAccounting\ExpenseEditComponent::class)->name('office-accounting.expense.edit');
+    Route::get('office-accounting/expense-list', \App\Livewire\ITSupport\OfficeAccounting\ExpenseListComponent::class)->name('office-accounting.expense.list');
+    Route::get('office-accounting/transactions', \App\Livewire\ITSupport\OfficeAccounting\TransactionComponent::class)->name('office-accounting.transactions');
+
+    // Salary
+    Route::get('/salary/add-template', \App\Livewire\ITSupport\Salary\AddTemplateComponent::class)->name('salary.add-template');
+    Route::get('/salary/{id}/edit-template', \App\Livewire\ITSupport\Salary\EditTemplateComponent::class)->name('salary.edit-template');
+    Route::get('/salary/list-template', \App\Livewire\ITSupport\Salary\ListTemplateComponent::class)->name('salary.list-template');
+    Route::get('/salary/assign', \App\Livewire\ITSupport\Salary\AssignComponent::class)->name('salary.assign');
+    Route::get('/salary/{id}/{month}/add-payment', \App\Livewire\ITSupport\Salary\AddPaymentComponent::class)->name('salary.add-payment');
+    Route::get('/salary/{id}/{month}/invoice-payment', \App\Livewire\ITSupport\Salary\InvoicePaymentComponent::class)->name('salary.invoice-payment');
+    Route::get('/salary/payment', \App\Livewire\ITSupport\Salary\PaymentComponent::class)->name('salary.payment');
+    Route::get('/salary/advance', \App\Livewire\ITSupport\Salary\AdvanceComponent::class)->name('salary.advance');
+
+    // Card
+    Route::get('/card/id-card-templates', \App\Livewire\ITSupport\Card\IdCardTemplateComponent::class)->name('card.id-card-templates');
+    Route::get('/card/student-id-cards', \App\Livewire\ITSupport\Card\StudentIdCardComponent::class)->name('card.student-id-cards');
+    Route::get('/card/employee-id-cards', \App\Livewire\ITSupport\Card\EmployeeIdCardComponent::class)->name('card.employee-id-cards');    
+    Route::get('/card/admit-card-templates', \App\Livewire\ITSupport\Card\AdmitCardTemplateComponent::class)->name('card.admit-card-templates');
+    Route::get('/card/generate-admit-cards', \App\Livewire\ITSupport\Card\GenerateAdmitCardComponent::class)->name('card.generate-admit-cards');
+
+    // Certificate
+    Route::get('/certificate/add-template', \App\Livewire\ITSupport\Certificate\AddTemplateComponent::class)->name('certificate.add-template');
+    Route::get('/certificate/{id}/edit-template', \App\Livewire\ITSupport\Certificate\EditTemplateComponent::class)->name('certificate.edit-template');
+    Route::get('/certificate/list-template', \App\Livewire\ITSupport\Certificate\ListTemplateComponent::class)->name('certificate.list-template');
+    Route::get('/certificate/generate-student', \App\Livewire\ITSupport\Certificate\GenerateStudentComponent::class)->name('certificate.generate-student');
+    Route::get('/certificate/generate-employee', \App\Livewire\ITSupport\Certificate\GenerateEmployeeComponent::class)->name('certificate.generate-employee');
+    
+    // Leave
+    Route::get('/leave/categories', \App\Livewire\ITSupport\Leave\CategoryComponent::class)->name('leave.categories');
+    Route::get('/leave/applications', \App\Livewire\ITSupport\Leave\ApplicationComponent::class)->name('leave.applications');
+    
+    // Event
+    Route::get('/event/types', \App\Livewire\ITSupport\Event\TypeComponent::class)->name('event.types');
+    Route::get('/event/add', \App\Livewire\ITSupport\Event\AddComponent::class)->name('event.add');
+    Route::get('/events/{id}/edit', \App\Livewire\ITSupport\Event\EditComponent::class)->name('event.edit');
+    Route::get('/event/list', \App\Livewire\ITSupport\Event\ListComponent::class)->name('event.list');
+    
+    // Mailbox
+    Route::get('/mailbox/compose', \App\Livewire\ITSupport\Mailbox\ComposeComponent::class)->name('mailbox.compose');
+    Route::get('/mailbox/inbox', \App\Livewire\ITSupport\Mailbox\InboxComponent::class)->name('mailbox.inbox');
+    Route::get('/mailbox/sent', \App\Livewire\ITSupport\Mailbox\SentComponent::class)->name('mailbox.sent');
+    Route::get('/mailbox/important', \App\Livewire\ITSupport\Mailbox\ImportantComponent::class)->name('mailbox.important');
+    Route::get('/mailbox/trash', \App\Livewire\ITSupport\Mailbox\TrashComponent::class)->name('mailbox.trash');
+
+    // Notice
+    Route::get('/notices', \App\Livewire\ITSupport\Notice\NoticeComponent::class)->name('notices');
+    
+    // Notification
+    Route::get('/notifications', \App\Livewire\ITSupport\Notifications\Index::class)->name('notifications.index');
+    
+    // Report
+    Route::get('/reports/inventory/sales', \App\Livewire\ITSupport\Report\InventorySaleReportComponent::class)->name('reports.inventory.sales');
+    Route::get('/reports/inventory/purchases', \App\Livewire\ITSupport\Report\InventoryPurchaseReportComponent::class)->name('reports.inventory.purchases');
+    Route::get('/reports/inventory/stock', \App\Livewire\ITSupport\Report\InventoryStockReportComponent::class)->name('reports.inventory.stock');
+    Route::get('/reports/attendances/student', \App\Livewire\ITSupport\Report\AttendanceStudentReportComponent::class)->name('reports.attendances.student');
+    Route::get('/reports/attendances/employee', \App\Livewire\ITSupport\Report\AttendanceEmployeeReportComponent::class)->name('reports.attendances.employee');
+    Route::get('/reports/attendances/exam', \App\Livewire\ITSupport\Report\AttendanceExamReportComponent::class)->name('reports.attendances.exam');
+    Route::get('/reports/salary/payments', \App\Livewire\ITSupport\Report\SalaryPaymentReportComponent::class)->name('reports.salary.payments');
+    Route::get('/reports/salary/advances', \App\Livewire\ITSupport\Report\SalaryAdvanceReportComponent::class)->name('reports.salary.advances');
+    Route::get('/reports/salary/advance-repayments', \App\Livewire\ITSupport\Report\SalaryAdvanceRepaymentReportComponent::class)->name('reports.salary.advance-repayments');
+    Route::get('/reports/leaves', \App\Livewire\ITSupport\Report\LeaveReportComponent::class)->name('reports.leaves');
+        
+   // Log
+    Route::get('/activity-logs', \App\Livewire\ITSupport\Log\ActivityLogComponent::class)->name('activitylog');
+    Route::get('/session-logs', \App\Livewire\ITSupport\Log\SessionLogComponent::class)->name('sessionlog');
+    Route::get('/login-logs', \App\Livewire\ITSupport\Log\LoginLogComponent::class)->name('loginlog');
+
+    // RolePermission
+    Route::get('/roles-permissions/index', \App\Livewire\ITSupport\RolePermission\IndexComponent::class)->name('role-permission.index');
+    Route::get('/roles-permissions/create', \App\Livewire\ITSupport\RolePermission\CreateComponent::class)->name('role-permission.create');
+    Route::get('/roles-permissions/{id}/edit', \App\Livewire\ITSupport\RolePermission\EditComponent::class)->name('role-permission.edit');
+    Route::get('/roles-permissions/users', \App\Livewire\ITSupport\RolePermission\UserComponent::class)->name('role-permission.users');
+    
+    // Information
+    Route::get('/information/committees', \App\Livewire\ITSupport\Information\InstitutionCommitteeComponent::class)->name('information.committees');
+    Route::get('/information/facilities', \App\Livewire\ITSupport\Information\InstitutionFacilityComponent::class)->name('information.facilities');
+
+    // Profile
+    Route::get('/profile/overview', \App\Livewire\ITSupport\Profile\OverviewComponent::class)->name('profile.overview');
+    Route::get('/profile/setting', \App\Livewire\ITSupport\Profile\SettingComponent::class)->name('profile.setting');
+    Route::get('/profile/activitylog', \App\Livewire\ITSupport\Profile\ActivityLogComponent::class)->name('profile.activitylog');
+    Route::get('/profile/loginlog', \App\Livewire\ITSupport\Profile\LoginlogComponent::class)->name('profile.loginlog');
+});
+
 // Admin
 Route::middleware(['auth', 'role:admin', 'billing.check', 'setup.wizard', 'permission.team'])->group(function () {
     Route::get('admin/dashboard', \App\Livewire\Admin\DashboardComponent::class)->name('admin.dashboard');
@@ -530,6 +750,15 @@ Route::middleware(['auth', 'role:admin', 'billing.check', 'setup.wizard', 'permi
     Route::get('/homework/add', \App\Livewire\Admin\Homework\HomeworkAddComponent::class)->name('admin.homework.add');
     Route::get('/homework/list', \App\Livewire\Admin\Homework\HomeworkListComponent::class)->name('admin.homework.list');
     Route::get('/homework/edit/{id}', \App\Livewire\Admin\Homework\HomeworkEditComponent::class)->name('admin.homework.edit');
+
+    // QuestionPaper
+    Route::get('admin/question-papers/', \App\Livewire\Admin\QuestionPaper\QuestionPaperIndexComponent::class)->name('admin.question-papers.index');
+    Route::get('admin/question-papers/print-authorizations', \App\Livewire\Admin\QuestionPaper\QuestionPaperPrintAuthorizationComponent::class)->name('admin.question-papers.print.authorization');
+    Route::get('admin/question-papers/print-logs', \App\Livewire\Admin\QuestionPaper\QuestionPaperPrintLogComponent::class)->name('admin.question-papers.print.logs');
+    Route::get('admin/question-papers/{paperId}', \App\Livewire\Admin\QuestionPaper\QuestionPaperPreviewComponent::class)->name('admin.question-papers.preview');
+    Route::get('admin/question-papers/exams/{examId}/subjects/{subjectId}/builder', \App\Livewire\Admin\QuestionPaper\QuestionPaperBuilderComponent::class)->name('admin.question-papers.builder');
+    Route::get('admin/question-papers/exams/{examId}/subjects/{subjectId}/builder/{paperId}', \App\Livewire\Admin\QuestionPaper\QuestionPaperBuilderComponent::class)->name('admin.question-papers.builder.edit');
+    Route::get('admin/question-papers/exams/{examId}/subjects/{subjectId}/print', \App\Livewire\Admin\QuestionPaper\QuestionPaperPrintComponent::class)->where(['examId' => '[1-9][0-9]*', 'subjectId' => '[1-9][0-9]*'])->name('admin.question-papers.print');
 
     // Exam
     Route::get('exam/terms', \App\Livewire\Admin\Exam\TermComponent::class)->name('admin.exam.terms');
@@ -622,9 +851,18 @@ Route::middleware(['auth', 'role:admin', 'billing.check', 'setup.wizard', 'permi
     Route::get('notifications', \App\Livewire\Admin\Notifications\Index::class)->name('admin.notifications.index');
     
     // Report
-    Route::get('reports/attendances', \App\Livewire\Admin\Report\AttendanceReportComponent::class)->name('admin.reports.attendances');
-
-    // Log
+    Route::get('reports/inventory/sales', \App\Livewire\Admin\Report\InventorySaleReportComponent::class)->name('admin.reports.inventory.sales');
+    Route::get('reports/inventory/purchases', \App\Livewire\Admin\Report\InventoryPurchaseReportComponent::class)->name('admin.reports.inventory.purchases');
+    Route::get('reports/inventory/stock', \App\Livewire\Admin\Report\InventoryStockReportComponent::class)->name('admin.reports.inventory.stock');
+    Route::get('reports/attendances/student', \App\Livewire\Admin\Report\AttendanceStudentReportComponent::class)->name('admin.reports.attendances.student');
+    Route::get('reports/attendances/employee', \App\Livewire\Admin\Report\AttendanceEmployeeReportComponent::class)->name('admin.reports.attendances.employee');
+    Route::get('reports/attendances/exam', \App\Livewire\Admin\Report\AttendanceExamReportComponent::class)->name('admin.reports.attendances.exam');
+    Route::get('reports/salary/payments', \App\Livewire\Admin\Report\SalaryPaymentReportComponent::class)->name('admin.reports.salary.payments');
+    Route::get('reports/salary/advances', \App\Livewire\Admin\Report\SalaryAdvanceReportComponent::class)->name('admin.reports.salary.advances');
+    Route::get('reports/salary/advance-repayments', \App\Livewire\Admin\Report\SalaryAdvanceRepaymentReportComponent::class)->name('admin.reports.salary.advance-repayments');
+    Route::get('reports/leaves', \App\Livewire\Admin\Report\LeaveReportComponent::class)->name('admin.reports.leaves');
+        
+   // Log
     Route::get('/activity-logs', \App\Livewire\Admin\Log\ActivityLogComponent::class)->name('admin.activitylog');
     Route::get('/session-logs', \App\Livewire\Admin\Log\SessionLogComponent::class)->name('admin.sessionlog');
     Route::get('/login-logs', \App\Livewire\Admin\Log\LoginLogComponent::class)->name('admin.loginlog');
@@ -707,6 +945,7 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('superadmin')->name('sup
     Route::get('/activity-logs', \App\Livewire\SuperAdmin\Log\ActivityLogComponent::class)->name('activitylog');
     Route::get('/session-logs', \App\Livewire\SuperAdmin\Log\SessionLogComponent::class)->name('sessionlog');
     Route::get('/login-logs', \App\Livewire\SuperAdmin\Log\LoginLogComponent::class)->name('loginlog');
+    Route::get('/system-logs', \App\Livewire\SuperAdmin\Log\SystemLogComponent::class)->name('systemlog');
 
     // Monitoring
     Route::get('/monitoring/server', \App\Livewire\SuperAdmin\Monitoring\ServerStatusComponent::class)->name('monitoring.server');

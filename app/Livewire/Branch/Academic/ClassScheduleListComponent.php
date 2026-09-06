@@ -8,6 +8,8 @@ use App\Models\AcademicClassAssign;
 use App\Models\AcademicClass;
 use App\Models\AcademicSection;
 use App\Models\AcademicSubject;
+use App\Models\AcademicSession;
+use App\Models\Branch;
 use App\Models\User;
 
 class ClassScheduleListComponent extends Component
@@ -24,9 +26,27 @@ class ClassScheduleListComponent extends Component
 
     public string $routePrefix = '';
 
+    public ?int $currentSessionId = null;
+
     public function mount(): void
     {
-        $this->routePrefix = $this->resolveRoutePrefix();
+        $this->routePrefix      = $this->resolveRoutePrefix();
+        $this->currentSessionId = $this->resolveCurrentSessionId();
+    }
+
+    private function resolveCurrentSessionId(): ?int
+    {
+        return AcademicSession::query()
+            ->where('institution_id', institution()->id)
+            ->where('branch_id', $this->activeBranchId())
+            ->active() // scopeActive() -> is_current = true
+            ->value('id');
+    }
+
+    private function activeBranchId(): ?int
+    {
+        return auth()->user()->branch_id
+            ?? Branch::resolveMainBranchId(institution()->id);
     }
 
     protected function resolveRoutePrefix(): string
@@ -45,9 +65,12 @@ class ClassScheduleListComponent extends Component
     public function getAvailableClasses()
     {
         $institutionId = institution()->id;
+        $branchId      = $this->activeBranchId();
 
         return AcademicClass::where('institution_id', $institutionId)
             ->whereIn('id', AcademicClassAssign::where('institution_id', $institutionId)
+                ->where('branch_id', $branchId)
+                ->where('session_id', $this->currentSessionId)
                 ->distinct()
                 ->pluck('class_id'))
             ->orderBy('id')
@@ -59,10 +82,13 @@ class ClassScheduleListComponent extends Component
         if (!$this->filterClass) return collect();
 
         $institutionId = institution()->id;
+        $branchId      = $this->activeBranchId();
 
         return AcademicSection::where('institution_id', $institutionId)
             ->whereIn('id',
                 AcademicClassAssign::where('institution_id', $institutionId)
+                    ->where('branch_id', $branchId)
+                    ->where('session_id', $this->currentSessionId)
                     ->where('class_id', $this->filterClass)
                     ->whereNotNull('section_id')
                     ->pluck('section_id')
@@ -100,6 +126,7 @@ class ClassScheduleListComponent extends Component
     public function filter()
     {
         $institutionId = institution()->id;
+        $branchId      = $this->activeBranchId();
 
         if (!$this->filterClass) {
             $this->dispatch('toast', type: 'error', message: 'Please select a class.');
@@ -128,6 +155,8 @@ class ClassScheduleListComponent extends Component
             : null;
 
         $schedules = AcademicClassSchedule::where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
+            ->where('session_id', $this->currentSessionId)
             ->where('class_id', $this->filterClass)
             ->where('section_id', $sectionId)
             ->get()

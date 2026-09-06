@@ -13,26 +13,19 @@ return new class extends Migration
     {
         Schema::create('academic_subjects', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
-            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->string('code')->nullable();
             $table->string('author')->nullable();
             $table->string('type')->nullable();
+            $table->boolean('is_status')->default(true);
             $table->timestamps();
             $table->softDeletes();
 
-            $table->index(['institution_id', 'deleted_at'], 'academic_subjects_institution_idx');
-
-             $table->unique(
-                ['institution_id', 'name', 'deleted_at'],
-                'academic_subjects_institution_name_unique'
-            );
-            
-            $table->unique(
-                ['institution_id', 'code', 'deleted_at'],
-                'academic_subjects_institution_code_unique'
-            );
+            $table->index(['institution_id', 'branch_id', 'deleted_at'], 'academic_subjects_ins_bra_idx');
+            $table->unique(['institution_id', 'branch_id', 'name', 'deleted_at'], 'academic_subjects_ins_bra_name_unique');
+            $table->unique(['institution_id', 'branch_id', 'code', 'deleted_at'], 'academic_subjects_ins_bra_code_unique');
         });
     }
 

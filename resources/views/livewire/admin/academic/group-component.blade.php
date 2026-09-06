@@ -18,40 +18,42 @@
 
                 @if($groups->total() > 10)
                     <div class="col-md-2">
-                        <select class="form-select form-select-sm" wire:model.live="perPage">
-                            <option value="10">10 / page</option>
-                            <option value="25">25 / page</option>
-                            <option value="50">50 / page</option>
-                        </select>
+                        <div class="input-group input-group-outline">
+                            <select class="form-select form-select-sm" wire:model.live="perPage">
+                                <option value="10">10 / page</option>
+                                <option value="25">25 / page</option>
+                                <option value="50">50 / page</option>
+                            </select>
+                        </div>
                     </div>
                 @endif
 
-                <a href="{{ route($routePrefix . 'academic.classes') }}" class="btn btn-primary btn-sm">
+                <a href="{{ route($routePrefix . 'academic.classes') }}" class="btn btn-primary">
                     <span>
                         <span class="material-icons-round">flight_class</span>
                         <span>Class</span>
                     </span>
                 </a>
-                <a href="{{ route($routePrefix . 'academic.sections') }}" class="btn btn-primary btn-sm">
+                <a href="{{ route($routePrefix . 'academic.sections') }}" class="btn btn-primary">
                     <span>
                         <span class="material-icons-round">border_inner</span>
                         <span>Section</span>
                     </span>
                 </a>
-                <a href="{{ route($routePrefix . 'academic.subjects') }}" class="btn btn-primary btn-sm">
+                <a href="{{ route($routePrefix . 'academic.subjects') }}" class="btn btn-primary">
                     <span>
                         <span class="material-icons-round">subject</span>
                         <span>Subjects</span>
                     </span>
                 </a>
-                <a href="{{ route($routePrefix . 'academic.groups') }}" class="btn btn-primary btn-sm">
+                <a href="{{ route($routePrefix . 'academic.groups') }}" class="btn btn-primary">
                     <span>
                         <span class="material-icons-round">group</span>
                         <span>Groups</span>
                     </span>
                 </a>
 
-                <button class="btn btn-primary btn-sm" wire:click="openCreate">
+                <button class="btn btn-primary" wire:click="openCreate">
                     <span>
                         <span class="material-icons-round">add</span>
                         <span>New Group</span>
@@ -146,8 +148,10 @@
                         <form wire:submit.prevent="save">
                             <div class="row g-3">
                                 <div class="col-md-12">
-                                    <label class="form-label">Name <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model.defer="name" placeholder="e.g. Science">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model.defer="name">
+                                    </div>
                                     @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 

@@ -24,29 +24,33 @@
                     </div>
                 </div>
 
-                {{-- Role Filter --}}
-                <div class="col-md-2">
-                    <select class="form-select form-select-sm" wire:model.live="role">
-                        <option value="">All Roles</option>
-                        <option value="admin">Admin</option>
-                        <option value="teacher">Teacher</option>
-                        <option value="accountant">Accountant</option>
-                        <option value="student">Student</option>
-                        <option value="parent">Parent</option>
-                        <option value="staff">Staff</option>
-                    </select>
-                </div>
-
                 {{-- Per Page --}}
                 @if($logs->total() > 10)
                     <div class="col-md-2">
-                        <select class="form-select form-select-sm" wire:model.live="perPage">
-                            <option value="10">10 / page</option>
-                            <option value="25">25 / page</option>
-                            <option value="50">50 / page</option>
-                        </select>
+                        <div class="input-group input-group-outline">
+                            <select class="form-select form-select-sm" wire:model.live="perPage">
+                                <option value="10">10 / page</option>
+                                <option value="25">25 / page</option>
+                                <option value="50">50 / page</option>
+                            </select>
+                        </div>
                     </div>
                 @endif
+
+                {{-- Role Filter --}}
+                <div class="col-md-2">
+                    <div class="input-group input-group-outline">
+                        <select class="form-select form-select-sm" wire:model.live="role">
+                            <option value="">All Roles</option>
+                            <option value="admin">Admin</option>
+                            <option value="teacher">Teacher</option>
+                            <option value="accountant">Accountant</option>
+                            <option value="student">Student</option>
+                            <option value="parent">Parent</option>
+                            <option value="staff">Staff</option>
+                        </select>
+                    </div>
+                </div>
 
             </div>
         </div>

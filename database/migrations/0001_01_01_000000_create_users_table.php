@@ -15,10 +15,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('institution_id')->nullable()->constrained()->cascadeOnDelete();
             $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
-            $table->enum('role', ['super_admin', 'ministry', 'admin', 'branch', 'staff', 'teacher', 'accountant', 'student', 'parent',])->default('student');
+            $table->enum('role', ['super_admin', 'ministry', 'admin', 'it_support', 'branch', 'staff', 'teacher', 'accountant', 'student', 'parent',])->default('student');
             $table->string('name', 100);
             $table->string('username', 100)->nullable()->unique();
-            $table->string('phone', 15)->nullable()->unique();
+            $table->string('phone', 100)->nullable()->unique();
             $table->string('email', 150)->nullable()->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password', 255);

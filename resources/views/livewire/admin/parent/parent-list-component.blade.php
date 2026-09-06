@@ -18,19 +18,16 @@
                 </div>
 
                 @if($parents->total() > 10)
-                    <div class="col-md-2">
+                <div class="col-md-2">
+                    <div class="input-group input-group-outline">
                         <select class="form-select form-select-sm" wire:model.live="perPage">
                             <option value="10">10 / page</option>
                             <option value="25">25 / page</option>
                             <option value="50">50 / page</option>
                         </select>
                     </div>
+                </div>
                 @endif
-
-                {{-- Print --}}
-                <button class="btn btn-light" onclick="printTable()">
-                    <span class="material-icons-round" style="font-size:16px">print</span> Print
-                </button>
 
                 <a href="{{ route($routePrefix . 'parent.add') }}" class="btn btn-primary">
                     <span>
@@ -38,6 +35,7 @@
                         <span>New Parent</span>
                     </span>
                 </a>
+
             </div>
         </div>
 
@@ -139,32 +137,3 @@
     @endif
 
 </div>
-
-@push('scripts')
-<script>
-    function printTable() {
-        const table = document.getElementById('parentTable');
-        if (!table) return;
-
-        const clone = table.cloneNode(true);
-        clone.querySelectorAll('.no-print').forEach(el => el.remove());
-
-        const win = window.open('', '', 'width=900,height=700');
-        win.document.write(`
-            <html><head><title>Parent List</title>
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-            <style>
-                body { padding: 20px; font-size: 13px; }
-                table { width: 100%; border-collapse: collapse; }
-                th, td { border: 1px solid #dee2e6; padding: 8px 10px; font-size: 12px; }
-                th { background: #f8f9fa; font-weight: 600; }
-            </style>
-            </head><body>${clone.outerHTML}</body></html>
-        `);
-        win.document.close();
-        win.focus();
-        win.print();
-        win.close();
-    }
-</script>
-@endpush

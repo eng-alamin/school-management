@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('employees', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
  
             // Academic Details
@@ -53,8 +53,8 @@ return new class extends Migration
             $table->softDeletes();
 
             $table->unique(['user_id', 'deleted_at'], 'employees_user_id_deleted_at_unique');
-            $table->unique(['institution_id', 'employee_id', 'deleted_at'],'employees_institution_employee_id_unique');
-            $table->index(['institution_id', 'status', 'deleted_at'], 'employees_institution_status_idx');
+            $table->unique(['institution_id', 'branch_id', 'employee_id', 'deleted_at'],'employees_institution_employee_id_unique');
+            $table->index(['institution_id', 'branch_id', 'status', 'deleted_at'], 'employees_institution_status_idx');
         });
     }
 

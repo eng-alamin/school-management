@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('inventory_sale_payments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
-            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
             $table->foreignId('sale_id')->constrained('inventory_sales')->cascadeOnDelete();
             $table->decimal('amount', 15, 2);
             $table->string('pay_via')->nullable();

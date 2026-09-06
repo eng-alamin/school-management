@@ -21,36 +21,42 @@
                 </div>
 
                 {{-- Class filter --}}
-                <div>
-                    <select wire:model.live="filterClass" class="form-select form-select-sm" style="min-width:140px">
-                        <option value="">All Classes</option>
-                        @foreach ($classes as $c)
-                            <option value="{{ $c->id }}">{{ $c->name }}</option>
-                        @endforeach
-                    </select>
+                <div class="col-md-2">
+                    <div class="input-group input-group-outline">
+                        <select wire:model.live="filterClass" class="form-select form-select-sm">
+                            <option value="">All Classes</option>
+                            @foreach ($classes as $c)
+                                <option value="{{ $c->id }}">{{ $c->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
 
                 {{-- Section filter --}}
-                <div>
-                    <select wire:model.live="filterSection" class="form-select form-select-sm" style="min-width:140px"
-                        {{ empty($availableSections) ? 'disabled' : '' }}>
-                        <option value="">All Sections</option>
-                        @if(!empty($availableSections))
-                            @foreach ($availableSections as $s)
-                                <option value="{{ $s['id'] }}">{{ $s['name'] }}</option>
-                            @endforeach
-                        @endif
-                    </select>
+                <div class="col-md-2">
+                    <div class="input-group input-group-outline">
+                        <select wire:model.live="filterSection" class="form-select form-select-sm"
+                            {{ empty($availableSections) ? 'disabled' : '' }}>
+                            <option value="">All Sections</option>
+                            @if(!empty($availableSections))
+                                @foreach ($availableSections as $s)
+                                    <option value="{{ $s['id'] }}">{{ $s['name'] }}</option>
+                                @endforeach
+                            @endif
+                        </select>
+                    </div>
                 </div>
 
                 {{-- Per page --}}
                 @if($students->total() > 10)
-                    <div>
-                        <select class="form-select form-select-sm" wire:model.live="perPage">
-                            <option value="10">10 / page</option>
-                            <option value="25">25 / page</option>
-                            <option value="50">50 / page</option>
-                        </select>
+                    <div class="col-md-2">
+                        <div class="input-group input-group-outline">
+                            <select class="form-select form-select-sm" wire:model.live="perPage">
+                                <option value="10">10 / page</option>
+                                <option value="25">25 / page</option>
+                                <option value="50">50 / page</option>
+                            </select>
+                        </div>
                     </div>
                 @endif
 

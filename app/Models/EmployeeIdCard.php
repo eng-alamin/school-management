@@ -17,13 +17,13 @@ class EmployeeIdCard extends Model
  
     protected $fillable = [
         'template_id', 'employee_id', 'name', 'designation', 'department',
-        'organization_name', 'organization_address', 'blood_group', 'date_of_birth',
-        'contact_number', 'email', 'address', 'photo', 'signature',
-        'joining_date', 'expiry_date', 'emergency_contact', 'status',
+        'institute_name', 'institute_address', 'blood_group', 'dob',
+        'mobile', 'email', 'address', 'photo', 'signature',
+        'joining_date', 'expiry_date', 'emergency_mobile', 'status',
     ];
  
     protected $casts = [
-        'date_of_birth' => 'date',
+        'dob' => 'date',
         'joining_date' => 'date',
         'expiry_date' => 'date',
     ];

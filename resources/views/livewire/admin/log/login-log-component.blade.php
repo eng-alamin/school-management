@@ -26,15 +26,17 @@
 
                 {{-- Role Filter --}}
                 <div class="col-md-2">
-                    <select class="form-select form-select-sm" wire:model.live="role">
-                        <option value="">All Roles</option>
-                        <option value="admin">Admin</option>
-                        <option value="teacher">Teacher</option>
-                        <option value="accountant">Accountant</option>
-                        <option value="student">Student</option>
-                        <option value="parent">Parent</option>
-                        <option value="staff">Staff</option>
-                    </select>
+                    <div class="input-group input-group-outline">
+                        <select class="form-select form-select-sm" wire:model.live="role">
+                            <option value="">All Roles</option>
+                            <option value="admin">Admin</option>
+                            <option value="teacher">Teacher</option>
+                            <option value="accountant">Accountant</option>
+                            <option value="student">Student</option>
+                            <option value="parent">Parent</option>
+                            <option value="staff">Staff</option>
+                        </select>
+                    </div>
                 </div>
 
                 {{-- Per Page --}}

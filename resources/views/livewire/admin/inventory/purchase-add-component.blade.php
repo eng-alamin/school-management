@@ -15,7 +15,7 @@
 
                 <!-- Supplier -->
                 <div class="col-md-6">
-                    <div class="input-group input-group-outline" wire:ignore>
+                    <div class="input-group input-group-outline">
                         <label class="form-label">Supplier</label>
                         <select wire:model="supplier_id" class="form-select">
                             <option value="">Select</option>
@@ -29,7 +29,7 @@
 
                 <!-- Store -->
                 <div class="col-md-6">
-                    <div class="input-group input-group-outline" wire:ignore>
+                    <div class="input-group input-group-outline">
                         <label class="form-label">Store</label>
                         <select wire:model="store_id" class="form-select">
                             <option value="">Select</option>
@@ -69,7 +69,7 @@
 
                 <!-- Purchase Status -->
                 <div class="col-md-6">
-                    <div class="input-group input-group-outline" wire:ignore>
+                    <div class="input-group input-group-outline">
                         <label class="form-label">Purchase Status <span class="req">*</span></label>
                         <select wire:model="purchase_status" class="form-select">
                             <option value="">Select</option>
@@ -141,7 +141,7 @@
 
                                 <!-- Product -->
                                 <td style="padding:6px 10px;min-width:180px">
-                                    <div class="input-group input-group-outline" wire:ignore.self style="margin-bottom:0">
+                                    <div class="input-group input-group-outline".self style="margin-bottom:0">
                                         <select wire:model.live="items.{{ $index }}.product_id"
                                                 class="form-select form-select-sm"
                                                 style="font-size:.8rem">
@@ -284,82 +284,3 @@
 
     </div>
 </div>
-
-
-@push('scripts')
-    <script>
-        document.addEventListener('livewire:initialized', () => {
-
-            setTimeout(() => initAllFields(), 100);
-
-            Livewire.hook('morph.updated', ({ el }) => {
-                setTimeout(() => initAllFields(), 0);
-            });
-
-            function initAllFields() {
-
-                // ── 1. Text/Textarea/Number is-filled ──
-                document.querySelectorAll('.input-group-outline input, .input-group-outline textarea').forEach(function(input) {
-                    var group = input.closest('.input-group');
-                    if (!group) return;
-                    if (input.value && input.value.trim() !== '') {
-                        group.classList.add('is-filled');
-                    } else {
-                        group.classList.remove('is-filled');
-                    }
-                    if (input._materialInit) return;
-                    input._materialInit = true;
-                    input.addEventListener('focus', function() { group.classList.add('is-focused'); });
-                    input.addEventListener('blur', function() {
-                        group.classList.remove('is-focused');
-                        group.classList.toggle('is-filled', !!input.value.trim());
-                    });
-                    input.addEventListener('input', function() {
-                        group.classList.toggle('is-filled', !!input.value.trim());
-                    });
-                });
-
-                // ── 2. Select is-filled ──
-                document.querySelectorAll('.input-group-outline select').forEach(function(select) {
-                    var group = select.closest('.input-group');
-                    if (!group) return;
-                    if (select.value && select.value !== '') {
-                        group.classList.add('is-filled');
-                    } else {
-                        group.classList.remove('is-filled');
-                    }
-                    if (select._materialInit) return;
-                    select._materialInit = true;
-                    select.addEventListener('change', function() {
-                        group.classList.toggle('is-filled', !!select.value);
-                    });
-                    select.addEventListener('focus', function() { group.classList.add('is-focused'); });
-                    select.addEventListener('blur', function() { group.classList.remove('is-focused'); });
-                });
-
-                // ── 3. Custom Select rebuild ──
-                document.querySelectorAll('.input-group-outline .form-select').forEach(function(select) {
-                    var old = select.parentNode.querySelector('.custom-select-wrapper');
-                    if (old) old.remove();
-                    select.style.display = '';
-                    if (typeof buildCustomSelect === 'function') {
-                        buildCustomSelect(select);
-                    }
-                });
-
-                // ── 4. Datepicker ──
-                document.querySelectorAll('.input-group-outline input[type="date"]').forEach(function(input) {
-                    if (input.dataset.dpInit === '1') return;
-                    input.dataset.dpInit = '1';
-                    input.addEventListener('change', function() {
-                        input.dispatchEvent(new Event('input', { bubbles: true }));
-                    });
-                    if (typeof buildDatepicker === 'function') {
-                        buildDatepicker(input);
-                    }
-                });
-            }
-
-        });
-    </script>
-@endpush

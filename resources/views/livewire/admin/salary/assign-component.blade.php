@@ -106,13 +106,15 @@
                             <td>{{ $employee['designation']['name'] ?? '—' }}</td>
                             <td>{{ $employee['department']['name'] ?? '—' }}</td>
                             <td style="width:240px">
-                                <select wire:model.live="salaryTemplate.{{ $employee['id'] }}"
-                                        class="schedule-input @if(empty($salaryTemplate[$employee['id']])) schedule-input-empty @endif">
-                                    <option value="">Select</option>
-                                    @foreach($salaryTemplates as $template)
-                                        <option value="{{ $template->id }}">{{ \Illuminate\Support\Str::limit($template->name, 12) }} ({{ $template->salary_grade }})</option>
-                                    @endforeach
-                                </select>
+                                <div class="input-group input-group-outline">
+                                    <select wire:model.live="salaryTemplate.{{ $employee['id'] }}"
+                                            class="form-select form-select-sm @if(empty($salaryTemplate[$employee['id']])) schedule-input-empty @endif">
+                                        <option value="">Select</option>
+                                        @foreach($salaryTemplates as $template)
+                                            <option value="{{ $template->id }}">{{ \Illuminate\Support\Str::limit($template->name, 12) }} ({{ $template->salary_grade }})</option>
+                                        @endforeach
+                                    </select>
+                                </div>
                             </td>
                             <td>
                                 @if(!empty($templateAmounts[$employee['id']]))

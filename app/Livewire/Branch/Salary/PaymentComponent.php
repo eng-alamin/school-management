@@ -122,8 +122,6 @@ class PaymentComponent extends Component
             ->addSelect([
                 'employees.*',
 
-                // NOTE: DB::table() raw query bypasses Eloquent global scopes entirely,
-                // so institution_id must always be filtered explicitly here.
                 'sa_grade' => DB::table('salary_assigns')
                     ->select('salary_grade')
                     ->whereColumn('employee_id', 'employees.id')
@@ -142,21 +140,6 @@ class PaymentComponent extends Component
                     ->where('institution_id', $institutionId)
                     ->limit(1),
 
-                // FIX (Critical): Passing an Eloquent Builder directly into addSelect()
-                // does NOT automatically apply the model's global scope (BelongsToInstitution).
-                // Global scopes are only applied via applyScopes(), which is triggered by
-                // terminal methods like get()/first()/toBase() — not when the builder is
-                // simply converted to a raw subquery via getQuery(). Relying on the global
-                // scope here was an incorrect assumption and a multi-tenant data leak risk.
-                // institution_id is now filtered explicitly, matching the sa_grade/sa_basic
-                // pattern above.
-
-                // FIX (Bug): We need to know whether a salary_payments ROW EXISTS for the
-                // selected month at all — not just its status — because a NULL status could
-                // mean either "no record" or a genuinely null status. salary_payment_id is
-                // the reliable existence flag used by the view to decide between
-                // "No Data Found" (past month, never processed) vs.
-                // "Invoice Not Generated Yet" (current/future month, payroll not run yet).
                 'salary_payment_id' => SalaryPayment::select('id')
                     ->whereColumn('employee_id', 'employees.id')
                     ->where('institution_id', $institutionId)

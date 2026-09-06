@@ -157,9 +157,9 @@
                                             wire:model.live="items.{{ $index }}.unit_price"
                                             class="form-control form-control-sm"
                                             style="font-size:.8rem"
-                                            placeholder="0.00"
+                                            placeholder="0"
                                             min="0"
-                                            step="0.01"
+                                            step="1"
                                             onfocus="focused(this)"
                                             onfocusout="defocused(this)">
                                     </div>
@@ -191,7 +191,7 @@
                                             style="font-size:.8rem"
                                             placeholder="0"
                                             min="0"
-                                            step="0.01"
+                                            step="1"
                                             onfocus="focused(this)"
                                             onfocusout="defocused(this)">
                                     </div>
@@ -200,7 +200,7 @@
 
                                 <!-- Total Price (read-only) -->
                                 <td style="padding:10px 10px;text-align:right;font-weight:600;white-space:nowrap">
-                                    {{ number_format($item['total_price'] ?? 0, 2) }}
+                                    {{ number_format($item['total_price'] ?? 0, 0) }}
                                 </td>
 
                                 <!-- Remove -->
@@ -257,7 +257,7 @@
                             <div class="d-flex align-items-center gap-2">
                                 <span style="font-size:.8rem;color:var(--muted);font-weight:600">৳</span>
                                 <div style="background:var(--input-bg,#f8f9fa);border:1px solid var(--border,#e9ecef);border-radius:8px;padding:6px 12px;min-width:140px;text-align:right;font-size:.83rem;font-weight:600">
-                                    {{ number_format($sub_total, 2) }}
+                                    {{ number_format($sub_total, 0) }}
                                 </div>
                             </div>
                         </div>
@@ -268,7 +268,7 @@
                             <div class="d-flex align-items-center gap-2">
                                 <span style="font-size:.8rem;color:var(--muted);font-weight:600">৳</span>
                                 <div style="background:var(--input-bg,#f8f9fa);border:1px solid var(--border,#e9ecef);border-radius:8px;padding:6px 12px;min-width:140px;text-align:right;font-size:.83rem;font-weight:600">
-                                    {{ number_format($total_discount, 2) }}
+                                    {{ number_format($total_discount, 0) }}
                                 </div>
                             </div>
                         </div>
@@ -279,7 +279,7 @@
                             <div class="d-flex align-items-center gap-2">
                                 <span style="font-size:.8rem;color:var(--muted);font-weight:600">৳</span>
                                 <div style="background:var(--input-bg,#f8f9fa);border:1px solid var(--border,#e9ecef);border-radius:8px;padding:6px 12px;min-width:140px;text-align:right;font-size:.85rem;font-weight:700;color:var(--primary,#e91e8c)">
-                                    {{ number_format($net_payable, 2) }}
+                                    {{ number_format($net_payable, 0) }}
                                 </div>
                             </div>
                         </div>
@@ -294,7 +294,7 @@
                                     style="font-size:.82rem;text-align:right"
                                     placeholder="Enter Payment Amount"
                                     min="0"
-                                    step="0.01"
+                                    step="1"
                                     onfocus="focused(this)"
                                     onfocusout="defocused(this)">
                             </div>
@@ -371,84 +371,3 @@
         </div>
     </div>
 </div>
-
-
-@push('scripts')
-    <script>
-        document.addEventListener('livewire:initialized', () => {
-
-            setTimeout(() => initAllFields(), 100);
-
-            Livewire.hook('morph.updated', ({ el }) => {
-                setTimeout(() => initAllFields(), 0);
-            });
-
-            function initAllFields() {
-
-                // ── 1. Text/Textarea/Number is-filled ──
-                document.querySelectorAll('.input-group-outline input, .input-group-outline textarea').forEach(function(input) {
-                    var group = input.closest('.input-group');
-                    if (!group) return;
-                    if (input.value && input.value.trim() !== '') {
-                        group.classList.add('is-filled');
-                    } else {
-                        group.classList.remove('is-filled');
-                    }
-                    if (input._materialInit) return;
-                    input._materialInit = true;
-                    input.addEventListener('focus', function() { group.classList.add('is-focused'); });
-                    input.addEventListener('blur', function() {
-                        group.classList.remove('is-focused');
-                        group.classList.toggle('is-filled', !!input.value.trim());
-                    });
-                    input.addEventListener('input', function() {
-                        group.classList.toggle('is-filled', !!input.value.trim());
-                    });
-                });
-
-                // ── 2. Select is-filled ──
-                document.querySelectorAll('.input-group-outline select').forEach(function(select) {
-                    var group = select.closest('.input-group');
-                    if (!group) return;
-                    if (select.value && select.value !== '') {
-                        group.classList.add('is-filled');
-                    } else {
-                        group.classList.remove('is-filled');
-                    }
-                    if (select._materialInit) return;
-                    select._materialInit = true;
-                    select.addEventListener('change', function() {
-                        group.classList.toggle('is-filled', !!select.value);
-                    });
-                    select.addEventListener('focus', function() { group.classList.add('is-focused'); });
-                    select.addEventListener('blur', function() { group.classList.remove('is-focused'); });
-                });
-
-                // ── 3. Custom Select rebuild ──
-                document.querySelectorAll('.input-group-outline .form-select').forEach(function(select) {
-                    var old = select.parentNode.querySelector('.custom-select-wrapper');
-                    if (old) old.remove();
-                    select.style.display = '';
-                    if (typeof buildCustomSelect === 'function') {
-                        buildCustomSelect(select);
-                    }
-                });
-
-                // ── 4. Datepicker ──
-                Livewire.on('date-updated', function (event) {
-                    var input = document.querySelector('.input-group-outline input[type="date"]');
-                    if (!input) return;
-                    var newDate = event.date || '';
-                    if (newDate) {
-                        input.value = newDate;
-                        input.dataset.dpValue = newDate;
-                        if (input._dpTriggerSync) {
-                            input._dpTriggerSync(newDate);
-                        }
-                    }
-                });
-            }
-
-        });
-    </script>
-@endpush

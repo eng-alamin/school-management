@@ -16,26 +16,23 @@ return new class extends Migration
             $table->id();
             $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
             $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('session_id')->constrained('academic_sessions')->cascadeOnDelete();
             $table->foreignId('class_id')->constrained('academic_classes')->cascadeOnDelete();
             $table->foreignId('section_id')->nullable()->constrained('academic_sections')->nullOnDelete();
             $table->timestamps();
 
         });
 
-        // PostgreSQL এ UNSIGNED টাইপ নেই, তাই driver অনুযায়ী column type আলাদা করা হচ্ছে।
-        $driver = DB::connection()->getDriverName();
-        $columnType = $driver === 'pgsql' ? 'BIGINT' : 'BIGINT UNSIGNED';
-
         DB::statement("
             ALTER TABLE academic_class_assigns
-            ADD COLUMN section_id_for_unique {$columnType}
+            ADD COLUMN section_id_for_unique BIGINT UNSIGNED
             GENERATED ALWAYS AS (COALESCE(section_id, 0)) STORED
         ");
-
+            
         Schema::table('academic_class_assigns', function (Blueprint $table) {
             $table->unique(
-                ['institution_id', 'class_id', 'section_id_for_unique'],
-                'academic_class_assigns_institution_class_section_unique'
+                ['institution_id', 'branch_id', 'session_id', 'class_id', 'section_id_for_unique'],
+                'academic_class_assigns_ins_bra_ses_cla_sec_unique'
             );
         });
     }

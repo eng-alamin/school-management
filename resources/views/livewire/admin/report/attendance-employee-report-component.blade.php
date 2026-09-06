@@ -1,31 +1,17 @@
-{{-- resources/views/livewire/admin/attendance-report-component.blade.php --}}
+{{-- resources/views/livewire/admin/report/attendance-employee-report-component.blade.php --}}
 <div>
 
     <div class="card">
 
         <!-- floating header -->
         <div class="mat-card-header header-primary-gradient">
-            <h5 id="cardHeaderTitleAllsections">Attendance Report</h5>
-            <p id="cardHeaderSubtitle">Student ও Employee attendance (biometric + manual) একসাথে দেখুন।</p>
+            <h5 id="cardHeaderTitleAllsections">Employee Attendance Report</h5>
+            <p id="cardHeaderSubtitle">Employee attendance (biometric + manual) filter করে দেখুন।</p>
         </div>
 
         <div class="card-body pt-3">
 
-            {{-- Type toggle --}}
-            <ul class="nav nav-pills mb-3 att-type-pills">
-                <li class="nav-item">
-                    <button class="nav-link {{ $type === 'student' ? 'active' : '' }}" wire:click="$set('type', 'student')">
-                        <span class="material-icons-round" style="font-size:1rem;vertical-align:middle;">school</span>
-                        Student
-                    </button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link {{ $type === 'employee' ? 'active' : '' }}" wire:click="$set('type', 'employee')">
-                        <span class="material-icons-round" style="font-size:1rem;vertical-align:middle;">badge</span>
-                        Employee
-                    </button>
-                </li>
-            </ul>
+            @include('admin.report.attandance-nav')
 
             {{-- Summary cards --}}
             <div class="row g-2 mb-3">
@@ -62,44 +48,41 @@
             {{-- Toolbar / Filters --}}
             <div class="card-toolbar flex-wrap mb-2">
                 <div class="col-md-2">
-                    <label class="form-label">From</label>
-                    <input type="date" class="form-control form-control-sm" wire:model.live="dateFrom">
+                    <div class="input-group input-group-outline" wire:ignore>
+                        <label class="form-label">From</label>
+                        <input type="date" class="form-control form-control-sm" wire:model.live="dateFrom" data-dp-value="{{ $dateFrom }}">
+                    </div>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">To</label>
-                    <input type="date" class="form-control form-control-sm" wire:model.live="dateTo">
+                    <div class="input-group input-group-outline" wire:ignore>
+                        <label class="form-label">To</label>
+                        <input type="date" class="form-control form-control-sm" wire:model.live="dateTo" data-dp-value="{{ $dateTo }}">
+                    </div>
                 </div>
 
-                @if ($type === 'student')
-                    <div class="col-md-2">
-                        <label class="form-label">Class</label>
-                        <select class="form-select form-select-sm" wire:model.live="classId">
-                            <option value="all">All Classes</option>
-                            @foreach ($classes as $class)
-                                <option value="{{ $class->id }}">{{ $class->name }}</option>
+                <div class="col-md-2">
+                    <div class="input-group input-group-outline" wire:ignore>
+                        <label class="form-label">Designation</label>
+                        <select class="form-select form-select-sm" wire:model.live="designationId">
+                            <option value="all">All Designations</option>
+                            @foreach ($designations as $designation)
+                                <option value="{{ $designation->id }}">{{ $designation->name }}</option>
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Section</label>
-                        <select class="form-select form-select-sm" wire:model.live="sectionId" @if($classId === 'all') disabled @endif>
-                            <option value="all">All Sections</option>
-                            @foreach ($sections as $section)
-                                <option value="{{ $section->id }}">{{ $section->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                @endif
+                </div>
 
                 <div class="col-md-2">
-                    <label class="form-label">Status</label>
-                    <select class="form-select form-select-sm" wire:model.live="status">
-                        <option value="all">All Status</option>
-                        <option value="present">Present</option>
-                        <option value="absent">Absent</option>
-                        <option value="late">Late</option>
-                        <option value="leave">Leave</option>
-                    </select>
+                    <div class="input-group input-group-outline" wire:ignore>
+                        <label class="form-label">Status</label>
+                        <select class="form-select form-select-sm" wire:model.live="status">
+                            <option value="all">All Status</option>
+                            <option value="present">Present</option>
+                            <option value="absent">Absent</option>
+                            <option value="late">Late</option>
+                            <option value="leave">Leave</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="col-md-2">
@@ -125,12 +108,8 @@
                                 @endif
                             </th>
                             <th id="th-name">Name</th>
-                            <th id="th-idno">ID No.</th>
-                            @if ($type === 'student')
-                                <th id="th-classsec">Class / Section</th>
-                            @else
-                                <th id="th-designation">Designation</th>
-                            @endif
+                            <th id="th-idno">Employee ID</th>
+                            <th id="th-designation">Designation</th>
                             <th id="th-checkin" role="button" wire:click="sortBy('check_in')">Check In</th>
                             <th id="th-checkout" role="button" wire:click="sortBy('check_out')">Check Out</th>
                             <th id="th-status" role="button" wire:click="sortBy('status')">Status</th>
@@ -139,7 +118,7 @@
                     </thead>
                     <tbody>
                         @forelse ($records as $i => $record)
-                        <tr wire:key="att-{{ $record->id }}">
+                        <tr wire:key="att-employee-{{ $record->id }}">
                             <td class="text-muted">{{ $records->firstItem() + $i }}</td>
 
                             <td class="text-muted" style="font-size:.78rem;">
@@ -149,24 +128,19 @@
                             <td>
                                 <div class="d-flex align-items-center gap-2">
                                     <div class="avatar-placeholder att-avatar-{{ $record->status }}">
-                                        <span class="material-icons-round" style="font-size:1rem;">{{ $type === 'student' ? 'school' : 'badge' }}</span>
+                                        <span class="material-icons-round" style="font-size:1rem;">badge</span>
                                     </div>
                                     <div class="fw-500 text-dark">{{ $record->attendable?->name ?? '— (deleted)' }}</div>
                                 </div>
                             </td>
 
                             <td class="text-muted" style="font-size:.78rem;">
-                                {{ $type === 'student' ? $record->attendable?->student_id : $record->attendable?->employee_id }}
+                                {{ $record->attendable?->employee_id }}
                             </td>
 
-                            @if ($type === 'student')
-                                <td class="text-muted" style="font-size:.78rem;">
-                                    {{ $record->attendable?->academicClass?->name }}
-                                    {{ $record->attendable?->academicSection?->name }}
-                                </td>
-                            @else
-                                <td class="text-muted" style="font-size:.78rem;">{{ $record->attendable?->designation?->name ?? '—' }}</td>
-                            @endif
+                            <td class="text-muted" style="font-size:.78rem;">
+                                {{ $record->attendable?->designation?->name ?? '—' }}
+                            </td>
 
                             <td class="text-muted" style="font-size:.78rem;">
                                 {{ $record->check_in ? \Carbon\Carbon::parse($record->check_in)->format('h:i A') : '—' }}
@@ -197,7 +171,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="9" class="text-center py-5 text-muted">
+                            <td colspan="8" class="text-center py-5 text-muted">
                                 <span class="material-icons-round d-block mb-2" style="font-size:2.5rem;opacity:.25;">fact_check</span>
                                 কোনো attendance record পাওয়া যায়নি।
                             </td>

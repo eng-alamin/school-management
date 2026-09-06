@@ -77,16 +77,17 @@
       </li>
 
       <li class="nav1-item">
-        <div class="nav1-link {{ str_contains(request()->url(), 'superadmin/activity-logs') || str_contains(request()->url(), 'superadmin/session-logs') || str_contains(request()->url(), 'superadmin/login-logs') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
+        <div class="nav1-link {{ str_contains(request()->url(), 'superadmin/activity-logs') || str_contains(request()->url(), 'superadmin/session-logs') || str_contains(request()->url(), 'superadmin/login-logs') || str_contains(request()->url(), 'superadmin/system-logs') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
           <span class="material-icons-round nav-icon">security</span>
           <span class="nav-label" id="nav-schools">Audit & Security Logs</span>
           <span class="material-icons-round nav-arrow">expand_more</span>
         </div>
-        <div class="nav2-collapse {{ str_contains(request()->url(), 'superadmin/activity-logs') || str_contains(request()->url(), 'superadmin/session-logs') || str_contains(request()->url(), 'superadmin/login-logs') == true ? 'show' : '' }}">
+        <div class="nav2-collapse {{ str_contains(request()->url(), 'superadmin/activity-logs') || str_contains(request()->url(), 'superadmin/session-logs') || str_contains(request()->url(), 'superadmin/login-logs') || str_contains(request()->url(), 'superadmin/system-logs') == true ? 'show' : '' }}">
           <ul>
             <li class="nav2-item"><a href="{{ route('superadmin.activitylog') }}" class="nav2-link {{ Route::is('superadmin.activitylog') == true ? 'active' : '' }}"><span class="nav2-icon">AL</span><span class="nav2-label" id="nav-schools">Activity Logs</span></a></li>
             <li class="nav2-item"><a href="{{ route('superadmin.sessionlog') }}" class="nav2-link {{ Route::is('superadmin.sessionlog') == true ? 'active' : '' }}"><span class="nav2-icon">LL</span><span class="nav2-label" id="nav-schools">Session Logs</span></a></li>
             <li class="nav2-item"><a href="{{ route('superadmin.loginlog') }}" class="nav2-link {{ Route::is('superadmin.loginlog') == true ? 'active' : '' }}"><span class="nav2-icon">LL</span><span class="nav2-label" id="nav-schools">Login Logs</span></a></li>
+            <li class="nav2-item"><a href="{{ route('superadmin.systemlog') }}" class="nav2-link {{ Route::is('superadmin.systemlog') == true ? 'active' : '' }}"><span class="nav2-icon">SL</span><span class="nav2-label" id="nav-schools">System Logs</span></a></li>
           </ul>
         </div>
       </li>

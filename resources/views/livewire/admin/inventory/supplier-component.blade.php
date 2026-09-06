@@ -107,26 +107,34 @@
                             <div class="row g-3">
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Name <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model.defer="name" placeholder="e.g. ABC Supplier">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model.defer="name">
+                                    </div>
                                     @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Mobile</label>
-                                    <input type="text" class="form-control @error('mobile') is-invalid @enderror" wire:model.defer="mobile" placeholder="e.g. 01700000000">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Mobile</label>
+                                        <input type="text" class="form-control @error('mobile') is-invalid @enderror" wire:model.defer="mobile">
+                                    </div>
                                     @error('mobile') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Email</label>
-                                    <input type="email" class="form-control @error('email') is-invalid @enderror" wire:model.defer="email" placeholder="e.g. supplier@example.com">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Email</label>
+                                        <input type="email" class="form-control @error('email') is-invalid @enderror" wire:model.defer="email">
+                                    </div>
                                     @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Address</label>
-                                    <input type="text" class="form-control @error('address') is-invalid @enderror" wire:model.defer="address" placeholder="e.g. Dhaka, Bangladesh">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Address</label>
+                                        <input type="text" class="form-control @error('address') is-invalid @enderror" wire:model.defer="address">
+                                    </div>
                                     @error('address') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 

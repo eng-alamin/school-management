@@ -13,29 +13,32 @@
         <div class="geo-filter-card">
             <div class="row g-2 align-items-end">
                 <div class="col-6 col-md-3">
-                    <label class="geo-filter-label" data-en="Metric" data-bn="মেট্রিক">Metric</label>
-                    <select class="form-select form-select-sm" wire:model.live="metric">
-                        <option value="institutions" data-en="Institution Count" data-bn="প্রতিষ্ঠান সংখ্যা">Institution Count</option>
-                        <option value="students" data-en="Student Count" data-bn="শিক্ষার্থী সংখ্যা">Student Count</option>
-                        <option value="pass_rate" data-en="Exam Pass Rate" data-bn="পরীক্ষার পাস রেট">Exam Pass Rate</option>
-                    </select>
+                    <div class="input-group input-group-outline">
+                        <select class="form-select form-select-sm" wire:model.live="metric">
+                            <option value="institutions" data-en="Institution Count" data-bn="প্রতিষ্ঠান সংখ্যা">Institution Count</option>
+                            <option value="students" data-en="Student Count" data-bn="শিক্ষার্থী সংখ্যা">Student Count</option>
+                            <option value="pass_rate" data-en="Exam Pass Rate" data-bn="পরীক্ষার পাস রেট">Exam Pass Rate</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="col-6 col-md-3">
-                    <label class="geo-filter-label" data-en="Level" data-bn="লেভেল">Level</label>
-                    <select class="form-select form-select-sm" wire:model.live="level">
-                        <option value="division" data-en="Division" data-bn="বিভাগ">Division</option>
-                        <option value="district" data-en="District" data-bn="জেলা">District</option>
-                    </select>
+                    <div class="input-group input-group-outline">
+                        <select class="form-select form-select-sm" wire:model.live="level">
+                            <option value="division" data-en="Division" data-bn="বিভাগ">Division</option>
+                            <option value="district" data-en="District" data-bn="জেলা">District</option>
+                        </select>
+                    </div>
                 </div>
                 @if ($level === 'district')
                     <div class="col-6 col-md-3">
-                        <label class="geo-filter-label" data-en="Division" data-bn="বিভাগ">Division</label>
-                        <select class="form-select form-select-sm" wire:model.live="division">
-                            <option value="" data-en="All Divisions" data-bn="সকল বিভাগ">All Divisions</option>
-                            @foreach ($divisions as $div)
-                                <option value="{{ $div }}">{{ $div }}</option>
-                            @endforeach
-                        </select>
+                        <div class="input-group input-group-outline">
+                            <select class="form-select form-select-sm" wire:model.live="division">
+                                <option value="" data-en="All Divisions" data-bn="সকল বিভাগ">All Divisions</option>
+                                @foreach ($divisions as $div)
+                                    <option value="{{ $div }}">{{ $div }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
                 @endif
                 @if ($metric === 'pass_rate')
@@ -101,6 +104,11 @@
 
 @push('styles')
 <style>
+    .custom-select-trigger {
+        min-height: 30px !important;
+        height: 36px !important;
+    }
+
     .geo-wrap { background: var(--body-bg); min-height: 100vh; }
 
     .geo-filter-card {

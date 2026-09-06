@@ -26,6 +26,7 @@
                             <option value="accountant">Accountant</option>
                             <option value="staff">Staff</option>
                             <option value="branch">Branch</option>
+                            <option value="it_support">IT Support</option>
                         </select>
                     </div>
                     @error('role') <span class="text-danger">{{ $message }}</span> @enderror

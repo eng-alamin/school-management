@@ -32,9 +32,11 @@
                     </div>
                 @endif
 
-                <a href="{{ route($routePrefix . 'salary.add-template') }}"
-                   class="btn btn-primary">
-                    <span class="material-icons-round">add</span> Add Template
+                <a href="{{ route($routePrefix . 'salary.add-template') }}" class="btn btn-primary">
+                    <span>
+                        <span class="material-icons-round">add_circle</span>
+                        <span> Add Template</span>
+                    </span>
                 </a>
             </div>
         </div>

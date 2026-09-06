@@ -13,8 +13,9 @@ return new class extends Migration
     {
         Schema::create('homeworks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
-            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('session_id')->constrained('academic_sessions')->cascadeOnDelete();
             
             // Academic
             $table->foreignId('class_id')->constrained('academic_classes')->cascadeOnDelete();
@@ -45,8 +46,8 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index(
-                ['institution_id', 'class_id', 'section_id', 'status'],
-                'homeworks_institution_class_section_status_idx'
+                ['institution_id', 'branch_id', 'session_id', 'class_id', 'section_id', 'status'],
+                'homeworks_idx'
             );
         });
     }

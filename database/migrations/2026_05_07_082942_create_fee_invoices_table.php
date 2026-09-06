@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
             $table->foreignId('student_id')->constrained()->cascadeOnDelete();
 
             $table->string('invoice_no');
@@ -37,9 +37,9 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->unique(['institution_id', 'invoice_no', 'deleted_at'], 'fee_invoices_institution_invoice_no_unique');
-            $table->index(['institution_id', 'payment_status', 'deleted_at'], 'fee_invoices_institution_status_idx');
-            $table->index(['institution_id', 'invoice_date'], 'fee_invoices_institution_date_idx');
+            $table->unique(['institution_id', 'branch_id', 'invoice_no', 'deleted_at'], 'fee_invoices_institution_invoice_no_unique');
+            $table->index(['institution_id', 'branch_id', 'payment_status', 'deleted_at'], 'fee_invoices_institution_status_idx');
+            $table->index(['institution_id', 'branch_id', 'invoice_date'], 'fee_invoices_institution_date_idx');
         });
     }
 

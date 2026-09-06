@@ -28,25 +28,29 @@
 
                 {{-- Right side: Filter --}}
                 <div class="col-md-2">
-                    <select class="form-select form-select-sm" wire:model.live="filterType">
-                        <option value="">All Types</option>
-                        <option value="student">Student</option>
-                        <option value="fee">Fee</option>
-                        <option value="exam">Exam</option>
-                        <option value="notice">Notice</option>
-                        <option value="event">Event</option>
-                        <option value="attendance">Attendance</option>
-                        <option value="general">General</option>
-                    </select>
+                    <div class="input-group input-group-outline">
+                        <select class="form-select form-select-sm" wire:model.live="filterType">
+                            <option value="">All Types</option>
+                            <option value="student">Student</option>
+                            <option value="fee">Fee</option>
+                            <option value="exam">Exam</option>
+                            <option value="notice">Notice</option>
+                            <option value="event">Event</option>
+                            <option value="attendance">Attendance</option>
+                            <option value="general">General</option>
+                        </select>
+                    </div>
                 </div>
 
                 @if($logs->total() > 10)
                     <div class="col-md-2">
-                        <select class="form-select form-select-sm" wire:model.live="perPage">
-                            <option value="10">10 / page</option>
-                            <option value="25">25 / page</option>
-                            <option value="50">50 / page</option>
-                        </select>
+                        <div class="input-group input-group-outline">
+                            <select class="form-select form-select-sm" wire:model.live="perPage">
+                                <option value="10">10 / page</option>
+                                <option value="25">25 / page</option>
+                                <option value="50">50 / page</option>
+                            </select>
+                        </div>
                     </div>
                 @endif
 

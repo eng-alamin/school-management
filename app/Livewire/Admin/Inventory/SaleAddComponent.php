@@ -116,7 +116,7 @@ class SaleAddComponent extends Component
                 ->find($value);
 
             if ($product) {
-                $this->items[$index]['unit_price'] = $product->sales_price;
+                $this->items[$index]['unit_price'] = number_format($product->sales_price, 0);
             }
         }
 
@@ -252,7 +252,7 @@ class SaleAddComponent extends Component
             }
         });
 
-        $this->dispatch('toast', type: 'success', message: 'Data created successfully!');
+        session()->flash('toast_success', 'Data created successfully!');
         $this->redirectRoute('admin.inventory.sale.list', navigate: true);
     }
 
@@ -265,7 +265,7 @@ class SaleAddComponent extends Component
             'sub_total', 'total_discount', 'net_payable',
         ]);
         $this->receivedAmountTouched = false;
-        $this->date    = now()->format('Y-m-d');
+        $this->dispatch('date-updated', date: $this->date);
         $this->bill_no = $this->generateBillNo();
         $this->resetValidation();
         $this->addItem();

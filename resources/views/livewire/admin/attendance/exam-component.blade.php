@@ -1,245 +1,206 @@
 <div>
     <div class="card">
 
-    {{-- Floating Header --}}
-    <div class="mat-card-header header-primary-gradient">
-        <h5>Exam Attendance</h5>
-        <p>Create or update exam attendance</p>
-    </div>
-
-    {{-- Select Ground --}}
-    <div class="form-section" style="padding-top:40px; padding-bottom:20px">
-        <div class="section-heading">
-            <span class="material-icons-round">school</span> Select Ground
+        {{-- Floating Header --}}
+        <div class="mat-card-header header-primary-gradient">
+            <h5>Exam Attendance</h5>
+            <p>Create or update exam attendance</p>
         </div>
-        <div class="row g-4">
 
-            {{-- Exam --}}
-            <div class="col-md-3">
-                <div class="input-group input-group-outline">
-                    <label class="form-label">Exam</label>
-                    <select wire:model.live="filterExam" class="form-select">
-                        <option value="">Select Exam</option>
-                        @foreach ($exams as $item)
-                            <option value="{{ $item->id }}">
-                                {{ $item->name }}
-                                @if($item->classAssign)
-                                    — {{ $item->classAssign->academicClass->name ?? '' }}
-                                    @if($item->classAssign->academicSection) ({{ $item->classAssign->academicSection->name }}) @endif
-                                @endif
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                @error('filterExam') <span class="text-danger small">{{ $message }}</span> @enderror
+        {{-- Select Ground --}}
+        <div class="form-section" style="padding-top:40px; padding-bottom:20px">
+            <div class="section-heading">
+                <span class="material-icons-round">school</span> Select Ground
             </div>
+            <div class="row g-4">
 
-            {{-- Class --}}
-            <div class="col-md-3">
-                <div class="input-group input-group-outline">
-                    <label class="form-label">Class</label>
-                    <select wire:model.live="filterClass" class="form-select">
-                        <option value="">Select Class</option>
-                        @foreach ($classes as $item)
-                            <option value="{{ $item->id }}">{{ $item->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                @error('filterClass') <span class="text-danger small">{{ $message }}</span> @enderror
-            </div>
-
-            {{-- Section: class-e section thakle "All Section" soho required dropdown,
-                 na thakle same dropdown disabled thakbe (StudentComponent-er sathe consistent) --}}
-            <div class="col-md-3">
-                <div wire:ignore.self class="input-group input-group-outline">
-                    <label class="form-label">
-                        Section
-                        @if($selectedClassHasSection)
-                            <span class="text-danger">*</span>
-                        @endif
-                    </label>
-                    <select
-                        wire:model.live="filterSection"
-                        class="form-select @error('filterSection') is-invalid @enderror"
-                        @disabled(!$filterClass || !$selectedClassHasSection)
-                    >
-                        @if(!$filterClass)
-                            <option value="">Select class first</option>
-                        @elseif(!$selectedClassHasSection)
-                            <option value="">N/A — this class has no sections</option>
-                        @else
-                            <option value="">Select Section</option>
-                            {{-- ✅ "All Section" — select korle ei class-er sob section-er data eksathe dekhabe --}}
-                            <option value="all">All Section</option>
-                            @foreach($availableSections as $s)
-                                <option value="{{ $s['id'] }}">{{ $s['name'] }}</option>
+                {{-- Exam --}}
+                <div class="col-md-3">
+                    <div class="input-group input-group-outline">
+                        <label class="form-label">Exam</label>
+                        <select wire:model.live="filterExam" class="form-select">
+                            <option value="">Select Exam</option>
+                            @foreach ($exams as $item)
+                                <option value="{{ $item->id }}">
+                                    {{ $item->name }}
+                                    @if($item->classAssign)
+                                        — {{ $item->classAssign->academicClass->name ?? '' }}
+                                        @if($item->classAssign->academicSection) ({{ $item->classAssign->academicSection->name }}) @endif
+                                    @endif
+                                </option>
                             @endforeach
-                        @endif
-                    </select>
+                        </select>
+                    </div>
+                    @error('filterExam') <span class="text-danger small">{{ $message }}</span> @enderror
                 </div>
-                @error('filterSection') <span class="text-danger small">{{ $message }}</span> @enderror
+
+                {{-- Class --}}
+                <div class="col-md-3">
+                    <div class="input-group input-group-outline">
+                        <label class="form-label">Class</label>
+                        <select wire:model.live="filterClass" class="form-select">
+                            <option value="">Select Class</option>
+                            @foreach ($classes as $item)
+                                <option value="{{ $item->id }}">{{ $item->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @error('filterClass') <span class="text-danger small">{{ $message }}</span> @enderror
+                </div>
+
+                <div class="col-md-3">
+                    <div wire:ignore.self class="input-group input-group-outline">
+                        <label class="form-label">
+                            Section
+                            @if($selectedClassHasSection)
+                                <span class="text-danger">*</span>
+                            @endif
+                        </label>
+                        <select
+                            wire:model.live="filterSection"
+                            class="form-select @error('filterSection') is-invalid @enderror"
+                            @disabled(!$filterClass || !$selectedClassHasSection)
+                        >
+                            @if(!$filterClass)
+                                <option value="">Select class first</option>
+                            @elseif(!$selectedClassHasSection)
+                                <option value="">N/A — this class has no sections</option>
+                            @else
+                                <option value="">Select Section</option>
+                                {{-- ✅ "All Section" — select korle ei class-er sob section-er data eksathe dekhabe --}}
+                                <option value="all">All Section</option>
+                                @foreach($availableSections as $s)
+                                    <option value="{{ $s['id'] }}">{{ $s['name'] }}</option>
+                                @endforeach
+                            @endif
+                        </select>
+                    </div>
+                    @error('filterSection') <span class="text-danger small">{{ $message }}</span> @enderror
+                </div>
+
+                {{-- Subject --}}
+                <div class="col-md-3">
+                    <div wire:ignore.self class="input-group input-group-outline">
+                        <label class="form-label">Subject</label>
+                        <select wire:model="filterSubject" class="form-select" @disabled(empty($subjects))>
+                            <option value="">{{ empty($subjects) ? 'No subject available' : 'Select Subject' }}</option>
+                            @foreach ($subjects as $item)
+                                <option value="{{ $item->id }}">{{ $item->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @error('filterSubject') <span class="text-danger small">{{ $message }}</span> @enderror
+                </div>
+
+                {{-- Filter Button --}}
+                <div class="col-md-12 text-center">
+                    <button wire:click="filter"
+                            wire:loading.attr="disabled"
+                            wire:target="filter"
+                            class="btn btn-primary w-100 d-flex justify-content-center align-items-center"
+                            type="button">
+                        <span wire:loading.remove wire:target="filter">
+                            <span class="material-icons-round" style="font-size:16px;vertical-align:middle;margin-right:4px">filter_alt</span> Filter
+                        </span>
+                        <span wire:loading wire:target="filter">
+                            <span class="material-icons-round" style="font-size:16px;animation:spin .7s linear infinite">sync</span> Filtering...
+                        </span>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        {{-- Attendance Table --}}
+        @if($hasAttendance)
+            <div class="form-section">
+                <div class="section-heading">
+                    <span class="material-icons-round">groups</span> Exams Attendance
+                </div>
+
+                <div class="table-responsive mt-3">
+                    <table class="schedule-table">
+
+                        <thead>
+                            <tr>
+                                <th id="th-sl">SL</th>
+                                <th id="th-name">Name</th>
+                                <th id="th-section">Section</th>
+                                <th id="th-roll">Roll</th>
+                                <th id="th-register-no">Register No</th>
+                                <th id="th-status">Status</th>
+                                <th id="th-remark">Remarks</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach($data as $index => $item)
+                            <tr wire:key="exam-att-{{ $index }}">
+                                <td>{{ $index + 1 }}</td>
+                                <td>{{ $item['name'] }}</td>
+                                {{-- ✅ Fix: khali section_name er khetre '—' dekhano hocche (StudentComponent-er sathe consistent) --}}
+                                <td>{{ $item['section_name'] ?: '—' }}</td>
+                                <td>{{ $item['roll_no'] }}</td>
+                                <td>{{ $item['registration_no'] }}</td>
+                                <td>
+                                    <div class="status-group">
+
+                                        <label>
+                                            <input type="radio"
+                                                wire:model="data.{{ $index }}.status"
+                                                value="present">
+                                            <span class="text-success">Present</span>
+                                        </label>
+
+                                        <label>
+                                            <input type="radio"
+                                                wire:model="data.{{ $index }}.status"
+                                                value="absent">
+                                            <span class="text-danger">Absent</span>
+                                        </label>
+
+                                        <label>
+                                            <input type="radio"
+                                                wire:model="data.{{ $index }}.status"
+                                                value="late">
+                                            <span class="text-warning">Late</span>
+                                        </label>
+
+                                    </div>
+                                </td>
+                                <td>
+                                    <input type="text"
+                                        wire:model="data.{{ $index }}.remarks"
+                                        class="schedule-input"
+                                        placeholder="Remarks">
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+
+                    </table>
+                </div>
             </div>
 
-            {{-- Subject --}}
-            <div class="col-md-3">
-                <div wire:ignore.self class="input-group input-group-outline">
-                    <label class="form-label">Subject</label>
-                    <select wire:model="filterSubject" class="form-select" @disabled(empty($subjects))>
-                        <option value="">{{ empty($subjects) ? 'No subject available' : 'Select Subject' }}</option>
-                        @foreach ($subjects as $item)
-                            <option value="{{ $item->id }}">{{ $item->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                @error('filterSubject') <span class="text-danger small">{{ $message }}</span> @enderror
-            </div>
+            {{-- Footer --}}
+            <div class="form-footer">
+                <button class="btn btn-secondary" type="button" wire:click="resetForm">
+                    <span class="material-icons-round" style="font-size:16px">refresh</span> Reset
+                </button>
 
-            {{-- Filter Button --}}
-            <div class="col-md-12 text-center">
-                <button wire:click="filter"
+                <button class="btn btn-primary" type="button"
+                        wire:click="save"
                         wire:loading.attr="disabled"
-                        wire:target="filter"
-                        class="btn btn-primary w-100 d-flex justify-content-center align-items-center"
-                        type="button">
-                    <span wire:loading.remove wire:target="filter">
-                        <span class="material-icons-round" style="font-size:16px;vertical-align:middle;margin-right:4px">filter_alt</span> Filter
+                        wire:target="save">
+                    <span wire:loading.remove wire:target="save">
+                        <span class="material-icons-round">save</span> Save
                     </span>
-                    <span wire:loading wire:target="filter">
-                        <span class="material-icons-round" style="font-size:16px;animation:spin .7s linear infinite">sync</span> Filtering...
+                    <span wire:loading wire:target="save">
+                        <span class="material-icons-round" style="font-size:16px;animation:spin .7s linear infinite">sync</span> Saving...
                     </span>
                 </button>
             </div>
+        @endif
 
-        </div>
     </div>
-
-    {{-- Attendance Table --}}
-    @if($hasAttendance)
-    <div class="form-section">
-        <div class="section-heading">
-            <span class="material-icons-round">groups</span> Exams Attendance
-        </div>
-
-        <div class="table-responsive mt-3">
-            <table class="schedule-table">
-
-                <thead>
-                    <tr>
-                        <th id="th-sl">SL</th>
-                        <th id="th-name">Name</th>
-                        <th id="th-section">Section</th>
-                        <th id="th-roll">Roll</th>
-                        <th id="th-register-no">Register No</th>
-                        <th id="th-status">Status</th>
-                        <th id="th-remark">Remarks</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    @foreach($data as $index => $item)
-                    <tr wire:key="exam-att-{{ $index }}">
-                        <td>{{ $index + 1 }}</td>
-                        <td>{{ $item['name'] }}</td>
-                        {{-- ✅ Fix: khali section_name er khetre '—' dekhano hocche (StudentComponent-er sathe consistent) --}}
-                        <td>{{ $item['section_name'] ?: '—' }}</td>
-                        <td>{{ $item['roll_no'] }}</td>
-                        <td>{{ $item['registration_no'] }}</td>
-                        <td>
-                            <div class="status-group">
-
-                                <label>
-                                    <input type="radio"
-                                        wire:model="data.{{ $index }}.status"
-                                        value="present">
-                                    <span class="text-success">Present</span>
-                                </label>
-
-                                <label>
-                                    <input type="radio"
-                                        wire:model="data.{{ $index }}.status"
-                                        value="absent">
-                                    <span class="text-danger">Absent</span>
-                                </label>
-
-                                <label>
-                                    <input type="radio"
-                                        wire:model="data.{{ $index }}.status"
-                                        value="late">
-                                    <span class="text-warning">Late</span>
-                                </label>
-
-                            </div>
-                        </td>
-                        <td>
-                            <input type="text"
-                                wire:model="data.{{ $index }}.remarks"
-                                class="schedule-input"
-                                placeholder="Remarks">
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-
-            </table>
-        </div>
-    </div>
-
-    {{-- Footer --}}
-    <div class="form-footer">
-        <button class="btn btn-secondary" type="button" wire:click="resetForm">
-            <span class="material-icons-round" style="font-size:16px">refresh</span> Reset
-        </button>
-
-        <button class="btn btn-primary" type="button"
-                wire:click="save"
-                wire:loading.attr="disabled"
-                wire:target="save">
-            <span wire:loading.remove wire:target="save">
-                <span class="material-icons-round">save</span> Save
-            </span>
-            <span wire:loading wire:target="save">
-                <span class="material-icons-round" style="font-size:16px;animation:spin .7s linear infinite">sync</span> Saving...
-            </span>
-        </button>
-    </div>
-    @endif
-
 </div>
-
-@push('scripts')
-<script>
-    document.addEventListener('livewire:initialized', () => {
-        Livewire.hook('morph.updated', ({ el }) => {
-            setTimeout(() => {
-                // Re-init custom selects
-                el.querySelectorAll('.input-group-outline .form-select').forEach(function(select) {
-                    if (!select.nextElementSibling || !select.nextElementSibling.classList.contains('custom-select-wrapper')) {
-                        buildCustomSelect(select);
-                    }
-                });
-
-                // Re-init text/time inputs
-                el.querySelectorAll('.input-group-outline input').forEach(function(input) {
-                    var group = input.closest('.input-group');
-                    if (!group) return;
-                    if (input.value && input.value.trim() !== '') {
-                        group.classList.add('is-filled');
-                    } else {
-                        group.classList.remove('is-filled');
-                    }
-                    if (input._materialInit) return;
-                    input._materialInit = true;
-                    input.addEventListener('focus', function() { group.classList.add('is-focused'); });
-                    input.addEventListener('blur', function() {
-                        group.classList.remove('is-focused');
-                        group.classList.toggle('is-filled', !!input.value.trim());
-                    });
-                    input.addEventListener('input', function() {
-                        group.classList.toggle('is-filled', !!input.value.trim());
-                    });
-                });
-            }, 0);
-        });
-    });
-</script>
-@endpush

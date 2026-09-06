@@ -16,6 +16,27 @@ class AcademicSession extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date'   => 'date',
+        'is_current' => 'boolean',
+    ];
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $session) {
+            if (! $session->is_current) {
+                return;
+            }
+ 
+            static::where('institution_id', $session->institution_id)
+                ->where('branch_id', $session->branch_id)
+                ->when($session->exists, fn ($q) => $q->whereKeyNot($session->getKey()))
+                ->where('is_current', true)
+                ->update(['is_current' => false]);
+        });
+    }
+
     public function enrollments()
     {
         return $this->hasMany(StudentEnrollment::class, 'session_id');

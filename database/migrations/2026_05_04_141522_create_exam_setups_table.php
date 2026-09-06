@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('exam_setups', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
             $table->foreignId('academic_session_id')->constrained()->cascadeOnDelete();
             $table->foreignId('academic_class_assign_id')->constrained()->cascadeOnDelete();
             $table->string('name');
@@ -25,10 +25,7 @@ return new class extends Migration
             $table->boolean('is_result_published')->default(false);
             $table->timestamps();
 
-            $table->unique(
-                ['academic_class_assign_id', 'name'],
-                'exam_setups_class_assign_name_unique'
-            );
+            $table->unique(['institution_id', 'branch_id', 'academic_class_assign_id', 'name'], 'es_ins_bra_aca_nam_unique');
         });
     }
 

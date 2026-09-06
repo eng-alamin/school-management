@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('grievances', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
 
             // Only set when a guardian files on behalf of a specific child;
             // null for self-filed student/teacher grievances.

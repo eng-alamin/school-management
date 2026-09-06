@@ -1,0 +1,146 @@
+<?php
+
+namespace App\Livewire\ITSupport\Mailbox;
+
+use App\Models\Message;
+use App\Models\User;
+use App\Services\NotificationService;
+use Livewire\Component;
+
+class ComposeComponent extends Component
+{
+    public string $to         = '';
+    public string $subject    = '';
+    public string $body       = '';
+    public string $searchUser = '';
+
+    public ?int $receiver_id    = null;
+    public string $receiverName = '';
+
+    public array $userSuggestions = [];
+
+    /* ------------------------------------------------------------------ */
+
+    protected array $rules = [
+        'receiver_id' => 'required|exists:users,id',
+        'subject'     => 'required|min:2|max:255',
+        'body'        => 'required|min:5',
+    ];
+
+    protected array $messages = [
+        'receiver_id.required' => 'Please select a recipient.',
+        'subject.required'     => 'Subject is required.',
+        'body.required'        => 'Message body is required.',
+    ];
+
+    public string $routePrefix = '';
+
+    public function mount(): void
+    {
+        $this->routePrefix = $this->resolveRoutePrefix();
+    }
+
+    protected function resolveRoutePrefix(): string
+    {
+        $routeName = request()->route()?->getName();
+
+        if ($routeName && str_contains($routeName, '.')) {
+            return explode('.', $routeName)[0] . '.';
+        }
+
+        $segment = request()->segment(1);
+
+        return $segment ? $segment . '.' : '';
+    }
+
+    /* ------------------------------------------------------------------ */
+
+    public function updatedSearchUser(string $value): void
+    {
+        if (strlen($value) < 2) {
+            $this->userSuggestions = [];
+            return;
+        }
+
+        $this->userSuggestions = User::where('id', '!=', auth()->id())
+            ->where(function ($q) use ($value) {
+                $q->where('name', 'like', "%{$value}%")
+                  ->orWhere('email', 'like', "%{$value}%");
+            })
+            ->limit(8)
+            ->get(['id', 'name', 'email'])
+            ->toArray();
+    }
+
+    public function selectUser(int $id, string $name): void
+    {
+        $this->receiver_id     = $id;
+        $this->receiverName    = $name;
+        $this->searchUser      = $name;
+        $this->userSuggestions = [];
+    }
+
+    public function clearReceiver(): void
+    {
+        $this->receiver_id     = null;
+        $this->receiverName    = '';
+        $this->searchUser      = '';
+        $this->userSuggestions = [];
+    }
+
+    /* ------------------------------------------------------------------ */
+
+    public function send(): void
+    {
+        $this->validate();
+
+        $record = Message::create([
+            'sender_id'   => auth()->id(),
+            'receiver_id' => $this->receiver_id,
+            'subject'     => $this->subject,
+            'body'        => $this->body,
+        ]);
+
+        // ── Notification (receiver কে পাঠাবে) ─────────────────────────
+        $receiver = User::find($this->receiver_id);
+        if ($receiver) {
+            NotificationService::send(
+                $receiver,
+                'message',
+                'New Message',
+                auth()->user()->name . ' তোমাকে একটি message পাঠিয়েছে: ' . $this->subject,
+                ['icon' => 'mail', 'url' => route('itsupport.mailbox.inbox')],
+                'normal'
+            );
+        }
+
+        // ── Activity Log ───────────────────────────────────────────────
+        activity()
+            ->causedBy(auth()->user())
+            ->performedOn($record)
+            ->withProperties(['icon' => 'mail', 'type' => 'mailbox'])
+            ->tap(function ($activity) use ($record) {
+                $activity->institution_id = auth()->user()->institution_id;
+            })
+            ->log('Message sent to ' . $this->receiverName . ': ' . $this->subject);
+
+        $this->dispatch('toast', type: 'success', message: 'Message sent successfully!');
+        $this->reset(['receiver_id', 'receiverName', 'searchUser', 'subject', 'body']);
+    }
+
+    public function saveDraft(): void
+    {
+        // Extend later: add `is_draft` column to messages table
+        $this->dispatch('toast', type: 'info', message: 'Draft feature coming soon.');
+    }
+
+    /* ------------------------------------------------------------------ */
+
+    public function render()
+    {
+        return view('livewire.admin.mailbox.compose-component')
+            ->layout('layouts.itsupport.app', [
+                'title' => 'MailBox | ' . institution()->name,
+            ]);
+    }
+}

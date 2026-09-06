@@ -7,8 +7,11 @@
             <h5 class="fw-bold mb-0 text-dark" data-en="Circulars" data-bn="পরিপত্রসমূহ">Circulars</h5>
             <p class="text-secondary mb-0" style="font-size:12px;" data-en="Broadcast circulars to registered institutions" data-bn="নিবন্ধিত প্রতিষ্ঠানসমূহে পরিপত্র প্রচার করুন">Broadcast circulars to registered institutions</p>
         </div>
-        <a href="{{ route('ministry.circulars.create') }}" class="act-btn">
-            <span class="material-icons-round" style="font-size:16px;">add</span> <span data-en="Publish Circular" data-bn="পরিপত্র প্রকাশ করুন">Publish Circular</span>
+        <a href="{{ route('ministry.circulars.create') }}" class="btn btn-primary">
+            <span>
+                <span class="material-icons-round">add</span> 
+                <span data-en="Publish Circular" data-bn="পরিপত্র প্রকাশ করুন">Publish Circular</span>
+            </span>
         </a>
     </div>
 
@@ -16,19 +19,19 @@
         <div class="inst-filter-card">
             <div class="row g-2 align-items-end">
                 <div class="col-8 col-md-4">
-                    <label class="inst-filter-label" data-en="Search" data-bn="খুঁজুন">Search</label>
                     <input type="text" wire:model.live.debounce.400ms="search"
                            class="form-control form-control-sm"
                            data-en-ph="Search by title..." data-bn-ph="শিরোনাম দিয়ে খুঁজুন..."
                            placeholder="Search by title...">
                 </div>
                 <div class="col-4 col-md-2">
-                    <label class="inst-filter-label" data-en="Status" data-bn="অবস্থা">Status</label>
-                    <select wire:model.live="status" class="form-select form-select-sm">
-                        <option value="" data-en="All" data-bn="সকল">All</option>
-                        <option value="active" data-en="Active" data-bn="সক্রিয়">Active</option>
-                        <option value="inactive" data-en="Inactive" data-bn="নিষ্ক্রিয়">Inactive</option>
-                    </select>
+                    <div class="input-group input-group-outline">
+                        <select wire:model.live="status" class="form-select form-select-sm">
+                            <option value="" data-en="All Status" data-bn="সকল অবস্থা">All Status</option>
+                            <option value="active" data-en="Active" data-bn="সক্রিয়">Active</option>
+                            <option value="inactive" data-en="Inactive" data-bn="নিষ্ক্রিয়">Inactive</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
@@ -114,13 +117,12 @@
 
 @push('styles')
 <style>
-    .notice-wrap { background: var(--body-bg); min-height: 100vh; }
-    .act-btn {
-        display: inline-flex; align-items: center; gap: 6px;
-        background: var(--primary); color: #fff; border: none;
-        border-radius: 8px; padding: 7px 14px; font-size: 13px;
-        font-weight: 500; text-decoration: none;
+    .custom-select-trigger {
+        min-height: 30px !important;
+        height: 36px !important;
     }
+
+    .notice-wrap { background: var(--body-bg); min-height: 100vh; }
     .inst-filter-card {
         background: var(--card); border: 1px solid var(--border);
         border-radius: var(--radius-card); padding: 14px; box-shadow: var(--shadow);

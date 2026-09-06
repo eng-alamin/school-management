@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Inventory;
 use Livewire\Component;
 use App\Models\InventoryUnit;
 use Livewire\WithPagination;
+use Illuminate\Validation\Rule;
 
 class UnitComponent extends Component
 {
@@ -30,8 +31,16 @@ class UnitComponent extends Component
     protected function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
-        ];
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('inventory_units', 'name')
+                    ->where('institution_id', institution()->id)
+                    ->where('branch_id', auth()->user()->branch_id)
+                    ->ignore($this->editId),
+            ],
+         ];
     }
 
     public function updatingSearch(): void

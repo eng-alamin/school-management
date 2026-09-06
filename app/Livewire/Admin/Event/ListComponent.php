@@ -3,8 +3,12 @@
 namespace App\Livewire\Admin\Event;
 
 use Livewire\Component;
-use App\Models\Event;
 use Livewire\WithPagination;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use App\Models\Event;
+use App\Models\AcademicSession;
+use App\Models\Branch;
 
 class ListComponent extends Component
 {
@@ -12,11 +16,13 @@ class ListComponent extends Component
 
     protected string $paginationTheme = 'bootstrap';
 
+    private const SORTABLE_FIELDS = ['id', 'title', 'date_from', 'date_to', 'audience', 'created_at'];
+
     // List
     public string $search = '';
     public int $perPage = 10;
     public string $sortField = 'id';
-    public string $sortDirection = 'asc';
+    public string $sortDirection = 'desc';
 
     // Delete
     public bool $confirmDelete = false;
@@ -24,9 +30,12 @@ class ListComponent extends Component
 
     public string $routePrefix = '';
 
+    public ?int $currentSessionId = null;
+
     public function mount(): void
     {
-        $this->routePrefix = $this->resolveRoutePrefix();
+        $this->routePrefix      = $this->resolveRoutePrefix();
+        $this->currentSessionId = $this->resolveCurrentSessionId();
     }
 
     protected function resolveRoutePrefix(): string
@@ -42,17 +51,41 @@ class ListComponent extends Component
         return $segment ? $segment . '.' : '';
     }
 
+    private function activeBranchId(): ?int
+    {
+        return auth()->user()->branch_id
+            ?? Branch::resolveMainBranchId(institution()->id);
+    }
+
+    private function resolveCurrentSessionId(): ?int
+    {
+        return AcademicSession::query()
+            ->where('institution_id', institution()->id)
+            ->where('branch_id', $this->activeBranchId())
+            ->active() // scopeActive() -> is_current = true
+            ->value('id');
+    }
+
     public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedPerPage(): void
     {
         $this->resetPage();
     }
 
     public function sortBy(string $field): void
     {
+        if (! in_array($field, self::SORTABLE_FIELDS, true)) {
+            return;
+        }
+
         if ($this->sortField === $field) {
             $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
         } else {
-            $this->sortField = $field;
+            $this->sortField     = $field;
             $this->sortDirection = 'asc';
         }
 
@@ -61,38 +94,69 @@ class ListComponent extends Component
 
     public function confirmDeleteRecord(int $id): void
     {
-        $this->deleteId = $id;
+        $this->deleteId      = $id;
         $this->confirmDelete = true;
     }
 
     public function deleteRecord(): void
     {
-        $record = Event::where('institution_id', auth()->user()->institution_id)
-            ->findOrFail($this->deleteId);
+        $institutionId = institution()->id;
+        $branchId      = $this->activeBranchId();
 
-        $record->delete();
+        $event = Event::where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
+            ->find($this->deleteId);
+
+        if (!$event) {
+            $this->confirmDelete = false;
+            $this->deleteId      = null;
+            $this->dispatch('toast', type: 'error', message: 'Event not found.');
+            return;
+        }
+
+        $imagePath = $event->image;
+        $title     = $event->title;
+
+        try {
+            DB::transaction(function () use ($event, $title, $institutionId) {
+                activity()
+                    ->causedBy(auth()->user())
+                    ->performedOn($event)
+                    ->withProperties(['icon' => 'event', 'type' => 'event'])
+                    ->tap(fn ($a) => $a->institution_id = $institutionId)
+                    ->log('Event deleted: ' . $title);
+
+                $event->delete();
+            });
+
+            if ($imagePath) {
+                Storage::disk('public')->delete($imagePath);
+            }
+
+            $this->dispatch('toast', type: 'success', message: 'Event deleted successfully!');
+
+        } catch (\Throwable $e) {
+            $this->dispatch('toast', type: 'error', message: 'Delete failed: ' . $e->getMessage());
+            report($e);
+        }
+
         $this->confirmDelete = false;
-        $this->deleteId = null;
-
-        // ── Activity Log ───────────────────────────────────────────
-        activity()
-            ->causedBy(auth()->user())
-            ->performedOn($record)
-            ->withProperties(['icon' => 'event', 'type' => 'event'])
-            ->tap(function ($activity) use ($record) {
-                $activity->institution_id = $record->institution_id;
-            })
-            ->log('Event deleted: ' . $record->title);
-
-        session()->flash('success', 'Event deleted successfully!');
+        $this->deleteId      = null;
     }
 
     public function render()
     {
+        $institutionId = institution()->id;
+        $branchId      = $this->activeBranchId();
+
         $events = Event::query()
             ->with('eventType')
-            ->where('institution_id', auth()->user()->institution_id)
-            ->when($this->search, fn($q) => $q->where('title', 'like', "%{$this->search}%"))
+            ->where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
+            ->where('session_id', $this->currentSessionId)
+            ->when($this->search, fn($q) =>
+                $q->where('title', 'like', '%' . $this->search . '%')
+            )
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 

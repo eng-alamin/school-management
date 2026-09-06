@@ -238,17 +238,17 @@
 
                         {{-- Pay Via --}}
                         <div class="col-12">
-                            <label class="ap-label">Pay Via <span class="req">*</span></label>
-                            <select wire:model.live="payVia"
-                                    class="ap-input"
-                                    @if($alreadyPaid) disabled @endif>
-                                <option value="">Select</option>
-                                <option value="cash">Cash</option>
-                                <option value="card">Card</option>
-                                <option value="bank">Bank</option>
-                                <option value="cheque">Cheque</option>
-                                <option value="mobile_banking">Mobile Banking</option>
-                            </select>
+                            <div class="input-group input-group-outline">
+                                <label class="ap-label">Pay Via <span class="req">*</span></label>
+                                <select wire:model.live="payVia" class="form-select form-select-sm" @if($alreadyPaid) disabled @endif>
+                                    <option value="">Select</option>
+                                    <option value="cash">Cash</option>
+                                    <option value="card">Card</option>
+                                    <option value="bank">Bank</option>
+                                    <option value="cheque">Cheque</option>
+                                    <option value="mobile_banking">Mobile Banking</option>
+                                </select>
+                            </div>
                             @error('payVia') <span class="text-danger small">{{ $message }}</span> @enderror
                         </div>
 

@@ -31,7 +31,7 @@
                 @endif
                 <button class="btn btn-primary" wire:click="openCreate">
                     <span>
-                        <span class="material-icons-round">add</span> 
+                        <span class="material-icons-round">add_circle</span> 
                         <span id="inventory-unit-add-btn">Add Unit</span>
                     </span>
                 </button>
@@ -100,8 +100,10 @@
                         <form wire:submit.prevent="save">
                             <div class="row g-3">
                                 <div class="col-md-12">
-                                    <label class="form-label">Name <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model.defer="name" placeholder="e.g. Kilogram">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model.defer="name">
+                                    </div>
                                     @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                             </div>

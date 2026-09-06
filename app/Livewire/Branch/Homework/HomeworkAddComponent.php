@@ -12,6 +12,8 @@ use App\Models\AcademicClass;
 use App\Models\AcademicSection;
 use App\Models\AcademicSubject;
 use App\Models\AcademicClassAssign;
+use App\Models\AcademicSession;
+use App\Models\Branch;
 use App\Models\Employee;
 use App\Models\Student;
 use App\Models\User;
@@ -41,17 +43,33 @@ class HomeworkAddComponent extends Component
 
     public $status = 'published';
 
-    // ── Dynamic dropdowns ──
     public array $availableSections = [];
     public array $availableSubjects = [];
 
-    // ── Class-level section-support flag (academic_classes.has_section).
-    // Gates whether the Section dropdown / "All Section" option can appear
-    // at all — independent from whether the session-wise assign happens to
-    // list any sections.
     public bool $classHasSection = true;
 
-    // ── Class changed → reload sections, clear rest ──
+    public ?int $currentSessionId = null;
+
+    public function mount(): void
+    {
+        $this->currentSessionId = $this->resolveCurrentSessionId();
+    }
+
+    private function resolveCurrentSessionId(): ?int
+    {
+        return AcademicSession::query()
+            ->where('institution_id', institution()->id)
+            ->where('branch_id', $this->activeBranchId())
+            ->active() // scopeActive() -> is_current = true
+            ->value('id');
+    }
+
+    private function activeBranchId(): ?int
+    {
+        return auth()->user()->branch_id
+            ?? Branch::resolveMainBranchId(institution()->id);
+    }
+
     public function updatedClassId($value): void
     {
         $this->section_id        = null;
@@ -63,12 +81,13 @@ class HomeworkAddComponent extends Component
         if (!$value) return;
 
         $institutionId = institution()->id;
+        $branchId      = $this->activeBranchId();
 
-        $class = AcademicClass::where('institution_id', $institutionId)->find($value);
+        $class = AcademicClass::where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
+            ->find($value);
         $this->classHasSection = $class ? (bool) $class->has_section : true;
 
-        // Class-e section support na thakle, assign-section query e na giye
-        // sরাসরি section-less subjects load kora hocche.
         if (!$this->classHasSection) {
             $this->loadSubjects($value, null);
             return;
@@ -76,6 +95,8 @@ class HomeworkAddComponent extends Component
 
         $assigns = AcademicClassAssign::with('section')
             ->where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
+            ->where('session_id', $this->currentSessionId)
             ->where('class_id', $value)
             ->whereNotNull('section_id')
             ->get();
@@ -87,13 +108,11 @@ class HomeworkAddComponent extends Component
             ->values()
             ->toArray();
 
-        // No sections found in the current session's assignment → load subjects directly
         if (empty($this->availableSections)) {
             $this->loadSubjects($value, null);
         }
     }
 
-    // ── Section changed → reload subjects ──
     public function updatedSectionId($value): void
     {
         $this->subject_id        = null;
@@ -101,15 +120,11 @@ class HomeworkAddComponent extends Component
 
         if (!$this->class_id) return;
 
-        // "all" selected → load subjects without section filter
         $sectionId = ($value && $value !== 'all') ? $value : null;
 
         $this->loadSubjects($this->class_id, $sectionId);
     }
 
-    // ── "Publish Later" টগল হলে status ফিল্ড সাথে সাথে sync রাখা ──
-    // Checked হলে জোর করে draft; unchecked হলে ইউজার আগে যা সিলেক্ট করেছিল সেটাই থাকবে
-    // (draft ছিল যদি, তাহলে published-এ ফিরিয়ে দিই যাতে ফর্ম বিভ্রান্তিকর না হয়)।
     public function updatedPublishedLater($value): void
     {
         if ($value) {
@@ -125,6 +140,8 @@ class HomeworkAddComponent extends Component
     protected function loadSubjects($class_id, $section_id = null): void
     {
         $query = AcademicClassAssign::where('institution_id', institution()->id)
+            ->where('branch_id', $this->activeBranchId())
+            ->where('session_id', $this->currentSessionId)
             ->where('class_id', $class_id);
 
         if ($section_id) {
@@ -151,10 +168,6 @@ class HomeworkAddComponent extends Component
         }
     }
 
-    /**
-     * Resolve the currently valid subject_id list for the selected class/section.
-     * Used both for rendering and for tamper-proof server-side validation.
-     */
     protected function validSubjectIdsForSelection(): array
     {
         if (!$this->class_id) {
@@ -166,6 +179,8 @@ class HomeworkAddComponent extends Component
             : null;
 
         $query = AcademicClassAssign::where('institution_id', institution()->id)
+            ->where('branch_id', $this->activeBranchId())
+            ->where('session_id', $this->currentSessionId)
             ->where('class_id', $this->class_id);
 
         if ($sectionId) {
@@ -196,10 +211,18 @@ class HomeworkAddComponent extends Component
 
     public function save(): void
     {
+        abort_unless((bool) $this->currentSessionId, 422, 'No active academic session found. Please set a current session first.');
+
+        $institutionId = institution()->id;
+        $branchId      = $this->activeBranchId();
+        $sessionId     = $this->currentSessionId;
+
         $this->validate([
             'class_id'        => [
                 'required',
-                Rule::exists('academic_classes', 'id')->where('institution_id', institution()->id),
+                Rule::exists('academic_classes', 'id')
+                    ->where('institution_id', $institutionId)
+                    ->where('branch_id', $branchId),
             ],
             'section_id'      => [
                 Rule::requiredIf($this->classHasSection),
@@ -207,7 +230,7 @@ class HomeworkAddComponent extends Component
             ],
             'subject_id'      => [
                 'required',
-                Rule::exists('academic_subjects', 'id')->where('institution_id', institution()->id),
+                Rule::exists('academic_subjects', 'id')->where('institution_id', $institutionId),
                 function ($attribute, $value, $fail) {
                     if (!in_array($value, $this->validSubjectIdsForSelection())) {
                         $fail('Selected subject is not assigned to the selected class/section.');
@@ -217,7 +240,8 @@ class HomeworkAddComponent extends Component
             'teacher_id'      => [
                 'nullable',
                 Rule::exists('users', 'id')
-                    ->where('institution_id', institution()->id)
+                    ->where('institution_id', $institutionId)
+                    ->where('branch_id', $branchId)
                     ->where('role', User::ROLE_TEACHER),
             ],
             'title'           => 'required|string|max:255',
@@ -231,30 +255,24 @@ class HomeworkAddComponent extends Component
             'status'          => ['required', Rule::in(['draft', 'published', 'closed'])],
         ]);
 
-        // ── Tamper-proof guard: "Publish Later" চেক করা থাকলে status অবশ্যই draft হবে,
-        // যতই client-side থেকে অন্য কিছু আসুক। এটাই আসল বাগ ফিক্স —
-        // আগে এই guard না থাকায় status='published' থেকে গেলে Homework সাথে সাথেই
-        // "published" দেখাত অথচ notification স্কিপ হয়ে যেত, এবং schedule_date-এ
-        // কখনো actual publish হতো না (কারণ তা প্রসেস করার কোনো job ছিল না)। ──
         $status = $this->published_later ? 'draft' : $this->status;
 
         $attachmentPath = null;
 
         try {
-            // File upload happens outside the DB transaction (storage isn't transactional).
             $attachmentPath = $this->attachment
                 ? $this->attachment->store('homeworks', 'public')
                 : null;
 
-            // ── Data integrity: class-e section na thakle (has_section = false),
-            // section_id kokhono persist kora jabe na, client-side state jai hok na keno ──
             $sectionId = ($this->classHasSection && $this->section_id && $this->section_id !== 'all')
                 ? $this->section_id
                 : null;
 
-            $homework = DB::transaction(function () use ($sectionId, $attachmentPath, $status) {
+            $homework = DB::transaction(function () use ($sectionId, $attachmentPath, $status, $institutionId, $branchId, $sessionId) {
                 $homework = Homework::create([
-                    'institution_id'  => institution()->id,
+                    'institution_id'  => $institutionId,
+                    'branch_id'       => $branchId,
+                    'session_id'      => $sessionId,
                     'class_id'        => $this->class_id,
                     'section_id'      => $sectionId,
                     'subject_id'      => $this->subject_id,
@@ -272,14 +290,12 @@ class HomeworkAddComponent extends Component
 
                 activity()
                     ->performedOn($homework)
+                    ->tap(fn ($a) => $a->institution_id = $institutionId)
                     ->log('Homework "' . $homework->title . '" created');
 
                 return $homework;
             });
 
-            // ── Notification: শুধু published homework-এর ক্ষেত্রেই এখনই notify করব ──
-            // draft/scheduled হলে এখনো কেউ দেখবে না; সময় হলে ProcessScheduledHomeworks
-            // command (প্রতি মিনিটে scheduler দিয়ে চলবে) সেটাকে publish করে notify করবে।
             if ($homework->status === 'published' && !$homework->published_later) {
                 HomeworkNotificationService::notifyStudentsAndGuardians($homework);
             }
@@ -288,7 +304,7 @@ class HomeworkAddComponent extends Component
             $this->resetForm();
 
         } catch (\Throwable $e) {
-            // Roll back the uploaded file if DB insert failed, to avoid orphan files.
+
             if ($attachmentPath) {
                 Storage::disk('public')->delete($attachmentPath);
             }
@@ -300,12 +316,21 @@ class HomeworkAddComponent extends Component
 
     public function render()
     {
-        $classes = AcademicClass::where('institution_id', institution()->id)
-            ->whereIn('id', AcademicClassAssign::where('institution_id', institution()->id)->distinct()->pluck('class_id'))
+        $institutionId = institution()->id;
+        $branchId      = $this->activeBranchId();
+
+        $classes = AcademicClass::where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
+            ->whereIn('id', AcademicClassAssign::where('institution_id', $institutionId)
+                ->where('branch_id', $branchId)
+                ->where('session_id', $this->currentSessionId)
+                ->distinct()
+                ->pluck('class_id'))
             ->orderBy('id')
             ->get();
 
-        $teachers = User::where('institution_id', institution()->id)
+        $teachers = User::where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
             ->where('role', User::ROLE_TEACHER)
             ->where('is_active', true)
             ->orderBy('name')

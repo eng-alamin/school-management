@@ -23,54 +23,42 @@
                     </div>
                 </div>
 
-                {{-- Class filter --}}
-                <div>
-                    <select wire:model.live="filterClass" class="form-select form-select-sm" style="min-width:140px">
-                        <option value="">All Classes</option>
-                        @foreach ($classes as $c)
-                            <option value="{{ $c->id }}">{{ $c->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                {{-- Section filter --}}
-                <div>
-                    <select wire:model.live="filterSection" class="form-select form-select-sm" style="min-width:140px"
-                        {{ empty($availableSections) ? 'disabled' : '' }}>
-                        <option value="">All Sections</option>
-                        @if(!empty($availableSections))
-                            @foreach ($availableSections as $s)
-                                <option value="{{ $s['id'] }}">{{ $s['name'] }}</option>
-                            @endforeach
-                        @endif
-                    </select>
-                </div>
-
-                {{-- Per page --}}
                 @if($students->total() > 10)
-                    <div>
+                <div class="col-md-2">
+                    <div class="input-group input-group-outline">
                         <select class="form-select form-select-sm" wire:model.live="perPage">
                             <option value="10">10 / page</option>
                             <option value="25">25 / page</option>
                             <option value="50">50 / page</option>
                         </select>
                     </div>
+                </div>
                 @endif
 
-                {{-- Import --}}
-                <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#importModal">
-                    <span class="material-icons-round" style="font-size:16px">upload</span> Import
-                </button>
+                <div class="col-md-2">
+                    <div class="input-group input-group-outline">
+                        <select wire:model.live="filterClass" class="form-select form-select-sm">
+                            <option value="">All Classes</option>
+                            @foreach ($classes as $c)
+                                <option value="{{ $c->id }}">{{ $c->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
 
-                {{-- Export CSV --}}
-                <button class="btn btn-light btn-sm" onclick="exportStudentCSV()">
-                    <span class="material-icons-round" style="font-size:16px">download</span> Export
-                </button>
-
-                {{-- Print --}}
-                <button class="btn btn-light btn-sm" onclick="printTable()">
-                    <span class="material-icons-round" style="font-size:16px">print</span> Print
-                </button>
+                <div class="col-md-2">
+                    <div class="input-group input-group-outline">
+                        <select wire:model.live="filterSection" class="form-select form-select-sm"
+                            {{ empty($availableSections) ? 'disabled' : '' }}>
+                            <option value="">All Sections</option>
+                            @if(!empty($availableSections))
+                                @foreach ($availableSections as $s)
+                                    <option value="{{ $s['id'] }}">{{ $s['name'] }}</option>
+                                @endforeach
+                            @endif
+                        </select>
+                    </div>
+                </div>
 
                 <a href="{{ route($routePrefix . 'student.add') }}" class="btn btn-primary">
                     <span>
@@ -175,39 +163,6 @@
 
     </div>
 
-    {{-- ===== IMPORT MODAL ===== --}}
-    <div class="modal fade" id="importModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header border-0">
-                    <h5 class="modal-title">Import CSV</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-4">
-                    <div style="border:2px dashed var(--border);border-radius:12px;padding:32px;text-align:center;cursor:pointer"
-                        onclick="document.getElementById('csvFile').click()">
-                        <span class="material-icons-round" style="font-size:2.5rem;color:var(--muted)">file_upload</span>
-                        <p class="mt-2 mb-1" style="font-weight:600;font-size:.85rem">Click to browse or drag & drop</p>
-                        <p style="font-size:.75rem;color:var(--muted)">CSV files only</p>
-                    </div>
-                    <input type="file" id="csvFile" accept=".csv" style="display:none"/>
-                    <div class="form-check mt-3">
-                        <input class="form-check-input" type="checkbox" id="termsCheck">
-                        <label class="form-check-label" for="termsCheck" style="font-size:.8rem">
-                            I accept the terms and conditions
-                        </label>
-                    </div>
-                </div>
-                <div class="modal-footer border-0 gap-2">
-                    <button class="btn btn-light" data-bs-dismiss="modal">Close</button>
-                    <button class="btn bg-dark text-white">
-                        <span class="material-icons-round" style="font-size:16px">upload</span> Upload
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     {{-- ===== DELETE CONFIRM ===== --}}
     @if($confirmDelete)
         <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.5);">
@@ -267,49 +222,3 @@
     @endif
 
 </div>
-
-@push('scripts')
-<script>
-    function exportStudentCSV() {
-        const table = document.getElementById('studentTable');
-        if (!table) return;
-        let csv = [];
-        const rows = table.querySelectorAll('tr');
-        rows.forEach(row => {
-            const cols = row.querySelectorAll('th:not(.no-print), td:not(.no-print)');
-            const rowData = Array.from(cols).map(col => `"${col.innerText.trim()}"`);
-            csv.push(rowData.join(','));
-        });
-        const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'students.csv';
-        a.click();
-    }
-
-    function printTable() {
-        const table = document.getElementById('studentTable');
-        if (!table) return;
-
-        const clone = table.cloneNode(true);
-        clone.querySelectorAll('.no-print').forEach(el => el.remove());
-
-        const win = window.open('', '', 'width=900,height=700');
-        win.document.write(`
-            <html><head><title>Student List</title>
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-            <style>
-                body { padding: 20px; font-size: 13px; }
-                table { width: 100%; border-collapse: collapse; }
-                th, td { border: 1px solid #dee2e6; padding: 8px 10px; font-size: 12px; }
-                th { background: #f8f9fa; font-weight: 600; }
-            </style>
-            </head><body>${clone.outerHTML}</body></html>
-        `);
-        win.document.close();
-        win.focus();
-        win.print();
-        win.close();
-    }
-</script>
-@endpush

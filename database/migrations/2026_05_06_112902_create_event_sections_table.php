@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('event_sections', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
-            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
             $table->foreignId('event_id')->constrained('events')->cascadeOnDelete();
             $table->foreignId('class_id')->nullable()->constrained('academic_classes')->nullOnDelete();
             $table->string('class_name')->nullable();

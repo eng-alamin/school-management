@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('salary_templates', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
  
             // Basic Info
             $table->string('name'); // e.g. "Senior Teacher Package 2026"

@@ -127,7 +127,7 @@ class PurchaseAddComponent extends Component
                 ->find($value);
 
             if ($product) {
-                $this->items[$index]['unit_price'] = $product->purchase_price;
+                $this->items[$index]['unit_price'] = number_format($product->purchase_price, 0);
             }
         }
 
@@ -183,8 +183,8 @@ class PurchaseAddComponent extends Component
             }
         });
 
-        $this->dispatch('toast', type: 'success', message: 'Data created successfully!');
-        $this->resetForm();
+        session()->flash('toast_success', 'Data created successfully!');
+        $this->redirectRoute('admin.inventory.purchase.list', navigate: true);
     }
 
     public function resetForm(): void
@@ -194,7 +194,7 @@ class PurchaseAddComponent extends Component
             'remarks', 'items', 'net_total',
         ]);
         $this->purchase_status = 'pending';
-        $this->date            = now()->format('Y-m-d');
+        $this->dispatch('date-updated', date: $this->date);
         $this->bill_no         = $this->generateBillNo();
         $this->resetValidation();
         $this->addItem();

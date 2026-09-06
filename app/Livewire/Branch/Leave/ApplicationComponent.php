@@ -7,17 +7,22 @@ use Livewire\WithPagination;
 use Livewire\WithFileUploads;
 use App\Models\LeaveApplication;
 use App\Models\LeaveCategory;
+use App\Models\AcademicSession;
+use App\Models\Branch;
 use App\Models\User;
 use App\Services\NotificationService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class ApplicationComponent extends Component
 {
     use WithPagination, WithFileUploads;
 
     protected string $paginationTheme = 'bootstrap';
+
+    private const SORTABLE_FIELDS = ['id', 'start_date', 'end_date', 'status', 'created_at'];
 
     // ── List / Filter ──
     public string $search        = '';
@@ -54,7 +59,6 @@ class ApplicationComponent extends Component
     public array $detail = [];
 
     // ── Role → Model class map ──
-    // আলাদা model থাকলে এখানে map করো, যেমন: 'student' => \App\Models\Student::class
     protected array $roleModelMap = [
         'teacher'      => User::class,
         'accountant'   => User::class,
@@ -64,12 +68,16 @@ class ApplicationComponent extends Component
 
     public string $routePrefix = '';
 
+    public ?int $currentSessionId = null;
+
     public function mount(): void
     {
         $this->routePrefix = $this->resolveRoutePrefix();
 
         $this->start_date = now()->format('Y-m-d');
         $this->end_date   = now()->format('Y-m-d');
+
+        $this->currentSessionId = $this->resolveCurrentSessionId();
     }
 
     protected function resolveRoutePrefix(): string
@@ -85,6 +93,21 @@ class ApplicationComponent extends Component
         return $segment ? $segment . '.' : '';
     }
 
+    private function activeBranchId(): ?int
+    {
+        return auth()->user()->branch_id
+            ?? Branch::resolveMainBranchId(institution()->id);
+    }
+
+    private function resolveCurrentSessionId(): ?int
+    {
+        return AcademicSession::query()
+            ->where('institution_id', institution()->id)
+            ->where('branch_id', $this->activeBranchId())
+            ->active() // scopeActive() -> is_current = true
+            ->value('id');
+    }
+
     // ──────────────────────────────────────────
     // Validation
     // ──────────────────────────────────────────
@@ -94,7 +117,12 @@ class ApplicationComponent extends Component
             'role'              => 'required|string',
             'applicable_id'     => 'required|integer',
             'applicable_type'   => 'required|string',
-            'leave_category_id' => 'required|integer',
+            'leave_category_id' => [
+                'required',
+                'integer',
+                \Illuminate\Validation\Rule::exists('leave_categories', 'id')
+                    ->where('institution_id', institution()->id),
+            ],
             'start_date'        => 'required|date',
             'end_date'          => 'required|date|after_or_equal:start_date',
             'reason'            => 'nullable|string|max:500',
@@ -105,6 +133,7 @@ class ApplicationComponent extends Component
 
     public function updatingSearch(): void    { $this->resetPage(); }
     public function updatingFilterRole(): void { $this->resetPage(); }
+    public function updatedPerPage(): void    { $this->resetPage(); }
 
     // Role select করলে applicant list লোড হবে, applicable_type সেট হবে
     public function updatedRole(string $value): void
@@ -124,6 +153,10 @@ class ApplicationComponent extends Component
 
     public function sortBy(string $field): void
     {
+        if (! in_array($field, self::SORTABLE_FIELDS, true)) {
+            return;
+        }
+
         $this->sortDirection = ($this->sortField === $field && $this->sortDirection === 'asc')
             ? 'desc' : 'asc';
         $this->sortField = $field;
@@ -153,13 +186,18 @@ class ApplicationComponent extends Component
 
         if ($modelClass === User::class) {
             return $modelClass::where('institution_id', institution()->id)
+                ->where('branch_id', $this->activeBranchId())
                 ->where('role', $value)
                 ->orderBy('name')
                 ->get(['id', 'name'])
                 ->toArray();
         }
 
-        return $modelClass::orderBy('name')->get(['id', 'name'])->toArray();
+        return $modelClass::where('institution_id', institution()->id)
+            ->where('branch_id', $this->activeBranchId())
+            ->orderBy('name')
+            ->get(['id', 'name'])
+            ->toArray();
     }
 
     private function resetForm(): void
@@ -170,6 +208,7 @@ class ApplicationComponent extends Component
             'reason', 'document_path', 'attachment', 'comments', 'status',
         ]);
         $this->applicants = [];
+        $this->status = 'pending';
         $this->resetValidation();
     }
 
@@ -178,6 +217,8 @@ class ApplicationComponent extends Component
     // ──────────────────────────────────────────
     public function openCreate(): void
     {
+        abort_unless((bool) $this->currentSessionId, 422, 'No active academic session found. Please set a current session first.');
+
         $this->resetForm();
         $this->start_date = now()->format('Y-m-d');
         $this->end_date   = now()->format('Y-m-d');
@@ -189,7 +230,10 @@ class ApplicationComponent extends Component
     // ──────────────────────────────────────────
     public function openEdit(int $id): void
     {
-        $record = LeaveApplication::with('applicable')->findOrFail($id);
+        $record = LeaveApplication::with('applicable')
+            ->where('institution_id', institution()->id)
+            ->where('branch_id', $this->activeBranchId())
+            ->findOrFail($id);
 
         $this->editId            = $id;
         $this->applicable_type   = $record->applicable_type;
@@ -218,7 +262,11 @@ class ApplicationComponent extends Component
     // ──────────────────────────────────────────
     public function openDetail(int $id): void
     {
-        $record    = LeaveApplication::with(['applicable', 'leaveCategory', 'approvedByUser'])->findOrFail($id);
+        $record = LeaveApplication::with(['applicable', 'leaveCategory', 'approvedByUser'])
+            ->where('institution_id', institution()->id)
+            ->where('branch_id', $this->activeBranchId())
+            ->findOrFail($id);
+
         $applicant = $record->applicable;
 
         $this->detail = [
@@ -248,10 +296,17 @@ class ApplicationComponent extends Component
             'comments' => 'nullable|string|max:1000',
         ]);
 
+        $institutionId = institution()->id;
+        $branchId      = $this->activeBranchId();
+
         DB::beginTransaction();
 
         try {
-            $application = LeaveApplication::with('applicable')->findOrFail($this->detailId);
+            $application = LeaveApplication::with('applicable')
+                ->where('institution_id', $institutionId)
+                ->where('branch_id', $branchId)
+                ->findOrFail($this->detailId);
+
             $previousStatus = $application->status;
 
             $application->update([
@@ -270,8 +325,8 @@ class ApplicationComponent extends Component
                     'from' => $previousStatus,
                     'to'   => $this->status,
                 ])
-                ->tap(function ($activity) use ($application) {
-                    $activity->institution_id = $application->institution_id;
+                ->tap(function ($activity) use ($institutionId) {
+                    $activity->institution_id = $institutionId;
                 })
                 ->log('Leave application status changed to ' . ucfirst($this->status));
 
@@ -317,14 +372,22 @@ class ApplicationComponent extends Component
     // ──────────────────────────────────────────
     public function save(): void
     {
+        abort_unless((bool) $this->currentSessionId, 422, 'No active academic session found. Please set a current session first.');
+
         $this->validate();
+
+        $institutionId = institution()->id;
+        $branchId      = $this->activeBranchId();
+        $sessionId     = $this->currentSessionId;
+
+        $newFilePath = null;
+        $oldFilePath = null;
 
         DB::beginTransaction();
 
         try {
-            $filePath = $this->document_path;
             if ($this->attachment) {
-                $filePath = $this->attachment->store('leave-attachments', 'public');
+                $newFilePath = $this->attachment->store('leave-attachments', 'public');
             }
 
             $data = [
@@ -335,26 +398,37 @@ class ApplicationComponent extends Component
                 'end_date'          => $this->end_date,
                 'total_days'        => $this->getTotalDays(),
                 'reason'            => $this->reason,
-                'document_path'     => $filePath,
                 'approval_note'     => $this->comments,
                 'status'            => $this->status ?: 'pending',
             ];
 
             if ($this->editId) {
-                $application = LeaveApplication::with('applicable')->findOrFail($this->editId);
+                $application = LeaveApplication::with('applicable')
+                    ->where('institution_id', $institutionId)
+                    ->where('branch_id', $branchId)
+                    ->findOrFail($this->editId);
+
+                $oldFilePath = $application->document_path;
+                $data['document_path'] = $newFilePath ?: $application->document_path;
+
                 $application->update($data);
 
                 activity()
                     ->causedBy(auth()->user())
                     ->performedOn($application)
                     ->withProperties(['icon' => 'edit', 'type' => 'leave'])
-                    ->tap(function ($activity) use ($application) {
-                        $activity->institution_id = $application->institution_id;
+                    ->tap(function ($activity) use ($institutionId) {
+                        $activity->institution_id = $institutionId;
                     })
                     ->log('Leave application updated');
 
                 $message = 'Leave application updated successfully!';
             } else {
+                $data['institution_id']  = $institutionId;
+                $data['branch_id']       = $branchId;
+                $data['session_id']      = $sessionId;
+                $data['document_path']   = $newFilePath;
+
                 $application = LeaveApplication::create($data);
                 $application->load('applicable');
 
@@ -362,8 +436,8 @@ class ApplicationComponent extends Component
                     ->causedBy(auth()->user())
                     ->performedOn($application)
                     ->withProperties(['icon' => 'event_busy', 'type' => 'leave'])
-                    ->tap(function ($activity) use ($application) {
-                        $activity->institution_id = $application->institution_id;
+                    ->tap(function ($activity) use ($institutionId) {
+                        $activity->institution_id = $institutionId;
                     })
                     ->log('New leave application created');
 
@@ -372,11 +446,20 @@ class ApplicationComponent extends Component
 
             DB::commit();
 
+            if ($newFilePath && $oldFilePath && $newFilePath !== $oldFilePath) {
+                Storage::disk('public')->delete($oldFilePath);
+            }
+
             $this->showModal = false;
             $this->resetForm();
             $this->dispatch('toast', type: 'success', message: $message);
         } catch (\Throwable $e) {
             DB::rollBack();
+
+            if ($newFilePath) {
+                Storage::disk('public')->delete($newFilePath);
+            }
+
             $this->dispatch('toast', type: 'error', message: 'কিছু একটা সমস্যা হয়েছে, আবার চেষ্টা করুন।');
             report($e);
         }
@@ -393,21 +476,27 @@ class ApplicationComponent extends Component
 
     public function deleteRecord(): void
     {
+        $institutionId = institution()->id;
+        $branchId      = $this->activeBranchId();
+
         DB::beginTransaction();
 
         try {
-            $application = LeaveApplication::with('applicable')->findOrFail($this->deleteId);
-
-            $application->delete();
+            $application = LeaveApplication::with('applicable')
+                ->where('institution_id', $institutionId)
+                ->where('branch_id', $branchId)
+                ->findOrFail($this->deleteId);
 
             activity()
                 ->causedBy(auth()->user())
                 ->performedOn($application)
                 ->withProperties(['icon' => 'delete', 'type' => 'leave'])
-                ->tap(function ($activity) use ($application) {
-                    $activity->institution_id = $application->institution_id;
+                ->tap(function ($activity) use ($institutionId) {
+                    $activity->institution_id = $institutionId;
                 })
                 ->log('Leave application deleted');
+
+            $application->delete();
 
             DB::commit();
 
@@ -427,8 +516,14 @@ class ApplicationComponent extends Component
     // ──────────────────────────────────────────
     public function render()
     {
+        $institutionId = institution()->id;
+        $branchId      = $this->activeBranchId();
+
         $applications = LeaveApplication::query()
             ->with(['applicable', 'leaveCategory'])
+            ->where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
+            ->where('session_id', $this->currentSessionId)
             ->when($this->search, function ($q) {
                 $q->where(function ($inner) {
                     $inner->whereHasMorph('applicable', '*', fn($e) => $e->where('name', 'like', "%{$this->search}%"))
@@ -447,7 +542,9 @@ class ApplicationComponent extends Component
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
-        $categories = LeaveCategory::orderBy('name')->get();
+        $categories = LeaveCategory::where('institution_id', $institutionId)
+            ->orderBy('name')
+            ->get();
 
         return view('livewire.admin.leave.application-component', compact('applications', 'categories'))
             ->layout('layouts.branch.app', [

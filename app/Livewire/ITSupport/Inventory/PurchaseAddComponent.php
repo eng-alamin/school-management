@@ -1,0 +1,213 @@
+<?php
+
+namespace App\Livewire\ITSupport\Inventory;
+
+use Livewire\Component;
+use App\Models\InventoryPurchase;
+use App\Models\InventoryPurchaseItem;
+use App\Models\InventorySupplier;
+use App\Models\InventoryStore;
+use App\Models\InventoryProduct;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
+
+class PurchaseAddComponent extends Component
+{
+    // ── Purchase header fields ──
+    public ?int       $supplier_id = null;
+    public ?int       $store_id = null;
+    public string     $bill_no         = '';
+    public string     $purchase_status = 'pending';
+    public string     $date            = '';
+    public string     $remarks         = '';
+
+    // ── Line items ──
+    public array $items = [];
+
+    // ── Computed total (kept in sync on every item change) ──
+    public float $net_total = 0;
+
+    protected function rules(): array
+    {
+        return [
+            'supplier_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('inventory_suppliers', 'id')
+                    ->where(fn ($query) => $query->where('institution_id', institution()->id)),
+            ],
+
+            'store_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('inventory_stores', 'id')
+                    ->where(fn ($query) => $query->where('institution_id', institution()->id)),
+            ],
+            'bill_no' => [
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('inventory_purchases', 'bill_no')
+                    ->where(fn ($query) => $query->where('institution_id', institution()->id)),
+            ],
+            'purchase_status'          => 'required|in:pending,ordered,completed,received,cancelled',
+            'date'                     => 'required|date',
+            'remarks'                  => 'nullable|string|max:1000',
+            'items'                    => 'required|array|min:1',
+            'items.*.product_id'       => 'required|integer|exists:inventory_products,id',
+            'items.*.unit_price'       => 'required|numeric|min:0',
+            'items.*.quantity'         => 'required|integer|min:1',
+            'items.*.discount'         => 'nullable|numeric|min:0',
+        ];
+    }
+
+    protected function messages(): array
+    {
+        return [
+            'items.required'               => 'At least one purchase item is required.',
+            'items.min'                    => 'At least one purchase item is required.',
+            'items.*.product_id.required'  => 'Product is required.',
+            'items.*.unit_price.required'  => 'Unit price is required.',
+            'items.*.quantity.required'    => 'Quantity is required.',
+            'items.*.quantity.min'         => 'Quantity must be at least 1.',
+        ];
+    }
+
+    public function mount(): void
+    {
+        $this->date    = now()->format('Y-m-d');
+        $this->bill_no = $this->generateBillNo();
+        $this->addItem();
+    }
+
+    // ── পরবর্তী bill number generate (নিজের institution-এর মধ্যে) ──
+    private function generateBillNo(): string
+    {
+        $last = InventoryPurchase::where('institution_id', institution()->id)
+            ->latest('id')
+            ->value('bill_no');
+
+        $next = $last
+            ? ((int) preg_replace('/\D/', '', $last)) + 1
+            : 1;
+
+        return 'BILL-' . str_pad($next, 4, '0', STR_PAD_LEFT);
+    }
+
+    // ── Add a blank item row ──
+    public function addItem(): void
+    {
+        $this->items[] = [
+            'product_id'  => '',
+            'unit_price'  => '',
+            'quantity'    => 1,
+            'discount'    => 0,
+            'total_price' => 0,
+        ];
+    }
+
+    // ── Remove an item row ──
+    public function removeItem(int $index): void
+    {
+        unset($this->items[$index]);
+        $this->items = array_values($this->items);
+        $this->recalculate();
+    }
+
+    // ── Product select হলে purchase_price auto-fill হবে,
+    //    অন্য field change হলে শুধু recalculate হবে ──
+    public function updatedItems($value, $key): void
+    {
+        $parts = explode('.', $key);
+        $index = (int) $parts[0];
+        $field = $parts[1] ?? '';
+
+        if ($field === 'product_id' && !empty($value)) {
+            $product = InventoryProduct::where('institution_id', institution()->id)
+                ->find($value);
+
+            if ($product) {
+                $this->items[$index]['unit_price'] = number_format($product->purchase_price, 0);
+            }
+        }
+
+        $this->recalculateRow($index);
+        $this->recalculate();
+    }
+
+    private function recalculateRow(int $index): void
+    {
+        if (!isset($this->items[$index])) return;
+
+        $row      = $this->items[$index];
+        $price    = (float) ($row['unit_price'] ?? 0);
+        $qty      = (int)   ($row['quantity']   ?? 1);
+        $discount = (float) ($row['discount']   ?? 0);
+
+        $this->items[$index]['total_price'] = max(0, ($price * $qty) - $discount);
+    }
+
+    private function recalculate(): void
+    {
+        $this->net_total = collect($this->items)->sum('total_price');
+    }
+
+    // ── Save purchase + items in a transaction ──
+    public function save(): void
+    {
+        $this->validate();
+
+        DB::transaction(function () {
+
+            $purchase = InventoryPurchase::create([
+                'institution_id'  => institution()->id,
+                'supplier_id'     => $this->supplier_id ?: null,
+                'store_id'        => $this->store_id ?: null,
+                'bill_no'         => $this->bill_no,
+                'purchase_status' => $this->purchase_status,
+                'date'            => $this->date,
+                'net_total'       => $this->net_total,
+                'remarks'         => $this->remarks ?: null,
+            ]);
+
+            foreach ($this->items as $item) {
+                InventoryPurchaseItem::create([
+                    'institution_id' => institution()->id,
+                    'purchase_id'    => $purchase->id,
+                    'product_id'     => $item['product_id'],
+                    'unit_price'     => $item['unit_price'],
+                    'quantity'       => $item['quantity'],
+                    'discount'       => $item['discount'] ?? 0,
+                    'total_price'    => $item['total_price'],
+                ]);
+            }
+        });
+
+        session()->flash('toast_success', 'Data created successfully!');
+        $this->redirectRoute('itsupport.inventory.purchase.list', navigate: true);
+    }
+
+    public function resetForm(): void
+    {
+        $this->reset([
+            'supplier_id', 'store_id', 'bill_no',
+            'remarks', 'items', 'net_total',
+        ]);
+        $this->purchase_status = 'pending';
+        $this->dispatch('date-updated', date: $this->date);
+        $this->bill_no         = $this->generateBillNo();
+        $this->resetValidation();
+        $this->addItem();
+    }
+
+    public function render()
+    {
+        return view('livewire.admin.inventory.purchase-add-component', [
+            'suppliers' => InventorySupplier::where('institution_id', institution()->id)->orderBy('name')->get(),
+            'stores'    => InventoryStore::where('institution_id', institution()->id)->orderBy('name')->get(),
+            'products'  => InventoryProduct::where('institution_id', institution()->id)->orderBy('name')->get(),
+        ])->layout('layouts.itsupport.app', [
+            'title' => 'Add Purchase | ' . institution()->name,
+        ]);
+    }
+}

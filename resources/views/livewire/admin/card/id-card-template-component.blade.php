@@ -23,30 +23,38 @@
 
                 <!-- Right Side -->
                 <div class="col-md-3">
-                    <select class="form-select form-select-sm" wire:model.live="filterType">
-                        <option value="">All Types</option>
-                        @foreach($types as $key => $label)
-                            <option value="{{ $key }}">{{ $label }}</option>
-                        @endforeach
-                    </select>
+                    <div class="input-group input-group-outline">
+                        <select class="form-select form-select-sm" wire:model.live="filterType">
+                            <option value="">All Types</option>
+                            @foreach($types as $key => $label)
+                                <option value="{{ $key }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
                 <div class="col-md-2">
-                    <select class="form-select form-select-sm" wire:model.live="filterStatus">
-                        <option value="">All Status</option>
-                        <option value="1">Active</option>
-                        <option value="0">Inactive</option>
-                    </select>
+                    <div class="input-group input-group-outline">
+                        <select class="form-select form-select-sm" wire:model.live="filterStatus">
+                            <option value="">All Status</option>
+                            <option value="1">Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="col-md-2">
-                    <select class="form-select form-select-sm" wire:model.live="perPage">
-                        <option value="10">10 / page</option>
-                        <option value="25">25 / page</option>
-                        <option value="50">50 / page</option>
-                    </select>
+                    <div class="input-group input-group-outline">
+                        <select class="form-select form-select-sm" wire:model.live="perPage">
+                            <option value="10">10 / page</option>
+                            <option value="25">25 / page</option>
+                            <option value="50">50 / page</option>
+                        </select>
+                    </div>
                 </div>
                 <button class="btn btn-primary" wire:click="openCreate">
-                    <span class="material-icons-round">add</span> 
-                    <span id="newSectionBtn">Add Template</span>
+                    <span>
+                        <span class="material-icons-round">add</span> 
+                        <span id="newSectionBtn">Add Template</span>
+                    </span>
                 </button>
 
             </div>
@@ -160,17 +168,21 @@
                         <form wire:submit.prevent="save">
                             <div class="row g-3">
                                 <div class="col-md-8">
-                                    <label class="form-label">Template Name <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model.defer="name" placeholder="e.g. Modern Blue Template">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Template Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model.defer="name">
+                                    </div>
                                     @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label">Type <span class="text-danger">*</span></label>
-                                    <select class="form-select @error('type') is-invalid @enderror" wire:model.defer="type">
-                                        @foreach($types as $key => $label)
-                                            <option value="{{ $key }}">{{ $label }}</option>
-                                        @endforeach
-                                    </select>
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Type <span class="text-danger">*</span></label>
+                                        <select class="form-select @error('type') is-invalid @enderror" wire:model.defer="type">
+                                            @foreach($types as $key => $label)
+                                                <option value="{{ $key }}">{{ $label }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
                                     @error('type') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-4">
@@ -194,15 +206,31 @@
                                         <input type="text" class="form-control" wire:model.defer="accent_color" placeholder="#007bff">
                                     </div>
                                 </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Card Width</label>
-                                    <input type="text" class="form-control" wire:model.defer="card_width" placeholder="85.6mm">
+                                <div class="col-md-6">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Card Width</label>
+                                        <input type="text" class="form-control" wire:model.defer="card_width">
+                                    </div>
                                 </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Card Height</label>
-                                    <input type="text" class="form-control" wire:model.defer="card_height" placeholder="54mm">
+                                <div class="col-md-6">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Card Height</label>
+                                        <input type="text" class="form-control" wire:model.defer="card_height">
+                                    </div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-12">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Header Text</label>
+                                        <input type="text" class="form-control" wire:model.defer="header_text">
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Footer Text</label>
+                                        <input type="text" class="form-control" wire:model.defer="footer_text">
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
                                     <label class="form-label">Logo</label>
                                     <input type="file" class="form-control @error('logo') is-invalid @enderror" wire:model="logo" accept="image/*">
                                     <div wire:loading wire:target="logo" class="small text-muted mt-1">Uploading...</div>
@@ -210,14 +238,6 @@
                                     @if($existingLogo)
                                         <img src="{{ asset('storage/'.$existingLogo) }}" height="40" class="mt-2 rounded">
                                     @endif
-                                </div>
-                                <div class="col-12">
-                                    <label class="form-label">Header Text</label>
-                                    <input type="text" class="form-control" wire:model.defer="header_text" placeholder="Institute name or title shown at top">
-                                </div>
-                                <div class="col-12">
-                                    <label class="form-label">Footer Text</label>
-                                    <input type="text" class="form-control" wire:model.defer="footer_text" placeholder="Text shown at bottom of card">
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label d-block mb-2">Features</label>

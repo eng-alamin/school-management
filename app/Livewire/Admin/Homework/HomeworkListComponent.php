@@ -9,10 +9,14 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\Homework;
 use App\Models\AcademicClass;
 use App\Models\AcademicClassAssign;
+use App\Models\AcademicSession;
+use App\Models\Branch;
 
 class HomeworkListComponent extends Component
 {
     use WithPagination;
+
+    private const SORTABLE_FIELDS = ['created_at', 'title', 'homework_date', 'submission_date', 'status'];
 
     public $search    = '';
     public $perPage   = 10;
@@ -29,9 +33,12 @@ class HomeworkListComponent extends Component
 
     public string $routePrefix = '';
 
+    public ?int $currentSessionId = null;
+
     public function mount(): void
     {
-        $this->routePrefix = $this->resolveRoutePrefix();
+        $this->routePrefix     = $this->resolveRoutePrefix();
+        $this->currentSessionId = $this->resolveCurrentSessionId();
     }
 
     protected function resolveRoutePrefix(): string
@@ -45,6 +52,21 @@ class HomeworkListComponent extends Component
         $segment = request()->segment(1);
 
         return $segment ? $segment . '.' : '';
+    }
+
+    private function activeBranchId(): ?int
+    {
+        return auth()->user()->branch_id
+            ?? Branch::resolveMainBranchId(institution()->id);
+    }
+
+    private function resolveCurrentSessionId(): ?int
+    {
+        return AcademicSession::query()
+            ->where('institution_id', institution()->id)
+            ->where('branch_id', $this->activeBranchId())
+            ->active() // scopeActive() -> is_current = true
+            ->value('id');
     }
 
     public function updatedSearch(): void
@@ -66,6 +88,9 @@ class HomeworkListComponent extends Component
         if (!$value) return;
 
         $assigns = AcademicClassAssign::with('section')
+            ->where('institution_id', institution()->id)
+            ->where('branch_id', $this->activeBranchId())
+            ->where('session_id', $this->currentSessionId)
             ->where('class_id', $value)
             ->whereNotNull('section_id')
             ->get();
@@ -85,6 +110,10 @@ class HomeworkListComponent extends Component
 
     public function sortBy($field): void
     {
+        if (! in_array($field, self::SORTABLE_FIELDS, true)) {
+            return;
+        }
+
         if ($this->sortField === $field) {
             $this->sortDir = $this->sortDir === 'asc' ? 'desc' : 'asc';
         } else {
@@ -101,7 +130,12 @@ class HomeworkListComponent extends Component
 
     public function deleteRecord(): void
     {
-        $homework = Homework::find($this->deleteId);
+        $institutionId = institution()->id;
+        $branchId      = $this->activeBranchId();
+
+        $homework = Homework::where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
+            ->find($this->deleteId);
 
         if (!$homework) {
             $this->confirmDelete = false;
@@ -114,15 +148,15 @@ class HomeworkListComponent extends Component
         $title          = $homework->title;
 
         try {
-            DB::transaction(function () use ($homework, $title) {
+            DB::transaction(function () use ($homework, $title, $institutionId) {
                 activity()
                     ->performedOn($homework)
+                    ->tap(fn ($a) => $a->institution_id = $institutionId)
                     ->log('Homework "' . $title . '" deleted');
 
                 $homework->delete();
             });
 
-            // ✅ DB delete committed successfully → safe to remove the attachment file
             if ($attachmentPath) {
                 Storage::disk('public')->delete($attachmentPath);
             }
@@ -139,11 +173,23 @@ class HomeworkListComponent extends Component
 
     public function render()
     {
-        $classes = AcademicClass::whereIn('id', AcademicClassAssign::distinct()->pluck('class_id'))
+        $institutionId = institution()->id;
+        $branchId      = $this->activeBranchId();
+
+        $classes = AcademicClass::where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
+            ->whereIn('id', AcademicClassAssign::where('institution_id', $institutionId)
+                ->where('branch_id', $branchId)
+                ->where('session_id', $this->currentSessionId)
+                ->distinct()
+                ->pluck('class_id'))
             ->orderBy('name')
             ->get();
 
         $homeworks = Homework::with(['class', 'section', 'subject', 'teacher'])
+            ->where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
+            ->where('session_id', $this->currentSessionId)
             ->when($this->search, fn($q) =>
                 $q->where('title', 'like', '%' . $this->search . '%')
             )

@@ -3,13 +3,15 @@
 namespace App\Livewire\Branch\Event;
 
 use Livewire\Component;
+use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use App\Models\EventType;
 use App\Models\Event;
 use App\Models\AcademicClassAssign;
-use Livewire\WithFileUploads;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
-use Illuminate\Validation\Rule;
+use App\Models\AcademicSession;
+use App\Models\Branch;
 
 class AddComponent extends Component
 {
@@ -28,17 +30,41 @@ class AddComponent extends Component
     public $selectedClasses = [];
     public $selectedSections = [];
 
-    public function mount()
+    public ?int $currentSessionId = null;
+
+    public function mount(): void
     {
         $this->date_from = now()->format('Y-m-d');
-        $this->date_to = now()->addDays(7)->format('Y-m-d');
+        $this->date_to   = now()->addDays(7)->format('Y-m-d');
+
+        $this->currentSessionId = $this->resolveCurrentSessionId();
+    }
+
+    private function activeBranchId(): ?int
+    {
+        return auth()->user()->branch_id
+            ?? Branch::resolveMainBranchId(institution()->id);
+    }
+
+    private function resolveCurrentSessionId(): ?int
+    {
+        return AcademicSession::query()
+            ->where('institution_id', institution()->id)
+            ->where('branch_id', $this->activeBranchId())
+            ->active() // scopeActive() -> is_current = true
+            ->value('id');
     }
 
     public function resetForm()
     {
-        $this->reset();
+        $this->reset([
+            'title', 'is_holiday', 'event_type_id', 'audience',
+            'description', 'show_website', 'image_upload',
+            'selectedClasses', 'selectedSections',
+        ]);
         $this->date_from = now()->format('Y-m-d');
-        $this->date_to = now()->addDays(7)->format('Y-m-d');
+        $this->date_to   = now()->addDays(7)->format('Y-m-d');
+        $this->resetValidation();
     }
 
     protected function failedValidation($validator)
@@ -48,16 +74,16 @@ class AddComponent extends Component
 
     public function rules()
     {
-        $institutionId = auth()->user()->institution_id;
+        $institutionId = institution()->id;
+        $branchId      = $this->activeBranchId();
 
         return [
             'title'            => 'required|string|max:255',
             'is_holiday'       => 'boolean',
             'event_type_id'    => [
                 'required',
-                Rule::exists('event_types', 'id')->where(
-                    fn($q) => $q->where('institution_id', $institutionId)
-                ),
+                Rule::exists('event_types', 'id')
+                    ->where('institution_id', $institutionId),
             ],
             'audience'         => ['required', Rule::in(['everyone', 'class', 'section'])],
             'date_from'        => 'required|date',
@@ -67,13 +93,27 @@ class AddComponent extends Component
             'image_upload'     => 'nullable|image|max:2048',
 
             'selectedClasses'               => 'required_if:audience,class|array',
-            'selectedClasses.*.class_id'    => 'required|exists:academic_classes,id',
+            'selectedClasses.*.class_id'    => [
+                'required',
+                Rule::exists('academic_classes', 'id')
+                    ->where('institution_id', $institutionId)
+                    ->where('branch_id', $branchId),
+            ],
             'selectedClasses.*.class_name'  => 'required|string',
 
             'selectedSections'                  => 'required_if:audience,section|array',
-            'selectedSections.*.class_id'       => 'required|exists:academic_classes,id',
+            'selectedSections.*.class_id'       => [
+                'required',
+                Rule::exists('academic_classes', 'id')
+                    ->where('institution_id', $institutionId)
+                    ->where('branch_id', $branchId),
+            ],
             'selectedSections.*.class_name'     => 'required|string',
-            'selectedSections.*.section_id'     => 'required|exists:academic_sections,id',
+            'selectedSections.*.section_id'     => [
+                'required',
+                Rule::exists('academic_sections', 'id')
+                    ->where('institution_id', $institutionId),
+            ],
             'selectedSections.*.section_name'   => 'required|string',
         ];
     }
@@ -85,94 +125,94 @@ class AddComponent extends Component
 
     public function save()
     {
-        DB::beginTransaction();
+        abort_unless((bool) $this->currentSessionId, 422, 'No active academic session found. Please set a current session first.');
+
+        $this->validate($this->rules());
+
+        $institutionId = institution()->id;
+        $branchId      = $this->activeBranchId();
+        $sessionId     = $this->currentSessionId;
+
+        $imagePath = null;
 
         try {
-            $this->validate($this->rules());
-
-            $institutionId = auth()->user()->institution_id;
-
             $imagePath = $this->image_upload
                 ? $this->image_upload->store('events', 'public')
                 : null;
 
-            $event = Event::create([
-                'institution_id' => $institutionId,
-                'title'          => $this->title,
-                'is_holiday'     => $this->is_holiday,
-                'event_type_id'  => $this->event_type_id,
-                'audience'       => $this->audience,
-                'date_from'      => $this->date_from,
-                'date_to'        => $this->date_to,
-                'description'    => $this->description,
-                'show_website'   => $this->show_website,
-                'image'          => $imagePath,
-            ]);
+            $event = DB::transaction(function () use ($imagePath, $institutionId, $branchId, $sessionId) {
+                $event = Event::create([
+                    'institution_id' => $institutionId,
+                    'branch_id'      => $branchId,
+                    'session_id'     => $sessionId,
+                    'title'          => $this->title,
+                    'is_holiday'     => $this->is_holiday,
+                    'event_type_id'  => $this->event_type_id,
+                    'audience'       => $this->audience,
+                    'date_from'      => $this->date_from,
+                    'date_to'        => $this->date_to,
+                    'description'    => $this->description,
+                    'show_website'   => $this->show_website,
+                    'image'          => $imagePath,
+                ]);
 
-            // Selected Class
-            if ($this->audience === 'class') {
-                foreach ($this->selectedClasses as $class) {
-                    $event->eventClasses()->create([
-                        'class_id'   => $class['class_id'],
-                        'class_name' => $class['class_name'],
-                    ]);
+                if ($this->audience === 'class') {
+                    foreach ($this->selectedClasses as $class) {
+                        $event->eventClasses()->create([
+                            'class_id'   => $class['class_id'],
+                            'class_name' => $class['class_name'],
+                        ]);
+                    }
                 }
-            }
 
-            // Selected Section
-            if ($this->audience === 'section') {
-                foreach ($this->selectedSections as $section) {
-                    $event->eventSections()->create([
-                        'class_id'     => $section['class_id'],
-                        'class_name'   => $section['class_name'],
-                        'section_id'   => $section['section_id'],
-                        'section_name' => $section['section_name'],
-                    ]);
+                if ($this->audience === 'section') {
+                    foreach ($this->selectedSections as $section) {
+                        $event->eventSections()->create([
+                            'class_id'     => $section['class_id'],
+                            'class_name'   => $section['class_name'],
+                            'section_id'   => $section['section_id'],
+                            'section_name' => $section['section_name'],
+                        ]);
+                    }
                 }
-            }
 
-            // ── Activity Log ───────────────────────────────────────
-            activity()
-                ->causedBy(auth()->user())
-                ->performedOn($event)
-                ->withProperties(['icon' => 'event', 'type' => 'event'])
-                ->tap(function ($activity) use ($event) {
-                    $activity->institution_id = $event->institution_id;
-                })
-                ->log('New event created: ' . $event->title);
+                activity()
+                    ->causedBy(auth()->user())
+                    ->performedOn($event)
+                    ->withProperties(['icon' => 'event', 'type' => 'event'])
+                    ->tap(fn ($a) => $a->institution_id = $institutionId)
+                    ->log('New event created: ' . $event->title);
 
-            DB::commit();
+                return $event;
+            });
 
             $this->dispatch('toast', type: 'success', message: 'Event created successfully!');
             $this->resetForm();
 
         } catch (\Throwable $e) {
-            DB::rollBack();
 
-            $this->dispatch('toast', type: 'error', message: 'An error occurred while creating the event.');
-            throw $e;
+            if ($imagePath) {
+                Storage::disk('public')->delete($imagePath);
+            }
+
+            $this->dispatch('toast', type: 'error', message: 'Creation failed: ' . $e->getMessage());
+            report($e);
         }
     }
 
     public function render()
     {
-        $institutionId = auth()->user()->institution_id;
+        $institutionId = institution()->id;
+        $branchId      = $this->activeBranchId();
 
-        // BUG FIX: previously classes/sections were pulled from raw
-        // AcademicClass::with('sections') / AcademicSection::all() with NO
-        // institution scoping, and without regard to whether a class/section
-        // combination was actually "assigned" for this institution. Now
-        // sourced from academic_class_assigns (the real source of truth),
-        // scoped by institution_id.
         $classAssigns = AcademicClassAssign::with(['class', 'section'])
             ->where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
+            ->where('session_id', $this->currentSessionId)
             ->get();
 
-        // Unique classes -> used for "Selected Class" audience dropdown
         $classes = $classAssigns->pluck('class')->filter()->unique('id')->values();
 
-        // Classes grouped with their assigned sections -> used for
-        // "Selected Section" audience dropdown
         $classesWithSections = $classAssigns
             ->whereNotNull('section_id')
             ->groupBy('class_id')

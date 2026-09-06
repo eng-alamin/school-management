@@ -23,43 +23,53 @@
 
                 <!-- Right Side -->
                 <div class="col-md-2">
-                    <select class="form-select form-select-sm" wire:model.live="filterAudience">
-                        <option value="">All Audience</option>
-                        <option value="all">Everyone</option>
-                        <option value="admin">Admin</option>
-                        <option value="teacher">Teacher</option>
-                        <option value="student">Student</option>
-                        <option value="parent">Parent</option>
-                    </select>
+                    <div class="input-group input-group-outline">
+                        <select class="form-select form-select-sm" wire:model.live="filterAudience">
+                            <option value="">All Audience</option>
+                            <option value="all">Everyone</option>
+                            <option value="admin">Admin</option>
+                            <option value="teacher">Teacher</option>
+                            <option value="student">Student</option>
+                            <option value="parent">Parent</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="col-md-2">
-                    <select class="form-select form-select-sm" wire:model.live="filterPriority">
-                        <option value="">All Priority</option>
-                        <option value="urgent">Urgent</option>
-                        <option value="high">High</option>
-                        <option value="medium">Medium</option>
-                        <option value="low">Low</option>
-                    </select>
+                    <div class="input-group input-group-outline">
+                        <select class="form-select form-select-sm" wire:model.live="filterPriority">
+                            <option value="">All Priority</option>
+                            <option value="urgent">Urgent</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="col-md-2">
-                    <select class="form-select form-select-sm" wire:model.live="filterStatus">
-                        <option value="">All Status</option>
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                    </select>
+                    <div class="input-group input-group-outline">
+                        <select class="form-select form-select-sm" wire:model.live="filterStatus">
+                            <option value="">All Status</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
                 </div>
                 @if($notices->total() > 10)
                     <div class="col-md-2">
-                        <select class="form-select form-select-sm" wire:model.live="perPage">
-                            <option value="10">10 / page</option>
-                            <option value="25">25 / page</option>
-                            <option value="50">50 / page</option>
-                        </select>
+                        <div class="input-group input-group-outline">
+                            <select class="form-select form-select-sm" wire:model.live="perPage">
+                                <option value="10">10 / page</option>
+                                <option value="25">25 / page</option>
+                                <option value="50">50 / page</option>
+                            </select>
+                        </div>
                     </div>
                 @endif
                 <button class="btn btn-primary" wire:click="openCreate">
-                    <span class="material-icons-round">add</span> 
-                    <span id="newSectionBtn">Add Notice</span>
+                    <span>
+                        <span class="material-icons-round">add</span> 
+                        <span id="newSectionBtn">Add Notice</span>
+                    </span>
                 </button>
             </div>
         </div>
@@ -204,52 +214,64 @@
 
                                 {{-- Title --}}
                                 <div class="col-12">
-                                    <label class="form-label">Title <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control @error('title') is-invalid @enderror" wire:model.defer="title" placeholder="e.g. Annual Sports Day Announcement">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Title <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control @error('title') is-invalid @enderror" wire:model.defer="title">
+                                    </div>
                                     @error('title') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 {{-- Description --}}
                                 <div class="col-12">
-                                    <label class="form-label">Description <span class="text-danger">*</span></label>
-                                    <textarea class="form-control @error('description') is-invalid @enderror" wire:model.defer="description" rows="5" placeholder="Write notice details..."></textarea>
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Description <span class="text-danger">*</span></label>
+                                        <textarea class="form-control @error('description') is-invalid @enderror" wire:model.defer="description" rows="5"></textarea>
+                                    </div>
                                     @error('description') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 {{-- Audience + Priority --}}
                                 <div class="col-md-6">
-                                    <label class="form-label">Target Audience <span class="text-danger">*</span></label>
-                                    <select class="form-select @error('audience') is-invalid @enderror" wire:model.defer="audience">
-                                        <option value="all">Everyone</option>
-                                        <option value="admin">Admin Only</option>
-                                        <option value="teacher">Teacher Only</option>
-                                        <option value="student">Student Only</option>
-                                        <option value="parent">Parent Only</option>
-                                    </select>
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Target Audience <span class="text-danger">*</span></label>
+                                        <select class="form-select @error('audience') is-invalid @enderror" wire:model.defer="audience">
+                                            <option value="all">Everyone</option>
+                                            <option value="admin">Admin Only</option>
+                                            <option value="teacher">Teacher Only</option>
+                                            <option value="student">Student Only</option>
+                                            <option value="parent">Parent Only</option>
+                                        </select>
+                                    </div>
                                     @error('audience') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Priority <span class="text-danger">*</span></label>
-                                    <select class="form-select @error('priority') is-invalid @enderror" wire:model.defer="priority">
-                                        <option value="low">Low</option>
-                                        <option value="medium">Medium</option>
-                                        <option value="high">High</option>
-                                        <option value="urgent">Urgent</option>
-                                    </select>
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Priority <span class="text-danger">*</span></label>
+                                        <select class="form-select @error('priority') is-invalid @enderror" wire:model.defer="priority">
+                                            <option value="low">Low</option>
+                                            <option value="medium">Medium</option>
+                                            <option value="high">High</option>
+                                            <option value="urgent">Urgent</option>
+                                        </select>
+                                    </div>
                                     @error('priority') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 {{-- Publish Date + Expiry Date --}}
                                 <div class="col-md-6">
-                                    <label class="form-label">Publish Date <span class="text-danger">*</span></label>
-                                    <input type="date" class="form-control @error('published_at') is-invalid @enderror" wire:model.defer="published_at">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Publish Date <span class="text-danger">*</span></label>
+                                        <input type="date" class="form-control @error('published_at') is-invalid @enderror" wire:model.defer="published_at">
+                                    </div>
                                     @error('published_at') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Expiry Date <span class="text-muted" style="font-weight:400;">(optional)</span></label>
-                                    <input type="date" class="form-control @error('expires_at') is-invalid @enderror" wire:model.defer="expires_at">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Expiry Date <span class="text-muted" style="font-weight:400;">(optional)</span></label>
+                                        <input type="date" class="form-control @error('expires_at') is-invalid @enderror" wire:model.defer="expires_at">
+                                    </div>
                                     @error('expires_at') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
@@ -274,15 +296,17 @@
 
                                 {{-- Features / toggles --}}
                                 <div class="col-12">
-                                    <label class="form-label d-block mb-2">Status</label>
-                                    <div class="d-flex gap-3 flex-wrap">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" wire:model.defer="status" value="active" id="status_active">
-                                            <label class="form-check-label" for="status_active">Active</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" wire:model.defer="status" value="inactive" id="status_inactive">
-                                            <label class="form-check-label" for="status_inactive">Inactive</label>
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label d-block mb-2">Status</label>
+                                        <div class="d-flex gap-3 flex-wrap">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" wire:model.defer="status" value="active" id="status_active">
+                                                <label class="form-check-label" for="status_active">Active</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" wire:model.defer="status" value="inactive" id="status_inactive">
+                                                <label class="form-check-label" for="status_inactive">Inactive</label>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

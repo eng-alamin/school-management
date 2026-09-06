@@ -18,26 +18,44 @@
                     </div>
                 </div>
 
-                {{-- Filter: Type --}}
-                <select class="form-select form-select-sm" wire:model.live="filterType" style="width:130px">
-                    <option value="">All Types</option>
-                    <option value="Deposit">Deposit</option>
-                    <option value="Expense">Expense</option>
-                </select>
+                <div class="col-md-2">
+                    <div class="input-group input-group-outline">
+                        <select class="form-select form-select-sm" wire:model.live="filterType">
+                            <option value="">All Types</option>
+                            <option value="Deposit">Deposit</option>
+                            <option value="Expense">Expense</option>
+                        </select>
+                    </div>
+                </div>
 
-                {{-- Filter: Account --}}
-                <select class="form-select form-select-sm" wire:model.live="filterAccount" style="width:160px">
-                    <option value="">All Accounts</option>
-                    @foreach($accounts as $account)
-                        <option value="{{ $account->id }}">{{ $account->name }}</option>
-                    @endforeach
-                </select>
+                <div class="col-md-2">
+                    <div class="input-group input-group-outline">
+                        <select class="form-select form-select-sm" wire:model.live="filterAccount">
+                            <option value="">All Accounts</option>
+                            @foreach($accounts as $account)
+                                <option value="{{ $account->id }}">{{ $account->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
 
                 {{-- Filter: Date From --}}
-                <input type="date" wire:model.live="filterDateFrom" class="form-control form-control-sm no-print" style="width:150px" title="From Date">
+                <div class="col-md-2">
+                    <div class="input-group input-group-outline" wire:ignore>
+                        <label class="form-label">Date From</label>
+                        <input type="date" wire:model.live="filterDateFrom" class="form-control" onfocus="focused(this)" onfocusout="defocused(this)">
+                        @error('filterDateFrom') <span class="text-danger">{{ $message }}</span> @enderror
+                    </div>
+                </div>
 
                 {{-- Filter: Date To --}}
-                <input type="date" wire:model.live="filterDateTo" class="form-control form-control-sm no-print" style="width:150px" title="To Date">
+                <div class="col-md-2">
+                    <div class="input-group input-group-outline" wire:ignore>
+                        <label class="form-label">Date To</label>
+                        <input type="date" wire:model.live="filterDateTo" class="form-control" onfocus="focused(this)" onfocusout="defocused(this)">
+                        @error('filterDateTo') <span class="text-danger">{{ $message }}</span> @enderror
+                    </div>
+                </div>
 
                 @if($filterDateFrom || $filterDateTo)
                     <button type="button" class="btn btn-sm btn-secondary no-print" wire:click="clearDateFilter" title="Clear date filter">

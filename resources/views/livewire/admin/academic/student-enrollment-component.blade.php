@@ -24,31 +24,35 @@
                 </div>
 
                 {{-- Class filter --}}
-                <div>
-                    <select wire:model.live="filterClass" class="form-select form-select-sm" style="min-width:140px">
-                        <option value="">All Classes</option>
-                        @foreach ($classes as $c)
-                            <option value="{{ $c->id }}">{{ $c->name }}</option>
-                        @endforeach
-                    </select>
+                <div class="col-md-2">
+                    <div class="input-group input-group-outline">
+                        <select wire:model.live="filterClass" class="form-select form-select-sm">
+                            <option value="">All Classes</option>
+                            @foreach ($classes as $c)
+                                <option value="{{ $c->id }}">{{ $c->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
 
                 {{-- Section filter --}}
-                <div>
-                    <select wire:model.live="filterSection" class="form-select form-select-sm" style="min-width:140px"
-                        {{ empty($availableSections) ? 'disabled' : '' }}>
-                        <option value="">All Sections</option>
-                        @if(!empty($availableSections))
-                            @foreach ($availableSections as $s)
-                                <option value="{{ $s['id'] }}">{{ $s['name'] }}</option>
-                            @endforeach
-                        @endif
-                    </select>
+                <div class="col-md-2">
+                    <div class="input-group input-group-outline">
+                        <select wire:model.live="filterSection" class="form-select form-select-sm"
+                            {{ empty($availableSections) ? 'disabled' : '' }}>
+                            <option value="">All Sections</option>
+                            @if(!empty($availableSections))
+                                @foreach ($availableSections as $s)
+                                    <option value="{{ $s['id'] }}">{{ $s['name'] }}</option>
+                                @endforeach
+                            @endif
+                        </select>
+                    </div>
                 </div>
 
                 {{-- Per page --}}
                 @if($enrollments->total() > 10)
-                    <div>
+                    <div class="col-md-2">
                         <select class="form-select form-select-sm" wire:model.live="perPage">
                             <option value="10">10 / page</option>
                             <option value="25">25 / page</option>
@@ -199,11 +203,13 @@
                         <p class="text-muted small mb-3" id="enr-status-msg">Select a new status for this enrollment.</p>
 
                         <div class="text-start">
-                            <select wire:model="newStatus" class="form-select no-custom-select @error('newStatus') is-invalid @enderror">
-                                @foreach($statusOptions as $option)
-                                    <option value="{{ $option }}">{{ ucwords(str_replace('_', ' ', $option)) }}</option>
-                                @endforeach
-                            </select>
+                            <div class="input-group input-group-outline" wire:ignore>
+                                <select wire:model="newStatus" class="form-select no-custom-select @error('newStatus') is-invalid @enderror">
+                                    @foreach($statusOptions as $option)
+                                        <option value="{{ $option }}">{{ ucwords(str_replace('_', ' ', $option)) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
                         @error('newStatus') <span class="text-danger small d-block mt-1">{{ $message }}</span> @enderror
                         @error('statusId') <span class="text-danger small d-block mt-1">{{ $message }}</span> @enderror

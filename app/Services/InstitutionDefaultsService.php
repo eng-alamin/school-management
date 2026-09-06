@@ -122,9 +122,7 @@ class InstitutionDefaultsService
     private static function createInventoryUnits(Institution $institution, Branch $branch): void
     {
         $units = [
-            'KG',
             'Piece',
-            'Dozen',
             'Unit',
         ];
 
@@ -148,8 +146,6 @@ class InstitutionDefaultsService
             'Security',
             'Maintenance',
             'IT',
-            'Admissions',
-            'Examination',
         ];
 
         foreach ($departments as $department) {
@@ -245,20 +241,6 @@ class InstitutionDefaultsService
             'English',
             'Mathematics',
             'Science',
-            'Physics',
-            'Chemistry',
-            'Biology',
-            'Social Science',
-            'History',
-            'Geography',
-            'Economics',
-            'Accounting',
-            'Business Studies',
-            'Finance and Banking',
-            'Agriculture',
-            'Islam Education',
-            'Physical Education',
-            'Arts and Crafts',
         ];
 
         foreach ($subjects as $subject) {
@@ -333,6 +315,11 @@ class InstitutionDefaultsService
 
     private static function createAcademicAssigns(Institution $institution, Branch $branch): void
     {
+        $sessionId = AcademicSession::where('institution_id', $institution->id)
+            ->where('branch_id', $branch->id)
+            ->where('is_current', true)
+            ->value('id');
+
         $subjects = AcademicSubject::where('institution_id', $institution->id)
             ->where('branch_id', $branch->id)
             ->take(3)
@@ -349,6 +336,7 @@ class InstitutionDefaultsService
                 $classAssign = AcademicClassAssign::firstOrCreate([
                     'institution_id' => $institution->id,
                     'branch_id'      => $branch->id,
+                    'session_id'     => $sessionId,
                     'class_id'       => $class->id,
                     'section_id'     => null,
                 ]);
@@ -369,6 +357,7 @@ class InstitutionDefaultsService
                 $classAssign = AcademicClassAssign::firstOrCreate([
                     'institution_id' => $institution->id,
                     'branch_id'      => $branch->id,
+                    'session_id'     => $sessionId,
                     'class_id'       => $class->id,
                     'section_id'     => $section->id,
                 ]);

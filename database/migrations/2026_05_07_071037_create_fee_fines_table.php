@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('fee_fines', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
             $table->foreignId('fee_setup_id')->constrained()->cascadeOnDelete();
             $table->enum('fine_type', ['fixed', 'percentage'])->default('fixed');
             $table->decimal('fine_value', 15, 2);
@@ -23,7 +23,7 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
             
-            $table->unique(['institution_id', 'fee_setup_id', 'deleted_at'], 'unique_fee_fine');
+            $table->unique(['institution_id', 'branch_id', 'fee_setup_id', 'deleted_at'], 'unique_fee_fine');
         });
     }
 

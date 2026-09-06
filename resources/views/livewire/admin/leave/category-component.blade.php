@@ -22,11 +22,13 @@
                 <!-- Right Side -->
                 @if($categories->total() > 10)
                     <div class="col-md-2">
-                        <select class="form-select form-select-sm" wire:model.live="perPage">
-                            <option value="10">10 / page</option>
-                            <option value="25">25 / page</option>
-                            <option value="50">50 / page</option>
-                        </select>
+                        <div class="input-group input-group-outline">
+                            <select class="form-select form-select-sm" wire:model.live="perPage">
+                                <option value="10">10 / page</option>
+                                <option value="25">25 / page</option>
+                                <option value="50">50 / page</option>
+                            </select>
+                        </div>
                     </div>
                 @endif
                 <button class="btn btn-primary" wire:click="openCreate">
@@ -104,23 +106,29 @@
                         <form wire:submit.prevent="save">
                             <div class="row g-3">
                                 <div class="col-md-12">
-                                    <label class="form-label">Name <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model.defer="name" placeholder="e.g. Tour">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model.defer="name">
+                                    </div>
                                     @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-12">
-                                    <label class="form-label">Role <span class="text-danger">*</span></label>
-                                    <select wire:model="role" class="form-select @error('role') is-invalid @enderror">
-                                        <option value="">Select Role</option>
-                                        @foreach($roles as $value => $label)
-                                            <option value="{{ $value }}">{{ $label }}</option>
-                                        @endforeach
-                                    </select>
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Role <span class="text-danger">*</span></label>
+                                        <select wire:model="role" class="form-select @error('role') is-invalid @enderror">
+                                            <option value="">Select Role</option>
+                                            @foreach($roles as $value => $label)
+                                                <option value="{{ $value }}">{{ $label }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
                                     @error('role') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-12">
-                                    <label class="form-label">Days <span class="text-danger">*</span></label>
-                                    <input type="number" min="1" max="365" class="form-control @error('days') is-invalid @enderror" wire:model.defer="days" placeholder="e.g. 10">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Days <span class="text-danger">*</span></label>
+                                        <input type="number" min="1" max="365" class="form-control @error('days') is-invalid @enderror" wire:model.defer="days">
+                                    </div>
                                     @error('days') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                             </div>

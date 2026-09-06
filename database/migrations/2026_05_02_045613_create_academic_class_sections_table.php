@@ -13,16 +13,13 @@ return new class extends Migration
     {
         Schema::create('academic_class_sections', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
-            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
             $table->foreignId('class_id')->constrained('academic_classes')->cascadeOnDelete();
             $table->foreignId('section_id')->constrained('academic_sections')->cascadeOnDelete();
             $table->timestamps();
 
-            $table->unique(
-                ['institution_id', 'class_id', 'section_id'],
-                'academic_class_sections_institution_class_section_unique'
-            );
+            $table->unique(['institution_id', 'branch_id', 'class_id', 'section_id'], 'academic_class_sections_ins_bra_cla_sec_unique');
         });
     }
 

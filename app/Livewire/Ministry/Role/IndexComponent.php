@@ -10,12 +10,23 @@ use Livewire\Component;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
+use Database\Seeders\MinistryRolePermissionSeeder;
 
 #[Layout('layouts.ministry.app')]
 class IndexComponent extends Component
 {
     private const SUPER_ADMIN_ROLE = 'Ministry Super Admin';
     private const ROLE_PREFIX = 'Ministry ';
+
+    /**
+     * Permission name prefix — mirrors MinistryRolePermissionSeeder::PREFIX.
+     * Every permission this component reads, creates, deletes, or assigns
+     * MUST be scoped by this prefix. Both Ministry and Institution
+     * permissions share guard_name='web', so the prefix is the ONLY thing
+     * separating the two sets — without it, this panel would list, assign,
+     * and let a Super Admin delete Institution-level permissions too.
+     */
+    private const PERMISSION_PREFIX = MinistryRolePermissionSeeder::PREFIX;
 
     // =====================
     // Tab state
@@ -58,7 +69,8 @@ class IndexComponent extends Component
     private function authorizeSuperAdmin(): void
     {
         abort_unless(
-            Auth::user()?->isMinistry() && Auth::user()->hasRole(self::SUPER_ADMIN_ROLE),
+            Auth::user()?->isMinistry(),
+            // Auth::user()?->isMinistry() && Auth::user()->hasRole(self::SUPER_ADMIN_ROLE),
             403,
             'শুধু Ministry Super Admin এই section access করতে পারবে।'
         );
@@ -67,6 +79,31 @@ class IndexComponent extends Component
     public function setActiveTab(string $tab): void
     {
         $this->activeTab = in_array($tab, ['roles', 'permissions'], true) ? $tab : 'roles';
+    }
+
+    /**
+     * Ownership-verified Role lookup — every mutation/view entrypoint below
+     * MUST route through this instead of a bare findOrFail(), so a
+     * manipulated Livewire call payload can never load/edit/delete an
+     * Institution-panel role by guessing its id.
+     */
+    private function findMinistryRoleOrFail(int $id): Role
+    {
+        return Role::where('guard_name', 'web')
+            ->where('name', 'like', self::ROLE_PREFIX . '%')
+            ->findOrFail($id);
+    }
+
+    /**
+     * Ownership-verified Permission lookup — same rationale as
+     * findMinistryRoleOrFail(): stops a tampered id from reaching an
+     * Institution-panel permission.
+     */
+    private function findMinistryPermissionOrFail(int $id): Permission
+    {
+        return Permission::where('guard_name', 'web')
+            ->where('name', 'like', self::PERMISSION_PREFIX . '%')
+            ->findOrFail($id);
     }
 
     // =====================
@@ -84,17 +121,26 @@ class IndexComponent extends Component
 
     public function getAllPermissionsProperty()
     {
-        return Permission::where('guard_name', 'web')->orderBy('name')->get();
+        // Scoped to 'ministry.*' only — see PERMISSION_PREFIX docblock.
+        return Permission::where('guard_name', 'web')
+            ->where('name', 'like', self::PERMISSION_PREFIX . '%')
+            ->orderBy('name')
+            ->get();
     }
 
     /**
-     * Permission গুলো module অনুযায়ী group করা (name.action প্যাটার্ন থেকে module বের করে)
-     * যাতে Role form-এ checkbox গুলো সুন্দরভাবে category ধরে দেখানো যায়।
+     * Permission গুলো module অনুযায়ী group করা যাতে Role form-এ checkbox গুলো
+     * সুন্দরভাবে category ধরে দেখানো যায়।
+     *
+     * Name pattern is 'ministry.{module}.{action}' (3 segments), so the
+     * module is segment index 1 — NOT index 0 (index 0 is always the
+     * literal 'ministry' segment, which would collapse every permission
+     * into a single group if used).
      */
     public function getGroupedPermissionsProperty()
     {
         return $this->allPermissions->groupBy(function (Permission $permission) {
-            return explode('.', $permission->name)[0] ?? 'other';
+            return explode('.', $permission->name)[1] ?? 'other';
         });
     }
 
@@ -119,7 +165,7 @@ class IndexComponent extends Component
     {
         $this->authorizeSuperAdmin();
 
-        $role = Role::where('guard_name', 'web')->findOrFail($id);
+        $role = $this->findMinistryRoleOrFail($id);
 
         $this->roleId = $role->id;
         // prefix ছাড়া বাকি অংশ input-এ দেখানো হবে, সংরক্ষণের সময় আবার prefix জোড়া লাগবে
@@ -134,7 +180,9 @@ class IndexComponent extends Component
 
     public function openViewRoleModal(int $id): void
     {
-        $this->viewingRole = Role::with('permissions')->withCount('users')->findOrFail($id);
+        $this->authorizeSuperAdmin();
+
+        $this->viewingRole = $this->findMinistryRoleOrFail($id)->loadCount('users')->load('permissions');
         $this->showRoleViewModal = true;
     }
 
@@ -143,7 +191,20 @@ class IndexComponent extends Component
         return [
             'roleName' => ['required', 'string', 'max:80'],
             'selectedPermissions' => ['array'],
-            'selectedPermissions.*' => ['string', 'exists:permissions,name'],
+            // Closure required for a LIKE condition inside Rule::exists() —
+            // its where() only supports 2-arg equality, so a 3-arg
+            // ('name', 'like', ...) call is silently ignored and would
+            // match nothing (see CreateComponent/EditComponent history for
+            // this exact bug). This also restricts assignable permissions
+            // to 'ministry.*' only, so an Institution permission name can
+            // never be synced onto a Ministry role.
+            'selectedPermissions.*' => [
+                'string',
+                Rule::exists('permissions', 'name')->where(function ($query) {
+                    $query->where('guard_name', 'web')
+                          ->where('name', 'like', self::PERMISSION_PREFIX . '%');
+                }),
+            ],
         ];
     }
 
@@ -157,12 +218,15 @@ class IndexComponent extends Component
         DB::beginTransaction();
         try {
             if ($this->isRoleEditMode) {
-                $role = Role::where('guard_name', 'web')->findOrFail($this->roleId);
+                $role = $this->findMinistryRoleOrFail($this->roleId);
 
-                // Super Admin role-এর নাম বদলানো/protect করা — সবসময় পুরো permission set থাকবে
+                // Super Admin role-এর নাম বদলানো/protect করা — সবসময় পুরো Ministry permission set থাকবে
                 if ($role->name === self::SUPER_ADMIN_ROLE) {
                     $fullRoleName = self::SUPER_ADMIN_ROLE;
-                    $this->selectedPermissions = Permission::where('guard_name', 'web')->pluck('name')->toArray();
+                    $this->selectedPermissions = Permission::where('guard_name', 'web')
+                        ->where('name', 'like', self::PERMISSION_PREFIX . '%')
+                        ->pluck('name')
+                        ->all();
                 } else {
                     $this->guardDuplicateRoleName($fullRoleName, $role->id);
                 }
@@ -232,7 +296,7 @@ class IndexComponent extends Component
     {
         $this->authorizeSuperAdmin();
 
-        $role = Role::where('guard_name', 'web')->withCount('users')->findOrFail($id);
+        $role = $this->findMinistryRoleOrFail($id)->loadCount('users');
 
         if ($role->name === self::SUPER_ADMIN_ROLE) {
             $this->dispatch('toast', type: 'error', message: 'Ministry Super Admin role delete করা যাবে না।');
@@ -252,7 +316,7 @@ class IndexComponent extends Component
     {
         $this->authorizeSuperAdmin();
 
-        $role = Role::where('guard_name', 'web')->withCount('users')->findOrFail($this->deletingRoleId);
+        $role = $this->findMinistryRoleOrFail($this->deletingRoleId)->loadCount('users');
 
         if ($role->name === self::SUPER_ADMIN_ROLE || $role->users_count > 0) {
             $this->showRoleDeleteModal = false;
@@ -298,7 +362,12 @@ class IndexComponent extends Component
         $this->authorizeSuperAdmin();
         $this->validate($this->permissionRules());
 
-        $permissionName = strtolower(trim($this->permissionModule)) . '.' . strtolower(trim($this->permissionAction));
+        // Always prefixed with 'ministry.' — permissions created from this
+        // panel must never be indistinguishable from Institution-panel
+        // permissions, since both share guard_name='web'.
+        $permissionName = self::PERMISSION_PREFIX
+            . strtolower(trim($this->permissionModule)) . '.'
+            . strtolower(trim($this->permissionAction));
 
         if (Permission::where('guard_name', 'web')->where('name', $permissionName)->exists()) {
             $this->addError('permissionAction', 'এই permission ইতিমধ্যে আছে।');
@@ -310,7 +379,7 @@ class IndexComponent extends Component
             $permission = Permission::create(['name' => $permissionName, 'guard_name' => 'web']);
 
             // নতুন permission তৈরি হলেই Super Admin-কে auto-grant করা হবে,
-            // যাতে Super Admin সবসময় সব permission রাখে (manual sync ভুলে যাওয়া রোধ)
+            // যাতে Super Admin সবসময় সব Ministry permission রাখে (manual sync ভুলে যাওয়া রোধ)
             $superAdmin = Role::where('guard_name', 'web')->where('name', self::SUPER_ADMIN_ROLE)->first();
             $superAdmin?->givePermissionTo($permission);
 
@@ -342,7 +411,7 @@ class IndexComponent extends Component
     {
         $this->authorizeSuperAdmin();
 
-        $permission = Permission::where('guard_name', 'web')->withCount('roles')->findOrFail($id);
+        $permission = $this->findMinistryPermissionOrFail($id)->loadCount('roles');
 
         if ($permission->roles_count > 0) {
             $this->dispatch('toast', type: 'error', message: 'এই Permission কোনো Role-এ ব্যবহৃত হচ্ছে, আগে সেখান থেকে সরান।');
@@ -357,7 +426,7 @@ class IndexComponent extends Component
     {
         $this->authorizeSuperAdmin();
 
-        $permission = Permission::where('guard_name', 'web')->withCount('roles')->findOrFail($this->deletingPermissionId);
+        $permission = $this->findMinistryPermissionOrFail($this->deletingPermissionId)->loadCount('roles');
 
         if ($permission->roles_count > 0) {
             $this->showPermissionDeleteModal = false;

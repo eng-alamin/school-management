@@ -27,6 +27,11 @@ class SaleListComponent extends Component
     public function mount(): void
     {
         $this->routePrefix = $this->resolveRoutePrefix();
+
+        // Surface a success toast after redirect back from Create/Edit pages.
+        if (session()->has('toast_success')) {
+            $this->dispatch('toast', type: 'success', message: session()->pull('toast_success'));
+        }
     }
 
     protected function resolveRoutePrefix(): string

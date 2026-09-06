@@ -23,15 +23,20 @@
                 <!-- Right Side -->
                 @if($grades->total() > 10)
                     <div class="col-md-2">
-                        <select class="form-select form-select-sm" wire:model.live="perPage">
-                            <option value="10">10 / page</option>
-                            <option value="25">25 / page</option>
-                            <option value="50">50 / page</option>
-                        </select>
+                        <div class="input-group input-group-outline">
+                            <select class="form-select form-select-sm" wire:model.live="perPage">
+                                <option value="10">10 / page</option>
+                                <option value="25">25 / page</option>
+                                <option value="50">50 / page</option>
+                            </select>
+                        </div>
                     </div>
                 @endif
                 <button class="btn btn-primary" wire:click="openCreate">
-                    <span class="material-icons-round">add</span> <span id="newSectionBtn">Add Grade</span>
+                    <span>
+                        <span class="material-icons-round">add</span> 
+                        <span id="newSectionBtn">Add Grade</span>
+                    </span>
                 </button>
 
             </div>
@@ -106,28 +111,38 @@
                         <form wire:submit.prevent="save">
                             <div class="row g-3">
                                 <div class="col-md-12">
-                                    <label class="form-label">Name <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model.defer="name" placeholder="e.g. A+">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model.defer="name">
+                                    </div>
                                     @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-12">
-                                    <label class="form-label">Grade Point <span class="text-danger">*</span></label>
-                                    <input type="number" class="form-control @error('grade_point') is-invalid @enderror" wire:model.defer="grade_point" placeholder="e.g. 4.0">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Grade Point <span class="text-danger">*</span></label>
+                                        <input type="number" class="form-control @error('grade_point') is-invalid @enderror" wire:model.defer="grade_point">
+                                    </div>
                                     @error('grade_point') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-12">
-                                    <label class="form-label">Min Percentage <span class="text-danger">*</span></label>
-                                    <input type="number" class="form-control @error('min_percentage') is-invalid @enderror" wire:model.defer="min_percentage" placeholder="e.g. 4.0">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Min Percentage <span class="text-danger">*</span></label>
+                                        <input type="number" class="form-control @error('min_percentage') is-invalid @enderror" wire:model.defer="min_percentage">
+                                    </div>
                                     @error('min_percentage') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-12">
-                                    <label class="form-label">Max Percentage <span class="text-danger">*</span></label>
-                                    <input type="number" class="form-control @error('max_percentage') is-invalid @enderror" wire:model.defer="max_percentage" placeholder="e.g. 100">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Max Percentage <span class="text-danger">*</span></label>
+                                        <input type="number" class="form-control @error('max_percentage') is-invalid @enderror" wire:model.defer="max_percentage">
+                                    </div>
                                     @error('max_percentage') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="col-md-12">
-                                    <label class="form-label">Remarks</label>
-                                    <input type="text" class="form-control @error('remarks') is-invalid @enderror" wire:model.defer="remarks" placeholder="e.g. Excellent">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Remarks</label>
+                                        <input type="text" class="form-control @error('remarks') is-invalid @enderror" wire:model.defer="remarks">
+                                    </div>
                                     @error('remarks') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                             </div>

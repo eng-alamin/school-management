@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('fee_setups', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
-            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
             $table->foreignId('class_id')->constrained('academic_classes')->cascadeOnDelete();
             $table->foreignId('fee_type_id')->constrained('fee_types')->cascadeOnDelete();
             $table->decimal('amount', 10, 2)->default(0);
@@ -24,7 +24,7 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
  
-            $table->unique(['institution_id', 'class_id', 'fee_type_id', 'deleted_at'], 'unique_fee_setup');
+            $table->unique(['institution_id', 'branch_id', 'class_id', 'fee_type_id', 'deleted_at'], 'unique_fee_setup');
         });
     }
 

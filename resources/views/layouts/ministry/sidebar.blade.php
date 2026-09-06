@@ -39,7 +39,7 @@
         </a>
       </li>
 
-      @can('institution.view')
+      @can('ministry.institution.view')
       <li class="nav1-item">
         <a href="{{route('ministry.institutions.index') }}" class="nav1-link {{ str_contains(request()->url(), 'ministry/institutions/index') == true ? 'active' : '' }}">
           <span class="material-icons-round nav-icon">school</span>
@@ -48,7 +48,7 @@
       </li>
       @endcan
 
-      @can('circular.manage')
+      @can('ministry.circular.view')
       <li class="nav1-item">
         <a href="{{route('ministry.circulars.index') }}" class="nav1-link {{ str_contains(request()->url(), 'ministry/circulars/') == true ? 'active' : '' }}">
           <span class="material-icons-round nav-icon">announcement</span>
@@ -57,7 +57,7 @@
       </li>
       @endcan
 
-      @can('compliance.manage')
+      @can('ministry.compliance.view')
       <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), 'ministry/compliance/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
           <span class="material-icons-round nav-icon">fact_check</span>
@@ -74,7 +74,7 @@
       </li>
       @endcan
 
-      @can('grievance.manage')
+      @can('ministry.grievance.view')
       <li class="nav1-item">
         <a href="{{route('ministry.grievances.index') }}" class="nav1-link {{ str_contains(request()->url(), 'ministry/grievances/') == true ? 'active' : '' }}">
           <span class="material-icons-round nav-icon">announcement</span>
@@ -83,7 +83,7 @@
       </li>
       @endcan
 
-      @can('exam-monitoring.view')
+      @can('ministry.exam-monitoring.view')
       <li class="nav1-item">
         <a href="{{route('ministry.academic.performance') }}" class="nav1-link {{ str_contains(request()->url(), 'academic-performance') == true ? 'active' : '' }}">
           <span class="material-icons-round nav-icon">school</span>
@@ -92,7 +92,7 @@
       </li>
       @endcan
 
-      @can('ranking.view')
+      @can('ministry.ranking.view')
       <li class="nav1-item">
         <a href="{{route('ministry.ranking.index') }}" class="nav1-link {{ str_contains(request()->url(), 'ministry/ranking') == true ? 'active' : '' }}">
           <span class="material-icons-round nav-icon">leaderboard</span>
@@ -101,7 +101,7 @@
       </li>
       @endcan
 
-      @can('heatmap.view')
+      @can('ministry.heatmap.view')
       <li class="nav1-item">
         <a href="{{route('ministry.geography.heatmap') }}" class="nav1-link {{ str_contains(request()->url(), 'ministry/geography/heatmap') == true ? 'active' : '' }}">
           <span class="material-icons-round nav-icon">map</span>
@@ -110,7 +110,7 @@
       </li>
       @endcan
 
-      @can('report.view')
+      @can('ministry.report.view')
       <li class="nav1-item">
         <a href="{{route('ministry.reports.index') }}" class="nav1-link {{ str_contains(request()->url(), 'ministry/reports') == true ? 'active' : '' }}">
           <span class="material-icons-round nav-icon">description</span>
@@ -120,7 +120,7 @@
       @endcan
 
       {{-- ===================== --}}
-      {{-- Administration (নতুন — User Management + Role & Permission) --}}
+      {{-- Administration (User Management + Role & Permission) --}}
       {{-- ===================== --}}
       @if (auth()->user()->hasRole('Ministry Super Admin'))
         <li class="nav1-item">

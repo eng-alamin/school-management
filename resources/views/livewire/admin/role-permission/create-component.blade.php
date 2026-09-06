@@ -44,6 +44,12 @@
                 @include('livewire.admin.role-permission.partials.permission-matrix')
             </div>
             @error('selectedPermissions') <span class="text-danger">{{ $message }}</span> @enderror
+            {{-- Array-indexed rule failures land under keys like
+                 'selectedPermissions.0', not 'selectedPermissions' — the
+                 wildcard pattern below is required to surface them,
+                 otherwise a failed selection fails validate() silently
+                 with no visible error. --}}
+            @error('selectedPermissions.*') <span class="text-danger">{{ $message }}</span> @enderror
         </div>
 
         <!-- FORM FOOTER -->
@@ -71,52 +77,6 @@
     </div>
 
 </div>
-
-@push('scripts')
-    <script>
-        document.addEventListener('livewire:initialized', () => {
-
-            // ✅ Initial load এ সব ঠিক করো
-            setTimeout(() => initAllFields(), 100);
-
-            // ✅ Livewire update এর পর
-            Livewire.hook('morph.updated', ({ el }) => {
-                setTimeout(() => initAllFields(), 50);
-            });
-
-            function initAllFields() {
-
-                // ── 1. Text is-filled ──
-                document.querySelectorAll('.input-group-outline input, .input-group-outline').forEach(function(input) {
-                    var group = input.closest('.input-group');
-                    if (!group) return;
-
-                    // value থাকলে is-filled দাও
-                    if (input.value && input.value.trim() !== '') {
-                        group.classList.add('is-filled');
-                    } else {
-                        group.classList.remove('is-filled');
-                    }
-
-                    if (input._materialInit) return;
-                    input._materialInit = true;
-
-                    input.addEventListener('focus', function() {
-                        group.classList.add('is-focused');
-                    });
-                    input.addEventListener('blur', function() {
-                        group.classList.remove('is-focused');
-                        group.classList.toggle('is-filled', !!input.value.trim());
-                    });
-                    input.addEventListener('input', function() {
-                        group.classList.toggle('is-filled', !!input.value.trim());
-                    });
-                });
-            }
-
-        });
-    </script>
-@endpush
 
 @push('styles')
     <style>

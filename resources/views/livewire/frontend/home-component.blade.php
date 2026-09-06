@@ -76,7 +76,7 @@
           </div>
           <div class="col-lg-6 mt-5 mt-lg-0 text-center">
             <img
-              src="https://6a366b9905d679a122fa1a7d.imgix.net/Image_ycgr8iycgr8iycgr.png?w=1264&h=843&object-removal-rect=1174%2C756%2C67%2C61"
+              src="{{asset('assets/img/file1.png')}}"
               alt="School Dashboard"
               class="img-fluid hero-img float-anim"
             />
@@ -173,17 +173,17 @@
           <div class="col-lg-2 col-md-4 col-6">
             <div class="stat-card text-center">
               <div class="stat-icon"><i class="bi bi-building"></i></div>
-              <div class="stat-number" data-count="19028">0</div>
+              <div class="stat-number" data-count="{{$institutions->where('type', 'school')->count()}}">0</div>
               <div class="stat-label">
-                <span class="lang-bn">উচ্চ বিদ্যালয়</span
-                ><span class="lang-en">High Schools</span>
+                <span class="lang-bn">বিদ্যালয়</span
+                ><span class="lang-en">Schools</span>
               </div>
             </div>
           </div>
           <div class="col-lg-2 col-md-4 col-6">
             <div class="stat-card text-center">
               <div class="stat-icon"><i class="bi bi-bank"></i></div>
-              <div class="stat-number" data-count="3045">0</div>
+              <div class="stat-number" data-count="{{$institutions->where('type', 'college')->count()}}">0</div>
               <div class="stat-label">
                 <span class="lang-bn">কলেজ</span
                 ><span class="lang-en">Colleges</span>
@@ -193,7 +193,7 @@
           <div class="col-lg-2 col-md-4 col-6">
             <div class="stat-card text-center">
               <div class="stat-icon"><i class="bi bi-house-door"></i></div>
-              <div class="stat-number" data-count="1196">0</div>
+              <div class="stat-number" data-count="{{$institutions->where('type', 'school-collage')->count()}}">0</div>
               <div class="stat-label">
                 <span class="lang-bn">স্কুল ও কলেজ</span
                 ><span class="lang-en">School &amp; College</span>
@@ -203,7 +203,7 @@
           <div class="col-lg-2 col-md-4 col-6">
             <div class="stat-card text-center">
               <div class="stat-icon"><i class="bi bi-person-check"></i></div>
-              <div class="stat-number" data-count="136316">0</div>
+              <div class="stat-number" data-count="{{$employees->count()}}">0</div>
               <div class="stat-label">
                 <span class="lang-bn">কর্মচারী</span
                 ><span class="lang-en">Staff</span>
@@ -216,7 +216,7 @@
             >
               <div>
                 <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
-                <div class="stat-number" data-count="407141">0</div>
+                <div class="stat-number" data-count="{{$users->where('role', 'teacher')->count()}}">0</div>
                 <div class="stat-label">
                   <span class="lang-bn">সারাদেশে শিক্ষক</span
                   ><span class="lang-en">Teachers Nationwide</span>
@@ -541,7 +541,7 @@
         <div class="row align-items-center g-5 mb-5">
           <div class="col-lg-6">
             <img
-              src="https://6a366b9905d679a122fa1a7d.imgix.net/Image_cjtfbrcjtfbrcjtf.png"
+              src="{{asset('assets/img/file2.png')}}"
               alt="Student Management"
               class="img-fluid module-img w-100"
             />

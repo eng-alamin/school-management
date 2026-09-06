@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('biometric_attendance_logs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
             $table->foreignId('biometric_device_id')->constrained('biometric_devices')->cascadeOnDelete();
             $table->string('device_user_id');
             $table->nullableMorphs('attendable'); // resolved after mapping lookup

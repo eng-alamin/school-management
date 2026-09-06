@@ -18,19 +18,32 @@
 
                 @if($assigns->total() > 10)
                     <div class="col-md-2">
-                        <select class="form-select form-select-sm" wire:model.live="perPage">
-                            <option value="10">10 / page</option>
-                            <option value="25">25 / page</option>
-                            <option value="50">50 / page</option>
-                        </select>
+                        <div class="input-group input-group-outline">
+                            <select class="form-select form-select-sm" wire:model.live="perPage">
+                                <option value="10">10 / page</option>
+                                <option value="25">25 / page</option>
+                                <option value="50">50 / page</option>
+                            </select>
+                        </div>
                     </div>
                 @endif
 
-                <button class="btn btn-primary" wire:click="openCreate">
-                    <span class="material-icons-round">add</span> <span>New Assign</span>
+                <button class="btn btn-primary" wire:click="openCreate" @disabled(!$currentSessionId)>
+                    <span>
+                        <span class="material-icons-round">add</span>
+                        <span>New Assign</span>
+                    </span>
                 </button>
+
             </div>
         </div>
+
+        @unless($currentSessionId)
+            <div class="alert alert-warning mx-3 mt-2 mb-0 d-flex align-items-center gap-2" style="font-size:13px;">
+                <span class="material-icons-round" style="font-size:18px;">warning_amber</span>
+                No active academic session found. Please set a current session before assigning classes.
+            </div>
+        @endunless
 
         <div class="card-body pt-0">
             <div class="table-responsive">
@@ -71,7 +84,7 @@
                             <td class="text-muted">{{ $assigns->firstItem() + $i }}</td>
                             <td>{{ $assign->academicClass?->name ?? '—' }}</td>
                             <td>
-                                {{ $assign->section?->name ?? 'N/A' }}
+                                {{ $assign->academicSection?->name ?? 'N/A' }}
                             </td>
                             <td>
                                 @if($assign->details->isNotEmpty())
@@ -146,7 +159,6 @@
                                 @error('class_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
 
-                            {{-- Section dependent on class; class-e section thakle required, na thakle hide --}}
                             <div class="col-md-6">
                                 @if($selectedClassHasSection)
                                     <label class="form-label">Section <span class="text-danger">*</span></label>
@@ -170,6 +182,11 @@
                                 <label class="form-label">Assign Subjects &amp; Teachers <span class="text-danger">*</span></label>
                                 <div class="border rounded p-2" style="max-height:320px;overflow-y:auto;">
                                     @forelse($subjects as $subjectId => $subjectName)
+                                        @php
+                                            $isChecked = in_array($subjectId, $subject_array);
+                                            $submittedIndex = $isChecked ? array_search($subjectId, $subject_array) : null;
+                                            $hasTeacherError = $isChecked && $submittedIndex !== null && $errors->has('subject_array.' . $submittedIndex);
+                                        @endphp
                                         <div class="row g-2 align-items-center py-2 {{ !$loop->last ? 'border-bottom' : '' }}">
                                             <div class="col-6">
                                                 <div class="form-check d-flex align-items-center gap-2 m-0">
@@ -187,14 +204,17 @@
                                             </div>
                                             <div class="col-6">
                                                 <select
-                                                    class="form-select form-select-sm @error('subject_array.' . $loop->index) is-invalid @enderror"
+                                                    class="form-select form-select-sm {{ $hasTeacherError ? 'is-invalid' : '' }}"
                                                     wire:model.live="teacher_array.{{ $subjectId }}"
-                                                    @disabled(!in_array($subjectId, $subject_array))>
+                                                    @disabled(!$isChecked)>
                                                     <option value="">Select teacher</option>
                                                     @foreach($teachers as $teacherId => $teacherName)
                                                         <option value="{{ $teacherId }}">{{ $teacherName }}</option>
                                                     @endforeach
                                                 </select>
+                                                @if($hasTeacherError)
+                                                    <div class="text-danger small mt-1">Please assign a teacher for this subject.</div>
+                                                @endif
                                             </div>
                                         </div>
                                     @empty
@@ -202,8 +222,6 @@
                                     @endforelse
                                 </div>
                                 @error('subject_array') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
-                                @error('subject_array.*') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
-                                @error('teacher_array.*') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
                             </div>
 
                         </div>

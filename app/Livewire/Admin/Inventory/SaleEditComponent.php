@@ -88,7 +88,6 @@ class SaleEditComponent extends Component
         $this->saleable_id     = $sale->saleable_id;
         $this->bill_no         = $sale->bill_no;
         $this->date            = $sale->date;
-        // $this->date            = $sale->date->format('Y-m-d');
         $this->received_amount = (float) $sale->received_amount;
         $this->pay_via         = $sale->pay_via ?? '';
         $this->remarks         = $sale->remarks ?? '';
@@ -109,9 +108,9 @@ class SaleEditComponent extends Component
             'id'          => $item->id,
             'category_id' => $item->category_id ?? '',
             'product_id'  => $item->product_id,
-            'unit_price'  => $item->unit_price,
+            'unit_price'  => number_format($item->unit_price, 0),
             'quantity'    => $item->quantity,
-            'discount'    => $item->discount,
+            'discount'    => number_format($item->discount, 0),
             'total_price' => $item->total_price,
         ])->toArray();
 
@@ -153,7 +152,7 @@ class SaleEditComponent extends Component
                 ->find($value);
 
             if ($product) {
-                $this->items[$index]['unit_price'] = $product->sales_price ?? 0;
+                $this->items[$index]['unit_price'] = number_format($product->sales_price, 0);
             }
         }
 
@@ -308,8 +307,7 @@ class SaleEditComponent extends Component
             }
         });
 
-        $this->dispatch('date-updated', date: $this->date);
-        $this->dispatch('toast', type: 'success', message: 'Data updated successfully!');
+        session()->flash('toast_success', 'Data updated successfully!');
         $this->redirectRoute('admin.inventory.sale.list', navigate: true);
     }
 

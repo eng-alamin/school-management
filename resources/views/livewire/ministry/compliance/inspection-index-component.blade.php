@@ -7,7 +7,7 @@
             <h5 class="fw-bold mb-0 text-dark" data-en="Inspections" data-bn="পরিদর্শনসমূহ">Inspections</h5>
             <p class="text-secondary mb-0" style="font-size:12px;" data-en="Scheduled and completed institution inspections" data-bn="নির্ধারিত ও সম্পন্ন প্রতিষ্ঠান পরিদর্শন">Scheduled and completed institution inspections</p>
         </div>
-        <a href="{{ route('ministry.compliance.inspections.create') }}" class="act-btn">
+        <a href="{{ route('ministry.compliance.inspections.create') }}" class="btn btn-primary">
             <span class="material-icons-round" style="font-size:16px;">add</span> <span data-en="Schedule Inspection" data-bn="পরিদর্শন নির্ধারণ করুন">Schedule Inspection</span>
         </a>
     </div>
@@ -16,29 +16,30 @@
         <div class="inst-filter-card">
             <div class="row g-2 align-items-end">
                 <div class="col-12 col-md-4">
-                    <label class="inst-filter-label" data-en="Search" data-bn="খুঁজুন">Search</label>
                     <input type="text" wire:model.live.debounce.300ms="search"
                            class="form-control form-control-sm"
                            data-en-ph="Search institution or EIIN..." data-bn-ph="প্রতিষ্ঠান বা ইআইআইএন খুঁজুন..."
                            placeholder="Search institution or EIIN...">
                 </div>
                 <div class="col-6 col-md-3">
-                    <label class="inst-filter-label" data-en="Status" data-bn="অবস্থা">Status</label>
-                    <select wire:model.live="status" class="form-select form-select-sm">
-                        <option value="" data-en="All Statuses" data-bn="সকল অবস্থা">All Statuses</option>
-                        @foreach ($this->statuses as $key => $label)
-                            <option value="{{ $key }}">{{ $label }}</option>
-                        @endforeach
-                    </select>
+                    <div class="input-group input-group-outline">
+                        <select wire:model.live="status" class="form-select form-select-sm">
+                            <option value="" data-en="All Statuses" data-bn="সকল অবস্থা">All Statuses</option>
+                            @foreach ($this->statuses as $key => $label)
+                                <option value="{{ $key }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
                 <div class="col-6 col-md-3">
-                    <label class="inst-filter-label" data-en="Division" data-bn="বিভাগ">Division</label>
-                    <select wire:model.live="division" class="form-select form-select-sm">
-                        <option value="" data-en="All Divisions" data-bn="সকল বিভাগ">All Divisions</option>
-                        @foreach ($this->divisions as $div)
-                            <option value="{{ $div }}">{{ $div }}</option>
-                        @endforeach
-                    </select>
+                    <div class="input-group input-group-outline">
+                        <select wire:model.live="division" class="form-select form-select-sm">
+                            <option value="" data-en="All Divisions" data-bn="সকল বিভাগ">All Divisions</option>
+                            @foreach ($this->divisions as $div)
+                                <option value="{{ $div }}">{{ $div }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
@@ -107,15 +108,11 @@
 
 @push('styles')
 <style>
-    .cm-wrap { background: var(--body-bg); min-height: 100vh; }
-
-    .act-btn {
-        display: inline-flex; align-items: center; gap: 6px;
-        background: var(--primary); color: #fff; border: none;
-        border-radius: 8px; padding: 7px 14px; font-size: 13px;
-        font-weight: 500; text-decoration: none; cursor: pointer;
+    .custom-select-trigger {
+        min-height: 30px !important;
+        height: 36px !important;
     }
-    .act-btn.danger { background: #ef4444; }
+    .cm-wrap { background: var(--body-bg); min-height: 100vh; }
 
     .inst-back-link {
         font-size: 12px; color: var(--lbl); text-decoration: none;

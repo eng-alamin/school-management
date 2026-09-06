@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('exam_halls', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
-            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
             $table->string('hall_no')->nullable();
             $table->unsignedInteger('no_of_seat')->nullable();
             $table->timestamps();

@@ -14,15 +14,15 @@ return new class extends Migration
         Schema::create('fee_types', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->string('code');
             $table->text('description')->nullable();
             $table->boolean('status')->default(true);
             $table->timestamps();
-
             $table->softDeletes();
-            $table->unique(['institution_id', 'code', 'deleted_at'], 'unique_fee_type');
+
+            $table->unique(['institution_id', 'branch_id', 'code', 'deleted_at'], 'unique_fee_type');
         });
     }
 

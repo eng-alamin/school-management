@@ -23,7 +23,7 @@ class ErrorLogsComponent extends Component
             $this->logs = array_slice(
                 array_reverse(explode("\n", $content)),
                 0,
-                50
+                500
             );
         }
     }

@@ -23,6 +23,7 @@ return new class extends Migration
             $table->date('published_at');
             $table->date('expires_at')->nullable();
             $table->timestamps();
+
             $table->softDeletes();
         });
 
@@ -34,7 +35,7 @@ return new class extends Migration
             $table->timestamp('read_at')->nullable();
             $table->timestamps();
 
-            $table->unique(['circular_id', 'institution_id']);
+            $table->unique(['circular_id', 'read_by'], 'circular_reads_circular_read_unique');
         });
     }
 

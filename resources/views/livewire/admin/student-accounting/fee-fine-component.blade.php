@@ -18,11 +18,13 @@
 
                 @if($feeFines->total() > 10)
                     <div class="col-md-2">
-                        <select class="form-select form-select-sm" wire:model.live="perPage">
-                            <option value="10">10 / page</option>
-                            <option value="25">25 / page</option>
-                            <option value="50">50 / page</option>
-                        </select>
+                        <div class="input-group input-group-outline">
+                            <select class="form-select form-select-sm" wire:model.live="perPage">
+                                <option value="10">10 / page</option>
+                                <option value="25">25 / page</option>
+                                <option value="50">50 / page</option>
+                            </select>
+                        </div>
                     </div>
                 @endif
 
@@ -137,66 +139,69 @@
 
                                 {{-- Class --}}
                                 <div class="col-md-12">
-                                    <label class="form-label">Class <span class="text-danger">*</span></label>
-                                    <select class="form-select @error('class_id') is-invalid @enderror"
-                                            wire:model.live="class_id">
-                                        <option value="">— Select Class —</option>
-                                        @foreach($classes as $class)
-                                            <option value="{{ $class->id }}">{{ $class->name }}</option>
-                                        @endforeach
-                                    </select>
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Class <span class="text-danger">*</span></label>
+                                        <select class="form-select @error('class_id') is-invalid @enderror" wire:model.live="class_id">
+                                            <option value="">— Select Class —</option>
+                                            @foreach($classes as $class)
+                                                <option value="{{ $class->id }}">{{ $class->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
                                     @error('class_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 {{-- Fee Setup --}}
                                 <div class="col-md-12">
-                                    <label class="form-label">Fee Setup <span class="text-danger">*</span></label>
-                                    <select class="form-select @error('fee_setup_id') is-invalid @enderror"
-                                            wire:model.live="fee_setup_id"
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Fee Setup <span class="text-danger">*</span></label>
+                                        <select class="form-select @error('fee_setup_id') is-invalid @enderror" wire:model.live="fee_setup_id"
                                             @if(!$class_id) disabled @endif>
-                                        <option value="">— Select Fee Setup —</option>
-                                        @foreach($feeSetups as $setup)
-                                            <option value="{{ $setup['id'] }}">
-                                                {{ $setup['fee_type']['name'] ?? '—' }}
-                                                (৳{{ number_format($setup['amount'], 0) }} / {{ ucfirst($setup['frequency']) }})
-                                            </option>
-                                        @endforeach
-                                    </select>
+                                            <option value="">— Select Fee Setup —</option>
+                                            @foreach($feeSetups as $setup)
+                                                <option value="{{ $setup['id'] }}">
+                                                    {{ $setup['fee_type']['name'] ?? '—' }}
+                                                    (৳{{ number_format($setup['amount'], 0) }} / {{ ucfirst($setup['frequency']) }})
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
                                     @error('fee_setup_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 {{-- Fine Type --}}
                                 <div class="col-md-6">
-                                    <label class="form-label">Fine Type <span class="text-danger">*</span></label>
-                                    <select class="form-select @error('fine_type') is-invalid @enderror"
-                                            wire:model.live="fine_type">
-                                        <option value="fixed">Fixed (৳)</option>
-                                        <option value="percentage">Percentage (%)</option>
-                                    </select>
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Fine Type <span class="text-danger">*</span></label>
+                                        <select class="form-select @error('fine_type') is-invalid @enderror" wire:model.live="fine_type">
+                                            <option value="fixed">Fixed (৳)</option>
+                                            <option value="percentage">Percentage (%)</option>
+                                        </select>
+                                    </div>
                                     @error('fine_type') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 {{-- Fine Value --}}
                                 <div class="col-md-6">
-                                    <label class="form-label">Fine Value <span class="text-danger">*</span></label>
-                                    <input type="number" step="0.01" min="0" @if($fine_type === 'percentage') max="100" @endif
-                                           class="form-control @error('fine_value') is-invalid @enderror"
-                                           wire:model.defer="fine_value"
-                                           placeholder="{{ $fine_type === 'percentage' ? 'e.g. 5' : 'e.g. 50.00' }}">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Fine Value <span class="text-danger">*</span></label>
+                                        <input type="number" step="0.01" min="0" @if($fine_type === 'percentage') max="100" @endif class="form-control @error('fine_value') is-invalid @enderror" wire:model.defer="fine_value">
+                                    </div>
                                     @error('fine_value') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 {{-- Frequency --}}
                                 <div class="col-md-12">
-                                    <label class="form-label">Late Fee Frequency <span class="text-danger">*</span></label>
-                                    <select class="form-select @error('late_fee_frequency') is-invalid @enderror"
-                                            wire:model.defer="late_fee_frequency">
-                                        <option value="one_time">One Time</option>
-                                        <option value="daily">Daily</option>
-                                        <option value="weekly">Weekly</option>
-                                        <option value="monthly">Monthly</option>
-                                        <option value="yearly">Yearly</option>
-                                    </select>
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Late Fee Frequency <span class="text-danger">*</span></label>
+                                        <select class="form-select @error('late_fee_frequency') is-invalid @enderror" wire:model.defer="late_fee_frequency">
+                                            <option value="one_time">One Time</option>
+                                            <option value="daily">Daily</option>
+                                            <option value="weekly">Weekly</option>
+                                            <option value="monthly">Monthly</option>
+                                            <option value="yearly">Yearly</option>
+                                        </select>
+                                    </div>
                                     @error('late_fee_frequency') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 

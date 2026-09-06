@@ -17,34 +17,43 @@
                 </div>
 
                 <div class="col-md-2">
-                    <select class="form-select form-select-sm" wire:model.live="filterStatus">
-                        <option value="all">All Status</option>
-                        <option value="pending">Pending</option>
-                        <option value="invoiced">Invoiced</option>
-                    </select>
+                    <div class="input-group input-group-outline">
+                        <select class="form-select form-select-sm" wire:model.live="filterStatus">
+                            <option value="all">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="invoiced">Invoiced</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="col-md-2">
-                    <select class="form-select form-select-sm" wire:model.live="filterReason">
-                        <option value="all">All Reasons</option>
-                        @foreach($reasonOptions as $value => $label)
-                            <option value="{{ $value }}">{{ $label }}</option>
-                        @endforeach
-                    </select>
+                    <div class="input-group input-group-outline">
+                        <select class="form-select form-select-sm" wire:model.live="filterReason">
+                            <option value="all">All Reasons</option>
+                            @foreach($reasonOptions as $value => $label)
+                                <option value="{{ $value }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
 
                 @if($studentFines->total() > 10)
                     <div class="col-md-2">
-                        <select class="form-select form-select-sm" wire:model.live="perPage">
-                            <option value="10">10 / page</option>
-                            <option value="25">25 / page</option>
-                            <option value="50">50 / page</option>
-                        </select>
+                        <div class="input-group input-group-outline">
+                            <select class="form-select form-select-sm" wire:model.live="perPage">
+                                <option value="10">10 / page</option>
+                                <option value="25">25 / page</option>
+                                <option value="50">50 / page</option>
+                            </select>
+                        </div>
                     </div>
                 @endif
 
                 <button class="btn btn-primary" wire:click="openCreate">
-                    <span class="material-icons-round">add</span> <span>Add Fine</span>
+                    <span>
+                        <span class="material-icons-round">add</span> 
+                        <span>Add Fine</span>
+                    </span>
                 </button>
             </div>
         </div>
@@ -133,48 +142,51 @@
                             <div class="row g-3">
 
                                 <div class="col-md-12">
-                                    <label class="form-label">Student <span class="text-danger">*</span></label>
-                                    <select class="form-select selectpicker @error('student_id') is-invalid @enderror"
-                                            data-live-search="true"
-                                            wire:model.live="student_id">
-                                        <option value="">— Select Student —</option>
-                                        @foreach($students as $s)
-                                            <option value="{{ $s->id }}">{{ $s->name }} ({{ $s->student_id }})</option>
-                                        @endforeach
-                                    </select>
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Student <span class="text-danger">*</span></label>
+                                        <select class="form-select selectpicker @error('student_id') is-invalid @enderror" wire:model.live="student_id">
+                                            <option value="">— Select Student —</option>
+                                            @foreach($students as $s)
+                                                <option value="{{ $s->id }}">{{ $s->name }} ({{ $s->student_id }})</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
                                     @error('student_id') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Reason <span class="text-danger">*</span></label>
-                                    <select class="form-select @error('reason') is-invalid @enderror" wire:model.defer="reason">
-                                        @foreach($reasonOptions as $value => $label)
-                                            <option value="{{ $value }}">{{ $label }}</option>
-                                        @endforeach
-                                    </select>
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Reason <span class="text-danger">*</span></label>
+                                        <select class="form-select @error('reason') is-invalid @enderror" wire:model.defer="reason">
+                                            @foreach($reasonOptions as $value => $label)
+                                                <option value="{{ $value }}">{{ $label }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
                                     @error('reason') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Amount (৳) <span class="text-danger">*</span></label>
-                                    <input type="number" step="0.01" min="0"
-                                           class="form-control @error('amount') is-invalid @enderror"
-                                           wire:model.defer="amount" placeholder="e.g. 100">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Amount (৳) <span class="text-danger">*</span></label>
+                                        <input type="number" step="1" min="0" class="form-control @error('amount') is-invalid @enderror" wire:model.defer="amount">
+                                    </div>
                                     @error('amount') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-12">
-                                    <label class="form-label">Fine Date <span class="text-danger">*</span></label>
-                                    <input type="date"
-                                           class="form-control @error('fine_date') is-invalid @enderror"
-                                           wire:model.defer="fine_date">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Fine Date <span class="text-danger">*</span></label>
+                                        <input type="date" class="form-control @error('fine_date') is-invalid @enderror" wire:model.defer="fine_date">
+                                    </div>
                                     @error('fine_date') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-12">
-                                    <label class="form-label">Remarks</label>
-                                    <textarea class="form-control @error('remarks') is-invalid @enderror"
-                                              wire:model.defer="remarks" rows="2" placeholder="Optional note..."></textarea>
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Remarks</label>
+                                        <textarea class="form-control @error('remarks') is-invalid @enderror" wire:model.defer="remarks" rows="2"></textarea>
+                                    </div>
                                     @error('remarks') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 

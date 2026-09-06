@@ -18,16 +18,21 @@
 
                 @if($assigns->total() > 10)
                     <div class="col-md-2">
-                        <select class="form-select form-select-sm" wire:model.live="perPage">
-                            <option value="10">10 / page</option>
-                            <option value="25">25 / page</option>
-                            <option value="50">50 / page</option>
-                        </select>
+                        <div class="input-group input-group-outline">
+                            <select class="form-select form-select-sm" wire:model.live="perPage">
+                                <option value="10">10 / page</option>
+                                <option value="25">25 / page</option>
+                                <option value="50">50 / page</option>
+                            </select>
+                        </div>
                     </div>
                 @endif
 
                 <button class="btn btn-primary bg-dark text-white" wire:click="openCreate">
-                    <span class="material-icons-round">add</span> <span>New Duty Assign</span>
+                    <span>
+                        <span class="material-icons-round">add</span>
+                        <span>New Duty Assign</span>
+                    </span>
                 </button>
             </div>
         </div>

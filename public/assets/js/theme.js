@@ -1052,7 +1052,10 @@ function toggleSidebarCollapse() {
     const isCollapsed = document.body.classList.toggle("sidebar-collapsed");
     localStorage.setItem("sidebarCollapsed", isCollapsed ? "1" : "0");
 }
-if (localStorage.getItem("sidebarCollapsed") === "1" && window.innerWidth >= 993) {
+if (
+    localStorage.getItem("sidebarCollapsed") === "1" &&
+    window.innerWidth >= 993
+) {
     document.body.classList.add("sidebar-collapsed");
 }
 

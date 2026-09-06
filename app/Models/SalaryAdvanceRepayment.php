@@ -12,7 +12,7 @@ class SalaryAdvanceRepayment extends Model
 {
     use BelongsToInstitution;
     use BelongsToBranch;
-    use SoftDeletes;
+    // use SoftDeletes;
 
     protected $guarded = [];
 

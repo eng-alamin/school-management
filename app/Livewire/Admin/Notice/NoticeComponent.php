@@ -5,6 +5,8 @@ namespace App\Livewire\Admin\Notice;
 use Livewire\Component;
 use App\Models\Notice;
 use App\Models\User;
+use App\Models\Branch;
+use App\Models\AcademicSession;
 use Livewire\WithPagination;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\DB;
@@ -17,6 +19,8 @@ class NoticeComponent extends Component
     use WithPagination, WithFileUploads;
 
     protected string $paginationTheme = 'bootstrap';
+
+    private const SORTABLE_FIELDS = ['created_at', 'title', 'published_at', 'priority', 'status'];
 
     // List
     public string $search = '';
@@ -46,6 +50,8 @@ class NoticeComponent extends Component
     public string $existingAttachmentName = '';
     public bool $sendSms = false;
 
+    public ?int $currentSessionId = null;
+
     protected function rules(): array
     {
         return [
@@ -63,15 +69,34 @@ class NoticeComponent extends Component
     public function mount(): void
     {
         $this->published_at = today()->toDateString();
+        $this->currentSessionId = $this->resolveCurrentSessionId();
+    }
+
+    private function activeBranchId(): ?int
+    {
+        return auth()->user()->branch_id
+            ?? Branch::resolveMainBranchId(institution()->id);
+    }
+
+    private function resolveCurrentSessionId(): ?int
+    {
+        return AcademicSession::query()
+            ->where('institution_id', institution()->id)
+            ->where('branch_id', $this->activeBranchId())
+            ->active() // scopeActive() -> is_current = true
+            ->value('id');
     }
 
     public function updatingSearch(): void { $this->resetPage(); }
     public function updatingFilterAudience(): void { $this->resetPage(); }
     public function updatingFilterPriority(): void { $this->resetPage(); }
     public function updatingFilterStatus(): void { $this->resetPage(); }
+    public function updatedPerPage(): void { $this->resetPage(); }
 
     public function openCreate(): void
     {
+        abort_unless((bool) $this->currentSessionId, 422, 'No active academic session found. Please set a current session first.');
+
         $this->resetForm();
         $this->editId = null;
         $this->showModal = true;
@@ -79,7 +104,11 @@ class NoticeComponent extends Component
 
     public function openEdit(int $id): void
     {
-        $record = Notice::findOrFail($id);
+        $record = Notice::where('institution_id', institution()->id)
+            ->where('branch_id', $this->activeBranchId())
+            ->where('session_id', $this->currentSessionId)
+            ->findOrFail($id);
+
         $this->editId = $id;
         $this->title = $record->title;
         $this->description = $record->description;
@@ -96,23 +125,35 @@ class NoticeComponent extends Component
 
     public function openView(int $id): void
     {
-        $this->viewRecord = Notice::with('creator')->findOrFail($id);
+        $this->viewRecord = Notice::with('creator')
+            ->where('institution_id', institution()->id)
+            ->where('branch_id', $this->activeBranchId())
+            ->where('session_id', $this->currentSessionId)
+            ->findOrFail($id);
+
         $this->showViewModal = true;
     }
 
     public function save(): void
     {
+        abort_unless((bool) $this->currentSessionId, 422, 'No active academic session found. Please set a current session first.');
+
         $this->validate();
+
+        $institutionId = institution()->id;
+        $branchId      = $this->activeBranchId();
+        $sessionId     = $this->currentSessionId;
 
         DB::beginTransaction();
 
         try {
             $attachmentPath = $this->existingAttachment;
             $attachmentName = $this->existingAttachmentName;
+            $oldAttachmentToDelete = null;
 
             if ($this->attachment) {
                 if ($attachmentPath) {
-                    Storage::disk('public')->delete($attachmentPath);
+                    $oldAttachmentToDelete = $attachmentPath;
                 }
                 $attachmentPath = $this->attachment->store('notices', 'public');
                 $attachmentName = $this->attachment->getClientOriginalName();
@@ -134,7 +175,11 @@ class NoticeComponent extends Component
             $isNew = ! $this->editId;
 
             if ($this->editId) {
-                $record = Notice::findOrFail($this->editId);
+                $record = Notice::where('institution_id', $institutionId)
+                    ->where('branch_id', $branchId)
+                    ->where('session_id', $sessionId)
+                    ->findOrFail($this->editId);
+
                 $record->update($data);
 
                 activity()
@@ -147,6 +192,10 @@ class NoticeComponent extends Component
                     })
                     ->log('Notice updated: ' . $record->title);
             } else {
+                $data['institution_id'] = $institutionId;
+                $data['branch_id']      = $branchId;
+                $data['session_id']     = $sessionId;
+
                 $record = Notice::create($data);
 
                 activity()
@@ -162,16 +211,20 @@ class NoticeComponent extends Component
 
             DB::commit();
 
+            if ($oldAttachmentToDelete) {
+                Storage::disk('public')->delete($oldAttachmentToDelete);
+            }
+
             // Notification এবং SMS commit এর পরে পাঠানো হচ্ছে, এবং শুধু নতুন
             // Notice তৈরির সময় (Edit করলে বারবার পাঠানো ঠিক না)।
             if ($isNew) {
-                $targetUsers = $this->getTargetUsers($this->audience);
+                $targetUsers = $this->getTargetUsers($this->audience, $institutionId, $branchId);
 
                 $notificationMessage = \Str::limit(strip_tags($this->description), 150);
 
                 if ($this->audience === 'all') {
                     NotificationService::sendToAll(
-                        auth()->user()->institution_id,
+                        $institutionId,
                         'announcement',
                         $this->title,
                         $notificationMessage,
@@ -180,7 +233,7 @@ class NoticeComponent extends Component
                     );
                 } else {
                     NotificationService::sendToRole(
-                        auth()->user()->institution_id,
+                        $institutionId,
                         $this->audience,
                         'announcement',
                         $this->title,
@@ -190,9 +243,8 @@ class NoticeComponent extends Component
                     );
                 }
 
-                if(setting('sms_enabled') == '1' && $this->sendSms) {
+                if (setting('sms_enabled') == '1' && $this->sendSms) {
                     $this->sendSmsToUsers($targetUsers, $this->title, $notificationMessage);
-
                 }
             }
 
@@ -204,12 +256,14 @@ class NoticeComponent extends Component
         } catch (\Throwable $e) {
             DB::rollBack();
             $this->dispatch('toast', type: 'error', message: 'Something went wrong!');
+            report($e);
         }
     }
 
-    private function getTargetUsers(string $audience)
+    private function getTargetUsers(string $audience, int $institutionId, ?int $branchId)
     {
-        $query = User::where('institution_id', auth()->user()->institution_id);
+        $query = User::where('institution_id', $institutionId)
+            ->where('branch_id', $branchId);
 
         if ($audience !== 'all') {
             $query->where('role', $audience);
@@ -244,10 +298,17 @@ class NoticeComponent extends Component
 
     public function deleteRecord(): void
     {
+        $institutionId = institution()->id;
+        $branchId      = $this->activeBranchId();
+
         DB::beginTransaction();
 
         try {
-            $record = Notice::findOrFail($this->deleteId);
+            $record = Notice::where('institution_id', $institutionId)
+                ->where('branch_id', $branchId)
+                ->where('session_id', $this->currentSessionId)
+                ->findOrFail($this->deleteId);
+
             $attachmentPath = $record->attachment;
 
             activity()
@@ -276,15 +337,23 @@ class NoticeComponent extends Component
         } catch (\Throwable $e) {
             DB::rollBack();
             $this->dispatch('toast', type: 'error', message: 'Something went wrong!');
+            report($e);
         }
     }
 
     public function toggleStatus(int $id): void
     {
+        $institutionId = institution()->id;
+        $branchId      = $this->activeBranchId();
+
         DB::beginTransaction();
 
         try {
-            $record = Notice::findOrFail($id);
+            $record = Notice::where('institution_id', $institutionId)
+                ->where('branch_id', $branchId)
+                ->where('session_id', $this->currentSessionId)
+                ->findOrFail($id);
+
             $newStatus = $record->status === 'active' ? 'inactive' : 'active';
             $record->update(['status' => $newStatus]);
 
@@ -305,6 +374,7 @@ class NoticeComponent extends Component
         } catch (\Throwable $e) {
             DB::rollBack();
             $this->dispatch('toast', type: 'error', message: 'Something went wrong!');
+            report($e);
         }
     }
 
@@ -314,10 +384,17 @@ class NoticeComponent extends Component
             return;
         }
 
+        $institutionId = institution()->id;
+        $branchId      = $this->activeBranchId();
+
         DB::beginTransaction();
 
         try {
-            $record = Notice::findOrFail($this->editId);
+            $record = Notice::where('institution_id', $institutionId)
+                ->where('branch_id', $branchId)
+                ->where('session_id', $this->currentSessionId)
+                ->findOrFail($this->editId);
+
             $attachmentPath = $record->attachment;
 
             $record->update([
@@ -349,6 +426,7 @@ class NoticeComponent extends Component
         } catch (\Throwable $e) {
             DB::rollBack();
             $this->dispatch('toast', type: 'error', message: 'Something went wrong!');
+            report($e);
         }
     }
 
@@ -368,7 +446,13 @@ class NoticeComponent extends Component
 
     public function render()
     {
+        $institutionId = institution()->id;
+        $branchId      = $this->activeBranchId();
+
         $notices = Notice::with('creator')
+            ->where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
+            ->where('session_id', $this->currentSessionId)
             ->when($this->search, fn ($q) =>
                 $q->where(fn ($q2) =>
                     $q2->where('title', 'like', "%{$this->search}%")

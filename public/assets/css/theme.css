@@ -297,6 +297,25 @@ ul {
     font-size: 0.4rem !important;
 }
 
+/* Bootstrap */
+.input-group
+    > :not(:first-child):not(.dropdown-menu):not(.valid-tooltip):not(
+        .valid-feedback
+    ):not(.invalid-tooltip):not(.invalid-feedback) {
+    border-radius: 0.5rem;
+}
+.nav-link {
+    color: var(--ink);
+}
+.nav-tabs .nav-item.show .nav-link,
+.nav-tabs .nav-link.active {
+    color: var(--primary-ink);
+}
+.nav-link:focus,
+.nav-link:hover {
+    color: var(--primary-ink);
+}
+
 /* ═══════════════════════════════════════
        DARK MODE — bootstrap-utility overrides
     ═══════════════════════════════════════ */
@@ -1271,6 +1290,10 @@ body.dark-mode .header-primary-gradient {
         color 0.2s;
     user-select: none;
     position: relative;
+}
+.card-header .custom-select-trigger {
+    min-height: 30px !important;
+    height: 36px !important;
 }
 
 .custom-select-trigger .trigger-text {

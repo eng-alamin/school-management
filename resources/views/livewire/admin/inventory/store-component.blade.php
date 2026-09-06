@@ -107,32 +107,42 @@
                             <div class="row g-3">
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Name <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model.defer="name" placeholder="e.g. Main Store">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model.defer="name">
+                                    </div>
                                     @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Code</label>
-                                    <input type="text" class="form-control @error('code') is-invalid @enderror" wire:model.defer="code" placeholder="e.g. STR-001">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Code</label>
+                                        <input type="text" class="form-control @error('code') is-invalid @enderror" wire:model.defer="code">
+                                    </div>
                                     @error('code') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Mobile</label>
-                                    <input type="text" class="form-control @error('mobile') is-invalid @enderror" wire:model.defer="mobile" placeholder="e.g. 01700000000">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Mobile</label>
+                                        <input type="text" class="form-control @error('mobile') is-invalid @enderror" wire:model.defer="mobile">
+                                    </div>
                                     @error('mobile') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Address</label>
-                                    <input type="text" class="form-control @error('address') is-invalid @enderror" wire:model.defer="address" placeholder="e.g. Dhaka, Bangladesh">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Address</label>
+                                        <input type="text" class="form-control @error('address') is-invalid @enderror" wire:model.defer="address">
+                                    </div>
                                     @error('address') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-12">
-                                    <label class="form-label">Description</label>
-                                    <textarea class="form-control @error('description') is-invalid @enderror" wire:model.defer="description" rows="3" placeholder="Short description..."></textarea>
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Description</label>
+                                        <textarea class="form-control @error('description') is-invalid @enderror" wire:model.defer="description" rows="3"></textarea>
+                                    </div>
                                     @error('description') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 

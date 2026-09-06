@@ -26,22 +26,24 @@
         <div class="rank-filter-card">
             <div class="row g-2 align-items-end">
                 <div class="col-12 col-md-4">
-                    <label class="rank-filter-label" data-en="Division" data-bn="বিভাগ">Division</label>
-                    <select class="form-select form-select-sm" wire:model.live="division">
-                        <option value="" data-en="All Divisions" data-bn="সকল বিভাগ">All Divisions</option>
-                        @foreach ($divisions as $div)
-                            <option value="{{ $div }}">{{ $div }}</option>
-                        @endforeach
-                    </select>
+                    <div class="input-group input-group-outline">
+                        <select class="form-select form-select-sm" wire:model.live="division">
+                            <option value="" data-en="All Divisions" data-bn="সকল বিভাগ">All Divisions</option>
+                            @foreach ($divisions as $div)
+                                <option value="{{ $div }}">{{ $div }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
                 <div class="col-12 col-md-4">
-                    <label class="rank-filter-label" data-en="Academic Session" data-bn="একাডেমিক সেশন">Academic Session</label>
-                    <select class="form-select form-select-sm" wire:model.live="academicSessionId">
-                        <option value="" data-en="All Sessions" data-bn="সকল সেশন">All Sessions</option>
-                        @foreach ($academicSessions as $session)
-                            <option value="{{ $session->id }}">{{ $session->name }}</option>
-                        @endforeach
-                    </select>
+                    <div class="input-group input-group-outline">
+                        <select class="form-select form-select-sm" wire:model.live="academicSessionId">
+                            <option value="" data-en="All Sessions" data-bn="সকল সেশন">All Sessions</option>
+                            @foreach ($academicSessions as $session)
+                                <option value="{{ $session->id }}">{{ $session->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
@@ -103,6 +105,10 @@
 
 @push('styles')
 <style>
+    .custom-select-trigger {
+        min-height: 30px !important;
+        height: 36px !important;
+    }
     .rank-wrap { background: var(--body-bg); min-height: 100vh; }
 
     .rank-notice {

@@ -22,23 +22,27 @@
 
                 {{-- Role filter --}}
                 <div>
-                    <select class="form-select form-select-sm" wire:model.live="filterRole" style="width:150px;">
-                        <option value="">Select Role</option>
-                        <option value="teacher">Teacher</option>
-                        <option value="accountant">Accountant</option>
-                        <option value="staff">Staff</option>
-                        <option value="student">Student</option>
-                    </select>
+                    <div class="input-group input-group-outline">
+                        <select class="form-select form-select-sm" wire:model.live="filterRole" style="width:150px;">
+                            <option value="">Select Role</option>
+                            <option value="teacher">Teacher</option>
+                            <option value="accountant">Accountant</option>
+                            <option value="staff">Staff</option>
+                            <option value="student">Student</option>
+                        </select>
+                    </div>
                 </div>
 
                 {{-- Per page --}}
                 @if($applications->total() > 10)
                     <div>
-                        <select class="form-select form-select-sm" wire:model.live="perPage">
-                            <option value="10">10 / page</option>
-                            <option value="25">25 / page</option>
-                            <option value="50">50 / page</option>
-                        </select>
+                        <div class="input-group input-group-outline">
+                            <select class="form-select form-select-sm" wire:model.live="perPage">
+                                <option value="10">10 / page</option>
+                                <option value="25">25 / page</option>
+                                <option value="50">50 / page</option>
+                            </select>
+                        </div>
                     </div>
                 @endif
 
@@ -50,8 +54,10 @@
                 </a>
 
                 <button class="btn btn-primary" wire:click="openCreate">
-                    <span class="material-icons-round">add</span>
-                    <span>Add Leave</span>
+                    <span>
+                        <span class="material-icons-round">add</span>
+                        <span>Add Leave</span>
+                    </span>
                 </button>
 
             </div>
@@ -174,39 +180,45 @@
 
                             {{-- Role --}}
                             <div class="col-md-12">
-                                <label class="form-label">Role <span class="text-danger">*</span></label>
-                                <select wire:model.live="role" class="form-select @error('role') is-invalid @enderror">
-                                    <option value="">Select</option>
-                                    <option value="teacher" @selected($role == 'teacher')>Teacher</option>
-                                    <option value="accountant" @selected($role == 'accountant')>Accountant</option>
-                                    <option value="staff" @selected($role == 'staff')>Staff</option>
-                                    <option value="student" @selected($role == 'student')>Student</option>
-                                </select>
+                                <div class="input-group input-group-outline">
+                                    <label class="form-label">Role <span class="text-danger">*</span></label>
+                                    <select wire:model.live="role" class="form-select @error('role') is-invalid @enderror">
+                                        <option value="">Select</option>
+                                        <option value="teacher" @selected($role == 'teacher')>Teacher</option>
+                                        <option value="accountant" @selected($role == 'accountant')>Accountant</option>
+                                        <option value="staff" @selected($role == 'staff')>Staff</option>
+                                        <option value="student" @selected($role == 'student')>Student</option>
+                                    </select>
+                                </div>
                                 @error('role') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
 
                             {{-- Applicant — role select করার পর populate হয় --}}
                             <div class="col-md-12">
-                                <label class="form-label">Applicant <span class="text-danger">*</span></label>
-                                <select wire:model="applicable_id" class="form-select @error('applicable_id') is-invalid @enderror"
-                                        {{ empty($applicants) ? 'disabled' : '' }}>
-                                    <option value="">{{ empty($applicants) ? 'Select role first' : 'Select' }}</option>
-                                    @foreach($applicants as $person)
-                                        <option value="{{ $person['id'] }}">{{ $person['name'] }}</option>
-                                    @endforeach
-                                </select>
+                                <div class="input-group input-group-outline">
+                                    <label class="form-label">Applicant <span class="text-danger">*</span></label>
+                                    <select wire:model="applicable_id" class="form-select @error('applicable_id') is-invalid @enderror"
+                                            {{ empty($applicants) ? 'disabled' : '' }}>
+                                        <option value="">{{ empty($applicants) ? 'Select role first' : 'Select' }}</option>
+                                        @foreach($applicants as $person)
+                                            <option value="{{ $person['id'] }}">{{ $person['name'] }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
                                 @error('applicable_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
 
                             {{-- Leave Category --}}
                             <div class="col-md-12">
-                                <label class="form-label">Leave Category <span class="text-danger">*</span></label>
-                                <select wire:model="leave_category_id" class="form-select @error('leave_category_id') is-invalid @enderror">
-                                    <option value="">Select</option>
-                                    @foreach($categories as $cat)
-                                        <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                                    @endforeach
-                                </select>
+                                <div class="input-group input-group-outline">
+                                    <label class="form-label">Leave Category <span class="text-danger">*</span></label>
+                                    <select wire:model="leave_category_id" class="form-select @error('leave_category_id') is-invalid @enderror">
+                                        <option value="">Select</option>
+                                        @foreach($categories as $cat)
+                                            <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
                                 @error('leave_category_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
 
@@ -234,8 +246,10 @@
 
                             {{-- Reason --}}
                             <div class="col-md-12">
-                                <label class="form-label">Reason</label>
-                                <textarea class="form-control" wire:model.defer="reason" rows="3" placeholder="Leave reason..."></textarea>
+                                <div class="input-group input-group-outline">
+                                    <label class="form-label">Reason</label>
+                                    <textarea class="form-control" wire:model.defer="reason" rows="3"></textarea>
+                                </div>
                             </div>
 
                             {{-- Attachment --}}
@@ -264,8 +278,10 @@
 
                             {{-- Comments --}}
                             <div class="col-md-12">
-                                <label class="form-label">Comments</label>
-                                <textarea class="form-control" wire:model.defer="comments" rows="3" placeholder="Additional comments..."></textarea>
+                                <div class="input-group input-group-outline">
+                                    <label class="form-label">Comments</label>
+                                    <textarea class="form-control" wire:model.defer="comments" rows="3"></textarea>
+                                </div>
                             </div>
 
                         </div>

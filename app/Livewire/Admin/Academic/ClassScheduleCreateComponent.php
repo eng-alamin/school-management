@@ -7,6 +7,8 @@ use App\Models\AcademicClassSchedule;
 use App\Models\AcademicClassAssign;
 use App\Models\AcademicClass;
 use App\Models\AcademicSection;
+use App\Models\AcademicSession;
+use App\Models\Branch;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Log;
 
@@ -29,17 +31,38 @@ class ClassScheduleCreateComponent extends Component
     // Selected class-er has_section flag. True hole section select kora required.
     public bool $selectedClassHasSection = true;
 
+    public ?int $currentSessionId = null;
+
     public function mount()
     {
         $this->filterDay = 'Sunday';
+        $this->currentSessionId = $this->resolveCurrentSessionId();
+    }
+
+    private function resolveCurrentSessionId(): ?int
+    {
+        return AcademicSession::query()
+            ->where('institution_id', institution()->id)
+            ->where('branch_id', $this->activeBranchId())
+            ->active() // scopeActive() -> is_current = true
+            ->value('id');
+    }
+
+    private function activeBranchId(): ?int
+    {
+        return auth()->user()->branch_id
+            ?? Branch::resolveMainBranchId(institution()->id);
     }
 
     public function getAvailableClasses()
     {
         $institutionId = institution()->id;
+        $branchId      = $this->activeBranchId();
 
         return AcademicClass::where('institution_id', $institutionId)
             ->whereIn('id', AcademicClassAssign::where('institution_id', $institutionId)
+                ->where('branch_id', $branchId)
+                ->where('session_id', $this->currentSessionId)
                 ->distinct()
                 ->pluck('class_id'))
             ->orderBy('id')
@@ -51,10 +74,13 @@ class ClassScheduleCreateComponent extends Component
         if (!$this->filterClass) return collect();
 
         $institutionId = institution()->id;
+        $branchId      = $this->activeBranchId();
 
         return AcademicSection::where('institution_id', $institutionId)
             ->whereIn('id',
                 AcademicClassAssign::where('institution_id', $institutionId)
+                    ->where('branch_id', $branchId)
+                    ->where('session_id', $this->currentSessionId)
                     ->where('class_id', $this->filterClass)
                     ->whereNotNull('section_id')
                     ->pluck('section_id')
@@ -105,9 +131,12 @@ class ClassScheduleCreateComponent extends Component
     protected function loadSubjects($class_id, $section_id = null): void
     {
         $institutionId = institution()->id;
+        $branchId      = $this->activeBranchId();
 
         $query = AcademicClassAssign::with('details.subject', 'details.teacher')
             ->where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
+            ->where('session_id', $this->currentSessionId)
             ->where('class_id', $class_id);
 
         if ($section_id) {
@@ -154,7 +183,11 @@ class ClassScheduleCreateComponent extends Component
 
     public function filter()
     {
+
+        // abort_unless((bool) $this->currentSessionId, 422, 'No active academic session found. Please set a current session first.');
+
         $institutionId = institution()->id;
+        $branchId      = $this->activeBranchId();
 
         $allowedSectionIds = $this->getAvailableSections()->pluck('id')->toArray();
 
@@ -178,8 +211,9 @@ class ClassScheduleCreateComponent extends Component
             ? $this->filterSection
             : null;
 
-        // Defense-in-depth: institution_id explicitly check kora holo (IDOR protection)
         $schedule = AcademicClassSchedule::where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
+            ->where('session_id', $this->currentSessionId)
             ->where('class_id', $this->filterClass)
             ->where('section_id', $sectionId)
             ->where('day', $this->filterDay)
@@ -260,10 +294,11 @@ class ClassScheduleCreateComponent extends Component
 
     public function save()
     {
-        $institutionId = institution()->id;
+        // abort_unless((bool) $this->currentSessionId, 422, 'No active academic session found. Please set a current session first.');
 
-        // Tampering thekano: submit kora subject_id / teacher_id shudhu
-        // ei class-er jonno allowed list-er modheyi thakte hobe
+        $institutionId = institution()->id;
+        $branchId      = $this->activeBranchId();
+
         $allowedSubjectIds = collect($this->availableSubjects)->pluck('id')->toArray();
         $allowedTeacherIds = collect($this->availableTeachers)->pluck('id')->toArray();
         $allowedSectionIds = $this->getAvailableSections()->pluck('id')->toArray();
@@ -299,6 +334,8 @@ class ClassScheduleCreateComponent extends Component
             AcademicClassSchedule::updateOrCreate(
                 [
                     'institution_id' => $institutionId,
+                    'branch_id'      => $branchId,
+                    'session_id'     => $this->currentSessionId,
                     'class_id'       => $this->filterClass,
                     'section_id'     => $sectionId,
                     'day'            => $this->filterDay,
@@ -313,6 +350,8 @@ class ClassScheduleCreateComponent extends Component
         } catch (\Exception $e) {
             Log::error('Class schedule save failed', [
                 'institution_id' => $institutionId,
+                'branch_id'      => $branchId,
+                'session_id'     => $this->currentSessionId,
                 'class_id'       => $this->filterClass,
                 'error'          => $e->getMessage(),
             ]);

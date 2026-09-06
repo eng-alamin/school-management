@@ -44,7 +44,7 @@
                 </a>
                 <button class="btn btn-primary" wire:click="openCreate">
                     <span>
-                        <span class="material-icons-round">add</span>
+                        <span class="material-icons-round">add_circle</span>
                         <span id="inventory-product-add-btn">Add Product</span>
                     </span>
                 </button>
@@ -126,71 +126,89 @@
                             <div class="row g-3">
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Name <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model.defer="name" placeholder="e.g. Notebook">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Name</label>
+                                        <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model.defer="name">
+                                    </div>
                                     @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Code</label>
-                                    <input type="text" class="form-control @error('code') is-invalid @enderror" wire:model.defer="code" placeholder="e.g. PRD-001">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Code</label>
+                                        <input type="text" class="form-control @error('code') is-invalid @enderror" wire:model.defer="code">
+                                    </div>
                                     @error('code') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Category <span class="text-danger">*</span></label>
-                                    <select class="form-select @error('category_id') is-invalid @enderror" wire:model.defer="category_id">
-                                        <option value="">— Select Category —</option>
-                                        @foreach($categories as $category)
-                                            <option value="{{ $category->id }}">{{ $category->name }}</option>
-                                        @endforeach
-                                    </select>
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Category <span class="text-danger">*</span></label>
+                                        <select class="form-select @error('category_id') is-invalid @enderror" wire:model.defer="category_id">
+                                            <option value="">— Select Category —</option>
+                                            @foreach($categories as $category)
+                                                <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
                                     @error('category_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Unit Ratio <span class="text-danger">*</span></label>
-                                    <input type="number" step="0.01" class="form-control @error('unit_ratio') is-invalid @enderror" wire:model.defer="unit_ratio" placeholder="e.g. 1">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Unit Ratio <span class="text-danger">*</span></label>
+                                        <input type="number" step="1" class="form-control @error('unit_ratio') is-invalid @enderror" wire:model.defer="unit_ratio">
+                                    </div>
                                     @error('unit_ratio') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Purchase Unit <span class="text-danger">*</span></label>
-                                    <select class="form-select @error('purchase_unit_id') is-invalid @enderror" wire:model.defer="purchase_unit_id">
-                                        <option value="">— Select Unit —</option>
-                                        @foreach($units as $unit)
-                                            <option value="{{ $unit->id }}">{{ $unit->name }}</option>
-                                        @endforeach
-                                    </select>
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Purchase Unit <span class="text-danger">*</span></label>
+                                        <select class="form-select @error('purchase_unit_id') is-invalid @enderror" wire:model.defer="purchase_unit_id">
+                                            <option value="">— Select Unit —</option>
+                                            @foreach($units as $unit)
+                                                <option value="{{ $unit->id }}">{{ $unit->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
                                     @error('purchase_unit_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Sales Unit <span class="text-danger">*</span></label>
-                                    <select class="form-select @error('sales_unit_id') is-invalid @enderror" wire:model.defer="sales_unit_id">
-                                        <option value="">— Select Unit —</option>
-                                        @foreach($units as $unit)
-                                            <option value="{{ $unit->id }}">{{ $unit->name }}</option>
-                                        @endforeach
-                                    </select>
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Sales Unit <span class="text-danger">*</span></label>
+                                        <select class="form-select @error('sales_unit_id') is-invalid @enderror" wire:model.defer="sales_unit_id">
+                                            <option value="">— Select Unit —</option>
+                                            @foreach($units as $unit)
+                                                <option value="{{ $unit->id }}">{{ $unit->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
                                     @error('sales_unit_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Purchase Price <span class="text-danger">*</span></label>
-                                    <input type="number" step="0.01" class="form-control @error('purchase_price') is-invalid @enderror" wire:model.defer="purchase_price" placeholder="0.00">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Purchase Price <span class="text-danger">*</span></label>
+                                        <input type="number" step="1" class="form-control @error('purchase_price') is-invalid @enderror" wire:model.defer="purchase_price">
+                                    </div>
                                     @error('purchase_price') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Sales Price <span class="text-danger">*</span></label>
-                                    <input type="number" step="0.01" class="form-control @error('sales_price') is-invalid @enderror" wire:model.defer="sales_price" placeholder="0.00">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Sales Price <span class="text-danger">*</span></label>
+                                        <input type="number" step="1" class="form-control @error('sales_price') is-invalid @enderror" wire:model.defer="sales_price">
+                                    </div>
                                     @error('sales_price') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-12">
-                                    <label class="form-label">Remarks</label>
-                                    <textarea class="form-control @error('remarks') is-invalid @enderror" wire:model.defer="remarks" rows="3" placeholder="Optional remarks..."></textarea>
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Remarks</label>
+                                        <textarea class="form-control @error('remarks') is-invalid @enderror" wire:model.defer="remarks" rows="3"></textarea>
+                                    </div>
                                     @error('remarks') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 

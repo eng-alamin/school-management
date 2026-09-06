@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('fee_invoice_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
             $table->foreignId('fee_invoice_id')->constrained()->cascadeOnDelete();
             $table->foreignId('fee_setup_id')->nullable()->constrained()->nullOnDelete();
             $table->decimal('base_amount', 15, 2);

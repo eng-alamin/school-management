@@ -7,8 +7,11 @@
             <h5 class="fw-bold mb-0 text-dark" data-en="Inspection Checklist" data-bn="পরিদর্শন চেকলিস্ট">Inspection Checklist</h5>
             <p class="text-secondary mb-0" style="font-size:12px;" data-en="Criteria used to evaluate institutions during inspection" data-bn="পরিদর্শনের সময় প্রতিষ্ঠান মূল্যায়নের মানদণ্ড">Criteria used to evaluate institutions during inspection</p>
         </div>
-        <button type="button" wire:click="openCreateModal" class="act-btn">
-            <span class="material-icons-round" style="font-size:16px;">add</span> <span data-en="Add Criterion" data-bn="মানদণ্ড যোগ করুন">Add Criterion</span>
+        <button type="button" wire:click="openCreateModal" class="btn btn-primary">
+            <span>
+                <span class="material-icons-round" style="font-size:16px;">add</span> 
+                <span data-en="Add Criterion" data-bn="মানদণ্ড যোগ করুন">Add Criterion</span>
+            </span>
         </button>
     </div>
 
@@ -16,19 +19,20 @@
         <div class="inst-filter-card">
             <div class="row g-2 align-items-end">
                 <div class="col-12 col-md-6">
-                    <label class="inst-filter-label" data-en="Search" data-bn="খুঁজুন">Search</label>
                     <input type="text" wire:model.live.debounce.300ms="search"
                            class="form-control form-control-sm"
                            data-en-ph="Search category or criterion..." data-bn-ph="বিভাগ বা মানদণ্ড খুঁজুন..."
                            placeholder="Search category or criterion...">
                 </div>
                 <div class="col-6 col-md-3">
-                    <label class="inst-filter-label" data-en="Status" data-bn="অবস্থা">Status</label>
-                    <select wire:model.live="statusFilter" class="form-select form-select-sm">
-                        <option value="active" data-en="Active" data-bn="সক্রিয়">Active</option>
-                        <option value="inactive" data-en="Inactive" data-bn="নিষ্ক্রিয়">Inactive</option>
-                        <option value="all" data-en="All" data-bn="সকল">All</option>
-                    </select>
+                    <div class="input-group input-group-outline">
+                        <label class="inst-filter-label" data-en="Status" data-bn="অবস্থা">Status</label>
+                        <select wire:model.live="statusFilter" class="form-select form-select-sm">
+                            <option value="active" data-en="Active" data-bn="সক্রিয়">Active</option>
+                            <option value="inactive" data-en="Inactive" data-bn="নিষ্ক্রিয়">Inactive</option>
+                            <option value="all" data-en="All" data-bn="সকল">All</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
@@ -151,16 +155,12 @@
 
 @push('styles')
 <style>
-    .cm-wrap { background: var(--body-bg); min-height: 100vh; }
-
-    .act-btn {
-        display: inline-flex; align-items: center; gap: 6px;
-        background: var(--primary); color: #fff; border: none;
-        border-radius: 8px; padding: 7px 14px; font-size: 13px;
-        font-weight: 500; text-decoration: none; cursor: pointer;
+    .custom-select-trigger {
+        min-height: 30px !important;
+        height: 36px !important;
     }
-    .act-btn.danger { background: #ef4444; }
 
+    .cm-wrap { background: var(--body-bg); min-height: 100vh; }
     .inst-back-link {
         font-size: 12px; color: var(--lbl); text-decoration: none;
         display: inline-flex; align-items: center; gap: 4px;

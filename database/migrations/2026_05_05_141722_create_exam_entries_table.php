@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('exam_entries', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
             $table->foreignId('exam_setup_id')->constrained()->cascadeOnDelete();
             $table->foreignId('exam_setup_detail_id')->constrained()->cascadeOnDelete();
             $table->foreignId('student_id')->constrained()->cascadeOnDelete();

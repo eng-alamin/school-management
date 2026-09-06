@@ -13,6 +13,15 @@ use Database\Seeders\InstitutionRolePermissionSeeder;
  * Grouping is driven by InstitutionRolePermissionSeeder::PARENT_GROUPS
  * (UI-layer only — does not touch permission names in the DB), so this
  * trait works against real, existing `permissions` rows exclusively.
+ *
+ * NAMING: every permission this trait reads/writes/matches lives under the
+ * 'institution.' prefix (InstitutionRolePermissionSeeder::PREFIX) — e.g.
+ * 'institution.branch.view'. PARENT_GROUPS / MODULE_LABELS keys themselves
+ * stay UNPREFIXED (they're just UI grouping keys like 'branch',
+ * 'inventory_unit'); the prefix is added only when building/matching the
+ * actual DB permission name. Every LIKE query below is anchored with the
+ * prefix so it can never accidentally match a 'ministry.*' permission that
+ * happens to share an action name (e.g. both panels have a 'view' action).
  */
 trait InteractsWithPermissionMatrix
 {
@@ -40,11 +49,11 @@ trait InteractsWithPermissionMatrix
         return InstitutionRolePermissionSeeder::PARENT_GROUPS[$groupKey]['children'] ?? [];
     }
 
-    /** All permission names belonging to a single module (e.g. "inventory_unit.*"). */
+    /** All permission names belonging to a single module (e.g. "institution.inventory_unit.*"). */
     private function permissionNamesForModule(string $moduleKey): array
     {
         return Permission::where('guard_name', 'web')
-            ->where('name', 'like', "{$moduleKey}.%")
+            ->where('name', 'like', InstitutionRolePermissionSeeder::PREFIX . "{$moduleKey}.%")
             ->pluck('name')
             ->all();
     }
@@ -59,11 +68,15 @@ trait InteractsWithPermissionMatrix
         return $names;
     }
 
-    /** All permission names for a given action column across every module. */
+    /**
+     * All permission names for a given action column across every module —
+     * anchored to the 'institution.' prefix so this can never match a
+     * Ministry permission sharing the same action word (e.g. 'view').
+     */
     private function permissionNamesForAction(string $action): array
     {
         return Permission::where('guard_name', 'web')
-            ->where('name', 'like', "%.{$action}")
+            ->where('name', 'like', InstitutionRolePermissionSeeder::PREFIX . "%.{$action}")
             ->pluck('name')
             ->all();
     }
@@ -150,13 +163,23 @@ trait InteractsWithPermissionMatrix
         }
     }
 
+    public function resetPermissionMatrix(): void
+    {
+        $this->reset('selectedPermissions', 'expandedGroups');
+    }
+
     /**
      * Builds the full grouped matrix structure consumed by the shared
      * permission-matrix Blade partial.
      */
     public function buildPermissionMatrix(): array
     {
-        $allPermissions = Permission::where('guard_name', 'web')->get()->keyBy('name');
+        // Prefix-scoped on purpose: this matrix must only ever be able to
+        // render/select 'institution.*' permissions, never a Ministry one.
+        $allPermissions = Permission::where('guard_name', 'web')
+            ->where('name', 'like', InstitutionRolePermissionSeeder::PREFIX . '%')
+            ->get()
+            ->keyBy('name');
 
         $matrix = [];
 
@@ -171,7 +194,7 @@ trait InteractsWithPermissionMatrix
                 ];
 
                 foreach (self::ACTIONS as $action) {
-                    $permName = "{$moduleKey}.{$action}";
+                    $permName = InstitutionRolePermissionSeeder::PREFIX . "{$moduleKey}.{$action}";
                     $row['actions'][$action] = $allPermissions->get($permName); // null if module doesn't support this action
                 }
 

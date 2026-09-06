@@ -26,31 +26,37 @@
 
                 {{-- Filter: Read Status --}}
                 <div class="col-md-2">
-                    <select class="form-select form-select-sm" wire:model.live="filter">
-                        <option value="all">All</option>
-                        <option value="unread">Unread</option>
-                        <option value="read">Read</option>
-                    </select>
+                    <div class="input-group input-group-outline">
+                        <select class="form-select form-select-sm" wire:model.live="filter">
+                            <option value="all">All</option>
+                            <option value="unread">Unread</option>
+                            <option value="read">Read</option>
+                        </select>
+                    </div>
                 </div>
 
                 {{-- Filter: Type --}}
                 <div class="col-md-2">
-                    <select class="form-select form-select-sm" wire:model.live="type">
-                        <option value="">All Types</option>
-                        @foreach($typeLabels as $key => $label)
-                            <option value="{{ $key }}">{{ $label }}</option>
-                        @endforeach
-                    </select>
+                    <div class="input-group input-group-outline">
+                        <select class="form-select form-select-sm" wire:model.live="type">
+                            <option value="">All Types</option>
+                            @foreach($typeLabels as $key => $label)
+                                <option value="{{ $key }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
 
                 {{-- Filter: Priority --}}
                 <div class="col-md-2">
-                    <select class="form-select form-select-sm" wire:model.live="priority">
-                        <option value="">All Priority</option>
-                        <option value="high">High</option>
-                        <option value="normal">Normal</option>
-                        <option value="low">Low</option>
-                    </select>
+                    <div class="input-group input-group-outline">
+                        <select class="form-select form-select-sm" wire:model.live="priority">
+                            <option value="">All Priority</option>
+                            <option value="high">High</option>
+                            <option value="normal">Normal</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
                 </div>
 
                 {{-- Reset --}}

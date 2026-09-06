@@ -4,6 +4,8 @@ namespace App\Livewire\Admin;
 
 use Livewire\Component;
 use App\Models\Notice;
+use App\Models\AcademicSession;
+use App\Models\Branch;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
@@ -63,7 +65,6 @@ class DashboardComponent extends Component
     public $todayBirthdays;
     public $monthlyFeeChart;
 
-    // ── Filters ────────────────────────────────────────────────────────────
     public ?int $currentSessionId = null;
 
     // ── Notice View Modal ─────────────────────────────────────────────────
@@ -83,29 +84,34 @@ class DashboardComponent extends Component
 
     public function mount(): void
     {
+        $this->currentSessionId = $this->resolveCurrentSessionId();
         $this->loadDashboardData();
     }
 
-    /**
-     * Dashboard এর সব stat/list ডাটা cache থেকে load করে properties এ assign করে।
-     *
-     * IMPORTANT: এই মেথড mount() ছাড়াও render() থেকেও call হয়। কারণ এখানকার
-     * অনেক property (recentInvoices, recentPayments, recentActivities ইত্যাদি)
-     * raw DB::table()->get() থেকে আসা stdClass-এর Collection — Livewire এই ধরনের
-     * plain stdClass object সঠিকভাবে serialize/hydrate করতে পারে না (শুধু Eloquent
-     * Model বা array support করে)। ফলে mount()-এ একবার set করলে, পরবর্তী যেকোনো
-     * Livewire action (যেমন openView) এর পর hydration এ এই properties খালি হয়ে
-     * "background data reset" হয়ে যেত। প্রতি render() এ cache থেকে re-assign করায়
-     * ডাটা সবসময় সঠিক থাকে, আর Cache::remember() এর কারণে extra DB hit ও হয় না।
-     */
+    private function activeBranchId(): ?int
+    {
+        return auth()->user()->branch_id
+            ?? Branch::resolveMainBranchId(institution()->id);
+    }
+
+    private function resolveCurrentSessionId(): ?int
+    {
+        return AcademicSession::query()
+            ->where('institution_id', institution()->id)
+            ->where('branch_id', $this->activeBranchId())
+            ->active() // scopeActive() -> is_current = true
+            ->value('id');
+    }
+
     private function loadDashboardData(): void
     {
         $institutionId = auth()->user()->institution_id;
+        $branchId      = $this->activeBranchId();
 
         $data = Cache::remember(
-            "admin_dashboard:{$institutionId}",
+            "admin_dashboard:{$institutionId}:{$branchId}",
             now()->addMinutes(5),
-            fn () => $this->buildDashboardData($institutionId)
+            fn () => $this->buildDashboardData($institutionId, $branchId)
         );
 
         foreach ($data as $property => $value) {
@@ -113,11 +119,6 @@ class DashboardComponent extends Component
         }
     }
 
-    /**
-     * Recent Notices list-এ click করলে View Modal ওপেন করে।
-     * institution_id scope defense-in-depth হিসেবে explicit রাখা হলো,
-     * যদিও Notice model-এ global scope আছে।
-     */
     public function openViewNotice(int $id): void
     {
         $this->viewRecord = Notice::with('creator')
@@ -133,11 +134,7 @@ class DashboardComponent extends Component
         $this->viewRecord    = null;
     }
 
-    /**
-     * সব ড্যাশবোর্ড ডাটা fresh calculate করে array আকারে রিটার্ন করে।
-     * এই মেথডের রেজাল্টই Cache::remember() এ ৫ মিনিটের জন্য cache হয়।
-     */
-    private function buildDashboardData(int $institutionId): array
+    private function buildDashboardData(int $institutionId, ?int $branchId): array
     {
         $today     = Carbon::today();
         $yesterday = Carbon::yesterday();
@@ -149,40 +146,44 @@ class DashboardComponent extends Component
 
         $result = [];
 
-        // ── Current Session ────────────────────────────────────────────────
-        $result['currentSessionId'] = DB::table('academic_sessions')
-            ->where('institution_id', $institutionId)
-            ->where('is_current', true)
-            ->value('id');
+        // ── Current Session (branch-aware, resolveCurrentSessionId() diye already
+        //    property e set ache; cache-eo consistency-r jonno abar store kora holo) ──
+        $result['currentSessionId'] = $this->currentSessionId;
 
         // ── Students & Employees ───────────────────────────────────────────
         $result['totalStudents'] = DB::table('students')
             ->where('institution_id', $institutionId)
-            ->where('session_id', $result['currentSessionId'])
+            ->where('branch_id', $branchId)
+            // ->where('session_id', $result['currentSessionId'])
             ->count();
 
         $result['totalEmployees'] = DB::table('employees')
             ->where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
             ->count();
 
         $result['totalTeachers'] = DB::table('employees')
             ->join('users', 'employees.user_id', '=', 'users.id')
             ->where('employees.institution_id', $institutionId)
+            ->where('employees.branch_id', $branchId)
             ->where('users.role', 'teacher')
             ->count();
 
         $result['totalClasses'] = DB::table('academic_classes')
             ->where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
             ->count();
 
         // ── New Admissions this month / last month ─────────────────────────
         $result['newAdmissionsThisMonth'] = DB::table('students')
             ->where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
             ->whereBetween('created_at', [$thisMonthStart, $thisMonthEnd])
             ->count();
 
         $admissionsLastMonth = DB::table('students')
             ->where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
             ->whereBetween('created_at', [$lastMonthStart, $lastMonthEnd])
             ->count();
 
@@ -195,6 +196,7 @@ class DashboardComponent extends Component
         // ── Total Staffs Growth ─────────────────────────────────────────────
         $employeesThisMonth = DB::table('employees')
             ->where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
             ->whereBetween('created_at', [$thisMonthStart, $thisMonthEnd])
             ->count();
         $employeesBeforeThisMonth = max(0, $result['totalEmployees'] - $employeesThisMonth);
@@ -204,6 +206,7 @@ class DashboardComponent extends Component
         $teachersThisMonth = DB::table('employees')
             ->join('users', 'employees.user_id', '=', 'users.id')
             ->where('employees.institution_id', $institutionId)
+            ->where('employees.branch_id', $branchId)
             ->where('users.role', 'teacher')
             ->whereBetween('employees.created_at', [$thisMonthStart, $thisMonthEnd])
             ->count();
@@ -213,6 +216,7 @@ class DashboardComponent extends Component
         // ── Pending Homework ───────────────────────────────────────────────
         $result['pendingHomework'] = DB::table('homeworks')
             ->where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
             ->where('status', 'published')
             ->whereDate('submission_date', '>=', $today)
             ->count();
@@ -220,16 +224,19 @@ class DashboardComponent extends Component
         // Homework Trend — এই সপ্তাহে তৈরি vs গত সপ্তাহে তৈরি Homework সংখ্যা
         $homeworkThisWeek = DB::table('homeworks')
             ->where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
             ->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])
             ->count();
         $homeworkLastWeek = DB::table('homeworks')
             ->where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
             ->whereBetween('created_at', [now()->subWeek()->startOfWeek(), now()->subWeek()->endOfWeek()])
             ->count();
         $result['trendHomework'] = $this->percentChange($homeworkThisWeek, $homeworkLastWeek);
 
         $examStats = DB::table('exam_schedules')
             ->where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
             ->where('is_published', true)
             ->selectRaw("
                 COALESCE(SUM(CASE WHEN exam_date >= ? THEN 1 ELSE 0 END), 0) AS upcoming,
@@ -244,6 +251,7 @@ class DashboardComponent extends Component
 
         $studentAttendanceStats = DB::table('attendances')
             ->where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
             ->where('type', 'student')
             ->whereDate('date', $today)
             ->selectRaw("
@@ -264,6 +272,7 @@ class DashboardComponent extends Component
         // গতকালের Attendance %
         $yesterdayAttendanceStats = DB::table('attendances')
             ->where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
             ->where('type', 'student')
             ->whereDate('date', $yesterday)
             ->selectRaw("
@@ -288,6 +297,7 @@ class DashboardComponent extends Component
 
         $result['employeesPresentToday'] = DB::table('attendances')
             ->where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
             ->where('type', 'employee')
             ->whereDate('date', $today)
             ->where('status', 'present')
@@ -296,6 +306,7 @@ class DashboardComponent extends Component
         // ── Notices & Messages ─────────────────────────────────────────────
         $result['activeNotices'] = DB::table('notices')
             ->where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
             ->where('status', 'active')
             ->where('published_at', '<=', $today)
             ->where(function ($q) use ($today) {
@@ -303,6 +314,8 @@ class DashboardComponent extends Component
             })
             ->count();
 
+        // Messages: user-to-user personal inbox, branch_id column নাই বলে ধরা হয়েছে
+        // (Assumption — যদি messages টেবিলে branch_id থাকে, জানালে scope যোগ করে দেব)
         $result['unreadMessages'] = DB::table('messages')
             ->where('receiver_id', auth()->id())
             ->where('is_read', false)
@@ -313,6 +326,7 @@ class DashboardComponent extends Component
         // ── Fee Collection ─────────────────────────────────────────────────
         $feeStats = DB::table('fee_invoices')
             ->where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
             ->selectRaw('
                 COALESCE(SUM(paid_amount), 0) AS total_paid,
                 COALESCE(SUM(due_amount), 0)  AS total_due
@@ -324,6 +338,7 @@ class DashboardComponent extends Component
 
         $feePaymentStats = DB::table('fee_payments')
             ->where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
             ->selectRaw("
                 COALESCE(SUM(CASE WHEN DATE(payment_date) = ? THEN amount ELSE 0 END), 0) AS today,
                 COALESCE(SUM(CASE WHEN DATE(payment_date) = ? THEN amount ELSE 0 END), 0) AS yesterday,
@@ -345,6 +360,7 @@ class DashboardComponent extends Component
         // Due Fees Trend — এই মাসের Invoice-এ তৈরি হওয়া Due vs গত মাসের
         $feeDueStats = DB::table('fee_invoices')
             ->where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
             ->selectRaw("
                 COALESCE(SUM(CASE WHEN invoice_date BETWEEN ? AND ? THEN due_amount ELSE 0 END), 0) AS this_month,
                 COALESCE(SUM(CASE WHEN invoice_date BETWEEN ? AND ? THEN due_amount ELSE 0 END), 0) AS last_month
@@ -358,14 +374,17 @@ class DashboardComponent extends Component
         // ── Office Accounts ────────────────────────────────────────────────
         $openingBalance = (float) DB::table('office_accounts')
             ->where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
             ->sum('opening_balance');
 
         $result['totalDeposits'] = (float) DB::table('office_deposits')
             ->where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
             ->sum('amount');
 
         $result['totalExpenses'] = (float) DB::table('office_expenses')
             ->where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
             ->sum('amount');
 
         $result['accountBalance'] = $openingBalance + $result['totalDeposits'] - $result['totalExpenses'];
@@ -373,6 +392,7 @@ class DashboardComponent extends Component
         // ── Salary (current month) ─────────────────────────────────────────
         $salaryStats = DB::table('salary_payments')
             ->where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
             ->whereNull('deleted_at')
             ->whereBetween('month', [$thisMonthStart, $thisMonthEnd])
             ->selectRaw("
@@ -387,6 +407,7 @@ class DashboardComponent extends Component
         // ── Inventory Sales Today ──────────────────────────────────────────
         $result['inventorySalesToday'] = (float) DB::table('inventory_sales')
             ->where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
             ->whereDate('date', $today)
             ->sum('net_payable');
 
@@ -394,6 +415,7 @@ class DashboardComponent extends Component
         $result['recentInvoices'] = DB::table('fee_invoices as fi')
             ->join('students as s', 's.id', '=', 'fi.student_id')
             ->where('fi.institution_id', $institutionId)
+            ->where('fi.branch_id', $branchId)
             ->select(
                 'fi.id', 'fi.invoice_no', 's.name as student_name',
                 'fi.total_amount', 'fi.paid_amount', 'fi.due_amount',
@@ -408,6 +430,7 @@ class DashboardComponent extends Component
             ->join('students as s', 's.id', '=', 'fp.student_id')
             ->leftJoin('fee_invoices as fi', 'fi.id', '=', 'fp.fee_invoice_id')
             ->where('fp.institution_id', $institutionId)
+            ->where('fp.branch_id', $branchId)
             ->select(
                 'fp.id', 's.name as student_name', 'fp.amount',
                 'fp.payment_method', 'fp.payment_date', 'fi.payment_status'
@@ -419,6 +442,7 @@ class DashboardComponent extends Component
         // ── Recent Notices ─────────────────────────────────────────────────
         $result['recentNotices'] = DB::table('notices')
             ->where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
             ->where('status', 'active')
             ->select('id', 'title', 'audience', 'priority', 'published_at')
             ->orderByDesc('published_at')
@@ -426,6 +450,7 @@ class DashboardComponent extends Component
             ->get();
 
         // ── Recent Messages ────────────────────────────────────────────────
+        // (branch_id scope নাই — messages table assumption message-এর মতোই উপরে)
         $result['recentMessages'] = DB::table('messages as m')
             ->join('users as u', 'u.id', '=', 'm.sender_id')
             ->where('m.receiver_id', auth()->id())
@@ -453,6 +478,7 @@ class DashboardComponent extends Component
 
         $studentBirthdays = DB::table('students')
             ->where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
             ->whereRaw("DATE_FORMAT(dob, '%m-%d') = ?", [$todayMD])
             ->select(
                 'name',
@@ -463,6 +489,7 @@ class DashboardComponent extends Component
         $employeeBirthdays = DB::table('employees as e')
             ->leftJoin('employee_designations as d', 'd.id', '=', 'e.designation_id')
             ->where('e.institution_id', $institutionId)
+            ->where('e.branch_id', $branchId)
             ->whereRaw("DATE_FORMAT(e.dob, '%m-%d') = ?", [$todayMD])
             ->select(
                 'e.name',
@@ -475,6 +502,7 @@ class DashboardComponent extends Component
         // ── Monthly Fee Collection (last 6 months) for chart ───────────────
         $result['monthlyFeeChart'] = DB::table('fee_payments')
             ->where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
             ->where('payment_date', '>=', Carbon::now()->subMonths(5)->startOfMonth())
             ->selectRaw("DATE_FORMAT(payment_date, '%Y-%m') as month, COALESCE(SUM(amount), 0) as total")
             ->groupBy('month')

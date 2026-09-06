@@ -23,23 +23,30 @@
 
                 <!-- Right Side -->
                 <div class="col-md-2">
-                    <select class="form-select form-select-sm" wire:model.live="filterStatus">
-                        <option value="all">All Status</option>
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                    </select>
+                    <div class="input-group input-group-outline">
+                        <select class="form-select form-select-sm" wire:model.live="filterStatus">
+                            <option value="all">All Status</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
                 </div>
                 @if($devices->total() > 10)
                     <div class="col-md-2">
-                        <select class="form-select form-select-sm" wire:model.live="perPage">
-                            <option value="10">10 / page</option>
-                            <option value="25">25 / page</option>
-                            <option value="50">50 / page</option>
-                        </select>
+                        <div class="input-group input-group-outline">
+                            <select class="form-select form-select-sm" wire:model.live="perPage">
+                                <option value="10">10 / page</option>
+                                <option value="25">25 / page</option>
+                                <option value="50">50 / page</option>
+                            </select>
+                        </div>
                     </div>
                 @endif
                 <button class="btn btn-primary" wire:click="openCreateModal">
-                    <span class="material-icons-round">add</span> <span id="newSectionBtn">Add Device</span>
+                    <span>
+                        <span class="material-icons-round">add</span> 
+                        <span id="newSectionBtn">Add Device</span>
+                    </span>
                 </button>
             </div>
         </div>
@@ -158,35 +165,45 @@
                             <div class="row g-3">
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Device Serial (SN) <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control @error('device_serial') is-invalid @enderror" wire:model.defer="device_serial" placeholder="e.g. ZK-8712A">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Device Serial (SN) <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control @error('device_serial') is-invalid @enderror" wire:model.defer="device_serial">
+                                    </div>
                                     @error('device_serial') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Device Name <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control @error('device_name') is-invalid @enderror" wire:model.defer="device_name" placeholder="e.g. Main Gate">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Device Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control @error('device_name') is-invalid @enderror" wire:model.defer="device_name">
+                                    </div>
                                     @error('device_name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Device Type <span class="text-danger">*</span></label>
-                                    <select class="form-select @error('device_type') is-invalid @enderror" wire:model.defer="device_type">
-                                        <option value="attendance">Attendance</option>
-                                        <option value="access_control">Access Control</option>
-                                    </select>
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Device Type <span class="text-danger">*</span></label>
+                                        <select class="form-select @error('device_type') is-invalid @enderror" wire:model.defer="device_type">
+                                            <option value="attendance">Attendance</option>
+                                            <option value="access_control">Access Control</option>
+                                        </select>
+                                    </div>
                                     @error('device_type') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">IP Address <span class="text-muted" style="font-weight:400;">(optional)</span></label>
-                                    <input type="text" class="form-control @error('ip_address') is-invalid @enderror" wire:model.defer="ip_address" placeholder="e.g. 192.168.1.20">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">IP Address <span class="text-muted" style="font-weight:400;">(optional)</span></label>
+                                        <input type="text" class="form-control @error('ip_address') is-invalid @enderror" wire:model.defer="ip_address">
+                                    </div>
                                     @error('ip_address') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-12">
-                                    <label class="form-label">Location <span class="text-muted" style="font-weight:400;">(optional)</span></label>
-                                    <input type="text" class="form-control @error('location') is-invalid @enderror" wire:model.defer="location" placeholder="e.g. Ground Floor, Main Building">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Location <span class="text-muted" style="font-weight:400;">(optional)</span></label>
+                                        <input type="text" class="form-control @error('location') is-invalid @enderror" wire:model.defer="location">
+                                    </div>
                                     @error('location') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 

@@ -92,38 +92,44 @@
 
                 <div class="row g-3">
                     <div class="col-md-4">
-                        <label class="form-label" style="font-size:.78rem;font-weight:600">Promote To Session <span class="text-danger">*</span></label>
-                        <select class="form-select form-select-sm @error('to_session_id') is-invalid @enderror" wire:model="to_session_id">
-                            <option value="">Select Session</option>
-                            @foreach($sessions as $session)
-                                <option value="{{ $session->id }}">{{ $session->name }}</option>
-                            @endforeach
-                        </select>
+                        <div class="input-group input-group-outline">
+                            <label class="form-label" style="font-size:.78rem;font-weight:600">Promote To Session <span class="text-danger">*</span></label>
+                            <select class="form-select form-select-sm @error('to_session_id') is-invalid @enderror" wire:model="to_session_id">
+                                <option value="">Select Session</option>
+                                @foreach($sessions as $session)
+                                    <option value="{{ $session->id }}">{{ $session->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                         @error('to_session_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
 
                     <div class="col-md-4">
-                        <label class="form-label" style="font-size:.78rem;font-weight:600">Promote To Class <span class="text-danger">*</span></label>
-                        <select class="form-select form-select-sm @error('to_class_id') is-invalid @enderror" wire:model.live="to_class_id">
-                            <option value="">Select Class</option>
-                            @foreach($classes as $c)
-                                <option value="{{ $c->id }}">{{ $c->name }}</option>
-                            @endforeach
-                        </select>
+                        <div class="input-group input-group-outline">
+                            <label class="form-label" style="font-size:.78rem;font-weight:600">Promote To Class <span class="text-danger">*</span></label>
+                            <select class="form-select form-select-sm @error('to_class_id') is-invalid @enderror" wire:model.live="to_class_id">
+                                <option value="">Select Class</option>
+                                @foreach($classes as $c)
+                                    <option value="{{ $c->id }}">{{ $c->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                         @error('to_class_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
 
                     <div class="col-md-4">
-                        <label class="form-label" style="font-size:.78rem;font-weight:600">Promote To Section</label>
-                        <select class="form-select form-select-sm @error('to_section_id') is-invalid @enderror" wire:model="to_section_id" @disabled(empty($toAvailableSections))>
-                            <option value="">{{ empty($toAvailableSections) ? 'Select class first' : 'All Section' }}</option>
-                            @if(!empty($toAvailableSections) && $toAvailableSections->count())
-                                <option value="all">All Section</option>
-                                @foreach($toAvailableSections as $s)
-                                    <option value="{{ $s->id }}">{{ $s->name }}</option>
-                                @endforeach
-                            @endif
-                        </select>
+                        <div class="input-group input-group-outline">
+                            <label class="form-label" style="font-size:.78rem;font-weight:600">Promote To Section</label>
+                            <select class="form-select form-select-sm @error('to_section_id') is-invalid @enderror" wire:model="to_section_id" @disabled(empty($toAvailableSections))>
+                                <option value="">{{ empty($toAvailableSections) ? 'Select class first' : 'All Section' }}</option>
+                                @if(!empty($toAvailableSections) && $toAvailableSections->count())
+                                    <option value="all">All Section</option>
+                                    @foreach($toAvailableSections as $s)
+                                        <option value="{{ $s->id }}">{{ $s->name }}</option>
+                                    @endforeach
+                                @endif
+                            </select>
+                        </div>
                         @error('to_section_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
                 </div>

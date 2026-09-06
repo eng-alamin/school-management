@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('biometric_devices', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
             $table->string('device_serial');
             $table->string('device_name');
             $table->enum('device_type', ['attendance', 'access_control'])->default('attendance');

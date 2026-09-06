@@ -14,7 +14,7 @@ class FeeInvoiceItem extends Model
     protected $guarded = [];
     
     protected $casts = [
-        'amount'          => 'decimal:2',
+        'base_amount'     => 'decimal:2',
         'fine_amount'     => 'decimal:2',
         'discount_amount' => 'decimal:2',
         'total_amount'    => 'decimal:2',
@@ -53,7 +53,7 @@ class FeeInvoiceItem extends Model
     // Remaining balance
     public function getRemainingAttribute(): float
     {
-        $net = (float) $this->amount
+        $net = (float) $this->base_amount
              - (float) $this->discount_amount
              + (float) $this->fine_amount;
 
@@ -70,7 +70,7 @@ class FeeInvoiceItem extends Model
     public function getPaymentStatusAttribute(): string
     {
         $totalPaid = $this->total_paid;
-        $net       = (float) $this->amount
+        $net       = (float) $this->base_amount
                    - (float) $this->discount_amount
                    + (float) $this->fine_amount;
 

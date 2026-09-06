@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('inventory_purchase_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
-            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
             $table->foreignId('purchase_id')->constrained('inventory_purchases')->cascadeOnDelete();
             $table->foreignId('product_id')->constrained('inventory_products')->cascadeOnDelete();
             $table->decimal('unit_price', 15, 2)->default(0);

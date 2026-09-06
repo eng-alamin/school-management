@@ -23,23 +23,30 @@
 
                 <!-- Right Side -->
                 <div class="col-md-2">
-                    <select class="form-select form-select-sm" wire:model.live="filterStatus">
-                        <option value="">All Status</option>
-                        <option value="active">Active</option>
-                        <option value="former">Former</option>
-                    </select>
+                    <div class="input-group input-group-outline">
+                        <select class="form-select form-select-sm" wire:model.live="filterStatus">
+                            <option value="">All Status</option>
+                            <option value="active">Active</option>
+                            <option value="former">Former</option>
+                        </select>
+                    </div>
                 </div>
                 @if($committees->total() > 10)
                     <div class="col-md-2">
-                        <select class="form-select form-select-sm" wire:model.live="perPage">
-                            <option value="10">10 / page</option>
-                            <option value="25">25 / page</option>
-                            <option value="50">50 / page</option>
-                        </select>
+                        <div class="input-group input-group-outline">
+                            <select class="form-select form-select-sm" wire:model.live="perPage">
+                                <option value="10">10 / page</option>
+                                <option value="25">25 / page</option>
+                                <option value="50">50 / page</option>
+                            </select>
+                        </div>
                     </div>
                 @endif
                 <button class="btn btn-primary" wire:click="openAddModal">
-                    <span class="material-icons-round">add</span> <span id="newSectionBtn">Add Member</span>
+                    <span>
+                        <span class="material-icons-round">add</span> 
+                        <span id="newSectionBtn">Add Member</span>
+                    </span>
                 </button>
             </div>
         </div>
@@ -161,46 +168,54 @@
                         <form wire:submit.prevent="save">
                             <div class="row g-3">
 
-                                {{-- Name + Designation --}}
                                 <div class="col-md-6">
-                                    <label class="form-label">Name <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model.defer="name" placeholder="e.g. Md. Rahim Uddin">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model.defer="name">
+                                    </div>
                                     @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Designation <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control @error('designation') is-invalid @enderror" wire:model.defer="designation" placeholder="e.g. President, Secretary, Member">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Designation <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control @error('designation') is-invalid @enderror" wire:model.defer="designation">
+                                    </div>
                                     @error('designation') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
-                                {{-- Phone + Email --}}
                                 <div class="col-md-6">
-                                    <label class="form-label">Phone</label>
-                                    <input type="text" class="form-control @error('phone') is-invalid @enderror" wire:model.defer="phone">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Phone</label>
+                                        <input type="text" class="form-control @error('phone') is-invalid @enderror" wire:model.defer="phone">
+                                    </div>
                                     @error('phone') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Email</label>
-                                    <input type="email" class="form-control @error('email') is-invalid @enderror" wire:model.defer="email">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Email</label>
+                                        <input type="email" class="form-control @error('email') is-invalid @enderror" wire:model.defer="email">
+                                    </div>
                                     @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
-                                {{-- Term dates --}}
                                 <div class="col-md-6">
-                                    <label class="form-label">Term Start Date</label>
-                                    <input type="date" class="form-control @error('term_start_date') is-invalid @enderror" wire:model.defer="term_start_date">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Term Start Date</label>
+                                        <input type="date" class="form-control @error('term_start_date') is-invalid @enderror" wire:model.defer="term_start_date">
+                                    </div>
                                     @error('term_start_date') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Term End Date <span class="text-muted" style="font-weight:400;">(optional)</span></label>
-                                    <input type="date" class="form-control @error('term_end_date') is-invalid @enderror" wire:model.defer="term_end_date">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Term End Date <span class="text-muted" style="font-weight:400;">(optional)</span></label>
+                                        <input type="date" class="form-control @error('term_end_date') is-invalid @enderror" wire:model.defer="term_end_date">
+                                    </div>
                                     @error('term_end_date') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
-                                {{-- Photo --}}
                                 <div class="col-md-8">
                                     <label class="form-label">Photo <span class="text-muted" style="font-weight:400;">(Image — max 2MB)</span></label>
                                     <input type="file" class="form-control @error('photo') is-invalid @enderror" wire:model="photo" accept="image/*">
@@ -215,7 +230,6 @@
                                     @endif
                                 </div>
 
-                                {{-- Status --}}
                                 <div class="col-12">
                                     <label class="form-label d-block mb-2">Status</label>
                                     <div class="d-flex gap-3 flex-wrap">
@@ -232,8 +246,10 @@
 
                                 {{-- Address --}}
                                 <div class="col-12">
-                                    <label class="form-label">Address</label>
-                                    <textarea class="form-control @error('address') is-invalid @enderror" wire:model.defer="address" rows="2"></textarea>
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Address</label>
+                                        <textarea class="form-control @error('address') is-invalid @enderror" wire:model.defer="address" rows="2"></textarea>
+                                    </div>
                                     @error('address') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 

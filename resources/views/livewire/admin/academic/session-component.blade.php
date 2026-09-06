@@ -19,18 +19,23 @@
                     </div>
                 </div>
 
-                <!-- Right Side -->
                 @if($sessions->total() > 10)
                     <div class="col-md-2">
-                        <select class="form-select form-select-sm" wire:model.live="perPage">
-                            <option value="10">10 / page</option>
-                            <option value="25">25 / page</option>
-                            <option value="50">50 / page</option>
-                        </select>
+                            <div class="input-group input-group-outline">
+                            <select class="form-select form-select-sm" wire:model.live="perPage">
+                                <option value="10">10 / page</option>
+                                <option value="25">25 / page</option>
+                                <option value="50">50 / page</option>
+                            </select>
+                        </div>
                     </div>
                 @endif
+
                 <button class="btn btn-primary" wire:click="openCreate">
-                    <span class="material-icons-round">add</span> <span id="newSectionBtn">Add Session</span>
+                    <span>
+                        <span class="material-icons-round">add</span> 
+                        <span id="newSectionBtn">Add Session</span>
+                    </span>
                 </button>
 
             </div>
@@ -114,20 +119,26 @@
                             <div class="row g-3">
 
                                 <div class="col-md-12">
-                                    <label class="form-label">Session Name <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model.defer="name" placeholder="e.g. 2024-2025">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Session Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model.defer="name">
+                                    </div>
                                     @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Start Date</label>
-                                    <input type="date" class="form-control @error('start_date') is-invalid @enderror" wire:model.defer="start_date">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">Start Date</label>
+                                        <input type="date" class="form-control @error('start_date') is-invalid @enderror" wire:model.defer="start_date">
+                                    </div>
                                     @error('start_date') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">End Date</label>
-                                    <input type="date" class="form-control @error('end_date') is-invalid @enderror" wire:model.defer="end_date">
+                                    <div class="input-group input-group-outline">
+                                        <label class="form-label">End Date</label>
+                                        <input type="date" class="form-control @error('end_date') is-invalid @enderror" wire:model.defer="end_date">
+                                    </div>
                                     @error('end_date') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 

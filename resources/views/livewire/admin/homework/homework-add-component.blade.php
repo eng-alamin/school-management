@@ -197,7 +197,10 @@
         <!-- Form Footer -->
         <div class="form-footer">
             <button class="btn btn-secondary" type="button" wire:click="resetForm">
-                <span class="material-icons-round" style="font-size:16px">refresh</span> Reset
+                <span>
+                    <span class="material-icons-round" style="font-size:16px">refresh</span> 
+                    <span>Reset</span>
+                </span>
             </button>
 
             <button class="btn btn-primary" type="button"
@@ -218,92 +221,3 @@
         
     </div>
 </div>
-
-@push('scripts')
-    <script>
-        document.addEventListener('livewire:initialized', () => {
-
-            // ✅ Initial load এ সব ঠিক করো
-            setTimeout(() => initAllFields(), 100);
-
-            // ✅ Livewire update এর পর
-            Livewire.hook('morph.updated', ({ el }) => {
-                setTimeout(() => initAllFields(), 50);
-            });
-
-            function initAllFields() {
-
-                // ── 1. Text/Textarea is-filled ──
-                document.querySelectorAll('.input-group-outline input, .input-group-outline textarea').forEach(function(input) {
-                    var group = input.closest('.input-group');
-                    if (!group) return;
-
-                    // value থাকলে is-filled দাও
-                    if (input.value && input.value.trim() !== '') {
-                        group.classList.add('is-filled');
-                    } else {
-                        group.classList.remove('is-filled');
-                    }
-
-                    if (input._materialInit) return;
-                    input._materialInit = true;
-
-                    input.addEventListener('focus', function() {
-                        group.classList.add('is-focused');
-                    });
-                    input.addEventListener('blur', function() {
-                        group.classList.remove('is-focused');
-                        group.classList.toggle('is-filled', !!input.value.trim());
-                    });
-                    input.addEventListener('input', function() {
-                        group.classList.toggle('is-filled', !!input.value.trim());
-                    });
-                });
-
-                // ── 2. Select is-filled + value set ──
-                document.querySelectorAll('.input-group-outline select').forEach(function(select) {
-                    var group = select.closest('.input-group');
-                    if (!group) return;
-
-                    // selected value থাকলে is-filled দাও
-                    if (select.value && select.value !== '') {
-                        group.classList.add('is-filled');
-                    } else {
-                        group.classList.remove('is-filled');
-                    }
-
-                    if (select._materialInit) return;
-                    select._materialInit = true;
-
-                    select.addEventListener('change', function() {
-                        group.classList.toggle('is-filled', !!select.value);
-                    });
-                    select.addEventListener('focus', function() {
-                        group.classList.add('is-focused');
-                    });
-                    select.addEventListener('blur', function() {
-                        group.classList.remove('is-focused');
-                    });
-                });
-
-                // ── 3. Custom Select rebuild ──
-                document.querySelectorAll('.input-group-outline .form-select').forEach(function(select) {
-                    // পুরনো custom wrapper থাকলে remove করো
-                    var old = select.parentNode.querySelector('.custom-select-wrapper');
-                    if (old) old.remove();
-                    select.style.display = '';
-
-                    if (typeof buildCustomSelect === 'function') {
-                        buildCustomSelect(select);
-                    }
-                });
-
-                // ── 4. Datepicker ──
-                if (typeof _initDatepickers === 'function') {
-                    _initDatepickers();
-                }
-            }
-
-        });
-    </script>
-@endpush

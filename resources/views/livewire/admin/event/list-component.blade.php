@@ -61,22 +61,8 @@
                             <tr>
                                 <td class="text-muted">{{ $events->firstItem() + $i }}</td>
                                 <td>{{ $event->title }}</td>
-                                {{--
-                                    BUG FIX: 'type' was a free-text column that has been
-                                    replaced with the event_type_id foreign key. We now
-                                    show the related EventType name (eager-loaded in
-                                    ListComponent::render() via ->with('eventType') to
-                                    avoid N+1 queries).
-                                --}}
                                 <td>{{ $event->eventType->name ?? '-' }}</td>
                                 <td>
-                                    {{--
-                                        BUG FIX: previously compared against 'Everybody',
-                                        'Selected Class', 'Selected Section' which never
-                                        matched the actual stored enum values
-                                        ('everyone', 'class', 'section'), so the badge
-                                        always fell into the "else" (inactive) branch.
-                                    --}}
                                     <span class="badge rounded-pill
                                         @if($event->audience === 'everyone') badge-active
                                         @elseif($event->audience === 'class') badge-used
@@ -84,7 +70,7 @@
                                         @if($event->audience === 'everyone')
                                             Everybody
                                         @elseif($event->audience === 'class')
-                                            Selected Class
+                                            Class -{{$event->eventClass?->class_name}}
                                         @else
                                             Selected Section
                                         @endif

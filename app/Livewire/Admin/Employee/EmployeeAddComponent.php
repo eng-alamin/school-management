@@ -60,6 +60,7 @@ class EmployeeAddComponent extends Component
         User::ROLE_TEACHER,
         User::ROLE_STAFF,
         User::ROLE_ACCOUNTANT,
+        User::ROLE_IT_SUPPORT,
         User::ROLE_BRANCH,
     ];
 

@@ -10,6 +10,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 #[Layout('layouts.ministry.app')]
 class IndexComponent extends Component
@@ -17,9 +18,12 @@ class IndexComponent extends Component
     use WithPagination;
 
     // =====================
-    // Allowlists (security: never pass raw user input to orderBy)
+    // Allowlists (security: never pass raw user input to orderBy / paginate)
     // =====================
     private const SORTABLE_FIELDS = ['name', 'username', 'email', 'is_active', 'created_at'];
+    private const PER_PAGE_OPTIONS = [10, 25, 50, 100];
+
+    private const SUPER_ADMIN_ROLE = 'Ministry Super Admin';
 
     protected string $paginationTheme = 'bootstrap';
 
@@ -56,16 +60,30 @@ class IndexComponent extends Component
 
     public function mount(): void
     {
-        $this->authorizeManage();
+        $this->authorizeSuperAdmin();
     }
 
     /**
-     * Defense-in-depth: প্রতিটা write action-এর আগে আবার permission check হবে,
-     * শুধু mount()-এ ভরসা করা হবে না।
+     * শুধু Ministry Super Admin এখানে ঢুকতে পারবে — permission-ভিত্তিক না,
+     * role-ভিত্তিক। কারণ Ministry User/Role panel থেকেই permission
+     * তৈরি/delete/assign হয়; permission-based check ব্যবহার করলে
+     * circular privilege-escalation সম্ভব হতে পারে (কোনোভাবে সেই
+     * permission পেয়ে গেলে নিজেকে Super Admin বানানো যেত)। role name
+     * সরাসরি চেক করলে সেই ঝুঁকি থাকে না — Role IndexComponent-এর সাথে
+     * সামঞ্জস্যপূর্ণ pattern।
+     *
+     * Defense-in-depth: প্রতিটা write action-এর আগে আবার চেক হবে, শুধু
+     * mount()-এ ভরসা করা হবে না। Route middleware bypass হলেও এটা যেন
+     * শেষ লাইন অফ ডিফেন্স হিসেবে কাজ করে।
      */
-    private function authorizeManage(): void
+    private function authorizeSuperAdmin(): void
     {
-        abort_unless(Auth::user()?->isMinistry() && Auth::user()->can('ministry-user.manage'), 403);
+        abort_unless(
+            Auth::user()?->isMinistry(),
+            // Auth::user()?->isMinistry() && Auth::user()->hasRole(self::SUPER_ADMIN_ROLE),
+            403,
+            'শুধু Ministry Super Admin এই section access করতে পারবে।'
+        );
     }
 
     public function updatingSearch(): void
@@ -80,6 +98,17 @@ class IndexComponent extends Component
 
     public function updatingStatusFilter(): void
     {
+        $this->resetPage();
+    }
+
+    /**
+     * perPage allowlist enforcement — arbitrary/huge value দিয়ে DoS ঠেকাতে।
+     */
+    public function updatingPerPage($value): void
+    {
+        if (!in_array((int) $value, self::PER_PAGE_OPTIONS, true)) {
+            $this->perPage = 10;
+        }
         $this->resetPage();
     }
 
@@ -112,6 +141,7 @@ class IndexComponent extends Component
     public function render()
     {
         $sortColumn = in_array($this->sortField, self::SORTABLE_FIELDS, true) ? $this->sortField : 'created_at';
+        $perPage = in_array($this->perPage, self::PER_PAGE_OPTIONS, true) ? $this->perPage : 10;
 
         $users = User::query()
             ->with('roles')
@@ -134,7 +164,7 @@ class IndexComponent extends Component
                 $query->where('is_active', $this->statusFilter === 'active');
             })
             ->orderBy($sortColumn, $this->sortDirection)
-            ->paginate($this->perPage);
+            ->paginate($perPage);
 
         return view('livewire.ministry.user.index-component', [
             'users' => $users,
@@ -147,7 +177,7 @@ class IndexComponent extends Component
 
     public function openCreateModal(): void
     {
-        $this->authorizeManage();
+        $this->authorizeSuperAdmin();
         $this->resetForm();
         $this->isEditMode = false;
         $this->showFormModal = true;
@@ -159,7 +189,7 @@ class IndexComponent extends Component
 
     public function openEditModal(int $id): void
     {
-        $this->authorizeManage();
+        $this->authorizeSuperAdmin();
 
         $user = User::where('role', User::ROLE_MINISTRY)->findOrFail($id);
 
@@ -183,6 +213,8 @@ class IndexComponent extends Component
 
     public function openViewModal(int $id): void
     {
+        $this->authorizeSuperAdmin();
+
         $this->viewingUser = User::with('roles')
             ->where('role', User::ROLE_MINISTRY)
             ->findOrFail($id);
@@ -220,13 +252,29 @@ class IndexComponent extends Component
 
     public function save(): void
     {
-        $this->authorizeManage();
+        $this->authorizeSuperAdmin();
         $this->validate();
 
         DB::beginTransaction();
         try {
+            app(PermissionRegistrar::class)->setPermissionsTeamId(
+                \Database\Seeders\MinistryRolePermissionSeeder::MINISTRY_TEAM_ID
+            );
+
             if ($this->isEditMode) {
                 $user = User::where('role', User::ROLE_MINISTRY)->findOrFail($this->userId);
+
+                // Super Admin role নিজের থেকে সরিয়ে ফেললে এবং এটাই শেষ active
+                // super admin হলে — পুরো ministry panel lock হয়ে যাবে। আটকাও।
+                if (
+                    $user->hasRole(self::SUPER_ADMIN_ROLE)
+                    && $this->ministryRole !== self::SUPER_ADMIN_ROLE
+                    && $this->isLastActiveSuperAdmin($user)
+                ) {
+                    DB::rollBack();
+                    $this->dispatch('toast', type: 'error', message: 'এটাই শেষ active Super Admin — role পরিবর্তন করা যাবে না।');
+                    return;
+                }
 
                 $user->update([
                     'name'      => $this->name,
@@ -243,6 +291,9 @@ class IndexComponent extends Component
                     ->causedBy(Auth::user())
                     ->performedOn($user)
                     ->withProperties(['icon' => 'edit', 'type' => 'update'])
+                    ->tap(function ($activity) {
+                        $activity->institution_id = null; // ministry user কোনো institution-এর সাথে bound না
+                    })
                     ->log('Ministry user updated: ' . $user->name);
 
                 $message = 'Ministry user সফলভাবে আপডেট হয়েছে।';
@@ -255,7 +306,7 @@ class IndexComponent extends Component
                     'username'       => $this->username,
                     'phone'          => $this->phone ?: null,
                     'email'          => $this->email,
-                    'password'       => $this->password, // 'hashed' cast — Hash::make() করা লাগবে না
+                    'password'       => $this->password,
                     'is_active'      => $this->is_active,
                     'is_verified'    => true,
                 ]);
@@ -266,6 +317,9 @@ class IndexComponent extends Component
                     ->causedBy(Auth::user())
                     ->performedOn($user)
                     ->withProperties(['icon' => 'person_add', 'type' => 'create'])
+                    ->tap(function ($activity) {
+                        $activity->institution_id = null;
+                    })
                     ->log('Ministry user created: ' . $user->name);
 
                 $message = 'নতুন Ministry user সফলভাবে তৈরি হয়েছে।';
@@ -277,6 +331,8 @@ class IndexComponent extends Component
             $this->dispatch('toast', type: 'error', message: 'কিছু একটা ভুল হয়েছে, আবার চেষ্টা করুন।');
             report($e);
             return;
+        } finally {
+            app(PermissionRegistrar::class)->setPermissionsTeamId(null);
         }
 
         $this->showFormModal = false;
@@ -290,12 +346,18 @@ class IndexComponent extends Component
 
     public function toggleStatus(int $id): void
     {
-        $this->authorizeManage();
+        $this->authorizeSuperAdmin();
 
         $user = User::where('role', User::ROLE_MINISTRY)->findOrFail($id);
 
         if ($user->id === Auth::id()) {
             $this->dispatch('toast', type: 'error', message: 'নিজের account নিজে deactivate করা যাবে না।');
+            return;
+        }
+
+        // Active থেকে Inactive করার সময়ই শুধু last-super-admin protection দরকার
+        if ($user->is_active && $this->isLastActiveSuperAdmin($user)) {
+            $this->dispatch('toast', type: 'error', message: 'এটাই শেষ active Ministry Super Admin — deactivate করা যাবে না।');
             return;
         }
 
@@ -305,6 +367,9 @@ class IndexComponent extends Component
             ->causedBy(Auth::user())
             ->performedOn($user)
             ->withProperties(['icon' => 'toggle_on', 'type' => 'status-change'])
+            ->tap(function ($activity) {
+                $activity->institution_id = null;
+            })
             ->log('Ministry user status changed: ' . $user->name);
 
         $this->dispatch('toast', type: 'success', message: 'Status সফলভাবে পরিবর্তন হয়েছে।');
@@ -316,7 +381,7 @@ class IndexComponent extends Component
 
     public function confirmDelete(int $id): void
     {
-        $this->authorizeManage();
+        $this->authorizeSuperAdmin();
 
         if ($id === Auth::id()) {
             $this->dispatch('toast', type: 'error', message: 'নিজের account নিজে delete করা যাবে না।');
@@ -329,7 +394,7 @@ class IndexComponent extends Component
 
     public function delete(): void
     {
-        $this->authorizeManage();
+        $this->authorizeSuperAdmin();
 
         $user = User::where('role', User::ROLE_MINISTRY)->findOrFail($this->deletingUserId);
 
@@ -339,11 +404,20 @@ class IndexComponent extends Component
             return;
         }
 
+        if ($this->isLastActiveSuperAdmin($user)) {
+            $this->dispatch('toast', type: 'error', message: 'এটাই শেষ active Ministry Super Admin — delete করা যাবে না।');
+            $this->showDeleteModal = false;
+            return;
+        }
+
         // delete()-এর আগে log করতে হবে, পরে না
         activity()
             ->causedBy(Auth::user())
             ->performedOn($user)
             ->withProperties(['icon' => 'delete', 'type' => 'delete'])
+            ->tap(function ($activity) {
+                $activity->institution_id = null;
+            })
             ->log('Ministry user deleted: ' . $user->name);
 
         $user->syncRoles([]); // pivot cleanup
@@ -357,6 +431,26 @@ class IndexComponent extends Component
     // =====================
     // Helpers
     // =====================
+
+    /**
+     * $user-কে বাদ দিয়ে অন্য কোনো active 'Ministry Super Admin' আছে কিনা চেক করে।
+     * না থাকলে $user-ই শেষ active super admin — deactivate/delete/role-change
+     * করলে পুরো Ministry panel lock হয়ে যাবে, তাই ব্লক করা হয়।
+     */
+    private function isLastActiveSuperAdmin(User $user): bool
+    {
+        if (!$user->hasRole(self::SUPER_ADMIN_ROLE)) {
+            return false;
+        }
+
+        return User::where('role', User::ROLE_MINISTRY)
+            ->where('is_active', true)
+            ->where('id', '!=', $user->id)
+            ->whereHas('roles', function ($q) {
+                $q->where('name', self::SUPER_ADMIN_ROLE);
+            })
+            ->doesntExist();
+    }
 
     private function resetForm(): void
     {

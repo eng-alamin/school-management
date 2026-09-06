@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('exam_setup_details', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
-            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
             $table->foreignId('exam_setup_id')->constrained('exam_setups')->cascadeOnDelete();
             $table->foreignId('academic_class_assign_detail_id')->constrained('academic_class_assign_details')->cascadeOnDelete();
             $table->decimal('full_mark', 8, 2)->default(100);
@@ -25,12 +25,8 @@ return new class extends Migration
             $table->integer('serial')->default(1);
             $table->timestamps();
 
-            $table->unique(
-                ['exam_setup_id', 'academic_class_assign_detail_id'],
-                'exam_setup_subject_unique'
-            );
-            $table->index(['institution_id'], 'exam_setup_details_institution_idx');
-
+            $table->unique(['exam_setup_id', 'academic_class_assign_detail_id'], 'esd_esi_acadi_unique');
+            $table->index(['institution_id', 'branch_id'], 'esd_ins_bra_idx');
         });
     }
 

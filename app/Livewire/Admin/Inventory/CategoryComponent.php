@@ -33,14 +33,16 @@ class CategoryComponent extends Component
     protected function rules(): array
     {
         return [
-            'required',
-            'string',
-            'max:255',
-            Rule::unique('inventory_categories', 'name')
-                ->where('institution_id', institution()->id)
-                ->where('branch_id', auth()->user()->branch_id)
-                ->ignore($this->editId),
-        ];
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('inventory_categories', 'name')
+                    ->where('institution_id', institution()->id)
+                    ->where('branch_id', auth()->user()->branch_id)
+                    ->ignore($this->editId),
+            ],
+         ];
     }
 
     public function updatingSearch(): void

@@ -14,54 +14,59 @@
             <div class="row g-2 align-items-end">
 
                 <div class="col-12 col-md-4">
-                    <label class="rpt-filter-label" data-en="Report Type" data-bn="রিপোর্টের ধরন">Report Type</label>
-                    <select wire:model.live="reportType" class="form-select form-select-sm">
-                        @foreach (\App\Livewire\Ministry\Reports\IndexComponent::REPORT_TYPES as $key => $label)
-                            <option value="{{ $key }}">{{ $label }}</option>
-                        @endforeach
-                    </select>
+                    <div class="input-group input-group-outline">
+                        <select wire:model.live="reportType" class="form-select form-select-sm">
+                            @foreach (\App\Livewire\Ministry\Reports\IndexComponent::REPORT_TYPES as $key => $label)
+                                <option value="{{ $key }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
 
                 <div class="col-6 col-md-3">
-                    <label class="rpt-filter-label" data-en="Division" data-bn="বিভাগ">Division</label>
-                    <select wire:model.live="division" class="form-select form-select-sm">
-                        <option value="">{{ __('All') }}</option>
-                        @foreach ($this->divisions as $div)
-                            <option value="{{ $div }}">{{ $div }}</option>
-                        @endforeach
-                    </select>
+                    <div class="input-group input-group-outline">
+                        <select wire:model.live="division" class="form-select form-select-sm">
+                            <option value="">{{ __('All Division') }}</option>
+                            @foreach ($this->divisions as $div)
+                                <option value="{{ $div }}">{{ $div }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
 
                 @if (in_array($reportType, ['academic_performance', 'ranking']))
                     <div class="col-6 col-md-3">
-                        <label class="rpt-filter-label" data-en="Academic Session" data-bn="একাডেমিক সেশন">Academic Session</label>
-                        <select wire:model.live="academicSessionId" class="form-select form-select-sm">
-                            <option value="">{{ __('All') }}</option>
-                            @foreach ($this->academicSessions as $session)
-                                <option value="{{ $session->id }}">{{ $session->name ?? $session->id }}</option>
-                            @endforeach
-                        </select>
+                        <div class="input-group input-group-outline">
+                            <select wire:model.live="academicSessionId" class="form-select form-select-sm">
+                                <option value="">{{ __('All Session') }}</option>
+                                @foreach ($this->academicSessions as $session)
+                                    <option value="{{ $session->id }}">{{ $session->name ?? $session->id }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
                 @endif
 
                 @if ($reportType === 'institution_list')
                     <div class="col-6 col-md-3">
-                        <label class="rpt-filter-label" data-en="Verification Status" data-bn="যাচাইকরণ অবস্থা">Verification Status</label>
-                        <select wire:model.live="verificationStatus" class="form-select form-select-sm">
-                            <option value="">{{ __('All') }}</option>
-                            @foreach (\App\Models\Institution::VERIFICATION_STATUSES as $status)
-                                <option value="{{ $status }}">{{ \App\Models\Institution::VERIFICATION_LABELS[$status] ?? $status }}</option>
-                            @endforeach
-                        </select>
+                        <div class="input-group input-group-outline">
+                            <select wire:model.live="verificationStatus" class="form-select form-select-sm">
+                                <option value="">{{ __('All Status') }}</option>
+                                @foreach (\App\Models\Institution::VERIFICATION_STATUSES as $status)
+                                    <option value="{{ $status }}">{{ \App\Models\Institution::VERIFICATION_LABELS[$status] ?? $status }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
                 @endif
 
                 <div class="col-6 col-md-2">
-                    <label class="rpt-filter-label" data-en="Format" data-bn="ফরম্যাট">Format</label>
-                    <select wire:model="format" class="form-select form-select-sm">
-                        <option value="pdf">PDF</option>
-                        <option value="excel">Excel</option>
-                    </select>
+                    <div class="input-group input-group-outline">
+                        <select wire:model="format" class="form-select form-select-sm">
+                            <option value="pdf">PDF</option>
+                            <option value="excel">Excel</option>
+                        </select>
+                    </div>
                 </div>
 
             </div>

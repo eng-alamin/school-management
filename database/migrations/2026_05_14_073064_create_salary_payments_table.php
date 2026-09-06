@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('salary_payments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('institution_id')->constrained('institutions')->cascadeOnDelete();
-            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
             $table->foreignId('employee_id')->constrained()->cascadeOnDelete();
             $table->foreignId('salary_assign_id')->nullable()->constrained('salary_assigns')->nullOnDelete();
             $table->date('month');

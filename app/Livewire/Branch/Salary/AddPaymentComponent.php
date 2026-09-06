@@ -4,6 +4,7 @@ namespace App\Livewire\Branch\Salary;
 
 use Livewire\Component;
 use App\Models\Employee;
+use App\Models\OfficeAccount;
 use App\Models\SalaryAssign;
 use App\Models\SalaryPayment;
 use App\Models\SalaryAdvance;
@@ -248,7 +249,10 @@ class AddPaymentComponent extends Component
 
     public function render()
     {
-        $officeAccounts = DB::table('office_accounts')->get(['id', 'name']);
+        $officeAccounts = OfficeAccount::query()
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get();
 
         return view('livewire.admin.salary.add-payment-component', [
             'officeAccounts' => $officeAccounts,

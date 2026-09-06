@@ -75,6 +75,13 @@
       </li>
 
       <li class="nav1-item">
+        <a class="nav1-link {{ str_contains(request()->url(), 'teacher/question-papers') == true ? 'active' : '' }}" href="{{ route('teacher.question-papers.index')  }}">
+          <span class="material-icons-round nav-icon">quiz</span>
+          <span class="nav-label" id="nav-home-work">Question Papers</span>
+        </a>
+      </li>
+
+      <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), 'teacher/attendance') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
           <span class="material-icons-round nav-icon">event_available</span>
           <span class="nav-label" id="nav-attendance">Attendance</span>

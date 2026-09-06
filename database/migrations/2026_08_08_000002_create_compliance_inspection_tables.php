@@ -23,7 +23,7 @@ return new class extends Migration
         Schema::create('inspections', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
             $table->date('scheduled_at')->nullable();
             $table->dateTime('conducted_at')->nullable();
             $table->enum('status', ['scheduled', 'completed', 'cancelled'])->default('scheduled');
@@ -49,7 +49,7 @@ return new class extends Migration
         Schema::create('compliance_violations', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
             $table->foreignId('inspection_id')->nullable()->constrained()->nullOnDelete();
             $table->enum('severity', ['minor', 'major', 'critical'])->default('minor');
             $table->text('description');

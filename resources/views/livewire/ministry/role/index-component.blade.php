@@ -171,6 +171,12 @@
                             @endforeach
                         </div>
                         @error('selectedPermissions') <div class="text-danger small">{{ $message }}</div> @enderror
+                        {{-- Array-indexed rule failures land under keys like
+                             'selectedPermissions.0', not 'selectedPermissions' —
+                             the wildcard below is required to surface them,
+                             otherwise a failed selection fails validate()
+                             silently with no visible error. --}}
+                        @error('selectedPermissions.*') <div class="text-danger small">{{ $message }}</div> @enderror
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" wire:click="closeModals" data-en="Cancel" data-bn="বাতিল">Cancel</button>
@@ -261,7 +267,10 @@
                             </div>
                         </div>
                         <p class="text-secondary small mb-0">
-                            <span data-en="Permission name will be:" data-bn="পারমিশনের নাম হবে:">Permission name will be:</span> <code>{{ strtolower($permissionModule ?: 'module') }}.{{ strtolower($permissionAction ?: 'action') }}</code>
+                            {{-- Preview now includes the 'ministry.' prefix that
+                                 will actually be saved, so the admin isn't
+                                 surprised by the stored name. --}}
+                            <span data-en="Permission name will be:" data-bn="পারমিশনের নাম হবে:">Permission name will be:</span> <code>ministry.{{ strtolower($permissionModule ?: 'module') }}.{{ strtolower($permissionAction ?: 'action') }}</code>
                         </p>
                     </div>
                     <div class="modal-footer">
