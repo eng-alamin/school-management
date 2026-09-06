@@ -31,7 +31,7 @@
                     </div>
                 @endif
                 <button class="btn-outline bg-dark text-white" wire:click="openCreate">
-                    <span class="material-icons-round">add</span> <span id="newSectionBtn">Add Mark</span>
+                    <span class="material-icons-round">add_circle</span> <span id="newSectionBtn">Add Mark</span>
                 </button>
 
             </div>

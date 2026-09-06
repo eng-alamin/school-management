@@ -36,7 +36,7 @@
                 @endif
                 <button class="btn btn-primary" wire:click="openCreateModal">
                     <span>
-                        <span class="material-icons-round">add</span>
+                        <span class="material-icons-round">add_circle</span>
                         <span id="newSectionBtn">Add Question Paper</span>
                     </span>
                 </button>

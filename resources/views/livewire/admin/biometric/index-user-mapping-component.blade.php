@@ -91,7 +91,7 @@
                     <div class="{{ $filterType === 'student' ? 'col-md-2' : 'col-md-3' }}">
                         <a href="{{ route($routePrefix . 'biometric.mapping.create', $selectedDeviceId !== '' ? ['device_id' => $selectedDeviceId] : []) }}" class="btn btn-primary">
                             <span>
-                                <span class="material-icons-round">add</span> 
+                                <span class="material-icons-round">add_circle</span> 
                                 <span id="newSectionBtn">Add Mapping</span>
                             </span>
                         </a>

@@ -33,13 +33,13 @@
                 @endif
                 <button type="button" class="btn btn-primary" onclick="history.back()">
                     <span>
-                        <span class="material-icons-round">arrow_back</span>
+                        <span class="material-icons-round">arrow_circle_left</span>
                         <span>Back</span>
                     </span>
                 </button>
                 <button class="btn btn-primary" wire:click="openCreate">
                     <span>
-                        <span class="material-icons-round">add</span> 
+                        <span class="material-icons-round">add_circle</span> 
                         <span id="newSectionBtn">Add Type</span>
                     </span>
                 </button>

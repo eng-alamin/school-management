@@ -32,13 +32,13 @@
 
                 <a href="{{ route($routePrefix . 'inventory.categories') }}" target="_blank" class="btn btn-primary">
                     <span>
-                        <span class="material-icons-round">category</span>
+                        <span class="material-icons-round">pages</span>
                         <span id="inventory-product-category-btn">Category</span>
                     </span>
                 </a>
                 <a href="{{ route($routePrefix . 'inventory.units') }}" target="_blank" class="btn btn-primary">
                     <span>
-                        <span class="material-icons-round">ac_unit</span>
+                        <span class="material-icons-round">pages</span>
                         <span id="inventory-product-unit-btn">Unit</span>
                     </span>
                 </a>

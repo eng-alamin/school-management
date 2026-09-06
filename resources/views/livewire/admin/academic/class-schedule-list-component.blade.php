@@ -71,8 +71,10 @@
                     <div class="col-md-12">
                         <a href="{{ route($routePrefix . 'academic.class-schedule.create') }}"
                             class="btn btn-primary w-100 d-flex justify-content-center align-items-center">
-                            <span class="material-icons-round" style="font-size:16px">add</span>
-                            <span>New Schedule</span>
+                            <span>
+                                <span class="material-icons-round" style="font-size:16px">add</span>
+                                <span>New Schedule</span>
+                            </span>
                         </a>
                     </div>
 

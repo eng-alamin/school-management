@@ -109,7 +109,7 @@
                         @unless($isLocked)
                             <div class="dropdown mb-3">
                                 <button class="btn btn-brand dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                    <span class="material-icons-round" style="font-size:17px;">add</span> Add Question
+                                    <span class="material-icons-round" style="font-size:17px;">addadd_circle</span> Add Question
                                 </button>
                                 <ul class="dropdown-menu" style="max-height: 360px; overflow-y: auto;">
                                     @foreach($typeDefs as $typeValue => $def)

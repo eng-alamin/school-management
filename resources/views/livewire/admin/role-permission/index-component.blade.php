@@ -30,7 +30,7 @@
 
                 <a href="{{ route('admin.role-permission.create') }}" wire:navigate class="btn btn-primary">
                     <span>
-                        <span class="material-icons-round">add</span>
+                        <span class="material-icons-round">add_circle</span>
                         <span>New Role</span>
                     </span>
                 </a>

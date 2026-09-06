@@ -36,7 +36,7 @@
                 @endif
                 <button class="btn btn-primary" wire:click="openAssignModal">
                     <span>
-                        <span class="material-icons-round">add</span>
+                        <span class="material-icons-round">add_circle</span>
                         <span id="newSectionBtn">Assign Printer</span>
                     </span>
                 </button>

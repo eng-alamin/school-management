@@ -29,10 +29,16 @@
                 @endif
 
                 <a href="{{ route($routePrefix . 'event.types') }}" class="btn btn-primary">
-                    <span class="material-icons-round">add</span> Add Types
+                    <span>
+                        <span class="material-icons-round">pages</span> 
+                        <span>Add Type</span>
+                    </span>
                 </a>
                 <a href="{{ route($routePrefix . 'event.add') }}" class="btn btn-primary">
-                    <span class="material-icons-round">add</span> Add Event
+                    <span>
+                        <span class="material-icons-round">add_circle</span> 
+                        <span>Add Event</span>
+                    </span>
                 </a>
             </div>
         </div>

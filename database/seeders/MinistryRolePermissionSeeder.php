@@ -99,7 +99,7 @@ class MinistryRolePermissionSeeder extends Seeder
         foreach (self::PERMISSIONS as $permissionName) {
             Permission::firstOrCreate(
                 ['name' => $permissionName, 'guard_name' => self::GUARD],
-                ['institution_id' => self::MINISTRY_TEAM_ID]
+                // ['institution_id' => self::MINISTRY_TEAM_ID]
             );
         }
 
@@ -120,9 +120,9 @@ class MinistryRolePermissionSeeder extends Seeder
             }
         }
 
-        Permission::where('name', 'like', self::PREFIX . '%')
-            ->whereNull('institution_id')
-            ->update(['institution_id' => self::MINISTRY_TEAM_ID]);
+        // Permission::where('name', 'like', self::PREFIX . '%')
+        //     ->whereNull('institution_id')
+        //     ->update(['institution_id' => self::MINISTRY_TEAM_ID]);
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 

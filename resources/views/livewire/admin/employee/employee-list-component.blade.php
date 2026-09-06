@@ -32,7 +32,7 @@
 
                 <a href="{{ route($routePrefix . 'employee.add') }}" class="btn btn-primary">
                     <span>
-                        <span class="material-icons-round">add</span> 
+                        <span class="material-icons-round">add_circle</span> 
                         <span>New Employee</span>
                     </span>
                 </a>

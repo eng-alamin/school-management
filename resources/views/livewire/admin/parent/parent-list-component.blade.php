@@ -31,7 +31,7 @@
 
                 <a href="{{ route($routePrefix . 'parent.add') }}" class="btn btn-primary">
                     <span>
-                        <span class="material-icons-round">add</span>
+                        <span class="material-icons-round">add_circle</span>
                         <span>New Parent</span>
                     </span>
                 </a>

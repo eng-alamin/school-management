@@ -35,7 +35,7 @@
                 {{-- Add button --}}
                 <a href="{{ route($routePrefix . 'certificate.add-template') }}"
                    class="btn btn-primary">
-                    <span class="material-icons-round">add</span> Add Template
+                    <span class="material-icons-round">add_circle</span> Add Template
                 </a>
             </div>
         </div>

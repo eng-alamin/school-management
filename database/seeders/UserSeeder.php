@@ -16,9 +16,10 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         User::create([
-            'name' => 'Super Admin',
-            'email' => 'sadmin@demo.com',
-            'role' => 'super_admin',
+            'name'     => 'Super Admin',
+            'username' => 'sadmin',
+            'email'    => 'sadmin@demo.com',
+            'role'     => 'super_admin',
             'email_verified_at' => now(),
             'password' => '12345678',
         ]);
@@ -26,7 +27,7 @@ class UserSeeder extends Seeder
         DB::transaction(function () {
             $ministry = User::create([
                 'name'              => 'Ministry User',
-                'user'              => 'ministry',
+                'username'          => 'ministry',
                 'email'             => 'ministry@demo.com',
                 'role'              => 'ministry',
                 'email_verified_at' => now(),

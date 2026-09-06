@@ -30,7 +30,7 @@
 
                 <button class="btn btn-primary" wire:click="openCreate">
                     <span>
-                        <span class="material-icons-round">add</span>
+                        <span class="material-icons-round">add_circle</span>
                         <span id="newDepartmentBtn">New Department</span>
                     </span>
                 </button>

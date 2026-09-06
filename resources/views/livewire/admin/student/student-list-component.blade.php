@@ -62,7 +62,7 @@
 
                 <a href="{{ route($routePrefix . 'student.add') }}" class="btn btn-primary">
                     <span>
-                        <span class="material-icons-round">add</span>
+                        <span class="material-icons-round">add_circle</span>
                         <span>Add Student</span>
                     </span>
                 </a>

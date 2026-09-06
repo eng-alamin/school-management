@@ -6,44 +6,6 @@ use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\PermissionRegistrar;
 
-/**
- * Seeds the FIXED, predefined permission list used by Institution-level
- * roles (guard_name = 'web').
- *
- * Module keys below are derived directly from the `// comment` groups in
- * routes/web.php (Admin group). Actions are limited to what each module's
- * routes actually support:
- *   - 'view'   => index/list/show routes exist
- *   - 'create' => add/create routes exist
- *   - 'edit'   => edit/update routes exist
- *   - 'delete' => a delete action exists for that module (toggle/remove)
- *
- * IMPORTANT — NAMING / GUARD ISOLATION:
- * This project uses a SINGLE session guard ('web') for every panel
- * (Admin, Branch, Ministry, etc.) — differentiated by the `role` column
- * on `users` + App\Http\Middleware\RoleMiddleware, NOT by separate
- * Laravel auth guards. Because every panel shares guard_name = 'web',
- * permission NAMES are the only thing that separates one panel's
- * permissions from another's.
- *
- * To make that isolation explicit and collision-proof, every permission
- * seeded here is namespaced with an 'institution.' prefix:
- *
- *      institution.{module}.{action}   e.g. institution.branch.view
- *
- * Ministry Panel permissions use a parallel 'ministry.' prefix (see
- * MinistryRolePermissionSeeder). This guarantees the two permission sets
- * can NEVER collide by name, even though they share the same guard.
- *
- * IMPORTANT:
- * - Permissions are GLOBAL (not team/institution scoped) — only `roles`
- *   and the pivot tables are team-scoped by Spatie's teams feature.
- * - This seeder is idempotent (firstOrCreate) — safe to re-run whenever
- *   new modules/routes are added.
- * - MODULE_LABELS / PARENT_GROUPS keys are UNPREFIXED module keys (used
- *   only for UI display + grouping) — the 'institution.' prefix is added
- *   only when building the actual permission NAME in run().
- */
 class InstitutionRolePermissionSeeder extends Seeder
 {
     /**
@@ -106,6 +68,11 @@ class InstitutionRolePermissionSeeder extends Seeder
 
         // Homework
         'homework'                 => ['view', 'create', 'edit'],
+
+        // Question Paper
+        'question_paper'           => ['view', 'create', 'edit', 'delete'],
+        'question_paper_authorization' => ['view'],
+        'question_paper_log'       => ['view'],
 
         // Card
         'card_id_template'         => ['view', 'create', 'edit'],
@@ -233,6 +200,9 @@ class InstitutionRolePermissionSeeder extends Seeder
         'employee_invoice'          => 'Employee Invoice',
         'parent'                     => 'Parent',
         'homework'                   => 'Homework',
+        'question_paper'             => 'Question Paper',
+        'question_paper_authorization'=> 'Question Paper Authorization',
+        'question_paper_log'         => 'Question Paper Log',
         'card_id_template'           => 'ID Card Template',
         'card_student_id'            => 'Student ID Card',
         'card_employee_id'           => 'Employee ID Card',
@@ -352,6 +322,10 @@ class InstitutionRolePermissionSeeder extends Seeder
             'label' => 'Homework',
             'children' => ['homework'],
         ],
+        'question_paper' => [
+            'label' => 'Question Paper',
+            'children' => ['question_paper', 'question_paper_authorization', 'question_paper_log'],
+        ],
         'card' => [
             'label' => 'Card',
             'children' => [
@@ -439,16 +413,11 @@ class InstitutionRolePermissionSeeder extends Seeder
 
     public function run(): void
     {
-        // Permissions are global (not team-scoped) — clear any stale team
-        // context before seeding to avoid Spatie applying an unwanted scope.
         app(PermissionRegistrar::class)->setPermissionsTeamId(null);
 
         foreach (self::PERMISSIONS as $module => $actions) {
             foreach ($actions as $action) {
                 Permission::firstOrCreate([
-                    // 'institution.' prefix keeps this permission set
-                    // collision-proof against Ministry Panel permissions,
-                    // even though both share guard_name = 'web'.
                     'name'       => self::PREFIX . "{$module}.{$action}",
                     'guard_name' => 'web',
                 ]);

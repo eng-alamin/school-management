@@ -30,7 +30,7 @@
 
                 <button class="btn btn-primary" wire:click="openCreate" @disabled(!$currentSessionId)>
                     <span>
-                        <span class="material-icons-round">add</span>
+                        <span class="material-icons-round">add_circle</span>
                         <span>New Assign</span>
                     </span>
                 </button>
