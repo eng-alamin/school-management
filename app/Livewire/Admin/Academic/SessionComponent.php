@@ -164,26 +164,24 @@ class SessionComponent extends Component
                 activity()
                     ->causedBy(auth()->user())
                     ->performedOn($record)
-                    ->tap(fn ($a) => $a->institution_id = $institutionId)
-                    ->withProperties([
-                        'icon' => 'edit_calendar',
-                        'type' => 'academic_session_updated',
-                        'name' => $record->name,
-                    ])
-                    ->log('Academic session updated');
+                    ->withProperties(['icon' => 'menu_book', 'type' => 'academic'])
+                    ->tap(function ($activity) use ($record) {
+                        $activity->institution_id = $record->institution_id;
+                        $activity->branch_id = $record->branch_id;
+                    })
+                    ->log('Session updated: ' . $record->name);
             } else {
                 $record = AcademicSession::create($data);
 
                 activity()
                     ->causedBy(auth()->user())
                     ->performedOn($record)
-                    ->tap(fn ($a) => $a->institution_id = $institutionId)
-                    ->withProperties([
-                        'icon' => 'event_available',
-                        'type' => 'academic_session_created',
-                        'name' => $record->name,
-                    ])
-                    ->log('Academic session created');
+                    ->withProperties(['icon' => 'menu_book', 'type' => 'academic'])
+                    ->tap(function ($activity) use ($record) {
+                        $activity->institution_id = $record->institution_id;
+                        $activity->branch_id = $record->branch_id;
+                    })
+                    ->log('Session created: ' . $record->name);
             }
         });
 
@@ -249,6 +247,8 @@ class SessionComponent extends Component
             ->where('branch_id', $branchId)
             ->findOrFail($this->deleteId);
 
+        $record->delete();
+
         // Server-side hard block — আগের কোডে এটা শুধু UI তে disabled attribute
         // দিয়ে আটকানো ছিল, direct Livewire call দিয়ে bypass করা সম্ভব ছিল।
         if ($record->is_current) {
@@ -258,23 +258,18 @@ class SessionComponent extends Component
             return;
         }
 
-        DB::transaction(function () use ($record, $institutionId) {
-            activity()
-                ->causedBy(auth()->user())
-                ->performedOn($record)
-                ->tap(fn ($a) => $a->institution_id = $institutionId)
-                ->withProperties([
-                    'icon' => 'event_busy',
-                    'type' => 'academic_session_deleted',
-                    'name' => $record->name,
-                ])
-                ->log('Academic session deleted');
-
-            $record->delete();
-        });
+        activity()
+            ->causedBy(auth()->user())
+            ->performedOn($record)
+            ->withProperties(['icon' => 'menu_book', 'type' => 'academic'])
+            ->tap(function ($activity) use ($record) {
+                $activity->institution_id = $record->institution_id;
+                $activity->branch_id = $record->branch_id;
+            })
+            ->log('Session deleted: ' . $record->name);
 
         $this->confirmDelete = false;
         $this->deleteId = null;
-        $this->dispatch('toast', type: 'success', message: 'Data deleted successfully!');
+        $this->dispatch('toast', type: 'success', message: 'Session deleted successfully!');
     }
 }

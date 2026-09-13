@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Leave;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\LeaveCategory;
+use App\Models\Branch;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Database\QueryException;
@@ -17,6 +18,7 @@ class CategoryComponent extends Component
 
     // ── List / Filter ──
     public string $search        = '';
+    public string $roleFilter    = 'all';
     public int    $perPage       = 10;
     public string $sortField     = 'id';
     public string $sortDirection = 'asc';
@@ -62,15 +64,23 @@ class CategoryComponent extends Component
     protected function messages(): array
     {
         return [
-            'name.unique' => 'এই নামে একটি Leave Category ইতিমধ্যে বিদ্যমান।',
-            'days.min'    => 'কমপক্ষে ১ দিন হতে হবে।',
+            'name.unique' => 'A leave category with this name already exists.',
+            'days.min'    => 'It must be at least one day.',
         ];
     }
 
-    // ──────────────────────────────────────────
-    // Lifecycle
-    // ──────────────────────────────────────────
+    private function activeBranchId(): ?int
+    {
+        return auth()->user()->branch_id
+            ?? Branch::resolveMainBranchId(institution()->id);
+    }
+
     public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingRoleFilter(): void
     {
         $this->resetPage();
     }
@@ -83,18 +93,13 @@ class CategoryComponent extends Component
         $this->resetPage();
     }
 
-    // ──────────────────────────────────────────
-    // Modal: Create
-    // ──────────────────────────────────────────
     public function openCreate(): void
     {
         $this->resetForm();
+        $this->editId = null;
         $this->showModal = true;
     }
 
-    // ──────────────────────────────────────────
-    // Modal: Edit
-    // ──────────────────────────────────────────
     public function openEdit(int $id): void
     {
         $record = LeaveCategory::findOrFail($id);
@@ -108,9 +113,6 @@ class CategoryComponent extends Component
         $this->showModal = true;
     }
 
-    // ──────────────────────────────────────────
-    // Save (Create / Update)
-    // ──────────────────────────────────────────
     public function save(): void
     {
         $this->validate();
@@ -127,41 +129,46 @@ class CategoryComponent extends Component
                 ]);
 
                 activity()
-                    ->performedOn($record)
                     ->causedBy(auth()->user())
-                    ->log('Leave category updated');
-
-                $message = 'Leave category updated successfully!';
+                    ->performedOn($record)
+                    ->withProperties(['icon' => 'exit_to_app', 'type' => 'leave'])
+                    ->tap(function ($activity) use ($record) {
+                        $activity->institution_id = $record->institution_id;
+                        $activity->branch_id = $record->branch_id;
+                    })
+                    ->log('Leave category updated: ' . $record->name);
             } else {
                 $record = LeaveCategory::create([
-                    'name' => $this->name,
-                    'role' => $this->role,
-                    'days' => $this->days,
+                    'institution_id' => institution()->id,
+                    'branch_id'      => $this->activeBranchId(),
+                    'name'           => $this->name,
+                    'role'           => $this->role,
+                    'days'           => $this->days,
                 ]);
 
                 activity()
-                    ->performedOn($record)
                     ->causedBy(auth()->user())
-                    ->log('Leave category created');
-
-                $message = 'Leave category created successfully!';
+                    ->performedOn($record)
+                    ->withProperties(['icon' => 'exit_to_app', 'type' => 'leave'])
+                    ->tap(function ($activity) use ($record) {
+                        $activity->institution_id = $record->institution_id;
+                        $activity->branch_id = $record->branch_id;
+                    })
+                    ->log('Leave category created: ' . $record->name);
             }
 
             DB::commit();
 
             $this->showModal = false;
             $this->resetForm();
-            $this->dispatch('toast', type: 'success', message: $message);
+            $this->dispatch('toast', type: 'success', message: $this->editId ? 'Leave category updated successfully!' : 'Leave category created successfully!');
         } catch (\Throwable $e) {
             DB::rollBack();
-            $this->dispatch('toast', type: 'error', message: 'কিছু একটা সমস্যা হয়েছে, আবার চেষ্টা করুন।');
+            $this->dispatch('toast', type: 'error', message: 'Something went wrong; please try again.');
             report($e);
         }
     }
 
-    // ──────────────────────────────────────────
-    // Delete
-    // ──────────────────────────────────────────
     public function confirmDeleteRecord(int $id): void
     {
         $this->deleteId      = $id;
@@ -177,9 +184,14 @@ class CategoryComponent extends Component
             $record->delete();
 
             activity()
-                ->performedOn($record)
                 ->causedBy(auth()->user())
-                ->log('Leave category deleted');
+                ->performedOn($record)
+                ->withProperties(['icon' => 'exit_to_app', 'type' => 'leave'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+                ->log('Leave category deleted: ' . $record->name);
 
             DB::commit();
 
@@ -187,8 +199,6 @@ class CategoryComponent extends Component
             $this->deleteId      = null;
             $this->dispatch('toast', type: 'success', message: 'Leave category deleted successfully!');
         } catch (QueryException $e) {
-            // leave_applications টেবিলে onDelete('restrict') থাকায়,
-            // ব্যবহৃত ক্যাটাগরি ডিলিট করতে গেলে এই এক্সসেপশন আসবে।
             DB::rollBack();
             $this->confirmDelete = false;
             $this->dispatch('toast', type: 'error', message: 'এই ক্যাটাগরিটি ইতিমধ্যে কোনো Leave Application-এ ব্যবহৃত হয়েছে, তাই ডিলিট করা যাবে না।');
@@ -200,22 +210,17 @@ class CategoryComponent extends Component
         }
     }
 
-    // ──────────────────────────────────────────
-    // Helpers
-    // ──────────────────────────────────────────
     private function resetForm(): void
     {
         $this->reset(['name', 'role', 'days', 'editId']);
         $this->resetValidation();
     }
 
-    // ──────────────────────────────────────────
-    // Render
-    // ──────────────────────────────────────────
     public function render()
     {
         $categories = LeaveCategory::query()
             ->when($this->search, fn ($q) => $q->where('name', 'like', "%{$this->search}%"))
+            ->when($this->roleFilter !== 'all', fn ($q) => $q->where('role', $this->roleFilter))
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 

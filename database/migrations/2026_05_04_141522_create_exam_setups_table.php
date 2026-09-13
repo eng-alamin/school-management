@@ -25,7 +25,7 @@ return new class extends Migration
             $table->boolean('is_result_published')->default(false);
             $table->timestamps();
 
-            $table->unique(['institution_id', 'branch_id', 'academic_class_assign_id', 'name'], 'es_ins_bra_aca_nam_unique');
+            $table->unique(['institution_id', 'branch_id', 'academic_class_assign_id', 'name'], 'exam_setups_ins_bra_aca_nam_unique');
         });
     }
 

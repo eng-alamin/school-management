@@ -90,16 +90,18 @@ class ScheduleListComponent extends Component
     // ── পুরো Exam এর সব subject-schedule একসাথে মুছে ফেলা হবে ──
     public function deleteRecord(): void
     {
-        $examSetup = ExamSetup::findOrFail($this->deleteId);
-
-        ExamSchedule::where('exam_setup_id', $examSetup->id)->delete();
+        $record = ExamSetup::findOrFail($this->deleteId);
+        ExamSchedule::where('exam_setup_id', $record->id)->delete();
 
         activity()
             ->causedBy(auth()->user())
-            ->performedOn($examSetup)
-            ->withProperties(['icon' => 'event_note', 'type' => 'exam_schedule'])
-            ->tap(fn($a) => $a->institution_id = $examSetup->institution_id)
-            ->log('Exam schedule deleted for: ' . $examSetup->name);
+            ->performedOn($record)
+            ->withProperties(['icon' => 'quiz', 'type' => 'exam'])
+            ->tap(function ($activity) use ($record) {
+                $activity->institution_id = $record->institution_id;
+                $activity->branch_id = $record->branch_id;
+            })
+            ->log('Exam schedule deleted for: ' . $record->name);
 
         $this->confirmDelete = false;
         $this->deleteId      = null;

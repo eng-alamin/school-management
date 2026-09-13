@@ -23,6 +23,10 @@ return new class extends Migration
                 $table->text('response')->nullable();           // provider থেকে যা response আসে (debug এর জন্য)
                 $table->decimal('cost', 8, 2)->default(0);       // balance deduction-এর জন্য
                 $table->timestamps();
+
+                $table->index(['institution_id', 'branch_id', 'type', 'status', 'created_at'], 
+                    'sms_logs_ins_bra_typ_sta_cre_idx'
+                );
             });
     }
 

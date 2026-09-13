@@ -116,7 +116,7 @@ class SaleAddComponent extends Component
                 ->find($value);
 
             if ($product) {
-                $this->items[$index]['unit_price'] = number_format($product->sales_price, 0);
+                $this->items[$index]['unit_price'] = $product->sales_price;
             }
         }
 
@@ -250,9 +250,19 @@ class SaleAddComponent extends Component
                     'total_price'    => $item['total_price'],
                 ]);
             }
+
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($sale)
+                ->withProperties(['icon' => 'inventory_2', 'type' => 'inventory'])
+                ->tap(function ($activity) use ($sale) {
+                    $activity->institution_id = $sale->institution_id;
+                    $activity->branch_id = $sale->branch_id;
+                })
+                ->log('Inventory sale created: ' . $sale->bill_no);
         });
 
-        session()->flash('toast_success', 'Data created successfully!');
+        session()->flash('toast_success', 'Sale created successfully!');
         $this->redirectRoute('admin.inventory.sale.list', navigate: true);
     }
 

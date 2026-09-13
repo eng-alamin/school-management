@@ -380,12 +380,18 @@ class AddTemplateComponent extends Component
                 }
             }
 
-            $template = CertificateTemplate::create($data);
+            $record = CertificateTemplate::create($data);
 
             activity()
-                ->performedOn($template)
-                ->withProperties(['certificate_name' => $template->certificate_name])
-                ->log('Certificate template created: ' . $template->certificate_name);
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'workspace_premium', 'type' => 'certificate'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+                ->log('Certificate template created: ' . $record->certificate_name);
+
         });
 
         $this->dispatch('toast', type: 'success', message: 'Certificate template created successfully!');

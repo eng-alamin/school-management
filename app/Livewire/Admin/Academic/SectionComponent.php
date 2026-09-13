@@ -99,11 +99,34 @@ class SectionComponent extends Component
         ];
 
         if ($this->editId) {
-            AcademicSection::findOrFail($this->editId)->update($data);
-            $this->dispatch('toast', type: 'success', message: 'Data updated successfully!');
+            $record = AcademicSection::findOrFail($this->editId);
+            $record->update($data);
+
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'menu_book', 'type' => 'academic'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+                ->log('Section updated: ' . $record->name);
+
+            $this->dispatch('toast', type: 'success', message: 'Section updated successfully!');
         } else {
-            AcademicSection::create($data);
-            $this->dispatch('toast', type: 'success', message: 'Data created successfully!');
+            $record = AcademicSection::create($data);
+
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'menu_book', 'type' => 'academic'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+                ->log('Section created: ' . $record->name);
+
+            $this->dispatch('toast', type: 'success', message: 'Section created successfully!');
         }
 
         $this->showModal = false;
@@ -118,10 +141,22 @@ class SectionComponent extends Component
 
     public function deleteRecord(): void
     {
-        AcademicSection::findOrFail($this->deleteId)->delete();
+        $record = AcademicSection::findOrFail($this->deleteId);
+        $record->delete();
+
+        activity()
+            ->causedBy(auth()->user())
+            ->performedOn($record)
+            ->withProperties(['icon' => 'menu_book', 'type' => 'academic'])
+            ->tap(function ($activity) use ($record) {
+                $activity->institution_id = $record->institution_id;
+                $activity->branch_id = $record->branch_id;
+            })
+            ->log('Section deleted: ' . $record->name);
+
         $this->confirmDelete = false;
         $this->deleteId      = null;
-        $this->dispatch('toast', type: 'success', message: 'Data deleted successfully!');
+        $this->dispatch('toast', type: 'success', message: 'Section deleted successfully!');
     }
 
     private function resetForm(): void

@@ -36,7 +36,9 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
  
-            $table->index(['institution_id', 'employee_id', 'status'], 'index_salary_advances_lookup');
+            $table->index(['institution_id', 'branch_id', 'employee_id', 'status'],
+                'salary_advances_ins_bra_emp_sta_idx'
+            );
         });
     }
 

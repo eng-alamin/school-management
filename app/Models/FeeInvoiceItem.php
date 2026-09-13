@@ -10,9 +10,9 @@ class FeeInvoiceItem extends Model
 {
     use BelongsToInstitution;
     use BelongsToBranch;
-    
+
     protected $guarded = [];
-    
+
     protected $casts = [
         'base_amount'     => 'decimal:2',
         'fine_amount'     => 'decimal:2',
@@ -30,24 +30,15 @@ class FeeInvoiceItem extends Model
         return $this->belongsTo(FeeInvoice::class, 'fee_invoice_id');
     }
 
-    // Remove
-    // public function itemPayments()
-    // {
-    //     return $this->hasMany(FeePayment::class, 'fee_invoice_item_id');
-    // }
+    public function allocations()
+    {
+        return $this->hasMany(FeePaymentAllocation::class, 'fee_invoice_item_id');
+    }
 
-    // Total paid for this specific item
+    // Total paid for this specific item, from fee_payment_allocations
     public function getTotalPaidAttribute(): float
     {
-        throw new \RuntimeException(
-            'FeeInvoiceItem::total_paid is not implemented: fee_payments has '
-            . 'no per-item column. Use FeeInvoice::payments() for invoice-level '
-            . 'paid totals, or add a fee_invoice_item_id column to fee_payments '
-            . 'first if per-item tracking is actually required.'
-        );
-        
-        // remove
-        // return (float) $this->itemPayments()->sum('paid_amount');
+        return (float) $this->allocations()->sum('allocated_amount');
     }
 
     // Remaining balance

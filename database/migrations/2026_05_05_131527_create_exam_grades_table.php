@@ -22,7 +22,7 @@ return new class extends Migration
             $table->text('remarks')->nullable();
             $table->timestamps();
 
-            $table->unique(['institution_id', 'name'], 'exam_grades_institution_name_unique');
+            $table->unique(['institution_id', 'branch_id', 'name'], 'exam_grades_ins_bra_name_unique');
         });
     }
 

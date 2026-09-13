@@ -24,7 +24,7 @@
                 <div class="col-6 col-md-3">
                     <div class="summary-card summary-late">
                         <span class="material-icons-round">payments</span>
-                        <div class="count">৳{{ number_format($summary['total_stock_value'], 2) }}</div>
+                        <div class="count">৳{{ number_format($summary['total_stock_value'], 0) }}</div>
                         <div class="label">Stock Value</div>
                     </div>
                 </div>
@@ -46,6 +46,12 @@
 
             {{-- Toolbar / Filters --}}
             <div class="card-toolbar flex-wrap mb-2">
+                
+                <div class="mb-2" style="position:relative;display:inline-flex;align-items:center;width:100%">
+                    <span class="material-icons-round" style="position:absolute;left:10px;font-size:16px;color:var(--muted);pointer-events:none">search</span>
+                    <input type="text" wire:model.live.debounce.400ms="search" placeholder="Product name / code..." class="form-control" style="padding-left:32px;">
+                </div>
+
                 <div class="col-md-3">
                     <div class="input-group input-group-outline" wire:ignore>
                         <label class="form-label">Category</label>
@@ -55,14 +61,6 @@
                                 <option value="{{ $category->id }}">{{ $category->name }}</option>
                             @endforeach
                         </select>
-                    </div>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label">Search</label>
-                    <div style="position:relative;display:inline-flex;align-items:center;width:100%">
-                        <span class="material-icons-round" style="position:absolute;left:10px;font-size:16px;color:var(--muted);pointer-events:none">search</span>
-                        <input type="text" wire:model.live.debounce.400ms="search" placeholder="Product name / code..." class="form-control form-control-sm" style="padding-left:32px;">
                     </div>
                 </div>
 

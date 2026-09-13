@@ -353,17 +353,26 @@
         <div class="form-footer tpl-wizard-footer">
             @if($step > 1)
                 <button class="btn btn-secondary" type="button" wire:click="prevStep">
-                    <span class="material-icons-round" style="font-size:16px">arrow_back</span> Back
+                    <span>
+                        <span class="material-icons-round">arrow_back</span>
+                        <span>Back</span>
+                    </span>
                 </button>
             @else
                 <button class="btn btn-secondary" type="button" wire:click="resetForm">
-                    <span class="material-icons-round" style="font-size:16px">refresh</span> Reset
+                    <span>
+                        <span class="material-icons-round">restart_alt</span>
+                        <span>Reset</span>
+                    </span>
                 </button>
             @endif
 
             @if($step < $totalSteps)
                 <button class="btn btn-primary" type="button" wire:click="nextStep">
-                    Next <span class="material-icons-round" style="font-size:16px">arrow_forward</span>
+                    <span>
+                        <span>Next</span>
+                        <span class="material-icons-round">arrow_forward</span>
+                    </span>
                 </button>
             @else
                 <button class="btn btn-primary" type="button"

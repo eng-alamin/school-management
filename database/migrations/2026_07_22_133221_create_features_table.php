@@ -19,7 +19,7 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->timestamps();
 
-            $table->unique(['institution_id', 'feature_key']);
+            $table->unique(['institution_id', 'branch_id', 'feature_key']);
         });
     }
 

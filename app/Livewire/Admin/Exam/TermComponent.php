@@ -75,11 +75,34 @@ class TermComponent extends Component
         ];
 
         if ($this->editId) {
-            ExamTerm::findOrFail($this->editId)->update($data);
-            session()->flash('success', 'Data updated successfully!');
+            $record = ExamTerm::findOrFail($this->editId);
+            $record->update($data);
+
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'quiz', 'type' => 'exam'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+            ->log('Term updated: ' . $record->name);
+
+            $this->dispatch('toast', type: 'success', message: 'Term updated successfully!');
         } else {
-            ExamTerm::create($data);
-            session()->flash('success', 'Data created successfully!');
+            $record = ExamTerm::create($data);
+
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'quiz', 'type' => 'exam'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+            ->log('Term created: ' . $record->name);
+
+            $this->dispatch('toast', type: 'success', message: 'Term created successfully!');
         }
 
         $this->showModal = false;
@@ -117,8 +140,19 @@ class TermComponent extends Component
     {
         $record = ExamTerm::findOrFail($this->deleteId);
         $record->delete();
+
+        activity()
+            ->causedBy(auth()->user())
+            ->performedOn($record)
+            ->withProperties(['icon' => 'quiz', 'type' => 'exam'])
+            ->tap(function ($activity) use ($record) {
+                $activity->institution_id = $record->institution_id;
+                $activity->branch_id = $record->branch_id;
+            })
+            ->log('Term deleted: ' . $record->name);
+
         $this->confirmDelete = false;
         $this->deleteId = null;
-        session()->flash('success', 'Data deleted successfully!');
+        $this->dispatch('toast', type: 'success', message: 'Term deleted successfully!');
     }
 }

@@ -45,7 +45,7 @@ return new class extends Migration
             $table->index(['institution_id', 'exam_id', 'date'], 'attendances_institution_exam_date_idx');
 
             $table->unique(
-                ['institution_id', 'attendable_type', 'attendable_id', 'date', 'type'], 'attendances_person_date_type_unique'
+                ['institution_id', 'branch_id', 'attendable_type', 'attendable_id', 'date', 'type'], 'attendances_person_date_type_unique'
             );
         });
     }

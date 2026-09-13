@@ -43,11 +43,12 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->unique(
-                ['employee_id', 'month', 'deleted_at'],
-                'employee_salary_month_unique'
+            $table->unique(['institution_id', 'branch_id', 'employee_id', 'month', 'deleted_at'], 
+                'salary_payments_ins_bra_emp_mon_del_unique'
             );
-        });
+
+            $table->index(['institution_id', 'branch_id', 'status'], 'salary_payments_ins_bra_sta_idx');
+    });
     }
 
     /**

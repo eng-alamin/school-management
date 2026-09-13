@@ -278,23 +278,21 @@ class EmployeeAddComponent extends Component
                     'account_no'        => $this->account_no,
                 ]);
 
+                activity()
+                    ->causedBy(auth()->user())
+                    ->performedOn($employee)
+                    ->withProperties(['icon' => 'badge', 'type' => 'employee'])
+                    ->tap(function ($activity) use ($employee) {
+                        $activity->institution_id = $employee->institution_id;
+                        $activity->branch_id = $employee->branch_id;
+                    })
+                    ->log('Employee created: ' . $employee->name);
+
                 return [$user, $employee];
             });
 
-            activity()
-                ->performedOn($employee)
-                ->causedBy(auth()->user())
-                ->withProperties([
-                    'institution_id' => $institutionId,
-                    'branch_id' => $branchId,
-                    'icon' => 'person_add',
-                    'type' => 'employee_created',
-                ])
-                ->log('Employee created: ' . $employee->name);
-
-            $this->resetForm();
-
-            $this->dispatch('toast', type: 'success', message: 'Employee created successfully!');
+            session()->flash('toast_success', 'Employee created successfully!');
+            $this->redirectRoute('admin.employee.list', navigate: true);
 
         } catch (\Throwable $e) {
 
@@ -312,8 +310,8 @@ class EmployeeAddComponent extends Component
         $institutionId = auth()->user()->institution_id;
 
         return view('livewire.admin.employee.employee-add-component', [
-            'departments'  => EmployeeDepartment::where('institution_id', $institutionId)->get(),
-            'designations' => EmployeeDesignation::where('institution_id', $institutionId)->get(),
+            'departments'  => EmployeeDepartment::get(),
+            'designations' => EmployeeDesignation::get(),
         ])->layout('layouts.admin.app', [
             'title' => 'Create Employee | ' . institution()->name,
         ]);

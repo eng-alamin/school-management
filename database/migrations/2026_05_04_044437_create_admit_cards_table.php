@@ -44,8 +44,8 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->unique(['institution_id', 'student_id', 'deleted_at'], 'admit_cards_institution_student_unique');
-            $table->index(['institution_id', 'status'], 'admit_cards_institution_status_idx');
+            $table->unique(['institution_id', 'branch_id', 'student_id', 'deleted_at'], 'admit_cards_inst_bra_stu_del_unique');
+            $table->index(['institution_id', 'branch_id', 'status'], 'admit_cards_inst_bra_sta_idx');
         });
     }
 

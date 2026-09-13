@@ -44,7 +44,8 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->unique(['institution_id', 'certificate_name', 'deleted_at'], 'certificate_templates_institution_name_unique');
+            $table->unique(['institution_id', 'branch_id', 'certificate_name', 'deleted_at'], 
+                'certificate_templates_inst_bra_name_unique');
         });
     }
 

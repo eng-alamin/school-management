@@ -71,6 +71,16 @@ class TrashComponent extends Component
             $message->update(['is_trashed_by_sender' => false]);
         }
 
+        activity()
+            ->causedBy(auth()->user())
+            ->performedOn($message)
+            ->withProperties(['icon' => 'mail', 'type' => 'mailbox'])
+            ->tap(function ($activity) use ($message) {
+                $activity->institution_id = $message->institution_id;
+                $activity->branch_id = $message->branch_id;
+            })
+            ->log('Message restored: ' . $message->subject);
+
         if ($this->viewingId === $id) {
             $this->backToList();
         }
@@ -88,6 +98,16 @@ class TrashComponent extends Component
         } else {
             $message->update(['is_deleted_by_sender' => true]);
         }
+
+        activity()
+            ->causedBy(auth()->user())
+            ->performedOn($message)
+            ->withProperties(['icon' => 'mail', 'type' => 'mailbox'])
+            ->tap(function ($activity) use ($message) {
+                $activity->institution_id = $message->institution_id;
+                $activity->branch_id = $message->branch_id;
+            })
+            ->log('Message permanently deleted: ' . $message->subject);
 
         if ($this->viewingId === $id) {
             $this->backToList();
@@ -108,6 +128,16 @@ class TrashComponent extends Component
                 $message->update(['is_deleted_by_sender' => true]);
             }
         }
+
+        activity()
+            ->causedBy(auth()->user())
+            ->performedOn($message)
+            ->withProperties(['icon' => 'mail', 'type' => 'mailbox'])
+            ->tap(function ($activity) use ($message) {
+                $activity->institution_id = $message->institution_id;
+                $activity->branch_id = $message->branch_id;
+            })
+            ->log('Message trash emptied by ' . auth()->user()->name);
 
         $this->confirmEmpty = false;
         $this->dispatch('notify', type: 'error', msg: 'Trash emptied.');

@@ -109,11 +109,31 @@ class DepartmentComponent extends Component
                 'name'      => $this->name,
             ]);
 
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'badge', 'type' => 'employee'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+                ->log('Department updated: ' . $record->name);
+
             $this->dispatch('toast', type: 'success', message: 'Department updated successfully!');
         } else {
-            EmployeeDepartment::create([
+            $record = EmployeeDepartment::create([
                 'name'      => $this->name,
             ]);
+
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'badge', 'type' => 'employee'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+                ->log('Department created: ' . $record->name);
 
             $this->dispatch('toast', type: 'success', message: 'Department created successfully!');
         }
@@ -130,22 +150,21 @@ class DepartmentComponent extends Component
 
     public function deleteRecord(): void
     {
-        $department = EmployeeDepartment::where('institution_id', auth()->user()->institution_id)
-            ->findOrFail($this->deleteId);
-
-        activity()
-            ->performedOn($department)
-            ->withProperties([
-                'institution_id' => $department->institution_id,
-                'icon' => 'delete',
-                'type' => 'employee_department',
-            ])
-            ->log('Department deleted: ' . $department->name);
-
-        $department->delete();
-
+        $record = EmployeeDepartment::where('institution_id', auth()->user()->institution_id)->findOrFail($this->deleteId);
+        $record->delete();
         $this->confirmDelete = false;
         $this->deleteId      = null;
+
+        activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'badge', 'type' => 'employee'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+                ->log('Department deleted: ' . $record->name);
+
         $this->dispatch('toast', type: 'success', message: 'Department deleted successfully!');
     }
 

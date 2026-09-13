@@ -32,16 +32,7 @@ class QuestionPaperBuilderComponent extends Component
     public string $timeLabel = '';
     public string $language = 'bn';
 
-    // ---- working question list (array of assoc arrays) ----
-    // Each item: [id, type, family, section_header, question_text, stimulus_text,
-    //             marks, figure (UploadedFile|null), figure_path (existing),
-    //             options[], matches[], parts[]]
     public array $questions = [];
-
-    // Server-side type registry — same source of truth used for validation.
-    // Kept protected (not public) so it never rides along in every Livewire
-    // request payload; the model constant is referenced directly wherever
-    // it's needed instead of syncing a copy of it as component state.
     protected array $typeDefs = QuestionPaperQuestion::TYPE_DEFS;
 
     public function mount(int $examId, int $subjectId, ?int $paperId = null): void
@@ -56,14 +47,6 @@ class QuestionPaperBuilderComponent extends Component
                 ->with(['questions.options', 'questions.matches', 'questions.parts'])
                 ->findOrFail($paperId);
 
-            // The loaded paper row is the source of truth for which
-            // exam/subject it belongs to — NOT the URL's route parameters.
-            // Trusting the URL here would let a hand-edited link (or a
-            // stale bookmark from before the paper was re-filed) silently
-            // rewrite exam_id/subject_id on save(), corrupting existing
-            // data. The URL params are still accepted (Livewire route
-            // binding requires them) but are only used as a display fallback
-            // before the paper loads — never to build the save payload.
             $this->paperId = $paper->id;
             $this->examId = $paper->exam_id;
             $this->subjectId = $paper->subject_id;
@@ -113,10 +96,6 @@ class QuestionPaperBuilderComponent extends Component
                 ->where('branch_id', $branchId)
                 ->find($subjectId);
 
-            // Without this guard, a bad/stale/cross-institution examId or
-            // subjectId in the URL silently produced empty labels (from
-            // null-safe fallbacks) and only failed later, ungracefully,
-            // with a raw FK-constraint database exception on save().
             abort_unless($examSetup && $academicSubject, 404, 'Exam or subject not found.');
 
             $this->instituteName = institution()->name;
@@ -221,13 +200,6 @@ class QuestionPaperBuilderComponent extends Component
         $this->questions[$qIndex]['matches'][] = ['left' => '', 'right' => ''];
     }
 
-    /**
-     * Clears a question's figure (whether it's a freshly uploaded/drawn temp
-     * file that hasn't been saved yet, or an already-persisted figure_path).
-     * Persisted files are deleted from disk immediately since the user has
-     * explicitly asked for them to go; unsaved temp uploads are simply
-     * dropped by Livewire's own temp-file GC.
-     */
     public function removeFigure(int $qIndex): void
     {
         abort_if($this->isLocked, 409);
@@ -290,12 +262,6 @@ class QuestionPaperBuilderComponent extends Component
             'questions.min' => 'At least one question is required before saving.',
         ]);
 
-        // Defense-in-depth: re-derive each question's `family` from the
-        // canonical TYPE_DEFS registry by its `type`, rather than trusting
-        // whatever `family` string is currently sitting in the client-synced
-        // $this->questions array. `family` controls which child table
-        // (options/matches/parts) gets written below, so it must come from
-        // the server-side source of truth, not client state.
         foreach ($this->questions as $index => $block) {
             $def = $this->typeDefs[$block['type']] ?? null;
             abort_unless($def, 422, "Unknown question type: {$block['type']}");
@@ -327,14 +293,8 @@ class QuestionPaperBuilderComponent extends Component
 
             $this->paperId = $paper->id;
 
-            // Snapshot which figure files currently exist on disk *before*
-            // we wipe the question rows, so we can tell afterwards which of
-            // them are still referenced (untouched) vs. genuinely orphaned.
             $oldFigurePaths = $paper->questions()->pluck('figure_path')->filter()->values()->all();
 
-            // Rebuild questions wholesale — simplest correct approach for a
-            // reorderable builder; the paper isn't "live" until locked, so
-            // there's no external reference to preserve mid-edit.
             $paper->questions()->each(function (QuestionPaperQuestion $q) {
                 $q->delete(); // cascades options/matches/parts via FK
             });
@@ -396,11 +356,6 @@ class QuestionPaperBuilderComponent extends Component
                 }
             }
 
-            // Any figure that existed before this save but isn't referenced
-            // by the rebuilt question set anymore (question removed, or its
-            // figure was replaced/removed) is now a genuine orphan — clean
-            // it up. Figures that are simply carried over untouched are
-            // never deleted.
             foreach (array_diff($oldFigurePaths, $keepFigurePaths) as $orphanPath) {
                 Storage::disk('public')->delete($orphanPath);
             }
@@ -414,19 +369,15 @@ class QuestionPaperBuilderComponent extends Component
             }
 
             activity()
-                ->tap(fn ($a) => $a->institution_id = $institutionId)
-                ->causedBy(Auth::id())
+                ->causedBy(auth()->user())
                 ->performedOn($paper)
-                ->withProperties([
-                    'icon' => 'description',
-                    'type' => 'question_paper_saved',
-                    'question_count' => count($this->questions),
-                ])
-                ->log('Question paper saved');
-
-            // Sync in-memory builder state with what actually landed on
-            // disk/DB: clear the transient UploadedFile (already stored)
-            // and point figure_path at the final resolved path.
+                ->withProperties(['icon' => 'description', 'type' => 'question'])
+                ->tap(function ($activity) use ($paper) {
+                    $activity->institution_id = $paper->institution_id;
+                    $activity->branch_id = $paper->branch_id;
+                })
+                ->log('Question paper saved: ' . count($this->questions));
+ 
             foreach ($resolvedFigurePaths as $order => $path) {
                 if (isset($this->questions[$order])) {
                     $this->questions[$order]['figure'] = null;

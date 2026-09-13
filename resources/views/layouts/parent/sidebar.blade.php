@@ -34,21 +34,21 @@
     <ul>
       <li class="nav1-item">
         <a href="{{route('parent.dashboard') }}" class="nav1-link {{ str_contains(request()->url(), 'parent/dashboard') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">space_dashboard</span>
+          <span class="material-icons-round">space_dashboard</span>
           <span class="nav-label" id="nav-dashboards">Dashboard</span>
         </a>
       </li>
 
       <li class="nav1-item">
         <a href="{{route('parent.mailbox.inbox') }}" class="nav1-link {{ str_contains(request()->url(), 'mailbox/') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">chat</span>
+          <span class="material-icons-round">chat</span>
           <span class="nav-label" id="nav-mailbox">Mailbox</span>
         </a>
       </li>
 
       <li class="nav1-item">
         <a href="{{route('parent.notices') }}" class="nav1-link {{ str_contains(request()->url(), 'notices') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">chat</span>
+          <span class="material-icons-round">chat</span>
           <span class="nav-label" id="nav-notices">Notices</span>
         </a>
       </li>

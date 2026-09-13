@@ -127,7 +127,7 @@ class PurchaseAddComponent extends Component
                 ->find($value);
 
             if ($product) {
-                $this->items[$index]['unit_price'] = number_format($product->purchase_price, 0);
+                $this->items[$index]['unit_price'] = $product->purchase_price;
             }
         }
 
@@ -181,9 +181,19 @@ class PurchaseAddComponent extends Component
                     'total_price'    => $item['total_price'],
                 ]);
             }
+
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($purchase)
+                ->withProperties(['icon' => 'inventory_2', 'type' => 'inventory'])
+                ->tap(function ($activity) use ($purchase) {
+                    $activity->institution_id = $purchase->institution_id;
+                    $activity->branch_id = $purchase->branch_id;
+                })
+                ->log('Inventory purchase created: ' . $purchase->bill_no);
         });
 
-        session()->flash('toast_success', 'Data created successfully!');
+        session()->flash('toast_success', 'Purchase created successfully!');
         $this->redirectRoute('admin.inventory.purchase.list', navigate: true);
     }
 

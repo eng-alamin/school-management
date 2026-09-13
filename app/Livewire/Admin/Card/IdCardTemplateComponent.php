@@ -144,20 +144,36 @@ class IdCardTemplateComponent extends Component
             if ($this->editId) {
                 $record = IdCardTemplate::findOrFail($this->editId);
                 $record->update($data);
-                activity()->performedOn($record)->log('ID card template updated');
-                $message = 'Template updated successfully!';
+
+                activity()
+                    ->causedBy(auth()->user())
+                    ->performedOn($record)
+                    ->withProperties(['icon' => 'credit_card', 'type' => 'card'])
+                    ->tap(function ($activity) use ($record) {
+                        $activity->institution_id = $record->institution_id;
+                        $activity->branch_id = $record->branch_id;
+                    })
+                    ->log('ID Card Template updated: ' . $record->name);
             } else {
                 $record = IdCardTemplate::create($data);
-                activity()->performedOn($record)->log('ID card template created');
-                $message = 'Template created successfully!';
+
+                activity()
+                    ->causedBy(auth()->user())
+                    ->performedOn($record)
+                    ->withProperties(['icon' => 'credit_card', 'type' => 'card'])
+                    ->tap(function ($activity) use ($record) {
+                        $activity->institution_id = $record->institution_id;
+                        $activity->branch_id = $record->branch_id;
+                    })
+                    ->log('ID Card Template created: ' . $record->name);
             }
 
             DB::commit();
 
-            // Only delete the old logo AFTER DB commit succeeds, and only if a new one replaced it.
             if ($newLogoPath && $oldLogoPath) {
                 Storage::disk('public')->delete($oldLogoPath);
             }
+
         } catch (Throwable $e) {
             DB::rollBack();
 
@@ -172,8 +188,7 @@ class IdCardTemplateComponent extends Component
 
         $this->showModal = false;
         $this->resetForm();
-
-        $this->dispatch('toast', type: 'success', message: $message);
+        $this->dispatch('toast', type: 'success', message: $this->editId ? 'ID Card Template updated successfully!' : 'ID Card Template created successfully!');
     }
 
     public function confirmDeleteRecord(int $id): void
@@ -189,13 +204,24 @@ class IdCardTemplateComponent extends Component
 
         DB::beginTransaction();
         try {
-            activity()->performedOn($record)->log('ID card template deleted');
             $record->delete();
-            DB::commit();
-
+        
             if ($logoPath) {
                 Storage::disk('public')->delete($logoPath);
             }
+
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'credit_card', 'type' => 'card'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+                ->log('ID Card Template deleted: ' . $record->name);
+
+            DB::commit();
+
         } catch (Throwable $e) {
             DB::rollBack();
             $this->confirmDelete = false;
@@ -206,7 +232,6 @@ class IdCardTemplateComponent extends Component
 
         $this->confirmDelete = false;
         $this->deleteId = null;
-
         $this->dispatch('toast', type: 'success', message: 'Template deleted successfully!');
     }
 
@@ -216,7 +241,17 @@ class IdCardTemplateComponent extends Component
         try {
             $record = IdCardTemplate::findOrFail($id);
             $record->update(['is_active' => !$record->is_active]);
-            activity()->performedOn($record)->log('ID card template status toggled');
+            
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'credit_card', 'type' => 'card'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+                ->log('ID Card Template status toggled: ' . $record->name);
+
             DB::commit();
         } catch (Throwable $e) {
             DB::rollBack();

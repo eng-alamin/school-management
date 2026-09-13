@@ -40,6 +40,7 @@ class LeaveReportComponent extends Component
 
     // Role → Model class map (ApplicationComponent এর সাথে সামঞ্জস্যপূর্ণ)
     protected array $roleModelMap = [
+        'admin'     => User::class,
         'teacher'    => User::class,
         'accountant' => User::class,
         'staff'      => User::class,
@@ -58,7 +59,14 @@ class LeaveReportComponent extends Component
             ?? Branch::resolveMainBranchId(institution()->id);
     }
 
-    public function updatingRole(): void            { $this->resetPage(); }
+    public function updatingRole(): void
+    {
+        // Role পাল্টালে category list-ও পাল্টে যায়, তাই আগের category filter
+        // ভুলভাবে আটকে থাকা এড়াতে "All Categories"-এ রিসেট করা হলো।
+        $this->leaveCategoryId = 'all';
+        $this->resetPage();
+    }
+
     public function updatingLeaveCategoryId(): void { $this->resetPage(); }
     public function updatingDateFrom(): void        { $this->resetPage(); }
     public function updatingDateTo(): void          { $this->resetPage(); }
@@ -139,7 +147,12 @@ class LeaveReportComponent extends Component
             ->groupBy('status')
             ->pluck('total', 'status');
 
+        // Role অনুযায়ী category filter — 'all' হলে institution + branch-এর সব category,
+        // নাহলে শুধু সিলেক্ট করা role-এর category। branch_id-ও যোগ করা হলো, নাহলে
+        // অন্য branch-এর category এই dropdown-এ দেখা যেত।
         $categories = LeaveCategory::where('institution_id', institution()->id)
+            ->where('branch_id', $this->activeBranchId())
+            ->when($this->role !== 'all', fn ($q) => $q->where('role', $this->role))
             ->orderBy('name')
             ->get(['id', 'name']);
 

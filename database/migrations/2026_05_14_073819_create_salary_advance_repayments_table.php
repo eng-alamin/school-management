@@ -29,7 +29,9 @@ return new class extends Migration
  
             // One advance can only be deducted once per payment (prevents double-deduction
             // if the same month's payment is somehow processed twice).
-            $table->unique(['salary_advance_id', 'salary_payment_id'], 'unique_advance_repayment_per_payment');
+            $table->unique(['institution_id', 'branch_id', 'salary_advance_id', 'salary_payment_id'], 
+                'salary_advance_repayments_adv_pay_unique'
+            );
         });
     }
 

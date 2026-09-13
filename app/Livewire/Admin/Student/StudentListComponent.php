@@ -7,6 +7,7 @@ use Livewire\WithPagination;
 use App\Models\Student;
 use App\Models\AcademicClass;
 use App\Models\AcademicClassAssign;
+use Illuminate\Support\Facades\DB;
 
 class StudentListComponent extends Component
 {
@@ -35,6 +36,21 @@ class StudentListComponent extends Component
 
     protected array $statusOptions = ['active', 'inactive', 'graduated', 'transferred', 'dropped_out'];
 
+    // ✅ Sortable field allowlist — direct $sortField orderBy() e pass kora
+    // theke bipodjonok, sob somoy ei list er against validate korte hobe.
+    private const SORTABLE_FIELDS = [
+        'name',
+        'student_id',
+        'registration_no',
+        'roll_no',
+        'admission_date',
+        'created_at',
+        'status',
+    ];
+
+    // ✅ perPage er jonno hard cap — DoS/heavy-query protection
+    private const MAX_PER_PAGE = 100;
+
     public string $routePrefix = '';
 
     public function mount(): void
@@ -60,6 +76,13 @@ class StudentListComponent extends Component
         $this->resetPage();
     }
 
+    public function updatedPerPage($value): void
+    {
+        // ✅ Unvalidated perPage always capped
+        $this->perPage = min((int) $value ?: 10, self::MAX_PER_PAGE);
+        $this->resetPage();
+    }
+
     // ── Class filter change → sections reload, page reset ──
     public function updatedFilterClass($value): void
     {
@@ -71,7 +94,10 @@ class StudentListComponent extends Component
             return;
         }
 
+        $institutionId = auth()->user()->institution_id;
+
         $assigns = AcademicClassAssign::with('section')
+            ->where('institution_id', $institutionId)
             ->where('class_id', $value)
             ->whereNotNull('section_id')
             ->get();
@@ -92,6 +118,11 @@ class StudentListComponent extends Component
 
     public function sortBy($field): void
     {
+        // ✅ Allowlist validation — jekono raw field name orderBy() e jete parbe na
+        if (!in_array($field, self::SORTABLE_FIELDS, true)) {
+            return;
+        }
+
         if ($this->sortField === $field) {
             $this->sortDir = $this->sortDir === 'asc' ? 'desc' : 'asc';
         } else {
@@ -110,16 +141,53 @@ class StudentListComponent extends Component
 
     public function deleteRecord(): void
     {
+        $institutionId = auth()->user()->institution_id;
+
+        // abort_unless(auth()->user()->can('institution.students.delete'), 403);
+
+        DB::beginTransaction();
+
         try {
-            $student = Student::findOrFail($this->deleteId);
-            $student->user()->delete();
+            // ✅ institution_id scoping — IDOR protection
+            $student = Student::where('institution_id', $institutionId)
+                ->findOrFail($this->deleteId);
+
+            // ✅ Activity log delete() এর আগে (project standard)
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($student)
+                ->withProperties(['icon' => 'school', 'type' => 'student'])
+                ->tap(function ($activity) use ($student) {
+                    $activity->institution_id = $student->institution_id;
+                    $activity->branch_id = $student->branch_id;
+                })
+                ->log('Student deleted: ' . $student->name);
+
+            $user = $student->user;
+
+            // ✅ soft-deleted username/email future re-use er jonno suffix
+            if ($user) {
+                $timestampSuffix = '_deleted_' . now()->timestamp;
+
+                $user->update([
+                    'username' => $user->username . $timestampSuffix,
+                    'email'    => $user->email ? $user->email . $timestampSuffix : $user->email,
+                ]);
+
+                $user->delete();
+            }
+
+            $student->delete();
+
+            DB::commit();
 
             $this->confirmDelete = false;
             $this->deleteId      = null;
-
             $this->dispatch('toast', type: 'success', message: 'Student deleted successfully!');
-        } catch (\Exception $e) {
-            $this->dispatch('toast', type: 'error', message: 'Delete failed: ' . $e->getMessage());
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            report($e);
+            $this->dispatch('toast', type: 'error', message: 'Something went wrong while deleting the student.');
         }
     }
 
@@ -129,7 +197,13 @@ class StudentListComponent extends Component
      */
     public function openStatusModal(int $id): void
     {
-        $student = Student::findOrFail($id);
+        // abort_unless(auth()->user()->can('institution.students.edit'), 403);
+
+        $institutionId = auth()->user()->institution_id;
+
+        // ✅ IDOR fix: institution_id scoping
+        $student = Student::where('institution_id', $institutionId)
+            ->findOrFail($id);
 
         $this->statusId        = $student->id;
         $this->newStatus       = $student->status;
@@ -145,39 +219,64 @@ class StudentListComponent extends Component
 
     public function updateStatus(): void
     {
+        // abort_unless(auth()->user()->can('institution.students.edit'), 403);
+
         $this->validate([
             'statusId'  => 'required|integer|exists:students,id',
             'newStatus' => 'required|string|in:' . implode(',', $this->statusOptions),
         ]);
 
-        $student   = Student::findOrFail($this->statusId);
+        $institutionId = auth()->user()->institution_id;
+
+        // ✅ IDOR fix: institution_id scoping
+        $student = Student::where('institution_id', $institutionId)
+            ->findOrFail($this->statusId);
+
         $oldStatus = $student->status;
 
         $student->update(['status' => $this->newStatus]);
 
+        // ✅ ->tap() diye institution_id + branch_id — project standard onujayi
         activity()
+            ->causedBy(auth()->user())
             ->performedOn($student)
             ->withProperties([
-                'institution_id' => $student->institution_id,
                 'icon' => 'toggle_on',
                 'type' => 'student',
                 'old_status' => $oldStatus,
                 'new_status' => $this->newStatus,
             ])
+            ->tap(function ($activity) use ($student) {
+                $activity->institution_id = $student->institution_id;
+                $activity->branch_id = $student->branch_id;
+            })
             ->log('Student status changed: ' . $student->name . ' (' . $oldStatus . ' → ' . $this->newStatus . ')');
 
         $this->dispatch('toast', type: 'success', message: 'Status updated successfully!');
-
         $this->closeStatusModal();
     }
 
     public function render()
     {
-        $classes = AcademicClass::whereIn('id', AcademicClassAssign::distinct()->pluck('class_id'))
+        $institutionId = auth()->user()->institution_id;
+
+        $classes = AcademicClass::where('institution_id', $institutionId)
+            ->whereIn('id', AcademicClassAssign::where('institution_id', $institutionId)
+                ->distinct()
+                ->pluck('class_id'))
             ->orderBy('name')
             ->get();
 
+        // ✅ sortField ke allowlist er against fallback validate kora,
+        // jate kono karone invalid value orderBy() e na jay.
+        $sortField = in_array($this->sortField, self::SORTABLE_FIELDS, true)
+            ? $this->sortField
+            : 'created_at';
+
+        $sortDir = $this->sortDir === 'asc' ? 'asc' : 'desc';
+
         $query = Student::with(['guardians', 'class', 'section'])
+            ->where('institution_id', $institutionId)
             ->when($this->filterClass, fn($q) =>
                 $q->where('class_id', $this->filterClass)
             )
@@ -189,9 +288,11 @@ class StudentListComponent extends Component
                 ->orWhere('student_id', 'like', "%{$this->search}%")
                 ->orWhere('registration_no', 'like', "%{$this->search}%")
                 ->orWhere('roll_no', 'like', "%{$this->search}%")))
-            ->orderBy($this->sortField, $this->sortDir);
+            ->orderBy($sortField, $sortDir);
 
-        $students = $query->paginate($this->perPage);
+        $perPage = min((int) $this->perPage ?: 10, self::MAX_PER_PAGE);
+
+        $students = $query->paginate($perPage);
 
         return view('livewire.admin.student.student-list-component')
             ->with('students', $students)

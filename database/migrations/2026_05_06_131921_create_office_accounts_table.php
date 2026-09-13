@@ -23,9 +23,11 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->unique(['institution_id', 'number', 'deleted_at'], 'office_accounts_institution_number_unique');
-            $table->index(['institution_id', 'name']);
-            $table->index(['institution_id', 'is_active']);
+            $table->unique(['institution_id', 'branch_id', 'number', 'deleted_at'], 
+            'office_accounts_ins_bra_num_del_unique');
+            
+            $table->index(['institution_id', 'branch_id', 'name']);
+            $table->index(['institution_id', 'branch_id', 'is_active']);
         });
     }
 

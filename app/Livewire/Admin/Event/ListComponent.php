@@ -36,6 +36,11 @@ class ListComponent extends Component
     {
         $this->routePrefix      = $this->resolveRoutePrefix();
         $this->currentSessionId = $this->resolveCurrentSessionId();
+
+        // Surface a success toast after redirect back from Create/Edit pages.
+        if (session()->has('toast_success')) {
+            $this->dispatch('toast', type: 'success', message: session()->pull('toast_success'));
+        }
     }
 
     protected function resolveRoutePrefix(): string
@@ -114,23 +119,23 @@ class ListComponent extends Component
             return;
         }
 
-        $imagePath = $event->image;
-        $title     = $event->title;
-
         try {
-            DB::transaction(function () use ($event, $title, $institutionId) {
+            DB::transaction(function () use ($event) {
                 activity()
                     ->causedBy(auth()->user())
                     ->performedOn($event)
                     ->withProperties(['icon' => 'event', 'type' => 'event'])
-                    ->tap(fn ($a) => $a->institution_id = $institutionId)
-                    ->log('Event deleted: ' . $title);
+                    ->tap(function ($activity) use ($event) {
+                        $activity->institution_id = $event->institution_id;
+                        $activity->branch_id = $event->branch_id;
+                    })
+                    ->log('Event deleted: ' . $event->title);
 
                 $event->delete();
             });
 
-            if ($imagePath) {
-                Storage::disk('public')->delete($imagePath);
+            if ($event->image) {
+                Storage::disk('public')->delete($event->image);
             }
 
             $this->dispatch('toast', type: 'success', message: 'Event deleted successfully!');

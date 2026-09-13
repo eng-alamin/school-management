@@ -31,6 +31,18 @@
                         </div>
                     </div>
                 @endif
+
+                <div class="col-md-2">
+                    <div class="input-group input-group-outline">
+                        <select class="form-select form-select-sm" wire:model.live="roleFilter">
+                            <option value="all">All Roles</option>
+                            @foreach($roles as $value => $label)
+                                <option value="{{ $value }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+
                 <button class="btn btn-primary" wire:click="openCreate">
                     <span>
                         <span class="material-icons-round">add_circle</span> 
@@ -110,7 +122,7 @@
                                         <label class="form-label">Name <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control @error('name') is-invalid @enderror" wire:model.defer="name">
                                     </div>
-                                    @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    @error('name') <span class="text-danger">{{ $message }}</span> @enderror 
                                 </div>
                                 <div class="col-md-12">
                                     <div class="input-group input-group-outline">
@@ -122,14 +134,14 @@
                                             @endforeach
                                         </select>
                                     </div>
-                                    @error('role') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    @error('role') <span class="text-danger">{{ $message }}</span> @enderror 
                                 </div>
                                 <div class="col-md-12">
                                     <div class="input-group input-group-outline">
                                         <label class="form-label">Days <span class="text-danger">*</span></label>
                                         <input type="number" min="1" max="365" class="form-control @error('days') is-invalid @enderror" wire:model.defer="days">
                                     </div>
-                                    @error('days') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    @error('days') <span class="text-danger">{{ $message }}</span> @enderror
                                 </div>
                             </div>
                         </form>

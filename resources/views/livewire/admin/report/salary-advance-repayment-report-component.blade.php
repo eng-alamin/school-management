@@ -24,7 +24,7 @@
                 <div class="col-6 col-md-6">
                     <div class="summary-card summary-late">
                         <span class="material-icons-round">payments</span>
-                        <div class="count">৳{{ number_format($summary['total_amount'], 2) }}</div>
+                        <div class="count">৳{{ number_format($summary['total_amount'], 0) }}</div>
                         <div class="label">Total Deducted</div>
                     </div>
                 </div>
@@ -32,6 +32,11 @@
 
             {{-- Toolbar / Filters --}}
             <div class="card-toolbar flex-wrap mb-2">
+                {{-- Search --}}
+                <div class="mb-2" style="position:relative;display:inline-flex;align-items:center;width:100%">
+                    <span class="material-icons-round" style="position:absolute;left:10px;font-size:16px;color:var(--muted);pointer-events:none">search</span>
+                    <input type="text" wire:model.live.debounce.400ms="search" placeholder="নাম ..." class="form-control" style="padding-left:32px;">
+                </div>
                 <div class="col-md-3">
                     <div class="input-group input-group-outline" wire:ignore>
                         <label class="form-label">From</label>
@@ -45,13 +50,6 @@
                     </div>
                 </div>
 
-                <div class="col-md-3">
-                    <label class="form-label">Search</label>
-                    <div style="position:relative;display:inline-flex;align-items:center;width:100%">
-                        <span class="material-icons-round" style="position:absolute;left:10px;font-size:16px;color:var(--muted);pointer-events:none">search</span>
-                        <input type="text" wire:model.live.debounce.400ms="search" placeholder="নাম / ID..." class="form-control form-control-sm" style="padding-left:32px;">
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -91,7 +89,7 @@
                             <td class="text-muted" style="font-size:.78rem;">
                                 {{ $record->salaryPayment?->month ? \Carbon\Carbon::parse($record->salaryPayment->month)->format('M Y') : '— (manual)' }}
                             </td>
-                            <td class="text-dark" style="font-size:.78rem;">৳{{ number_format($record->amount, 2) }}</td>
+                            <td class="text-dark" style="font-size:.78rem;">৳{{ number_format($record->amount, 0) }}</td>
                         </tr>
                         @empty
                         <tr>

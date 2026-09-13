@@ -87,11 +87,34 @@ class SupplierComponent extends Component
         ];
 
         if ($this->editId) {
-            InventorySupplier::findOrFail($this->editId)->update($data);
-            $this->dispatch('toast', type: 'success', message: 'Data updated successfully!');
+            $record = InventorySupplier::findOrFail($this->editId);
+            $record->update($data);
+
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'inventory_2', 'type' => 'inventory'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+                ->log('Inventory supplier updated: ' . $record->name);
+
+            $this->dispatch('toast', type: 'success', message: 'Supplier updated successfully!');
         } else {
-            InventorySupplier::create($data);
-            $this->dispatch('toast', type: 'success', message: 'Data created successfully!');
+            $record = InventorySupplier::create($data);
+
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'inventory_2', 'type' => 'inventory'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+                ->log('Inventory supplier created: ' . $record->name);
+
+            $this->dispatch('toast', type: 'success', message: 'Supplier created successfully!');
         }
 
         $this->showModal = false;
@@ -132,6 +155,17 @@ class SupplierComponent extends Component
         $record->delete();
         $this->confirmDelete = false;
         $this->deleteId = null;
-        $this->dispatch('toast', type: 'success', message: 'Data deleted successfully!');
+
+        activity()
+            ->causedBy(auth()->user())
+            ->performedOn($record)
+            ->withProperties(['icon' => 'inventory_2', 'type' => 'inventory'])
+            ->tap(function ($activity) use ($record) {
+                $activity->institution_id = $record->institution_id;
+                $activity->branch_id = $record->branch_id;
+            })
+            ->log('Inventory supplier deleted: ' . $record->name);
+
+        $this->dispatch('toast', type: 'success', message: 'Supplier deleted successfully!');
     }
 }

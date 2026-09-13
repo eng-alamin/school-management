@@ -39,6 +39,11 @@
                     <span class="material-icons-round" style="font-size:16px;">print</span>
                     Print / PDF
                 </button>
+                
+                <button type="button" class="btn-chrome" onclick="history.back()">
+                    <span class="material-icons-round" style="font-size:16px">arrow_back</span>
+                    Back
+                </button>
             </div>
         </div>
     </div>
@@ -69,27 +74,27 @@
                             </div>
                             <div class="col-12">
                                 <div class="form-label-sm">Institute Name</div>
-                                <input type="text" wire:model.blur="instituteName" class="form-control" @disabled($isLocked)>
+                                <input type="text" wire:model.live="instituteName" class="form-control" @disabled($isLocked)>
                             </div>
                             <div class="col-12">
                                 <div class="form-label-sm">Exam Name</div>
-                                <input type="text" wire:model.blur="examName" class="form-control" @disabled($isLocked)>
+                                <input type="text" wire:model.live="examName" class="form-control" @disabled($isLocked)>
                             </div>
                             <div class="col-6">
                                 <div class="form-label-sm">Class</div>
-                                <input type="text" wire:model.blur="classLabel" class="form-control" @disabled($isLocked)>
+                                <input type="text" wire:model.live="classLabel" class="form-control" @disabled($isLocked)>
                             </div>
                             <div class="col-6">
                                 <div class="form-label-sm">Subject</div>
-                                <input type="text" wire:model.blur="subjectLabel" class="form-control" @disabled($isLocked)>
+                                <input type="text" wire:model.live="subjectLabel" class="form-control" @disabled($isLocked)>
                             </div>
                             <div class="col-6">
                                 <div class="form-label-sm">Full Marks</div>
-                                <input type="number" step="0.5" wire:model.blur="fullMarks" class="form-control" @disabled($isLocked)>
+                                <input type="number" step="0.5" wire:model.live="fullMarks" class="form-control" @disabled($isLocked)>
                             </div>
                             <div class="col-6">
                                 <div class="form-label-sm">Time</div>
-                                <input type="text" wire:model.blur="timeLabel" class="form-control" placeholder="e.g. 3 Hours" @disabled($isLocked)>
+                                <input type="text" wire:model.live="timeLabel" class="form-control" placeholder="e.g. 3 Hours" @disabled($isLocked)>
                             </div>
                         </div>
                     </div>
@@ -107,9 +112,9 @@
                     <div class="section-body" id="qBody">
 
                         @unless($isLocked)
-                            <div class="dropdown mb-3">
+                            <div class="dropdown mb-3 text-center">
                                 <button class="btn btn-brand dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                    <span class="material-icons-round" style="font-size:17px;">addadd_circle</span> Add Question
+                                    <span class="material-icons-round">add_circle</span> Add Question
                                 </button>
                                 <ul class="dropdown-menu" style="max-height: 360px; overflow-y: auto;">
                                     @foreach($typeDefs as $typeValue => $def)
@@ -164,19 +169,19 @@
                                         <input type="text" class="form-control form-control-sm"
                                                list="sectionHeaderSuggestions"
                                                placeholder="Section / Chapter heading"
-                                               wire:model.blur="questions.{{ $qIndex }}.section_header"
+                                               wire:model.live="questions.{{ $qIndex }}.section_header"
                                                @disabled($isLocked)>
                                     </div>
 
                                     @if($q['family'] === 'options')
                                         <textarea class="form-control mb-2 q-text" rows="2" placeholder="Type the question..."
-                                                  wire:model.blur="questions.{{ $qIndex }}.question_text" @disabled($isLocked)></textarea>
+                                                  wire:model.live="questions.{{ $qIndex }}.question_text" @disabled($isLocked)></textarea>
                                         <div class="options-wrap">
                                             @foreach($q['options'] as $optIndex => $opt)
                                                 <div class="opt-row">
                                                     <span class="part-label" style="flex:0 0 24px;height:24px;font-size:.75rem;">{{ chr(65 + $optIndex) }}</span>
                                                     <input type="text" class="form-control form-control-sm opt-text" placeholder="Option {{ $optIndex + 1 }}"
-                                                           wire:model.blur="questions.{{ $qIndex }}.options.{{ $optIndex }}.text" @disabled($isLocked)>
+                                                           wire:model.live="questions.{{ $qIndex }}.options.{{ $optIndex }}.text" @disabled($isLocked)>
                                                     <input type="checkbox" class="form-check-input mt-0" title="Correct answer"
                                                            wire:model="questions.{{ $qIndex }}.options.{{ $optIndex }}.is_correct" @disabled($isLocked)>
                                                 </div>
@@ -186,21 +191,21 @@
                                             <div class="col-6">
                                                 <div class="marks-side-label" style="text-align:left;">Marks</div>
                                                 <input type="number" step="0.5" class="form-control form-control-sm"
-                                                       wire:model.blur="questions.{{ $qIndex }}.marks" @disabled($isLocked)>
+                                                       wire:model.live="questions.{{ $qIndex }}.marks" @disabled($isLocked)>
                                             </div>
                                         </div>
 
                                     @elseif($q['family'] === 'matching_pairs')
                                         <input type="text" class="form-control form-control-sm mb-2 q-text" placeholder="Match column A with column B"
-                                               wire:model.blur="questions.{{ $qIndex }}.question_text" @disabled($isLocked)>
+                                               wire:model.live="questions.{{ $qIndex }}.question_text" @disabled($isLocked)>
                                         <div class="match-wrap">
                                             @foreach($q['matches'] as $mIndex => $m)
                                                 <div class="match-row">
                                                     <input type="text" class="form-control form-control-sm match-left" placeholder="Left item"
-                                                           wire:model.blur="questions.{{ $qIndex }}.matches.{{ $mIndex }}.left" @disabled($isLocked)>
+                                                           wire:model.live="questions.{{ $qIndex }}.matches.{{ $mIndex }}.left" @disabled($isLocked)>
                                                     <span class="material-icons-round match-arrow">east</span>
                                                     <input type="text" class="form-control form-control-sm match-right" placeholder="Right item"
-                                                           wire:model.blur="questions.{{ $qIndex }}.matches.{{ $mIndex }}.right" @disabled($isLocked)>
+                                                           wire:model.live="questions.{{ $qIndex }}.matches.{{ $mIndex }}.right" @disabled($isLocked)>
                                                 </div>
                                             @endforeach
                                         </div>
@@ -213,23 +218,23 @@
                                             <div class="col-6">
                                                 <div class="marks-side-label" style="text-align:left;">Marks</div>
                                                 <input type="number" step="0.5" class="form-control form-control-sm"
-                                                       wire:model.blur="questions.{{ $qIndex }}.marks" @disabled($isLocked)>
+                                                       wire:model.live="questions.{{ $qIndex }}.marks" @disabled($isLocked)>
                                             </div>
                                         </div>
 
                                     @elseif($q['family'] === 'stimulus_parts')
                                         <div class="form-label-sm stimulus-label">Stimulus / passage</div>
                                         <textarea class="form-control mb-2 stimulus-text" rows="3" placeholder="Type the stimulus or passage..."
-                                                  wire:model.blur="questions.{{ $qIndex }}.stimulus_text" @disabled($isLocked)></textarea>
+                                                  wire:model.live="questions.{{ $qIndex }}.stimulus_text" @disabled($isLocked)></textarea>
                                         <div class="parts-wrap">
                                             @foreach($q['parts'] as $pIndex => $part)
                                                 <div class="part-row">
                                                     <span class="part-label">{{ $part['label'] }}</span>
                                                     <textarea class="form-control part-text" rows="1" placeholder="Sub-question {{ $pIndex + 1 }}"
-                                                              wire:model.blur="questions.{{ $qIndex }}.parts.{{ $pIndex }}.text" @disabled($isLocked)></textarea>
+                                                              wire:model.live="questions.{{ $qIndex }}.parts.{{ $pIndex }}.text" @disabled($isLocked)></textarea>
                                                     <div>
                                                         <input type="number" class="form-control marks-input part-marks"
-                                                               wire:model.blur="questions.{{ $qIndex }}.parts.{{ $pIndex }}.marks" @disabled($isLocked)>
+                                                               wire:model.live="questions.{{ $qIndex }}.parts.{{ $pIndex }}.marks" @disabled($isLocked)>
                                                         <div class="marks-side-label">marks</div>
                                                     </div>
                                                 </div>
@@ -238,12 +243,12 @@
 
                                     @else
                                         <textarea class="form-control mb-2 q-text" rows="2" placeholder="Type the question..."
-                                                  wire:model.blur="questions.{{ $qIndex }}.question_text" @disabled($isLocked)></textarea>
+                                                  wire:model.live="questions.{{ $qIndex }}.question_text" @disabled($isLocked)></textarea>
                                         <div class="row g-2 mb-2">
                                             <div class="col-6">
                                                 <div class="marks-side-label" style="text-align:left;">Marks</div>
                                                 <input type="number" step="0.5" class="form-control form-control-sm"
-                                                       wire:model.blur="questions.{{ $qIndex }}.marks" @disabled($isLocked)>
+                                                       wire:model.live="questions.{{ $qIndex }}.marks" @disabled($isLocked)>
                                             </div>
                                         </div>
                                     @endif
@@ -602,6 +607,26 @@
      All rules stay scoped under .qp-scope so nothing else on the page
      is affected.
   =================================================================== */
+  :root {
+    --btn-primary: #111111;
+  }
+  
+  /* Start Buttons */
+.btn-primary {
+    --bs-btn-bg: var(--btn-primary);
+    --bs-btn-border-color: var(--btn-primary);
+    --bs-btn-hover-bg: var(--btn-secondary);
+    --bs-btn-hover-border-color: var(--btn-secondary);
+    --bs-btn-active-bg: var(--btn-secondary);
+    --bs-btn-active-border-color: var(--btn-secondary);
+    --bs-btn-focus-shadow-rgb: 0, 0, 0;
+
+    color: var(--white);
+    border: none;
+    border-radius: 10px;
+}
+/* End Buttons */
+
   .qp-scope {
     --navy: #006a4e;
     --navy-deep: #00402f;

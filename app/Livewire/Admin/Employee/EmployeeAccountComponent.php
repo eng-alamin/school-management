@@ -87,14 +87,16 @@ class EmployeeAccountComponent extends Component
             'phone'    => $this->phone,
         ]);
 
-        activity()
-            ->performedOn($this->user)
+        $record = $this->user;
+         activity()
             ->causedBy(auth()->user())
-            ->withProperties([
-                'icon' => 'person',
-                'type' => 'employee_account_update',
-            ])
-            ->log("Employee account updated: {$this->user->name}");
+            ->performedOn($record)
+            ->withProperties(['icon' => 'badge', 'type' => 'employee'])
+            ->tap(function ($activity) use ($record) {
+                $activity->institution_id = $record->institution_id;
+                $activity->branch_id = $record->branch_id;
+            })
+            ->log('Employee account updated: ' . $record->name);
 
         $this->dispatch('toast', type: 'success', message: 'Employee account updated successfully!');
     }
@@ -109,17 +111,19 @@ class EmployeeAccountComponent extends Component
             'password' => $this->password,
         ]);
 
-        activity()
-            ->performedOn($this->user)
+  
+        $record = $this->user;
+         activity()
             ->causedBy(auth()->user())
-            ->withProperties([
-                'icon' => 'lock_reset',
-                'type' => 'employee_password_reset',
-            ])
-            ->log("Password reset for employee: {$this->user->name}");
+            ->performedOn($record)
+            ->withProperties(['icon' => 'badge', 'type' => 'employee'])
+            ->tap(function ($activity) use ($record) {
+                $activity->institution_id = $record->institution_id;
+                $activity->branch_id = $record->branch_id;
+            })
+            ->log('Employee password updated: ' . $record->name);
 
         $this->reset(['password', 'password_confirmation']);
-
         $this->dispatch('toast', type: 'success', message: 'Password reset successfully!');
     }
 

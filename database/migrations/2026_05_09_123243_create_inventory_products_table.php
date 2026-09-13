@@ -24,9 +24,10 @@ return new class extends Migration
             $table->decimal('purchase_price', 15, 2)->default(0);
             $table->decimal('sales_price', 15, 2)->default(0);
             $table->text('remarks')->nullable();
-
-            $table->unique(['institution_id', 'code']);
             $table->timestamps();
+
+            $table->unique(['institution_id', 'branch_id', 'code'], 
+                'inventory_products_ins_bra_code_unique');
         });
     }
 

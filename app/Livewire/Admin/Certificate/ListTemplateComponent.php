@@ -73,11 +73,7 @@ class ListTemplateComponent extends Component
     public function deleteRecord(): void
     {
         $record = CertificateTemplate::findOrFail($this->deleteId);
-        $name   = $record->certificate_name;
 
-        // Delete associated images
-        // Bug fix: files are stored directly under public_path() (not the
-        // 'public' storage disk), so they must be removed the same way.
         foreach (['signature_image', 'logo_image', 'background_image'] as $field) {
             if ($record->$field) {
                 $fullPath = public_path($record->$field);
@@ -90,8 +86,15 @@ class ListTemplateComponent extends Component
         $record->delete();
 
         activity()
-            ->withProperties(['certificate_name' => $name])
-            ->log('Certificate template deleted: ' . $name);
+            ->causedBy(auth()->user())
+            ->performedOn($record)
+            ->withProperties(['icon' => 'workspace_premium', 'type' => 'certificate'])
+            ->tap(function ($activity) use ($record) {
+                $activity->institution_id = $record->institution_id;
+                $activity->branch_id = $record->branch_id;
+            })
+            ->log('Certificate template deleted: ' . $record->certificate_name);
+
 
         $this->confirmDelete = false;
         $this->deleteId      = null;

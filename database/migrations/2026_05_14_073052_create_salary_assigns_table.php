@@ -32,7 +32,10 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->unique(['employee_id', 'deleted_at'], 'unique_salary_assigns');
+            $table->unique(['institution_id', 'branch_id', 'employee_id', 'deleted_at'], 
+                'salary_assigns_ins_bra_emp_del_unique'
+            );
+
             $table->index(['institution_id', 'role'], 'index_salary_assigns');
         });
     }

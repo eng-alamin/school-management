@@ -429,10 +429,17 @@ class EditTemplateComponent extends Component
 
             $this->template->update($data);
 
+            $record = $this->template;  
+
             activity()
-                ->performedOn($this->template)
-                ->withProperties(['certificate_name' => $this->template->certificate_name])
-                ->log('Certificate template updated: ' . $this->template->certificate_name);
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'workspace_premium', 'type' => 'certificate'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+                ->log('Certificate template updated: ' . $record->certificate_name);
         });
 
         $this->dispatch('toast', type: 'success', message: 'Certificate template updated successfully!');

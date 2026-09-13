@@ -37,7 +37,9 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->index(['start_date', 'end_date']);
+            $table->index(['institution_id', 'branch_id', 'start_date', 'end_date'], 
+                'leave_applications_ins_bra_sta_end_idx'
+            );
         });
     }
 

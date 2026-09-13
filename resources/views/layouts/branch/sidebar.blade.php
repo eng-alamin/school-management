@@ -34,7 +34,7 @@
     <ul>
       <li class="nav1-item">
         <a href="{{route('branch.dashboard') }}" class="nav1-link {{ str_contains(request()->url(), 'dashboard') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">space_dashboard</span>
+          <span class="material-icons-round">space_dashboard</span>
           <span class="nav-label" id="nav-dashboard">Dashboard</span>
         </a>
       </li>
@@ -42,7 +42,7 @@
       @if(feature_enabled(\App\Support\Feature::INVENTORY_MODULE))
         <li class="nav1-item">
           <div class="nav1-link {{ str_contains(request()->url(), 'inventory/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
-            <span class="material-icons-round nav-icon">inventory_2</span>
+            <span class="material-icons-round">inventory_2</span>
             <span class="nav-label" id="nav-inventory">Inventory</span>
             <span class="material-icons-round nav-arrow">expand_more</span>
           </div>
@@ -60,7 +60,7 @@
 
       <li class="nav1-item">
         <div class="nav1-link {{ Route::is('branch.student.add') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
-          <span class="material-icons-round nav-icon">how_to_reg</span>
+          <span class="material-icons-round">how_to_reg</span>
           <span class="nav-label" id="nav-admission">Admission</span>
           <span class="material-icons-round nav-arrow">expand_more</span>
         </div>
@@ -74,7 +74,7 @@
 
       <li class="nav1-item">
         <div class="nav1-link {{ Route::is('branch.student.list', 'branch.student.edit') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
-          <span class="material-icons-round nav-icon">school</span>
+          <span class="material-icons-round">school</span>
           <span class="nav-label" id="nav-students">Students</span>
           <span class="material-icons-round nav-arrow">expand_more</span>
         </div>
@@ -87,14 +87,14 @@
 
       <li class="nav1-item">
         <a class="nav1-link {{ str_contains(request()->url(), 'branch/parent/') == true ? 'active' : '' }}" href="{{route('branch.parent.list') }}">
-          <span class="material-icons-round nav-icon">groups</span>
+          <span class="material-icons-round">groups</span>
           <span class="nav-label" id="nav-parents">Parents</span>
         </a>
       </li>
 
       <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), '/branch/employee/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
-          <span class="material-icons-round nav-icon">badge</span>
+          <span class="material-icons-round">badge</span>
           <span class="nav-label" id="nav-employees">Employees</span>
           <span class="material-icons-round nav-arrow">expand_more</span>
         </div>
@@ -109,7 +109,7 @@
 
       <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), 'academic') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
-          <span class="material-icons-round nav-icon">menu_book</span>
+          <span class="material-icons-round">menu_book</span>
           <span class="nav-label" id="nav-academic">Academic</span>
           <span class="material-icons-round nav-arrow">expand_more</span>
         </div>
@@ -129,14 +129,14 @@
 
       <li class="nav1-item">
         <a class="nav1-link {{ str_contains(request()->url(), 'branch/homework') == true ? 'active' : '' }}" href="{{ route('branch.homework.list')  }}">
-          <span class="material-icons-round nav-icon">assignment</span>
+          <span class="material-icons-round">assignment</span>
           <span class="nav-label" id="nav-homework">Home Work</span>
         </a>
       </li>
 
       <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), 'branch/question-papers') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
-          <span class="material-icons-round nav-icon">quiz</span>
+          <span class="material-icons-round">quiz</span>
           <span class="nav-label" id="nav-question-paper">Question Paper</span>
           <span class="material-icons-round nav-arrow">expand_more</span>
         </div>
@@ -150,7 +150,7 @@
 
       <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), 'exam/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
-          <span class="material-icons-round nav-icon">quiz</span>
+          <span class="material-icons-round">quiz</span>
           <span class="nav-label" id="nav-exam-master">Exam Master</span>
           <span class="material-icons-round nav-arrow">expand_more</span>
         </div>
@@ -167,7 +167,7 @@
 
       <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), '/branch/attendance/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
-          <span class="material-icons-round nav-icon">event_available</span>
+          <span class="material-icons-round">event_available</span>
           <span class="nav-label" id="nav-attendance">Attendance</span>
           <span class="material-icons-round nav-arrow">expand_more</span>
         </div>
@@ -184,7 +184,7 @@
 
       <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), '/branch/biometric/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
-          <span class="material-icons-round nav-icon">fingerprint</span>
+          <span class="material-icons-round">fingerprint</span>
           <span class="nav-label" id="nav-biometric">Biometric</span>
           <span class="material-icons-round nav-arrow">expand_more</span>
         </div>
@@ -198,7 +198,7 @@
 
       <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), 'branch/student-accounting') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
-          <span class="material-icons-round nav-icon">account_balance_wallet</span>
+          <span class="material-icons-round">account_balance_wallet</span>
           <span class="nav-label" id="nav-student-accounting">Student Accounting</span>
           <span class="material-icons-round nav-arrow">expand_more</span>
         </div>
@@ -215,7 +215,7 @@
 
       <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), 'branch/office-accounting') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
-          <span class="material-icons-round nav-icon">business_center</span>
+          <span class="material-icons-round">business_center</span>
           <span class="nav-label" id="nav-office-accounting">Office Accounting</span>
           <span class="material-icons-round nav-arrow">expand_more</span>
         </div>
@@ -232,7 +232,7 @@
 
       <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), 'salary') ? 'active open' : '' }}" onclick="toggleNav1(this)">
-          <span class="material-icons-round nav-icon">manage_accounts</span>
+          <span class="material-icons-round">manage_accounts</span>
           <span class="nav-label" id="nav-salary-management">Salary Management</span>
           <span class="material-icons-round nav-arrow">expand_more</span>
         </div>
@@ -249,7 +249,7 @@
       @if(feature_enabled(\App\Support\Feature::CARD_MODULE))
         <li class="nav1-item">
           <div class="nav1-link {{ str_contains(request()->url(), 'card/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
-            <span class="material-icons-round nav-icon">credit_card</span>
+            <span class="material-icons-round">credit_card</span>
             <span class="nav-label" id="nav-card-management">Card Management</span>
             <span class="material-icons-round nav-arrow">expand_more</span>
           </div>
@@ -268,7 +268,7 @@
       @if(feature_enabled(\App\Support\Feature::CERTIFICATE_MODULE))
         <li class="nav1-item">
           <div class="nav1-link {{ str_contains(request()->url(), 'certificate/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
-            <span class="material-icons-round nav-icon">workspace_premium</span>
+            <span class="material-icons-round">workspace_premium</span>
             <span class="nav-label" id="nav-certificate-management">Certificate Management</span>
             <span class="material-icons-round nav-arrow">expand_more</span>
           </div>
@@ -284,42 +284,42 @@
 
       <li class="nav1-item">
         <a href="{{route('branch.leave.applications') }}" class="nav1-link {{ str_contains(request()->url(), 'leave/applications') || str_contains(request()->url(), 'leave/categories') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">exit_to_app</span>
+          <span class="material-icons-round">exit_to_app</span>
           <span class="nav-label" id="nav-leaves">Leaves</span>
         </a>
       </li>
 
       <li class="nav1-item">
         <a href="{{route('branch.event.list') }}" class="nav1-link {{ str_contains(request()->url(), '/branch/event') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">event</span>
+          <span class="material-icons-round">event</span>
           <span class="nav-label" id="nav-events">Events</span>
         </a>
       </li>
 
       <li class="nav1-item">
         <a href="{{route('branch.mailbox.inbox') }}" class="nav1-link {{ str_contains(request()->url(), '/branch/mailbox/') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">chat</span>
+          <span class="material-icons-round">chat</span>
           <span class="nav-label" id="nav-mailbox">Mailbox</span>
         </a>
       </li>
 
       <li class="nav1-item">
         <a href="{{route('branch.notices') }}" class="nav1-link {{ str_contains(request()->url(), '/branch/notices') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">chat</span>
+          <span class="material-icons-round">chat</span>
           <span class="nav-label" id="nav-notices">Notices</span>
         </a>
       </li>
 
       <li class="nav1-item">
         <a href="{{route('branch.notifications.index') }}" class="nav1-link {{ str_contains(request()->url(), '/branch/notifications') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">notifications</span>
+          <span class="material-icons-round">notifications</span>
           <span class="nav-label" id="nav-notifications">Notifications</span>
         </a>
       </li>
        
       <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), '/branch/reports') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
-          <span class="material-icons-round nav-icon">bar_chart</span>
+          <span class="material-icons-round">bar_chart</span>
           <span class="nav-label" id="nav-reports">Reports</span>
           <span class="material-icons-round nav-arrow">expand_more</span>
         </div>
@@ -332,7 +332,7 @@
 
       <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), 'activity-logs') || str_contains(request()->url(), '/branch/session-logs') || str_contains(request()->url(), '/branch/login-logs') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
-          <span class="material-icons-round nav-icon">security</span>
+          <span class="material-icons-round">security</span>
           <span class="nav-label" id="nav-audit-security">Audit & Security Logs</span>
           <span class="material-icons-round nav-arrow">expand_more</span>
         </div>
@@ -347,7 +347,7 @@
 
       <li class="nav1-item">
         <div class="nav1-link {{ request()->is('/branch/roles-permissions/*') ? 'active open' : '' }}" onclick="toggleNav1(this)">
-          <span class="material-icons-round nav-icon">door_front</span>
+          <span class="material-icons-round">door_front</span>
           <span class="nav-label" id="nav-roles-permission">Role & Permission</span>
           <span class="material-icons-round nav-arrow">expand_more</span>
         </div>

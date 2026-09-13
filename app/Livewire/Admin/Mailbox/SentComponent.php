@@ -62,8 +62,18 @@ class SentComponent extends Component
 
     public function trashMessage(int $id): void
     {
-        Message::sent(auth()->id())->findOrFail($id)
-               ->update(['is_trashed_by_sender' => true]);
+        $record = Message::sent(auth()->id())->findOrFail($id);
+        $record->update(['is_trashed_by_sender' => true]);
+
+        activity()
+            ->causedBy(auth()->user())
+            ->performedOn($record)
+            ->withProperties(['icon' => 'mail', 'type' => 'mailbox'])
+            ->tap(function ($activity) use ($record) {
+                $activity->institution_id = $record->institution_id;
+                $activity->branch_id = $record->branch_id;
+            })
+            ->log('Message moved to trash: ' . $record->subject);
 
         if ($this->viewingId === $id) {
             $this->backToList();
@@ -74,8 +84,18 @@ class SentComponent extends Component
 
     public function deleteMessage(int $id): void
     {
-        Message::sent(auth()->id())->findOrFail($id)
-               ->update(['is_deleted_by_sender' => true]);
+        $record = Message::sent(auth()->id())->findOrFail($id);
+        $record->update(['is_deleted_by_sender' => true]);
+
+        activity()
+            ->causedBy(auth()->user())
+            ->performedOn($record)
+            ->withProperties(['icon' => 'mail', 'type' => 'mailbox'])
+            ->tap(function ($activity) use ($record) {
+                $activity->institution_id = $record->institution_id;
+                $activity->branch_id = $record->branch_id;
+            })
+            ->log('Message permanently deleted: ' . $record->subject);
 
         if ($this->viewingId === $id) {
             $this->backToList();

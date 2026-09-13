@@ -28,6 +28,9 @@ return new class extends Migration
             $table->date('expires_at')->nullable();
             $table->timestamps();
             $table->softDeletes();
+
+            $table->index(['institution_id', 'branch_id', 'status'], 'notices_ins_bra_sta_idx');
+            $table->index(['institution_id', 'branch_id', 'priority'], 'notices_ins_bra_pri_idx');
         });
     }
 

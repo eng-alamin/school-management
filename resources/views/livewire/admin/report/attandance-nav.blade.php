@@ -1,4 +1,4 @@
-<ul class="nav nav-pills mb-3 att-type-pills">
+<ul class="nav nav-pills mb-3 att-type-pills" wire:ignore>
     <li class="nav-item">
         <a href="{{ route('admin.reports.attendances.student') }}" class="nav-link {{ Route::is('admin.reports.attendances.student') == true ? 'active' : '' }}">
             <span class="material-icons-round" style="font-size:1rem;vertical-align:middle;">badge</span>

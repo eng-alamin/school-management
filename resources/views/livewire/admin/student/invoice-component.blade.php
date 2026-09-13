@@ -77,14 +77,16 @@
                                                 value="{{ $invoice->id }}">
                                         </td>
                                         <td colspan="9">
-                                            <span class="material-icons-round"
-                                                style="font-size:14px;vertical-align:middle;color:#e05252">
-                                                arrow_drop_down
-                                            </span>
-                                            Invoice #{{ $invoice->invoice_no }}
-                                            <span class="text-muted" style="font-size:11px">
-                                                ({{ \Carbon\Carbon::parse($invoice->invoice_date)->format('d.M.Y') }})
-                                            </span>
+                                            <a href="{{ route($routePrefix.'student.invoice.view', ['student' => $student->id, 'invoice' => $invoice->id]) }}">
+                                                <span class="material-icons-round"
+                                                    style="font-size:14px;vertical-align:middle;color:#e05252">
+                                                    arrow_drop_down
+                                                </span>
+                                                Invoice #{{ $invoice->invoice_no }}
+                                                <span class="text-muted" style="font-size:11px">
+                                                    ({{ \Carbon\Carbon::parse($invoice->invoice_date)->format('d.M.Y') }})
+                                                </span>
+                                            </a>
                                         </td>
                                     </tr>
 
@@ -379,8 +381,8 @@
             </div>
 
             <div class="pay-modal-footer">
-                <button type="button" class="btn-outline" wire:click="closePaymentModal">Cancel</button>
-                <button type="button" class="btn-primary" wire:click="savePayment" wire:loading.attr="disabled">
+                <button type="button" class="btn btn-danger" wire:click="closePaymentModal">Cancel</button>
+                <button type="button" class="btn btn-primary" wire:click="savePayment" wire:loading.attr="disabled">
                     <span wire:loading wire:target="savePayment" class="spinner-border spinner-border-sm me-1"></span>
                     Confirm Payment
                 </button>

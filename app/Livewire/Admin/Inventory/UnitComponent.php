@@ -84,11 +84,34 @@ class UnitComponent extends Component
         ];
 
         if ($this->editId) {
-            InventoryUnit::findOrFail($this->editId)->update($data);
-            $this->dispatch('toast', type: 'success', message: 'Data updated successfully!');
+            $record = InventoryUnit::findOrFail($this->editId);
+            $record->update($data);
+
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'inventory_2', 'type' => 'inventory'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+                ->log('Inventory unit updated: ' . $record->name);
+
+            $this->dispatch('toast', type: 'success', message: 'Unit updated successfully!');
         } else {
-            InventoryUnit::create($data);
-            $this->dispatch('toast', type: 'success', message: 'Data created successfully!');
+            $record = InventoryUnit::create($data);
+
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'inventory_2', 'type' => 'inventory'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+                ->log('Inventory unit created: ' . $record->name);
+
+            $this->dispatch('toast', type: 'success', message: 'Unit created successfully!');
         }
 
         $this->showModal = false;
@@ -127,6 +150,17 @@ class UnitComponent extends Component
         $record->delete();
         $this->confirmDelete = false;
         $this->deleteId = null;
-        $this->dispatch('toast', type: 'success', message: 'Data deleted successfully!');
+
+        activity()
+            ->causedBy(auth()->user())
+            ->performedOn($record)
+            ->withProperties(['icon' => 'inventory_2', 'type' => 'inventory'])
+            ->tap(function ($activity) use ($record) {
+                $activity->institution_id = $record->institution_id;
+                $activity->branch_id = $record->branch_id;
+            })
+            ->log('Inventory unit deleted: ' . $record->name);
+
+        $this->dispatch('toast', type: 'success', message: 'Unit deleted successfully!');
     }
 }

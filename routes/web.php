@@ -709,6 +709,7 @@ Route::middleware(['auth', 'role:admin', 'billing.check', 'setup.wizard', 'permi
     Route::get('/student/{id}/edit', \App\Livewire\Admin\Student\StudentEditComponent::class)->name('admin.student.edit');
     Route::get('/student/{id}/overview', \App\Livewire\Admin\Student\OverviewComponent::class)->name('admin.student.overview');
     Route::get('/student/{id}/invoice', \App\Livewire\Admin\Student\InvoiceComponent::class)->name('admin.student.invoice');
+    Route::get('/student/{student}/invoice/{invoice}', \App\Livewire\Admin\Student\InvoiceViewComponent::class)->name('admin.student.invoice.view');
     Route::get('/student/payment-collect/{invoice}', \App\Livewire\Admin\Student\PaymentCollectComponent::class)->name('admin.students.payment-collect');
     Route::get('/student/{id}/account', \App\Livewire\Admin\Student\AccountComponent::class)->name('admin.student.account');
     Route::get('/student/{id}/attendance', \App\Livewire\Admin\Student\AttendanceComponent::class)->name('admin.student.attendance');

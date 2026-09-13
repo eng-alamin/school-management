@@ -194,11 +194,6 @@ class GenerateAdmitCardComponent extends Component
                     'exam_schedules' => json_encode($scheduleData),
                 ];
 
-                // FIX: query WITH trashed records so an existing soft-deleted
-                // admit card for this student is found and properly RESTORED
-                // instead of being silently overwritten at the DB layer, which
-                // is what the previous raw upsert() did (it bypasses any
-                // SoftDeletes scope and leaves deleted_at set on stale data).
                 $card = AdmitCard::withTrashed()
                     ->where('institution_id', $institutionId)
                     ->where('student_id', $student->student_id)
@@ -216,12 +211,15 @@ class GenerateAdmitCardComponent extends Component
                     ]));
                 }
 
-                // FIX: activity log now targets the actual model and records
-                // the causing user, per project audit-trail convention.
                 activity()
-                    ->performedOn($card)
                     ->causedBy(auth()->user())
-                    ->log('Generated/updated admit card for student: '.$student->name);
+                    ->performedOn($card)
+                    ->withProperties(['icon' => 'credit_card', 'type' => 'card'])
+                    ->tap(function ($activity) use ($card) {
+                        $activity->institution_id = $card->institution_id;
+                        $activity->branch_id = $card->branch_id;
+                    })
+                    ->log('Generated/updated Admit card for student');
 
                 $cards->push($card->load('template'));
             }

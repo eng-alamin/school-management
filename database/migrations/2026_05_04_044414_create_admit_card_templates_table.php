@@ -31,7 +31,7 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->unique(['institution_id', 'name', 'deleted_at'], 'admit_card_templates_institution_name_unique');
+            $table->unique(['institution_id', 'branch_id', 'name', 'deleted_at'], 'admit_card_templates_ins_bra_nam_del_unique');
         });
     }
 

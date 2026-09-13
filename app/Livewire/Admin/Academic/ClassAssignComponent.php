@@ -293,19 +293,19 @@ class ClassAssignComponent extends Component
                     ]);
                 }
 
+                $className   = $assign->academicClass?->name;
+                $sectionName = $assign->academicSection?->name;
+
                 if (function_exists('activity')) {
                     activity()
                         ->causedBy(auth()->user())
                         ->performedOn($assign)
-                        ->tap(fn ($a) => $a->institution_id = $institutionId)
-                        ->withProperties([
-                            'icon'       => 'assignment_ind',
-                            'type'       => $this->editId ? 'class_assign_updated' : 'class_assign_created',
-                            'class_id'   => $assign->class_id,
-                            'section_id' => $assign->section_id,
-                            'session_id' => $assign->session_id,
-                        ])
-                        ->log($this->editId ? 'Updated class assignment' : 'Created class assignment');
+                        ->withProperties(['icon' => 'menu_book', 'type' => 'academic'])
+                        ->tap(function ($activity) use ($assign) {
+                            $activity->institution_id = $assign->institution_id;
+                            $activity->branch_id = $assign->branch_id;
+                        })
+                        ->log($this->editId ? 'Updated class assignment -'.$className : 'Created class assignment -'.$className);
                 }
             });
         } catch (QueryException $e) {
@@ -322,12 +322,7 @@ class ClassAssignComponent extends Component
             throw $e;
         }
 
-        $this->dispatch(
-            'toast',
-            type: 'success',
-            message: $this->editId ? 'Assignment updated successfully!' : 'Class assigned successfully!'
-        );
-
+        $this->dispatch('toast', type: 'success', message: $this->editId ? 'Assignment updated successfully!' : 'Class assigned successfully!');
         $this->showModal = false;
         $this->resetForm();
     }
@@ -359,14 +354,14 @@ class ClassAssignComponent extends Component
             if (function_exists('activity')) {
                 activity()
                     ->causedBy(auth()->user())
-                    ->tap(fn ($a) => $a->institution_id = $institutionId)
-                    ->withProperties([
-                        'icon'         => 'assignment_late',
-                        'type'         => 'class_assign_deleted',
-                        'class_name'   => $className,
-                        'section_name' => $sectionName,
-                    ])
-                    ->log('Deleted class assignment');
+                    ->performedOn($assign)
+                    ->withProperties(['icon' => 'menu_book', 'type' => 'academic'])
+                    ->tap(function ($activity) use ($assign) {
+                        $activity->institution_id = $assign->institution_id;
+                        $activity->branch_id = $assign->branch_id;
+                    })
+                    ->log('Deleted class assignment -'.$className);
+
             }
         });
 

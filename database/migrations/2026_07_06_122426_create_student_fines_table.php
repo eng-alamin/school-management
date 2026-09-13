@@ -26,7 +26,9 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->index(['institution_id', 'status']);
+            $table->index(['institution_id', 'branch_id', 'status'], 
+                'student_fines_ins_bra_sta_idx'
+            );
         });
     }
 

@@ -11,6 +11,7 @@ class InstitutionScope implements Scope
 {
     protected const INSTITUTION_EXEMPT_ROLES = [
         User::ROLE_SUPER_ADMIN,
+        User::ROLE_MINISTRY,
     ];
 
     public function apply(Builder $builder, Model $model): void

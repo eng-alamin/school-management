@@ -33,8 +33,6 @@ class TypeComponent extends Component
         $institutionId = auth()->user()->institution_id;
 
         return [
-            // BUG FIX: added institution-scoped uniqueness so the same
-            // institution cannot create duplicate event type names.
             'name' => [
                 'required',
                 'string',
@@ -72,8 +70,6 @@ class TypeComponent extends Component
 
     public function openEdit(int $id): void
     {
-        // BUG FIX (Security/IDOR): scoped by institution_id so an admin
-        // cannot open another institution's event type by guessing the ID.
         $record = EventType::where('institution_id', auth()->user()->institution_id)
             ->findOrFail($id);
 
@@ -86,46 +82,50 @@ class TypeComponent extends Component
     {
         $this->validate();
 
-        $institutionId = auth()->user()->institution_id;
+        DB::beginTransaction();
 
-        if ($this->editId) {
-            $record = EventType::where('institution_id', $institutionId)
-                ->findOrFail($this->editId);
+        try {
+            if ($this->editId) {
+                $record = EventType::findOrFail($this->editId);
+                $record->update(['name' => $this->name]);
 
-            $record->update(['name' => $this->name]);
+                activity()
+                    ->causedBy(auth()->user())
+                    ->performedOn($record)
+                    ->withProperties(['icon' => 'event', 'type' => 'event'])
+                    ->tap(function ($activity) use ($record) {
+                        $activity->institution_id = $record->institution_id;
+                        $activity->branch_id = $record->branch_id;
+                    })
+                    ->log('Event type updated: ' . $record->name);
+            } else {
+                $record = EventType::create([
+                    'name'           => $this->name,
+                ]);
 
-            // ── Activity Log ───────────────────────────────────────
-            activity()
-                ->causedBy(auth()->user())
-                ->performedOn($record)
-                ->withProperties(['icon' => 'category', 'type' => 'event'])
-                ->tap(function ($activity) use ($institutionId) {
-                    $activity->institution_id = $institutionId;
-                })
-                ->log('Event type updated: ' . $record->name);
+                activity()
+                    ->causedBy(auth()->user())
+                    ->performedOn($record)
+                    ->withProperties(['icon' => 'event', 'type' => 'event'])
+                    ->tap(function ($activity) use ($record) {
+                        $activity->institution_id = $record->institution_id;
+                        $activity->branch_id = $record->branch_id;
+                    })
+                    ->log('Event type created: ' . $record->name);
+            }
 
-        } else {
-            // BUG FIX: institution_id was never set, which would violate
-            // the NOT NULL foreign key constraint on event_types table.
-            $record = EventType::create([
-                'institution_id' => $institutionId,
-                'name'           => $this->name,
-            ]);
+            DB::commit();
 
-            // ── Activity Log ───────────────────────────────────────
-            activity()
-                ->causedBy(auth()->user())
-                ->performedOn($record)
-                ->withProperties(['icon' => 'category', 'type' => 'event'])
-                ->tap(function ($activity) use ($institutionId) {
-                    $activity->institution_id = $institutionId;
-                })
-                ->log('New event type created: ' . $record->name);
+            $this->showModal = false;
+            $this->resetForm();
+            $this->dispatch('toast', type: 'success', message: $this->editId ? 'Event type updated successfully!' : 'Event type created successfully!');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            $this->dispatch('toast', type: 'error', message: 'Something went wrong; please try again.');
+            report($e);
+            return;
         }
 
-        $this->showModal = false;
-        $this->resetForm();
-        session()->flash('success', $this->editId ? 'Data updated successfully!' : 'Data created successfully!');
     }
 
     private function resetForm(): void
@@ -159,23 +159,21 @@ class TypeComponent extends Component
 
     public function deleteRecord(): void
     {
-        // BUG FIX (Security/IDOR): scoped by institution_id.
-        $record = EventType::where('institution_id', auth()->user()->institution_id)
-            ->findOrFail($this->deleteId);
-
-        // ── Activity Log ───────────────────────────────────────────
-        activity()
-            ->causedBy(auth()->user())
-            ->performedOn($record)
-            ->withProperties(['icon' => 'category', 'type' => 'event'])
-            ->tap(function ($activity) use ($record) {
-                $activity->institution_id = $record->institution_id;
-            })
-            ->log('Event type deleted: ' . $record->name);
-
+        $record = EventType::where('institution_id', auth()->user()->institution_id)->findOrFail($this->deleteId);
         $record->delete();
         $this->confirmDelete = false;
         $this->deleteId = null;
-        session()->flash('success', 'Data deleted successfully!');
+
+        activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'event', 'type' => 'event'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+                ->log('Event type deleted: ' . $record->name);
+
+        $this->dispatch('toast', type: 'success', message: 'Event type deleted successfully!');
     }
 }

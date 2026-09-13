@@ -9,17 +9,12 @@
 
   <link rel="shortcut icon" href="{{ institution()->system_logo ? asset('storage/' . institution()->system_logo) : asset('assets/img/default-logo.png') }}">
 
-  <!-- Bootstrap 5.3 -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
-  <!-- Material Icons -->
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+  <!-- Bootstrap CSS -->
+  <link href="{{asset('assets/vendor/bootstrap/css/bootstrap.min.css')}}" rel="stylesheet"/>
   <!-- Dropzone CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css"/>
-
+  <link href="{{asset('assets/vendor/dropzone/css/dropzone.min.css')}}" type="text/css" rel="stylesheet"/>
   <!-- Theme CSS -->
-  <link rel="stylesheet" href="{{asset('assets/css/theme.css')}}"/>
+  <link href="{{asset('assets/css/theme.css')}}" rel="stylesheet"/>
   @stack('styles')
   @livewireStyles
 </head>
@@ -53,9 +48,9 @@
 
 
 <!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{asset('assets/vendor/bootstrap/js/bootstrap.bundle.min.js')}}"></script>
 <!-- Dropzone JS -->
-<script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
+<script src="{{asset('assets/vendor/dropzone/js/dropzone.min.js')}}"></script>
 <!-- Theme JS -->
 <script src="{{asset('assets/js/theme.js')}}"></script>
 <script type="module" src="{{asset('assets/js/lang/lang.js')}}"></script>

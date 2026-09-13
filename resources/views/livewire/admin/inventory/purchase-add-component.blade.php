@@ -253,11 +253,11 @@
         <!-- FORM FOOTER -->
         <div class="form-footer">
 
-            <button class="btn btn-primary"
-                    type="button"
-                    wire:click="resetForm">
-                <span class="material-icons-round" style="font-size:16px">refresh</span>
-                Reset
+            <button class="btn btn-primary" type="button" wire:click="resetForm">
+                <span>
+                    <span class="material-icons-round">refresh</span>
+                    <span>Reset</span>
+                </span>
             </button>
 
             <button class="btn btn-primary"
@@ -266,17 +266,17 @@
                     wire:loading.attr="disabled"
                     wire:target="save">
 
-                <span wire:loading.remove wire:target="save" style="display: inline-flex;align-items: center;gap: 6px">
+                <span wire:loading.remove wire:target="save">
                     <span class="material-icons-round">save</span>
-                    Save
+                    <span>Save</span>
                 </span>
 
                 <span wire:loading wire:target="save">
                     <span class="material-icons-round"
-                        style="font-size:16px;animation:spin .7s linear infinite">
+                        style="animation:spin .7s linear infinite">
                         sync
                     </span>
-                    Saving...
+                    <span>Saving...</span>
                 </span>
 
             </button>

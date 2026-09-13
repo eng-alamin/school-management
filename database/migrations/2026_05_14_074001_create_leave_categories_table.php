@@ -25,7 +25,9 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->unique(['institution_id', 'name', 'role', 'deleted_at'], 'leave_categories_institution_name_role_unique');
+            $table->unique(['institution_id', 'branch_id', 'name', 'role', 'deleted_at'], 
+                'leave_categories_ins_bra_name_role_del_unique'
+            );
         });
     }
 

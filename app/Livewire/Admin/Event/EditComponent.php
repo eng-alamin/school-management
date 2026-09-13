@@ -194,7 +194,10 @@ class EditComponent extends Component
                     ->causedBy(auth()->user())
                     ->performedOn($event)
                     ->withProperties(['icon' => 'event', 'type' => 'event'])
-                    ->tap(fn ($a) => $a->institution_id = $institutionId)
+                    ->tap(function ($activity) use ($event) {
+                        $activity->institution_id = $event->institution_id;
+                        $activity->branch_id = $event->branch_id;
+                    })
                     ->log('Event updated: ' . $event->title);
             });
 
@@ -204,7 +207,8 @@ class EditComponent extends Component
 
             $this->image = $imagePath;
 
-            $this->dispatch('toast', type: 'success', message: 'Event updated successfully!');
+            session()->flash('toast_success', 'Event updated successfully!');
+            $this->redirectRoute('admin.event.list', navigate: true);
 
         } catch (\Throwable $e) {
 

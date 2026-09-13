@@ -20,7 +20,8 @@ return new class extends Migration
             $table->foreignId('teacher_id')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
 
-            $table->unique(['academic_class_assign_id', 'subject_id'], 'ac_cl_as_de_ass_sub_unique');
+            $table->index('teacher_id', 'ac_cl_as_de_teacher_idx');
+            $table->unique(['academic_class_assign_id', 'subject_id'], 'ac_cl_as_de_aca_sub_unique');
         });
     }
 

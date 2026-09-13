@@ -16,7 +16,7 @@ class SaleListComponent extends Component
     public string $search        = '';
     public int    $perPage       = 10;
     public string $sortField     = 'id';
-    public string $sortDirection = 'asc';
+    public string $sortDirection = 'desc';
 
     // Delete
     public bool  $confirmDelete = false;
@@ -76,7 +76,18 @@ class SaleListComponent extends Component
         $record->delete(); // cascades to inventory_sale_items
         $this->confirmDelete = false;
         $this->deleteId      = null;
-        $this->dispatch('toast', type: 'success', message: 'Data deleted successfully!');
+
+        activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'inventory_2', 'type' => 'inventory'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+                ->log('Inventory sale deleted: ' . $record->bill_no);
+
+        $this->dispatch('toast', type: 'success', message: 'Sale deleted successfully!');
     }
 
     public function render()

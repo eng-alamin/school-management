@@ -20,22 +20,8 @@
                     </div>
                 </div>
 
-                {{-- Role filter --}}
-                <div>
-                    <div class="input-group input-group-outline">
-                        <select class="form-select form-select-sm" wire:model.live="filterRole" style="width:150px;">
-                            <option value="">Select Role</option>
-                            <option value="teacher">Teacher</option>
-                            <option value="accountant">Accountant</option>
-                            <option value="staff">Staff</option>
-                            <option value="student">Student</option>
-                        </select>
-                    </div>
-                </div>
-
-                {{-- Per page --}}
                 @if($applications->total() > 10)
-                    <div>
+                    <div class="col-md-2">
                         <div class="input-group input-group-outline">
                             <select class="form-select form-select-sm" wire:model.live="perPage">
                                 <option value="10">10 / page</option>
@@ -45,6 +31,17 @@
                         </div>
                     </div>
                 @endif
+
+                <div class="col-md-2">
+                    <div class="input-group input-group-outline">
+                        <select class="form-select form-select-sm" wire:model.live="roleFilter">
+                            <option value="all">All Roles</option>
+                            @foreach($roles as $value => $label)
+                                <option value="{{ $value }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
 
                 <a href="{{ route($routePrefix . 'leave.categories') }}" target="_blank" class="btn btn-primary">
                     <span>
@@ -133,9 +130,11 @@
                                         <span class="material-icons-round">reorder</span>
                                     </button>
                                     {{-- Edit --}}
-                                    <button class="act-btn edit" title="Edit" wire:click="openEdit({{ $app->id }})">
-                                        <span class="material-icons-round">drive_file_rename_outline</span>
-                                    </button>
+                                    @if($app->status !== 'approved')
+                                        <button class="act-btn edit" title="Edit" wire:click="openEdit({{ $app->id }})">
+                                            <span class="material-icons-round">drive_file_rename_outline</span>
+                                        </button>
+                                    @endif
                                     {{-- Delete --}}
                                     <button class="act-btn delete" title="Delete" wire:click="confirmDeleteRecord({{ $app->id }})">
                                         <span class="material-icons-round">delete</span>
@@ -184,13 +183,12 @@
                                     <label class="form-label">Role <span class="text-danger">*</span></label>
                                     <select wire:model.live="role" class="form-select @error('role') is-invalid @enderror">
                                         <option value="">Select</option>
-                                        <option value="teacher" @selected($role == 'teacher')>Teacher</option>
-                                        <option value="accountant" @selected($role == 'accountant')>Accountant</option>
-                                        <option value="staff" @selected($role == 'staff')>Staff</option>
-                                        <option value="student" @selected($role == 'student')>Student</option>
+                                        @foreach($roles as $value => $label)
+                                            <option value="{{ $value }}" @selected($role == $value)>{{ $label }}</option>
+                                        @endforeach
                                     </select>
                                 </div>
-                                @error('role') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                @error('role') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
 
                             {{-- Applicant — role select করার পর populate হয় --}}
@@ -205,21 +203,24 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                @error('applicable_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                @error('applicable_id') <span class="text-danger">{{ $message }}</span> @enderror 
                             </div>
 
-                            {{-- Leave Category --}}
+                            {{-- Leave Category — এখন সিলেক্ট করা Role অনুযায়ী ফিল্টার করা --}}
                             <div class="col-md-12">
                                 <div class="input-group input-group-outline">
                                     <label class="form-label">Leave Category <span class="text-danger">*</span></label>
-                                    <select wire:model="leave_category_id" class="form-select @error('leave_category_id') is-invalid @enderror">
-                                        <option value="">Select</option>
+                                    <select wire:model="leave_category_id" class="form-select @error('leave_category_id') is-invalid @enderror"
+                                            {{ (!$role || $categories->isEmpty()) ? 'disabled' : '' }}>
+                                        <option value="">
+                                            {{ !$role ? 'Select role first' : ($categories->isEmpty() ? 'No category found for this role' : 'Select') }}
+                                        </option>
                                         @foreach($categories as $cat)
                                             <option value="{{ $cat->id }}">{{ $cat->name }}</option>
                                         @endforeach
                                     </select>
                                 </div>
-                                @error('leave_category_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                @error('leave_category_id') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
 
                             {{-- Leave Date Range --}}
@@ -237,6 +238,8 @@
                                            class="form-control @error('end_date') is-invalid @enderror"
                                            style="border-radius:0 8px 8px 0;">
                                 </div>
+                                @error('start_date') <span class="text-danger">{{ $message }}</span> @enderror
+                                @error('end_date') <span class="text-danger">{{ $message }}</span> @enderror
                                 @error('start_date') <div class="text-danger" style="font-size:.8rem">{{ $message }}</div> @enderror
                                 @error('end_date')   <div class="text-danger" style="font-size:.8rem">{{ $message }}</div> @enderror
                                 @if($start_date && $end_date)
@@ -273,7 +276,7 @@
                                         <a href="{{ asset('storage/'.$document_path) }}" target="_blank" class="ms-1">View</a>
                                     </small>
                                 @endif
-                                @error('attachment') <div class="text-danger" style="font-size:.8rem">{{ $message }}</div> @enderror
+                                @error('attachment') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
 
                             {{-- Comments --}}
@@ -306,7 +309,6 @@
                 <div class="modal-content">
                     <div class="modal-header border-0">
                         <h5 class="modal-title">
-                            <span class="material-icons-round me-1" style="vertical-align:middle;font-size:1.1rem">reorder</span>
                             Details
                         </h5>
                         <button type="button" class="btn-close" wire:click="$set('showDetail',false)"></button>
@@ -363,32 +365,42 @@
                                 <tr>
                                     <td class="fw-600">Status :</td>
                                     <td>
-                                        <div class="d-flex gap-3 align-items-center flex-wrap">
-                                            @foreach(['pending' => 'Pending', 'approved' => 'Approved', 'rejected' => 'Reject'] as $val => $label)
-                                                <label class="d-flex align-items-center gap-1" style="cursor:pointer;font-size:.85rem;">
-                                                    <input type="radio" wire:model="status" value="{{ $val }}" style="cursor:pointer">
-                                                    {{ $label }}
-                                                </label>
-                                            @endforeach
-                                        </div>
+                                        @if($this->status !== 'approved')
+                                            <div class="d-flex gap-3 align-items-center flex-wrap">
+                                                @foreach(['pending' => 'Pending', 'approved' => 'Approved', 'rejected' => 'Reject'] as $val => $label)
+                                                    <label class="d-flex align-items-center gap-1" style="cursor:pointer;font-size:.85rem;">
+                                                        <input type="radio" wire:model="status" value="{{ $val }}" style="cursor:pointer">
+                                                        {{ $label }}
+                                                    </label>
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            {{ $this->status }}
+                                        @endif
                                     </td>
                                 </tr>
                                 <tr>
                                     <td class="fw-600">Comments :</td>
                                     <td>
-                                        <textarea class="form-control form-control-sm" wire:model="comments"
-                                                  rows="3" placeholder="Add review comments..."></textarea>
+                                        @if($this->status !== 'approved')
+                                            <textarea class="form-control form-control-sm" wire:model="comments" rows="3" placeholder="Add review comments..."></textarea>
+                                        @else
+                                            {{ $this->comments }}
+                                        @endif
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                     <div class="modal-footer border-0">
-                        <button type="button" class="btn btn-light btn-sm" wire:click="$set('showDetail',false)">Close</button>
-                        <button type="button" class="btn btn-primary" wire:click="saveDetail" wire:loading.attr="disabled">
-                            <span wire:loading wire:target="saveDetail" class="spinner-border spinner-border-sm me-1"></span>
-                            Apply
-                        </button>
+                        <button type="button" class="btn btn-light" wire:click="$set('showDetail',false)">Close</button>
+
+                        @if($this->status !== 'approved')
+                            <button type="button" class="btn btn-primary" wire:click="saveDetail" wire:loading.attr="disabled">
+                                <span wire:loading wire:target="saveDetail" class="spinner-border spinner-border-sm me-1"></span>
+                                Apply
+                            </button>
+                        @endif
                     </div>
                 </div>
             </div>

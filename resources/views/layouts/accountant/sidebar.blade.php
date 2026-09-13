@@ -35,7 +35,7 @@
       @can('institution.dashboard.view')
       <li class="nav1-item">
         <a href="{{route('accountant.dashboard') }}" class="nav1-link {{ str_contains(request()->url(), 'dashboard') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">space_dashboard</span>
+          <span class="material-icons-round">space_dashboard</span>
           <span class="nav-label" id="nav-dashboard">Dashboard</span>
         </a>
       </li>
@@ -47,7 +47,7 @@
       ]))
         <li class="nav1-item">
           <div class="nav1-link {{ str_contains(request()->url(), 'accountant/inventory/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
-            <span class="material-icons-round nav-icon">inventory_2</span>
+            <span class="material-icons-round">inventory_2</span>
             <span class="nav-label" id="nav-inventory">Inventory</span>
             <span class="material-icons-round nav-arrow">expand_more</span>
           </div>
@@ -76,7 +76,7 @@
       @can('institution.student.view')
       <li class="nav1-item">
         <a class="nav1-link {{ Route::is('accountant.student.list', 'accountant.student.edit') == true ? 'active' : '' }}" href="{{route('accountant.student.list') }}">
-          <span class="material-icons-round nav-icon">school</span>
+          <span class="material-icons-round">school</span>
           <span class="nav-label" id="nav-students">Students</span>
         </a>
       </li>
@@ -85,7 +85,7 @@
       @can('institution.parent.view')
       <li class="nav1-item">
         <a class="nav1-link {{ str_contains(request()->url(), 'accountant/parent/') == true ? 'active' : '' }}" href="{{route('accountant.parent.list') }}">
-          <span class="material-icons-round nav-icon">groups</span>
+          <span class="material-icons-round">groups</span>
           <span class="nav-label" id="nav-parents">Parents</span>
         </a>
       </li>
@@ -94,7 +94,7 @@
       @can('institution.employee.view')
       <li class="nav1-item">
         <a class="nav1-link {{ str_contains(request()->url(), 'accountant/employee/') == true ? 'active' : '' }}" href="{{route('accountant.parent.list') }}">
-          <span class="material-icons-round nav-icon">groups</span>
+          <span class="material-icons-round">groups</span>
           <span class="nav-label" id="nav-employees">Employees</span>
         </a>
       </li>
@@ -107,7 +107,7 @@
       ]))
       <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), 'accountant/student-accounting') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
-          <span class="material-icons-round nav-icon">account_balance_wallet</span>
+          <span class="material-icons-round">account_balance_wallet</span>
           <span class="nav-label" id="nav-student-accounting">Student Accounting</span>
           <span class="material-icons-round nav-arrow">expand_more</span>
         </div>
@@ -140,7 +140,7 @@
       ]))
       <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), 'accountant/office-accounting') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
-          <span class="material-icons-round nav-icon">business_center</span>
+          <span class="material-icons-round">business_center</span>
           <span class="nav-label" id="nav-office-accounting">Office Accounting</span>
           <span class="material-icons-round nav-arrow">expand_more</span>
         </div>
@@ -169,7 +169,7 @@
       @if(auth()->user()->hasAnyPermission(['institution.salary_template.view', 'institution.salary_assign.view', 'institution.salary_payment.view', 'institution.salary_advance.view',]))
         <li class="nav1-item">
           <div class="nav1-link {{ str_contains(request()->url(), 'salary') ? 'active open' : '' }}" onclick="toggleNav1(this)">
-            <span class="material-icons-round nav-icon">manage_accounts</span>
+            <span class="material-icons-round">manage_accounts</span>
             <span class="nav-label" id="nav-salary-management">Salary Management</span>
             <span class="material-icons-round nav-arrow">expand_more</span>
           </div>
@@ -195,7 +195,7 @@
       @can('institution.leave_application.view')
       <li class="nav1-item">
         <a href="{{route('accountant.leave.applications') }}" class="nav1-link {{ str_contains(request()->url(), 'accountant/leave/applications') || str_contains(request()->url(), 'accountant/leave/categories') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">exit_to_app</span>
+          <span class="material-icons-round">exit_to_app</span>
           <span class="nav-label" id="nav-leaves">Leaves</span>
         </a>
       </li>
@@ -204,7 +204,7 @@
       @can('institution.event.view')
       <li class="nav1-item">
         <a href="{{route('accountant.event.list') }}" class="nav1-link {{ str_contains(request()->url(), 'accountant/event') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">event</span>
+          <span class="material-icons-round">event</span>
           <span class="nav-label" id="nav-events">Events</span>
         </a>
       </li>
@@ -213,7 +213,7 @@
       @can('institution.mailbox.view')
       <li class="nav1-item">
         <a href="{{route('accountant.mailbox.inbox') }}" class="nav1-link {{ str_contains(request()->url(), 'accountant/mailbox/') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">chat</span>
+          <span class="material-icons-round">chat</span>
           <span class="nav-label" id="nav-mailbox">Mailbox</span>
         </a>
       </li>
@@ -222,7 +222,7 @@
       @can('institution.notice.view')
       <li class="nav1-item">
         <a href="{{route('accountant.notices') }}" class="nav1-link {{ str_contains(request()->url(), 'accountant/notices') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">chat</span>
+          <span class="material-icons-round">chat</span>
           <span class="nav-label" id="nav-notices">Notices</span>
         </a>
       </li>
@@ -231,7 +231,7 @@
       @can('institution.notification.view')
       <li class="nav1-item">
         <a href="{{route('accountant.notifications.index') }}" class="nav1-link {{ str_contains(request()->url(), 'accountant/notifications') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">chat</span>
+          <span class="material-icons-round">chat</span>
           <span class="nav-label" id="nav-notifications">Notifications</span>
         </a>
       </li>

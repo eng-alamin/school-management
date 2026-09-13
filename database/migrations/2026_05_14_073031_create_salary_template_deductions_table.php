@@ -25,7 +25,9 @@ return new class extends Migration
             $table->timestamps();
  
             // Prevent duplicate deduction name within the same template
-            $table->unique(['salary_template_id', 'name']);
+            $table->unique(['institution_id', 'branch_id', 'salary_template_id', 'name'],
+                'salary_template_deductions_ins_bra_temp_name_unique'
+            );
         });
     }
 

@@ -58,7 +58,7 @@
                 <div class="col-md-4">
                     <div class="input-group input-group-outline">
                         <label class="form-label">Subject <span class="req">*</span></label>
-                        <select wire:model="subject_id" class="form-select"
+                        <select wire:model.live="subject_id" class="form-select"
                             {{ empty($availableSubjects) ? 'disabled' : '' }}>
                             <option value="">{{ !$class_id ? 'Select Class First' : 'Select Subject' }}</option>
                             @foreach ($availableSubjects as $s)
@@ -77,10 +77,13 @@
                 <div class="col-md-4">
                     <div class="input-group input-group-outline">
                         <label class="form-label">Teacher</label>
-                        <select wire:model="teacher_id" class="form-select">
-                            <option value="">Select Teacher (Optional)</option>
-                            @foreach ($teachers as $teacher)
-                                <option value="{{ $teacher->id }}">{{ $teacher->name }}</option>
+                        <select wire:model="teacher_id" class="form-select"
+                            {{ empty($availableTeachers) ? 'disabled' : '' }}>
+                            <option value="">
+                                {{ !$subject_id ? 'Select Subject First' : (empty($availableTeachers) ? 'No Teacher Assigned' : 'Select Teacher (Optional)') }}
+                            </option>
+                            @foreach ($availableTeachers as $t)
+                                <option value="{{ $t['id'] }}">{{ $t['name'] }}</option>
                             @endforeach
                         </select>
                     </div>

@@ -628,7 +628,7 @@
                                                     <span class="lang-en">Registration Fee</span>
                                                 </div>
                                                 <div class="summary-value text-primary">
-                                                    ৳ {{ number_format(setting('register_fee', 4), 0) }}
+                                                    ৳ {{ number_format(setting('register_fee', 5000), 0) }}
                                                 </div>
                                             </div>
                                             <div class="summary-item" style="border-bottom:none;">

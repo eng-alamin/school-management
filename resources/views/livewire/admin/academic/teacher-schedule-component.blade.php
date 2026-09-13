@@ -128,7 +128,7 @@
                 </table>
             </div>
 
-            <div class="d-flex justify-content-end gap-2 px-5 pb-4 no-print">
+            <div class="d-flex justify-content-end gap-2 px-5 pb-4 mt-4 no-print">
                 <button type="button"
                         class="btn btn-primary"
                         onclick="printTeacherSchedule()"

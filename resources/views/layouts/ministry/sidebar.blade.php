@@ -34,7 +34,7 @@
     <ul>
       <li class="nav1-item">
         <a href="{{route('ministry.dashboard') }}" class="nav1-link {{ str_contains(request()->url(), 'dashboard') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">space_dashboard</span>
+          <span class="material-icons-round">space_dashboard</span>
           <span class="nav-label" id="nav-dashboards" data-en="Dashboard" data-bn="ড্যাশবোর্ড">Dashboard</span>
         </a>
       </li>
@@ -42,7 +42,7 @@
       @can('ministry.institution.view')
       <li class="nav1-item">
         <a href="{{route('ministry.institutions.index') }}" class="nav1-link {{ str_contains(request()->url(), 'ministry/institutions/index') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">school</span>
+          <span class="material-icons-round">school</span>
           <span class="nav-label" id="nav-schools" data-en="Institutions" data-bn="প্রতিষ্ঠানসমূহ">Institutions</span>
         </a>
       </li>
@@ -51,7 +51,7 @@
       @can('ministry.circular.view')
       <li class="nav1-item">
         <a href="{{route('ministry.circulars.index') }}" class="nav1-link {{ str_contains(request()->url(), 'ministry/circulars/') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">announcement</span>
+          <span class="material-icons-round">announcement</span>
           <span class="nav-label" id="nav-circulars" data-en="Circulars" data-bn="পরিপত্র">Circulars</span>
         </a>
       </li>
@@ -60,7 +60,7 @@
       @can('ministry.compliance.view')
       <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), 'ministry/compliance/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
-          <span class="material-icons-round nav-icon">fact_check</span>
+          <span class="material-icons-round">fact_check</span>
           <span class="nav-label" id="nav-compliance" data-en="Compliance" data-bn="কমপ্লায়েন্স">Compliance</span>
           <span class="material-icons-round nav-arrow">expand_more</span>
         </div>
@@ -77,7 +77,7 @@
       @can('ministry.grievance.view')
       <li class="nav1-item">
         <a href="{{route('ministry.grievances.index') }}" class="nav1-link {{ str_contains(request()->url(), 'ministry/grievances/') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">announcement</span>
+          <span class="material-icons-round">announcement</span>
           <span class="nav-label" id="nav-grievances" data-en="Grievances" data-bn="অভিযোগসমূহ">Grievances</span>
         </a>
       </li>
@@ -86,7 +86,7 @@
       @can('ministry.exam-monitoring.view')
       <li class="nav1-item">
         <a href="{{route('ministry.academic.performance') }}" class="nav1-link {{ str_contains(request()->url(), 'academic-performance') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">school</span>
+          <span class="material-icons-round">school</span>
           <span class="nav-label" id="nav-academic-performance" data-en="Academic Performance" data-bn="একাডেমিক পারফরম্যান্স">Academic Performance</span>
         </a>
       </li>
@@ -95,7 +95,7 @@
       @can('ministry.ranking.view')
       <li class="nav1-item">
         <a href="{{route('ministry.ranking.index') }}" class="nav1-link {{ str_contains(request()->url(), 'ministry/ranking') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">leaderboard</span>
+          <span class="material-icons-round">leaderboard</span>
           <span class="nav-label" id="nav-ranking" data-en="Institution Ranking" data-bn="প্রতিষ্ঠান র‍্যাংকিং">Institution Ranking</span>
         </a>
       </li>
@@ -104,7 +104,7 @@
       @can('ministry.heatmap.view')
       <li class="nav1-item">
         <a href="{{route('ministry.geography.heatmap') }}" class="nav1-link {{ str_contains(request()->url(), 'ministry/geography/heatmap') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">map</span>
+          <span class="material-icons-round">map</span>
           <span class="nav-label" id="nav-geography-heatmap" data-en="Geography Heatmap" data-bn="ভৌগোলিক হিটম্যাপ">Geography Heatmap</span>
         </a>
       </li>
@@ -113,7 +113,7 @@
       @can('ministry.report.view')
       <li class="nav1-item">
         <a href="{{route('ministry.reports.index') }}" class="nav1-link {{ str_contains(request()->url(), 'ministry/reports') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">description</span>
+          <span class="material-icons-round">description</span>
           <span class="nav-label" id="nav-reports" data-en="Reports" data-bn="প্রতিবেদন">Reports</span>
         </a>
       </li>
@@ -125,7 +125,7 @@
       @if (auth()->user()->hasRole('Ministry Super Admin'))
         <li class="nav1-item">
           <div class="nav1-link {{ (str_contains(request()->url(), 'ministry/users') || str_contains(request()->url(), 'ministry/roles')) == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
-            <span class="material-icons-round nav-icon">admin_panel_settings</span>
+            <span class="material-icons-round">admin_panel_settings</span>
             <span class="nav-label" id="nav-administration" data-en="Administration" data-bn="প্রশাসন">Administration</span>
             <span class="material-icons-round nav-arrow">expand_more</span>
           </div>

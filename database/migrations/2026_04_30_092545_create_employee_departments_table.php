@@ -19,7 +19,7 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->unique(['institution_id', 'branch_id', 'name']);
+            $table->unique(['institution_id', 'branch_id', 'name', 'deleted_at'], 'employee_departments_ins_bra_name_del_unique');
         });
     }
 

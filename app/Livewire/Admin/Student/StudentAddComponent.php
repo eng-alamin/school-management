@@ -16,6 +16,7 @@ use App\Models\FeeSetup;
 use App\Models\FeeInvoice;
 use App\Models\FeeInvoiceItem;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Database\QueryException;
 
 use Illuminate\Validation\ValidationException;
@@ -50,6 +51,10 @@ class StudentAddComponent extends Component
     public $username;
     public $password;
 
+    // Employee pattern: name theke username auto-suggest hobe
+    // jotokkhon na user nijei username field-e type kore
+    public bool $usernameManuallyEdited = false;
+
     public $guardian_id;
     public $guardian_name, $guardian_relation;
     public $guardian_father_name, $guardian_mother_name;
@@ -57,6 +62,10 @@ class StudentAddComponent extends Component
     public $guardian_mobile, $guardian_email;
     public $guardian_address;
     public $guardian_username, $guardian_password;
+
+    // guardian_name theke guardian_username auto-suggest hobe
+    // jotokkhon na user nijei guardian_username field-e type kore
+    public bool $guardianUsernameManuallyEdited = false;
 
     public $guardian_photo_upload;
 
@@ -202,6 +211,73 @@ class StudentAddComponent extends Component
         $this->generateRollNo($value);
     }
 
+    // ══════════ Student Name → Username Auto Suggest (Employee pattern) ══════════
+
+    public function updatedName($value): void
+    {
+        if (!$this->usernameManuallyEdited) {
+            $this->username = $this->generateUniqueUsername($value);
+        }
+    }
+
+    public function updatedUsername(): void
+    {
+        $this->usernameManuallyEdited = true;
+    }
+
+    public function enableUsernameAutoSuggest(): void
+    {
+        $this->usernameManuallyEdited = false;
+        $this->username = $this->generateUniqueUsername($this->name);
+    }
+
+    // ══════════ Guardian Name → Guardian Username Auto Suggest (Employee pattern) ══════════
+
+    public function updatedGuardianName($value): void
+    {
+        if (!$this->guardian_exists && !$this->guardianUsernameManuallyEdited) {
+            $this->guardian_username = $this->generateUniqueUsername($value);
+        }
+    }
+
+    public function updatedGuardianUsername(): void
+    {
+        $this->guardianUsernameManuallyEdited = true;
+    }
+
+    public function enableGuardianUsernameAutoSuggest(): void
+    {
+        $this->guardianUsernameManuallyEdited = false;
+        $this->guardian_username = $this->generateUniqueUsername($this->guardian_name);
+    }
+
+    /**
+     * Employee module (EmployeeAddComponent) er sathe consistent
+     * unique username generator — slug + duplicate hole numeric suffix.
+     */
+    private function generateUniqueUsername(?string $name): ?string
+    {
+        if (!$name || trim($name) === '') {
+            return null;
+        }
+
+        $base = Str::slug($name, '_');
+
+        if ($base === '') {
+            return null;
+        }
+
+        $username = $base;
+        $counter = 1;
+
+        while (User::where('username', $username)->exists()) {
+            $username = $base . '_' . $counter;
+            $counter++;
+        }
+
+        return $username;
+    }
+
     public function updatedGuardianExists($value): void
     {
         if ($value) {
@@ -220,6 +296,7 @@ class StudentAddComponent extends Component
                 'guardian_password',
                 'guardian_photo_upload',
             ]);
+            $this->guardianUsernameManuallyEdited = false;
         } else {
             $this->reset(['guardian_id']);
         }
@@ -321,6 +398,9 @@ class StudentAddComponent extends Component
 
         $this->availableSections = [];
         $this->selectedClassHasSection = true;
+
+        $this->usernameManuallyEdited = false;
+        $this->guardianUsernameManuallyEdited = false;
 
         $this->showFeeModal = false;
         $this->feeItems = [];
@@ -460,6 +540,7 @@ class StudentAddComponent extends Component
                 'name'     => $this->name,
                 'username' => $this->username,
                 'email'    => $this->email,
+                'phone'    => $this->mobile,
                 'password' => $userPassword,
                 'is_verified' => true,
             ]);
@@ -607,6 +688,16 @@ class StudentAddComponent extends Component
             if ($this->is_new_student && !empty($this->feeItems)) {
                 $invoice = $this->generateFeeInvoice($student, $institutionId);
             }
+
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($student)
+                ->withProperties(['icon' => 'school', 'type' => 'student'])
+                ->tap(function ($activity) use ($student) {
+                    $activity->institution_id = $student->institution_id;
+                    $activity->branch_id = $student->branch_id;
+                })
+                ->log('Student created: ' . $student->name);
 
             DB::commit();
 

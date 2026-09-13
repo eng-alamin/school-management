@@ -97,18 +97,40 @@ class StoreComponent extends Component
                 $data['code'] = Str::slug($this->name) . '-' . $store->id;
             }
 
-            InventoryStore::findOrFail($this->editId)->update($data);
-            $this->dispatch('toast', type: 'success', message: 'Data updated successfully!');
+            $record = InventoryStore::findOrFail($this->editId);
+            $record->update($data);
+
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'inventory_2', 'type' => 'inventory'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+                ->log('Inventory store updated: ' . $record->name);
+
+            $this->dispatch('toast', type: 'success', message: 'Store updated successfully!');
         } else {
-            $store = InventoryStore::create($data);
+            $record = InventoryStore::create($data);
 
             if (empty($this->code)) {
-                $store->update([
-                    'code' => Str::slug($this->name) . '-' . $store->id,
+                $record->update([
+                    'code' => Str::slug($this->name) . '-' . $record->id,
                 ]);
             }
 
-            $this->dispatch('toast', type: 'success', message: 'Data created successfully!');
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'inventory_2', 'type' => 'inventory'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+                ->log('Inventory store created: ' . $record->name);
+
+            $this->dispatch('toast', type: 'success', message: 'Store created successfully!');
         }
 
         $this->showModal = false;
@@ -148,6 +170,17 @@ class StoreComponent extends Component
         $record->delete();
         $this->confirmDelete = false;
         $this->deleteId = null;
-        $this->dispatch('toast', type: 'success', message: 'Data deleted successfully!');
+
+        activity()
+            ->causedBy(auth()->user())
+            ->performedOn($record)
+            ->withProperties(['icon' => 'inventory_2', 'type' => 'inventory'])
+            ->tap(function ($activity) use ($record) {
+                $activity->institution_id = $record->institution_id;
+                $activity->branch_id = $record->branch_id;
+            })
+            ->log('Inventory store deleted: ' . $record->name);
+
+        $this->dispatch('toast', type: 'success', message: 'Store deleted successfully!');
     }
 }

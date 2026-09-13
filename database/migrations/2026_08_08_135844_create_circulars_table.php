@@ -23,8 +23,11 @@ return new class extends Migration
             $table->date('published_at');
             $table->date('expires_at')->nullable();
             $table->timestamps();
-
             $table->softDeletes();
+            
+            $table->index(['institution_id', 'status'], 'circulars_ins_sta_idx');
+            $table->index(['audience', 'status', 'published_at'], 'circulars_aud_sta_pub_idx');
+            $table->index(['division', 'district', 'status'], 'circulars_div_dist_sta_idx');
         });
 
         Schema::create('circular_reads', function (Blueprint $table) {

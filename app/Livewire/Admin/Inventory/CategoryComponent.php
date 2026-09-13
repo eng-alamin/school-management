@@ -90,11 +90,34 @@ class CategoryComponent extends Component
         ];
 
         if ($this->editId) {
-            InventoryCategory::findOrFail($this->editId)->update($data);
-            $this->dispatch('toast', type: 'success', message: 'Data updated successfully!');
+            $record = InventoryCategory::findOrFail($this->editId);
+            $record->update($data);
+
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'inventory_2', 'type' => 'inventory'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+                ->log('Inventory category updated: ' . $record->name);
+
+            $this->dispatch('toast', type: 'success', message: 'Category updated successfully!');
         } else {
-            InventoryCategory::create($data);
-            $this->dispatch('toast', type: 'success', message: 'Data created successfully!');
+            $record = InventoryCategory::create($data);
+
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'inventory_2', 'type' => 'inventory'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+                ->log('Inventory category created: ' . $record->name);
+
+            $this->dispatch('toast', type: 'success', message: 'Category created successfully!');
         }
 
         $this->showModal = false;
@@ -119,7 +142,18 @@ class CategoryComponent extends Component
         $record->delete();
         $this->confirmDelete = false;
         $this->deleteId = null;
-        $this->dispatch('toast', type: 'success', message: 'Data deleted successfully!');
+
+        activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'inventory_2', 'type' => 'inventory'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+                ->log('Inventory category deleted: ' . $record->name);
+
+        $this->dispatch('toast', type: 'success', message: 'Category deleted successfully!');
     }
 
     public function render()

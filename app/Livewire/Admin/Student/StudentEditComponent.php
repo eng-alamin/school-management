@@ -352,6 +352,7 @@ class StudentEditComponent extends Component
                 'name'     => $this->name,
                 'username' => $this->username,
                 'email'    => $this->email,
+                'phone'    => $this->mobile,
             ];
 
             if (!empty($this->password)) {
@@ -396,10 +397,15 @@ class StudentEditComponent extends Component
             $this->student->update($studentData);
 
             activity()
-                ->performedOn($this->student)
                 ->causedBy(auth()->user())
-                ->withProperties(['institution_id' => $institutionId])
-                ->log('Student updated');
+                ->performedOn($this->student)
+                ->withProperties(['icon' => 'school', 'type' => 'student'])
+                ->tap(function ($activity) {
+                    $activity->institution_id = $this->student->institution_id;
+                    $activity->branch_id = $this->student->branch_id;
+                })
+                ->log('Student updated: ' . $this->student->name);
+
 
             if ($this->guardian_exists) {
 
@@ -446,12 +452,6 @@ class StudentEditComponent extends Component
                 }
 
                 $guardian = Guardian::create($guardianData);
-
-                activity()
-                    ->performedOn($guardian)
-                    ->causedBy(auth()->user())
-                    ->withProperties(['institution_id' => $institutionId])
-                    ->log('Guardian created (from student edit)');
 
                 $this->student->guardians()->sync([
                     $guardian->id => [

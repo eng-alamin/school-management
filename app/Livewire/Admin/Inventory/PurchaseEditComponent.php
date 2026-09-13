@@ -220,9 +220,19 @@ class PurchaseEditComponent extends Component
                     ]);
                 }
             }
+
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($purchase)
+                ->withProperties(['icon' => 'inventory_2', 'type' => 'inventory'])
+                ->tap(function ($activity) use ($purchase) {
+                    $activity->institution_id = $purchase->institution_id;
+                    $activity->branch_id = $purchase->branch_id;
+                })
+                ->log('Inventory purchase updated: ' . $purchase->bill_no);
         });
 
-        session()->flash('toast_success', 'Data updated successfully!');
+        session()->flash('toast_success', 'Purchase updated successfully!');
         $this->redirectRoute('admin.inventory.purchase.list', navigate: true);
     }
 

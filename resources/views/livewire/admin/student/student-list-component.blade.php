@@ -136,7 +136,7 @@
                                         <span class="material-icons-round">toggle_on</span>
                                     </button>
                                     <button class="act-btn delete" title="Delete"
-                                        wire:click="confirmDeleteRecord({{ $student->user?->id }})">
+                                        wire:click="confirmDeleteRecord({{ $student->id }})">
                                         <span class="material-icons-round">delete</span>
                                     </button>
                                 </div>

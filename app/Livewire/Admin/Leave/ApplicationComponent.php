@@ -15,6 +15,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class ApplicationComponent extends Component
 {
@@ -22,14 +23,17 @@ class ApplicationComponent extends Component
 
     protected string $paginationTheme = 'bootstrap';
 
-    private const SORTABLE_FIELDS = ['id', 'start_date', 'end_date', 'status', 'created_at'];
+    private const SORTABLE_FIELDS = [
+        'id', 'applicable_type', 'leave_category_id',
+        'start_date', 'end_date', 'total_days', 'status', 'created_at',
+    ];
 
     // ── List / Filter ──
     public string $search        = '';
     public int    $perPage       = 10;
     public string $sortField     = 'id';
     public string $sortDirection = 'desc';
-    public string $filterRole    = '';
+    public string $roleFilter    = 'all';
 
     // ── Modal flags ──
     public bool $showModal     = false;
@@ -64,6 +68,15 @@ class ApplicationComponent extends Component
         'accountant'   => User::class,
         'staff'        => User::class,
         'student'      => User::class,
+    ];
+
+    // Blade-এ role select / filter এই একই সোর্স থেকে বানানো হয়,
+    // যাতে roleModelMap-এর সাথে drift না হয়।
+    public const ROLE_LABELS = [
+        'teacher'    => 'Teacher',
+        'accountant' => 'Accountant',
+        'staff'      => 'Staff',
+        'student'    => 'Student',
     ];
 
     public string $routePrefix = '';
@@ -114,14 +127,23 @@ class ApplicationComponent extends Component
     protected function rules(): array
     {
         return [
-            'role'              => 'required|string',
-            'applicable_id'     => 'required|integer',
-            'applicable_type'   => 'required|string',
+            'role'            => ['required', Rule::in(array_keys($this->roleModelMap))],
+            'applicable_type' => ['required', Rule::in(array_values($this->roleModelMap))],
+            'applicable_id'   => [
+                'required',
+                'integer',
+                Rule::exists('users', 'id')
+                    ->where('institution_id', institution()->id)
+                    ->where('branch_id', $this->activeBranchId())
+                    ->where('role', $this->role),
+            ],
             'leave_category_id' => [
                 'required',
                 'integer',
-                \Illuminate\Validation\Rule::exists('leave_categories', 'id')
-                    ->where('institution_id', institution()->id),
+                Rule::exists('leave_categories', 'id')
+                    ->where('institution_id', institution()->id)
+                    ->where('branch_id', $this->activeBranchId())
+                    ->where('role', $this->role),
             ],
             'start_date'        => 'required|date',
             'end_date'          => 'required|date|after_or_equal:start_date',
@@ -132,15 +154,16 @@ class ApplicationComponent extends Component
     }
 
     public function updatingSearch(): void    { $this->resetPage(); }
-    public function updatingFilterRole(): void { $this->resetPage(); }
+    public function updatingRoleFilter(): void { $this->resetPage(); }
     public function updatedPerPage(): void    { $this->resetPage(); }
 
-    // Role select করলে applicant list লোড হবে, applicable_type সেট হবে
+    // Role select করলে applicant list ও role-অনুযায়ী leave category লোড হবে
     public function updatedRole(string $value): void
     {
-        $this->applicable_id   = null;
-        $this->applicable_type = '';
-        $this->applicants      = [];
+        $this->applicable_id     = null;
+        $this->applicable_type   = '';
+        $this->applicants        = [];
+        $this->leave_category_id = null;
 
         if (!$value) return;
 
@@ -246,11 +269,8 @@ class ApplicationComponent extends Component
         $this->status            = $record->status;
         $this->document_path     = $record->document_path;
 
-        // applicable_type দিয়ে role বের করা সম্ভব না কারণ সব role-ই User::class এর সাথে map করা।
-        // আসল role আসবে সম্পর্কিত User রেকর্ডের 'role' column থেকে।
         $this->role = optional($record->applicable)->role ?? '';
 
-        // updatedRole() কল করলে applicable_id null হয়ে যেত, তাই সরাসরি applicants লোড করি
         $this->applicants = $this->loadApplicantsForRole($this->role);
 
         $this->showDetail = false;
@@ -302,14 +322,14 @@ class ApplicationComponent extends Component
         DB::beginTransaction();
 
         try {
-            $application = LeaveApplication::with('applicable')
+            $record = LeaveApplication::with('applicable')
                 ->where('institution_id', $institutionId)
                 ->where('branch_id', $branchId)
                 ->findOrFail($this->detailId);
 
-            $previousStatus = $application->status;
+            $previousStatus = $record->status;
 
-            $application->update([
+            $record->update([
                 'status'        => $this->status,
                 'approval_note' => $this->comments,
                 'approved_by'   => auth()->id(),
@@ -318,25 +338,21 @@ class ApplicationComponent extends Component
 
             activity()
                 ->causedBy(auth()->user())
-                ->performedOn($application)
-                ->withProperties([
-                    'icon' => 'fact_check',
-                    'type' => 'leave',
-                    'from' => $previousStatus,
-                    'to'   => $this->status,
-                ])
-                ->tap(function ($activity) use ($institutionId) {
-                    $activity->institution_id = $institutionId;
+                ->performedOn($record)
+                ->withProperties(['icon' => 'exit_to_app', 'type' => 'leave'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
                 })
                 ->log('Leave application status changed to ' . ucfirst($this->status));
 
             // শুধু Approve বা Reject হলেই আবেদনকারীকে notification পাঠানো হবে
-            if (in_array($this->status, ['approved', 'rejected']) && $application->applicable) {
-                $applicant = $application->applicable;
+            if (in_array($this->status, ['approved', 'rejected']) && $record->applicable) {
+                $applicant = $record->applicable;
 
                 if ($applicant instanceof User) {
                     $statusLabel = ucfirst($this->status);
-                    $period      = $application->start_date->format('d M Y') . ' - ' . $application->end_date->format('d M Y');
+                    $period      = $record->start_date->format('d M Y') . ' - ' . $record->end_date->format('d M Y');
 
                     NotificationService::send(
                         $applicant,
@@ -349,7 +365,7 @@ class ApplicationComponent extends Component
                     );
                 } else {
                     Log::warning('Leave notification skipped: applicant is not a User instance.', [
-                        'leave_application_id' => $application->id,
+                        'leave_application_id' => $record->id,
                         'applicable_type'      => get_class($applicant),
                     ]);
                 }
@@ -403,45 +419,43 @@ class ApplicationComponent extends Component
             ];
 
             if ($this->editId) {
-                $application = LeaveApplication::with('applicable')
+                $record = LeaveApplication::with('applicable')
                     ->where('institution_id', $institutionId)
                     ->where('branch_id', $branchId)
                     ->findOrFail($this->editId);
 
-                $oldFilePath = $application->document_path;
-                $data['document_path'] = $newFilePath ?: $application->document_path;
+                $oldFilePath = $record->document_path;
+                $data['document_path'] = $newFilePath ?: $record->document_path;
 
-                $application->update($data);
+                $record->update($data);
 
                 activity()
                     ->causedBy(auth()->user())
-                    ->performedOn($application)
-                    ->withProperties(['icon' => 'edit', 'type' => 'leave'])
-                    ->tap(function ($activity) use ($institutionId) {
-                        $activity->institution_id = $institutionId;
+                    ->performedOn($record)
+                    ->withProperties(['icon' => 'exit_to_app', 'type' => 'leave'])
+                    ->tap(function ($activity) use ($record) {
+                        $activity->institution_id = $record->institution_id;
+                        $activity->branch_id = $record->branch_id;
                     })
-                    ->log('Leave application updated');
-
-                $message = 'Leave application updated successfully!';
+                    ->log('Leave application updated: ' . optional($record->applicable)->name . ' (' . $record->start_date->format('d M Y') . ' - ' . $record->end_date->format('d M Y') . ')');
             } else {
                 $data['institution_id']  = $institutionId;
                 $data['branch_id']       = $branchId;
                 $data['session_id']      = $sessionId;
                 $data['document_path']   = $newFilePath;
 
-                $application = LeaveApplication::create($data);
-                $application->load('applicable');
+                $record = LeaveApplication::create($data);
+                $record->load('applicable');
 
                 activity()
                     ->causedBy(auth()->user())
-                    ->performedOn($application)
-                    ->withProperties(['icon' => 'event_busy', 'type' => 'leave'])
-                    ->tap(function ($activity) use ($institutionId) {
-                        $activity->institution_id = $institutionId;
+                    ->performedOn($record)
+                    ->withProperties(['icon' => 'exit_to_app', 'type' => 'leave'])
+                    ->tap(function ($activity) use ($record) {
+                        $activity->institution_id = $record->institution_id;
+                        $activity->branch_id = $record->branch_id;
                     })
-                    ->log('New leave application created');
-
-                $message = 'Leave application created successfully!';
+                    ->log('Leave application created: ' . optional($record->applicable)->name . ' (' . $record->start_date->format('d M Y') . ' - ' . $record->end_date->format('d M Y') . ')');
             }
 
             DB::commit();
@@ -452,7 +466,7 @@ class ApplicationComponent extends Component
 
             $this->showModal = false;
             $this->resetForm();
-            $this->dispatch('toast', type: 'success', message: $message);
+            $this->dispatch('toast', type: 'success', message: $this->editId ? 'Leave application updated successfully!' : 'Leave application created successfully!');
         } catch (\Throwable $e) {
             DB::rollBack();
 
@@ -482,21 +496,22 @@ class ApplicationComponent extends Component
         DB::beginTransaction();
 
         try {
-            $application = LeaveApplication::with('applicable')
+            $record = LeaveApplication::with('applicable')
                 ->where('institution_id', $institutionId)
                 ->where('branch_id', $branchId)
                 ->findOrFail($this->deleteId);
 
             activity()
                 ->causedBy(auth()->user())
-                ->performedOn($application)
-                ->withProperties(['icon' => 'delete', 'type' => 'leave'])
-                ->tap(function ($activity) use ($institutionId) {
-                    $activity->institution_id = $institutionId;
+                ->performedOn($record)
+                ->withProperties(['icon' => 'exit_to_app', 'type' => 'leave'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
                 })
-                ->log('Leave application deleted');
+                ->log('Leave application deleted: ' . optional($record->applicable)->name . ' (' . $record->start_date->format('d M Y') . ' - ' . $record->end_date->format('d M Y') . ')');
 
-            $application->delete();
+            $record->delete();
 
             DB::commit();
 
@@ -530,23 +545,31 @@ class ApplicationComponent extends Component
                           ->orWhereHas('leaveCategory', fn($c) => $c->where('name', 'like', "%{$this->search}%"));
                 });
             })
-            ->when($this->filterRole, function ($q) {
-                $model = $this->roleModelMap[$this->filterRole] ?? null;
+            ->when($this->roleFilter !== 'all', function ($q) {
+                $model = $this->roleModelMap[$this->roleFilter] ?? null;
                 if ($model) {
                     $q->where('applicable_type', $model);
                     if ($model === User::class) {
-                        $q->whereHasMorph('applicable', $model, fn($e) => $e->where('role', $this->filterRole));
+                        $q->whereHasMorph('applicable', $model, fn($e) => $e->where('role', $this->roleFilter));
                     }
                 }
             })
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
+        // Modal-এর Leave Category dropdown — শুধু বর্তমান institution + branch + সিলেক্ট করা Role-এর
+        // জন্য প্রযোজ্য ক্যাটাগরি (branch_id filter যোগ করা হলো, নাহলে অন্য branch-এর category দেখা যেত)
         $categories = LeaveCategory::where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
+            ->when($this->role, fn ($q) => $q->where('role', $this->role))
             ->orderBy('name')
             ->get();
 
-        return view('livewire.admin.leave.application-component', compact('applications', 'categories'))
+        return view('livewire.admin.leave.application-component', [
+            'applications' => $applications,
+            'categories'   => $categories,
+            'roles'        => self::ROLE_LABELS,
+        ])
             ->layout('layouts.admin.app', [
                 'title' => 'Leave Application | ' . institution()->name,
             ]);

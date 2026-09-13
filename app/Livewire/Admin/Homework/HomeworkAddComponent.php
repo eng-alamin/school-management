@@ -45,6 +45,7 @@ class HomeworkAddComponent extends Component
 
     public array $availableSections = [];
     public array $availableSubjects = [];
+    public array $availableTeachers = [];
 
     public bool $classHasSection = true;
 
@@ -74,8 +75,10 @@ class HomeworkAddComponent extends Component
     {
         $this->section_id        = null;
         $this->subject_id        = null;
+        $this->teacher_id        = null;
         $this->availableSections = [];
         $this->availableSubjects = [];
+        $this->availableTeachers = [];
         $this->classHasSection   = true;
 
         if (!$value) return;
@@ -116,13 +119,34 @@ class HomeworkAddComponent extends Component
     public function updatedSectionId($value): void
     {
         $this->subject_id        = null;
+        $this->teacher_id        = null;
         $this->availableSubjects = [];
+        $this->availableTeachers = [];
 
         if (!$this->class_id) return;
 
         $sectionId = ($value && $value !== 'all') ? $value : null;
 
         $this->loadSubjects($this->class_id, $sectionId);
+    }
+
+    public function updatedSubjectId($value): void
+    {
+        $this->teacher_id        = null;
+        $this->availableTeachers = [];
+
+        if (!$value || !$this->class_id) return;
+
+        $sectionId = ($this->classHasSection && $this->section_id && $this->section_id !== 'all')
+            ? $this->section_id
+            : null;
+
+        $this->loadTeachers($this->class_id, $sectionId, $value);
+
+        // যদি এই Subject-এর জন্য শুধু একজনই Teacher assigned থাকে, auto-select করে দেওয়া হচ্ছে
+        if (count($this->availableTeachers) === 1) {
+            $this->teacher_id = $this->availableTeachers[0]['id'];
+        }
     }
 
     public function updatedPublishedLater($value): void
@@ -168,6 +192,51 @@ class HomeworkAddComponent extends Component
         }
     }
 
+    // ---------------------------------------------------------------
+    // Selected Class + Section + Subject অনুযায়ী assigned Teacher(দের) লোড করা
+    // ---------------------------------------------------------------
+    protected function loadTeachers($class_id, $section_id, $subject_id): void
+    {
+        if (!$subject_id) {
+            $this->availableTeachers = [];
+            return;
+        }
+
+        $query = AcademicClassAssign::where('institution_id', institution()->id)
+            ->where('branch_id', $this->activeBranchId())
+            ->where('session_id', $this->currentSessionId)
+            ->where('class_id', $class_id);
+
+        if ($section_id) {
+            $query->where('section_id', $section_id);
+        } else {
+            $query->whereNull('section_id');
+        }
+
+        $assign = $query->with(['details' => function ($q) use ($subject_id) {
+            $q->where('subject_id', $subject_id)->whereNotNull('teacher_id');
+        }])->first();
+
+        $teacherIds = $assign
+            ? $assign->details->pluck('teacher_id')->unique()->values()->toArray()
+            : [];
+
+        if (empty($teacherIds)) {
+            $this->availableTeachers = [];
+            return;
+        }
+
+        $this->availableTeachers = User::where('institution_id', institution()->id)
+            ->where('branch_id', $this->activeBranchId())
+            ->where('role', User::ROLE_TEACHER)
+            ->where('is_active', true)
+            ->whereIn('id', $teacherIds)
+            ->orderBy('name')
+            ->get(['id', 'name'])
+            ->map(fn($teacher) => ['id' => $teacher->id, 'name' => $teacher->name])
+            ->toArray();
+    }
+
     protected function validSubjectIdsForSelection(): array
     {
         if (!$this->class_id) {
@@ -194,6 +263,37 @@ class HomeworkAddComponent extends Component
         return $assign ? $assign->details->pluck('subject_id')->toArray() : [];
     }
 
+    // ---------------------------------------------------------------
+    // Selected Class + Section + Subject অনুযায়ী assigned Teacher ID গুলো (Validation এর জন্য)
+    // ---------------------------------------------------------------
+    protected function validTeacherIdsForSelection(): array
+    {
+        if (!$this->class_id || !$this->subject_id) {
+            return [];
+        }
+
+        $sectionId = ($this->classHasSection && $this->section_id && $this->section_id !== 'all')
+            ? $this->section_id
+            : null;
+
+        $query = AcademicClassAssign::where('institution_id', institution()->id)
+            ->where('branch_id', $this->activeBranchId())
+            ->where('session_id', $this->currentSessionId)
+            ->where('class_id', $this->class_id);
+
+        if ($sectionId) {
+            $query->where('section_id', $sectionId);
+        } else {
+            $query->whereNull('section_id');
+        }
+
+        $assign = $query->with(['details' => function ($q) {
+            $q->where('subject_id', $this->subject_id)->whereNotNull('teacher_id');
+        }])->first();
+
+        return $assign ? $assign->details->pluck('teacher_id')->unique()->toArray() : [];
+    }
+
     public function resetForm(): void
     {
         $this->reset([
@@ -202,7 +302,7 @@ class HomeworkAddComponent extends Component
             'homework_date', 'submission_date',
             'published_later', 'schedule_date',
             'attachment', 'send_sms',
-            'availableSections', 'availableSubjects',
+            'availableSections', 'availableSubjects', 'availableTeachers',
         ]);
         $this->status = 'published';
         $this->classHasSection = true;
@@ -243,6 +343,11 @@ class HomeworkAddComponent extends Component
                     ->where('institution_id', $institutionId)
                     ->where('branch_id', $branchId)
                     ->where('role', User::ROLE_TEACHER),
+                function ($attribute, $value, $fail) {
+                    if ($value && !in_array($value, $this->validTeacherIdsForSelection())) {
+                        $fail('Selected teacher is not assigned to the selected class/section/subject.');
+                    }
+                },
             ],
             'title'           => 'required|string|max:255',
             'description'     => 'required|string',
@@ -268,8 +373,8 @@ class HomeworkAddComponent extends Component
                 ? $this->section_id
                 : null;
 
-            $homework = DB::transaction(function () use ($sectionId, $attachmentPath, $status, $institutionId, $branchId, $sessionId) {
-                $homework = Homework::create([
+            $record = DB::transaction(function () use ($sectionId, $attachmentPath, $status, $institutionId, $branchId, $sessionId) {
+                $record = Homework::create([
                     'institution_id'  => $institutionId,
                     'branch_id'       => $branchId,
                     'session_id'      => $sessionId,
@@ -289,19 +394,24 @@ class HomeworkAddComponent extends Component
                 ]);
 
                 activity()
-                    ->performedOn($homework)
-                    ->tap(fn ($a) => $a->institution_id = $institutionId)
-                    ->log('Homework "' . $homework->title . '" created');
+                    ->causedBy(auth()->user())
+                    ->performedOn($record)
+                    ->withProperties(['icon' => 'assignment', 'type' => 'homework'])
+                    ->tap(function ($activity) use ($record) {
+                        $activity->institution_id = $record->institution_id;
+                        $activity->branch_id = $record->branch_id;
+                    })
+                    ->log('Homework created: ' . $record->title);
 
-                return $homework;
+                return $record;
             });
 
-            if ($homework->status === 'published' && !$homework->published_later) {
-                HomeworkNotificationService::notifyStudentsAndGuardians($homework);
+            if ($record->status === 'published' && !$record->published_later) {
+                HomeworkNotificationService::notifyStudentsAndGuardians($record);
             }
 
-            $this->dispatch('toast', type: 'success', message: 'Homework created successfully!');
-            $this->resetForm();
+            session()->flash('toast_success', 'Homework created successfully!');
+            $this->redirectRoute('admin.homework.list', navigate: true);
 
         } catch (\Throwable $e) {
 
@@ -329,16 +439,8 @@ class HomeworkAddComponent extends Component
             ->orderBy('id')
             ->get();
 
-        $teachers = User::where('institution_id', $institutionId)
-            ->where('branch_id', $branchId)
-            ->where('role', User::ROLE_TEACHER)
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->get(['id', 'name']);
-
         return view('livewire.admin.homework.homework-add-component')
             ->with('classes', $classes)
-            ->with('teachers', $teachers)
             ->layout('layouts.admin.app', [
                 'title' => 'Create Homework | ' . institution()->name,
             ]);

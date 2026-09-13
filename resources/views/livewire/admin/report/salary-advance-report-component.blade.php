@@ -24,14 +24,14 @@
                 <div class="col-6 col-md-3">
                     <div class="summary-card summary-late">
                         <span class="material-icons-round">payments</span>
-                        <div class="count">৳{{ number_format($summary['total_amount'], 2) }}</div>
+                        <div class="count">৳{{ number_format($summary['total_amount'], 0) }}</div>
                         <div class="label">Total Given</div>
                     </div>
                 </div>
                 <div class="col-6 col-md-3">
                     <div class="summary-card summary-absent">
                         <span class="material-icons-round">account_balance_wallet</span>
-                        <div class="count">৳{{ number_format($summary['total_remaining'], 2) }}</div>
+                        <div class="count">৳{{ number_format($summary['total_remaining'], 0) }}</div>
                         <div class="label">Remaining</div>
                     </div>
                 </div>
@@ -46,6 +46,11 @@
 
             {{-- Toolbar / Filters --}}
             <div class="card-toolbar flex-wrap mb-2">
+                {{-- Search --}}
+                <div class="mb-2" style="position:relative;display:inline-flex;align-items:center;width:100%">
+                    <span class="material-icons-round" style="position:absolute;left:10px;font-size:16px;color:var(--muted);pointer-events:none">search</span>
+                    <input type="text" wire:model.live.debounce.400ms="search" placeholder="নাম ..." class="form-control" style="padding-left:32px;">
+                </div>
                 <div class="col-md-2">
                     <div class="input-group input-group-outline" wire:ignore>
                         <label class="form-label">From</label>
@@ -70,13 +75,6 @@
                     </div>
                 </div>
 
-                <div class="col-md-2">
-                    <label class="form-label">Search</label>
-                    <div style="position:relative;display:inline-flex;align-items:center;width:100%">
-                        <span class="material-icons-round" style="position:absolute;left:10px;font-size:16px;color:var(--muted);pointer-events:none">search</span>
-                        <input type="text" wire:model.live.debounce.400ms="search" placeholder="নাম / ID..." class="form-control form-control-sm" style="padding-left:32px;">
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -127,11 +125,11 @@
                                 <div class="fw-500 text-dark">{{ $record->employee?->name ?? '— (deleted)' }}</div>
                                 <small class="text-muted">{{ $record->employee?->employee_id }}</small>
                             </td>
-                            <td class="text-dark" style="font-size:.78rem;">৳{{ number_format($record->amount, 2) }}</td>
+                            <td class="text-dark" style="font-size:.78rem;">৳{{ number_format($record->amount, 0) }}</td>
                             <td class="text-muted" style="font-size:.78rem;">
-                                {{ $record->installment_amount ? '৳' . number_format($record->installment_amount, 2) : 'Lump sum' }}
+                                {{ $record->installment_amount ? '৳' . number_format($record->installment_amount, 0) : 'Lump sum' }}
                             </td>
-                            <td class="text-danger" style="font-size:.78rem;">৳{{ number_format($record->remaining_amount, 2) }}</td>
+                            <td class="text-danger" style="font-size:.78rem;">৳{{ number_format($record->remaining_amount, 0) }}</td>
                             <td class="text-muted" style="font-size:.78rem;">{{ $record->repayments_count }}</td>
                             <td class="text-muted" style="font-size:.75rem;">{{ \Illuminate\Support\Str::limit($record->reason, 30) ?: '—' }}</td>
                             <td>

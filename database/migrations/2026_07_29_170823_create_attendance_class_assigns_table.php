@@ -20,7 +20,9 @@ return new class extends Migration
             $table->timestamps();
 
             // ── Ekta class+section combination-e ekjon-i teacher attendance duty pete pare ──
-            $table->unique('academic_class_assign_id', 'attendance_class_assigns_class_assign_unique');
+            $table->unique(['academic_class_assign_id', 'teacher_id'], 
+                'attendance_class_assigns_cla_tea_unique'
+            );
         });
     }
 

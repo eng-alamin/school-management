@@ -312,8 +312,11 @@ class ExamSetupComponent extends Component
                 activity()
                     ->causedBy(auth()->user())
                     ->performedOn($record)
-                    ->withProperties(['icon' => 'assignment', 'type' => 'exam_setup'])
-                    ->tap(fn($a) => $a->institution_id = $record->institution_id)
+                    ->withProperties(['icon' => 'quiz', 'type' => 'exam'])
+                    ->tap(function ($activity) use ($record) {
+                        $activity->institution_id = $record->institution_id;
+                        $activity->branch_id = $record->branch_id;
+                    })
                     ->log('Exam setup updated: ' . $record->name);
 
                 DB::commit();
@@ -323,7 +326,7 @@ class ExamSetupComponent extends Component
                 return;
             }
 
-            $this->dispatch('toast', type: 'success', message: 'Data updated successfully!');
+            $this->dispatch('toast', type: 'success', message: 'Exam setup updated successfully!');
             $this->showModal = false;
             $this->resetForm();
             return;
@@ -391,8 +394,11 @@ class ExamSetupComponent extends Component
                 activity()
                     ->causedBy(auth()->user())
                     ->performedOn($record)
-                    ->withProperties(['icon' => 'assignment', 'type' => 'exam_setup'])
-                    ->tap(fn($a) => $a->institution_id = $record->institution_id)
+                    ->withProperties(['icon' => 'quiz', 'type' => 'exam'])
+                    ->tap(function ($activity) use ($record) {
+                        $activity->institution_id = $record->institution_id;
+                        $activity->branch_id = $record->branch_id;
+                    })
                     ->log('Exam setup created: ' . $record->name);
 
                 $createdCount++;
@@ -420,32 +426,38 @@ class ExamSetupComponent extends Component
 
     public function togglePublished(int $id): void
     {
-        $setup = ExamSetup::findOrFail($id);
-        $setup->update(['is_published' => ! $setup->is_published]);
+        $record = ExamSetup::findOrFail($id);
+        $record->update(['is_published' => ! $record->is_published]);
 
         activity()
             ->causedBy(auth()->user())
-            ->performedOn($setup)
-            ->withProperties(['icon' => 'assignment', 'type' => 'exam_setup'])
-            ->tap(fn($a) => $a->institution_id = $setup->institution_id)
-            ->log('Exam publish toggled: ' . $setup->name);
+            ->performedOn($record)
+            ->withProperties(['icon' => 'quiz', 'type' => 'exam'])
+            ->tap(function ($activity) use ($record) {
+                $activity->institution_id = $record->institution_id;
+                $activity->branch_id = $record->branch_id;
+            })
+            ->log('Exam setup publish toggled: ' . $record->name);
 
-        $this->dispatch('toast', type: 'success', message: 'Status updated!');
+        $this->dispatch('toast', type: 'success', message: 'Toggle status updated!');
     }
 
     public function toggleResultPublished(int $id): void
     {
-        $setup = ExamSetup::findOrFail($id);
-        $setup->update(['is_result_published' => ! $setup->is_result_published]);
+        $record = ExamSetup::findOrFail($id);
+        $record->update(['is_result_published' => ! $record->is_result_published]);
 
         activity()
             ->causedBy(auth()->user())
-            ->performedOn($setup)
-            ->withProperties(['icon' => 'assignment', 'type' => 'exam_setup'])
-            ->tap(fn($a) => $a->institution_id = $setup->institution_id)
-            ->log('Exam result publish toggled: ' . $setup->name);
+            ->performedOn($record)
+            ->withProperties(['icon' => 'quiz', 'type' => 'exam'])
+            ->tap(function ($activity) use ($record) {
+                $activity->institution_id = $record->institution_id;
+                $activity->branch_id = $record->branch_id;
+            })
+            ->log('Exam setup result publish toggled: ' . $record->name);
 
-        $this->dispatch('toast', type: 'success', message: 'Result status updated!');
+        $this->dispatch('toast', type: 'success', message: 'Toggle status updated!');
     }
 
     public function confirmDeleteRecord(int $id): void
@@ -463,8 +475,11 @@ class ExamSetupComponent extends Component
             activity()
                 ->causedBy(auth()->user())
                 ->performedOn($record)
-                ->withProperties(['icon' => 'assignment', 'type' => 'exam_setup'])
-                ->tap(fn($a) => $a->institution_id = $record->institution_id)
+                ->withProperties(['icon' => 'quiz', 'type' => 'exam'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
                 ->log('Exam setup deleted: ' . $record->name);
 
             ExamSetupDetail::where('exam_setup_id', $record->id)->delete();
@@ -482,21 +497,10 @@ class ExamSetupComponent extends Component
         $this->dispatch('toast', type: 'success', message: 'Data deleted successfully!');
     }
 
-    /**
-     * Build a human-readable label for a Class Assign.
-     * section_id null থাকা মানে এই class-এর জন্য section প্রযোজ্যই না
-     * (has_section = false), তাই এখানে কোনো placeholder টেক্সট ("All Section")
-     * দেখানো হয় না — শুধু section থাকলেই তা label-এ যোগ হয়।
-     *
-     * FIX: আগে $assign->class / $assign->section ব্যবহার হচ্ছিল যা model-এ
-     * অস্তিত্বহীন relation — real relation নাম academicClass/academicSection।
-     */
     private function buildClassLabel(AcademicClassAssign $assign): string
     {
         $label = $assign->academicClass->name ?? 'Unknown';
 
-        // যে class-এ section নেই, সেখানে "All Section" এর মতো ভুয়া টেক্সট
-        // না দেখিয়ে শুধু class name দেখানো হচ্ছে। Section থাকলে তবেই জোড়া লাগবে।
         if ($assign->academicSection) {
             $label .= ' - ' . $assign->academicSection->name;
         }

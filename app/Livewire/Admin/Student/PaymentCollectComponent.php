@@ -8,6 +8,7 @@ use App\Models\FeePayment;
 use App\Models\OfficeAccount;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use InvalidArgumentException;
 
 class PaymentCollectComponent extends Component
 {
@@ -40,8 +41,6 @@ class PaymentCollectComponent extends Component
             'This invoice is already fully paid.'
         );
 
-        // ── BUG FIX (N+1 prevention): print dispatch-er jonno dorkari relations
-        // age theke load kore rakha hocche, jate confirmPayment()-e alada query na lage ──
         $invoice->loadMissing(['student', 'items.feeSetup.feeType']);
 
         $this->invoice = $invoice;
@@ -49,8 +48,6 @@ class PaymentCollectComponent extends Component
         $this->createdInvoiceId  = $invoice->id;
         $this->createdInvoiceNo  = $invoice->invoice_no;
 
-        // ── BUG FIX (floating point precision): round kore rakha hocche,
-        // jate validation rule-e 'max:' concatenation-e vul float na jai ──
         $this->createdInvoiceDue = round((float) $invoice->due_amount, 2);
         $this->payAmount         = round((float) $invoice->due_amount, 2);
 
@@ -100,9 +97,6 @@ class PaymentCollectComponent extends Component
 
             abort_if($invoice->institution_id !== $institutionId, 403, 'Unauthorized access to this invoice.');
 
-            // ── BUG FIX (race-condition safety): lock nrewar por abar fresh due_amount
-            // er biporite payAmount re-check kora hocche, jate concurrent/double-submit
-            // request-e over-payment na hoy (age eta check hoto na) ──
             if ($this->payAmount > (float) $invoice->due_amount) {
                 throw ValidationException::withMessages([
                     'payAmount' => 'Pay amount cannot be greater than the current due amount ('
@@ -110,35 +104,24 @@ class PaymentCollectComponent extends Component
                 ]);
             }
 
-            FeePayment::create([
+            $itemAmounts = $this->buildItemAllocations($invoice, (float) $this->payAmount);
+
+            FeePayment::createWithAllocations([
                 'institution_id'    => $institutionId,
                 'fee_invoice_id'    => $invoice->id,
                 'student_id'        => $invoice->student_id,
-                'amount'            => $this->payAmount,
                 'payment_method'    => $this->paymentMethod,
                 'payment_date'      => $this->paymentDate,
                 'office_account_id' => $this->officeAccountId ?: null,
                 'remarks'           => $this->paymentRemarks,
-            ]);
+            ], $itemAmounts);
 
-            $newPaid = (float) $invoice->paid_amount + (float) $this->payAmount;
-            $newDue  = (float) $invoice->total_amount - $newPaid;
-
-            $invoice->update([
-                'paid_amount'    => $newPaid,
-                'due_amount'     => max($newDue, 0),
-                'payment_status' => $newDue <= 0 ? 'paid' : 'partial',
-            ]);
+            $invoice->recalculate();
 
             DB::commit();
 
             $invoice->refresh();
             $invoice->loadMissing(['student', 'items.feeSetup.feeType']);
-
-            // ── BUG FIX (main bug): age $this->invoice kokhono refresh/sync hoto na,
-            // shudhu local $invoice variable refresh hoto. Fole payment successful howar
-            // porew blade-er table-e Paid Amount column stale/purono value dekhato.
-            // Ekhon component property-o notun kore sync kora hocche ──
             $this->invoice = $invoice;
 
             // ── Print korar jonno dorkari data pathai ──
@@ -178,12 +161,59 @@ class PaymentCollectComponent extends Component
             DB::rollBack();
             throw $e;
 
+        } catch (InvalidArgumentException $e) {
+
+            DB::rollBack();
+            throw ValidationException::withMessages([
+                'payAmount' => $e->getMessage(),
+            ]);
+
         } catch (\Throwable $e) {
 
             DB::rollBack();
             $this->dispatch('toast', type: 'error', message: 'Payment failed!');
             throw $e;
         }
+    }
+
+    /**
+     * Ekta lump-sum pay amount-ke invoice-er item-gulor moddhe FIFO order-e
+     * (item id ascending) bhag kore [fee_invoice_item_id => allocated_amount] return kore.
+     * Prottekta item-e tar nijer remaining balance porjonto e allocate kora hoy.
+     *
+     * @throws \InvalidArgumentException jodi total amount item-gulor total remaining er cheye beshi hoy
+     */
+    private function buildItemAllocations(FeeInvoice $invoice, float $amount): array
+    {
+        $itemAmounts         = [];
+        $remainingToAllocate = round($amount, 2);
+
+        $items = $invoice->items()->orderBy('id')->get();
+
+        foreach ($items as $item) {
+            if ($remainingToAllocate <= 0) {
+                break;
+            }
+
+            $itemRemaining = round((float) $item->remaining, 2);
+
+            if ($itemRemaining <= 0) {
+                continue;
+            }
+
+            $allocate = min($itemRemaining, $remainingToAllocate);
+
+            $itemAmounts[$item->id] = $allocate;
+            $remainingToAllocate    = round($remainingToAllocate - $allocate, 2);
+        }
+
+        if ($remainingToAllocate > 0.01) {
+            throw new InvalidArgumentException(
+                'Pay amount is greater than the total remaining due across this invoice\'s items.'
+            );
+        }
+
+        return $itemAmounts;
     }
 
     /**

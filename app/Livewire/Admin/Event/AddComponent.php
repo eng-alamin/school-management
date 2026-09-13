@@ -180,14 +180,17 @@ class AddComponent extends Component
                     ->causedBy(auth()->user())
                     ->performedOn($event)
                     ->withProperties(['icon' => 'event', 'type' => 'event'])
-                    ->tap(fn ($a) => $a->institution_id = $institutionId)
-                    ->log('New event created: ' . $event->title);
+                    ->tap(function ($activity) use ($event) {
+                        $activity->institution_id = $event->institution_id;
+                        $activity->branch_id = $event->branch_id;
+                    })
+                    ->log('Event created: ' . $event->title);
 
                 return $event;
             });
 
-            $this->dispatch('toast', type: 'success', message: 'Event created successfully!');
-            $this->resetForm();
+            session()->flash('toast_success', 'Event created successfully!');
+            $this->redirectRoute('admin.event.list', navigate: true);
 
         } catch (\Throwable $e) {
 

@@ -24,8 +24,12 @@ return new class extends Migration
             $table->decimal('total_amount', 15, 2);
             $table->timestamps();
 
+            $table->unique(['fee_invoice_id', 'fee_setup_id'], 
+                'fee_invoice_items_invoice_setup_unique');
+
             $table->index(['fee_invoice_id']);
             $table->index(['fee_setup_id']);
+
         });
     }
 

@@ -27,12 +27,12 @@
                         <tr>
                             <td>#{{ $createdInvoiceNo }}</td>
                             <td>{{ $invoice->student->name }}</td>
-                            <td>{{ number_format($invoice->total_amount, 2) }}</td>
-                            <td>{{ number_format($invoice->paid_amount, 2) }}</td>
-                            <td>{{ number_format($createdInvoiceDue, 2) }}</td>
+                            <td>{{ number_format($invoice->total_amount, 0) }}</td>
+                            <td>{{ number_format($invoice->paid_amount, 0) }}</td>
+                            <td>{{ number_format($createdInvoiceDue, 0) }}</td>
                             @if($createdInvoiceDue > 0)
                                 <td>
-                                    <input type="number" step="0.01" min="0" max="{{ $createdInvoiceDue }}"
+                                    <input type="number" step="1" min="0" max="{{ $createdInvoiceDue }}"
                                         class="form-control form-control-sm"
                                         wire:model.live="payAmount">
                                     @error('payAmount')
@@ -86,7 +86,7 @@
 
                 <div class="pay-total-row mt-3">
                     <span>Total Pay Amount :</span>
-                    <span class="fw-bold">{{ number_format($payAmount, 2) }}</span>
+                    <span class="fw-bold">{{ number_format($payAmount, 0) }}</span>
                 </div>
             @endif
 

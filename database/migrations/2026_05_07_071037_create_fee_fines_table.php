@@ -23,7 +23,8 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
             
-            $table->unique(['institution_id', 'branch_id', 'fee_setup_id', 'deleted_at'], 'unique_fee_fine');
+            $table->unique(['institution_id', 'branch_id', 'fee_setup_id', 'deleted_at'], 
+                'fee_fines_inst_bra_fee_del_unique');
         });
     }
 

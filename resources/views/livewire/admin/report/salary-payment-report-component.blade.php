@@ -24,7 +24,7 @@
                 <div class="col-6 col-md-3">
                     <div class="summary-card summary-late">
                         <span class="material-icons-round">payments</span>
-                        <div class="count">৳{{ number_format($summary['total_net'], 2) }}</div>
+                        <div class="count">৳{{ number_format($summary['total_net'], 0) }}</div>
                         <div class="label">Net Salary</div>
                     </div>
                 </div>
@@ -46,6 +46,11 @@
 
             {{-- Toolbar / Filters --}}
             <div class="card-toolbar flex-wrap mb-2">
+                {{-- Search --}}
+                <div class="mb-2" style="position:relative;display:inline-flex;align-items:center;width:100%">
+                    <span class="material-icons-round" style="position:absolute;left:10px;font-size:16px;color:var(--muted);pointer-events:none">search</span>
+                    <input type="text" wire:model.live.debounce.400ms="search" placeholder="নাম ..." class="form-control" style="padding-left:32px;">
+                </div>
                 <div class="col-md-2">
                     <div class="input-group input-group-outline" wire:ignore>
                         <label class="form-label">Month From</label>
@@ -97,13 +102,6 @@
                     </div>
                 </div>
 
-                <div class="col-md-2">
-                    <label class="form-label">Search</label>
-                    <div style="position:relative;display:inline-flex;align-items:center;width:100%">
-                        <span class="material-icons-round" style="position:absolute;left:10px;font-size:16px;color:var(--muted);pointer-events:none">search</span>
-                        <input type="text" wire:model.live.debounce.400ms="search" placeholder="নাম / ID..." class="form-control form-control-sm" style="padding-left:32px;">
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -161,9 +159,9 @@
                                 <small class="text-muted">{{ $record->employee?->employee_id }}</small>
                             </td>
                             <td class="text-muted" style="font-size:.78rem;">{{ $record->employee?->designation?->name ?? '—' }}</td>
-                            <td class="text-dark" style="font-size:.78rem;">৳{{ number_format($record->gross_salary, 2) }}</td>
-                            <td class="text-danger" style="font-size:.78rem;">৳{{ number_format($record->advance_deduction, 2) }}</td>
-                            <td class="fw-500 text-dark" style="font-size:.78rem;">৳{{ number_format($record->net_salary, 2) }}</td>
+                            <td class="text-dark" style="font-size:.78rem;">৳{{ number_format($record->gross_salary, 0) }}</td>
+                            <td class="text-danger" style="font-size:.78rem;">৳{{ number_format($record->advance_deduction, 0) }}</td>
+                            <td class="fw-500 text-dark" style="font-size:.78rem;">৳{{ number_format($record->net_salary, 0) }}</td>
                             <td class="text-muted" style="font-size:.78rem;">
                                 {{ $record->payment_date ? \Carbon\Carbon::parse($record->payment_date)->format('d M Y') : '—' }}
                             </td>

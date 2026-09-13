@@ -331,7 +331,7 @@ class ClassScheduleCreateComponent extends Component
                 ? $this->filterSection
                 : null;
 
-            AcademicClassSchedule::updateOrCreate(
+            $record = AcademicClassSchedule::updateOrCreate(
                 [
                     'institution_id' => $institutionId,
                     'branch_id'      => $branchId,
@@ -344,6 +344,16 @@ class ClassScheduleCreateComponent extends Component
                     'data' => $this->data,
                 ]
             );
+
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'menu_book', 'type' => 'academic'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+                ->log('Class Schedule updated for ' . $record->day . ' - Class: ' . $record->academicClass?->name . ', Section: ' . ($record->academicSection?->name ?? 'N/A'));
 
             $this->dispatch('toast', type: 'success', message: 'Class schedule saved successfully!');
 

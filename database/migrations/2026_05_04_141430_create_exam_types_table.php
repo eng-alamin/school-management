@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('name')->nullable();
             $table->timestamps();
 
-            $table->unique(['institution_id', 'name'], 'exam_types_institution_name_unique');
+            $table->unique(['institution_id', 'branch_id', 'name'], 'exam_types_ins_bra_name_unique');
         });
     }
 

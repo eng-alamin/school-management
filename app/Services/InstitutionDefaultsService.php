@@ -76,7 +76,7 @@ class InstitutionDefaultsService
             ->firstOrFail();
     }
 
-    private static function createFeatures(Institution $institution): void
+    private static function createFeatures(Institution $institution, Branch $branch): void
     {
         $features = [
             'inventory_module'    => false,
@@ -89,6 +89,7 @@ class InstitutionDefaultsService
             Feature::firstOrCreate(
                 [
                     'institution_id' => $institution->id,
+                    'branch_id'      => $branch->id,
                     'feature_key'    => $featureKey,
                 ],
                 [

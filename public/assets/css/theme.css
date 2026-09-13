@@ -265,7 +265,6 @@ body.dark-mode {
     margin: 0;
     padding: 0;
 }
-
 body {
     font-family: "Plus Jakarta Sans", sans-serif;
     background: var(--body-bg);
@@ -284,6 +283,75 @@ ul {
     margin: 0;
 }
 
+/* Icon  */
+@font-face {
+    font-family: "Plus Jakarta Sans";
+    src: url("/assets/fonts/plus-jakarta-sans/plus-jakarta-sans-v12-latin-300.woff2")
+        format("woff2");
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Plus Jakarta Sans";
+    src: url("/assets/fonts/plus-jakarta-sans/plus-jakarta-sans-v12-latin-500.woff2")
+        format("woff2");
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Plus Jakarta Sans";
+    src: url("/assets/fonts/plus-jakarta-sans/plus-jakarta-sans-v12-latin-600.woff2")
+        format("woff2");
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Plus Jakarta Sans";
+    src: url("/assets/fonts/plus-jakarta-sans/plus-jakarta-sans-v12-latin-700.woff2")
+        format("woff2");
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Plus Jakarta Sans";
+    src: url("/assets/fonts/plus-jakarta-sans/plus-jakarta-sans-v12-latin-800.woff2")
+        format("woff2");
+    font-weight: 800;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: "Material Icons Round";
+    font-style: normal;
+    font-weight: 400;
+    src: url("/assets/fonts/material-icons/material-icons-round-v109-latin-regular.woff2")
+        format("woff2");
+    font-display: block;
+}
+.material-icons-round {
+    font-family: "Material Icons Round";
+    font-weight: normal;
+    font-style: normal;
+    font-size: 18px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: "liga";
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: "liga";
+}
 /* ═══════════════════════════════════════
        Global
     ═══════════════════════════════════════ */
@@ -350,8 +418,10 @@ body.dark-mode .bg-dark {
     z-index: 1050;
     overflow-x: hidden;
     transition:
-        width var(--transition),
-        transform var(--transition);
+        width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow 0.3s ease;
+    will-change: width, transform;
 }
 
 /* ── Brand ── */
@@ -523,10 +593,6 @@ body.dark-mode .bg-dark {
         color var(--transition);
     position: relative;
     user-select: none;
-}
-.nav1-link .nav-icon {
-    font-size: 18px;
-    flex-shrink: 0;
 }
 .nav1-link .nav-label {
     flex: 1;
@@ -1048,7 +1114,15 @@ body.dark-mode .header-primary-gradient {
 .btn .material-icons-round {
     font-size: 16px;
 }
-
+.btn:hover {
+    color: var(--white);
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+.btn-outline-primary {
+    color: #000;
+    --bs-btn-border-color: #000000 !important;
+}
 /* End Buttons */
 
 /* Start Badge */
@@ -1067,8 +1141,8 @@ body.dark-mode .header-primary-gradient {
     color: var(--danger);
 }
 .badge-used {
-    background: var(--blue-100);
-    color: var(--blue);
+    background: var(--primary-100);
+    color: var(--primary);
 }
 /* End Badge */
 
@@ -1990,7 +2064,7 @@ table.mat-table {
     align-items: center;
     gap: 6px;
     background: transparent;
-    color: var(--success);
+    color: var(--primary);
     border: 1px solid var(--outline);
     border-radius: var(--radius-btn);
     padding: 7px 16px;
@@ -2002,16 +2076,13 @@ table.mat-table {
         border-color var(--transition);
     font-family: inherit;
 }
-.act-btn .material-icons-round {
-    font-size: 17px;
-}
 .act-btn:hover.view {
-    background: var(--blue-100);
-    color: var(--blue);
+    background: var(--primary-100);
+    color: var(--primary);
 }
 .act-btn:hover.edit {
-    background: var(--success-100);
-    color: var(--success);
+    background: var(--primary-100);
+    color: var(--primary);
 }
 .act-btn:hover.delete {
     background: var(--danger-100);
@@ -2984,8 +3055,8 @@ body.dark-mode .toggle-pill button.active {
 }
 .profile-tabs .nav-link.active,
 .profile-tabs .nav-link:hover {
-    color: var(--blue);
-    border-bottom-color: var(--blue);
+    color: var(--primary);
+    border-bottom-color: var(--primary);
     background: transparent;
 }
 
@@ -3029,8 +3100,8 @@ body.dark-mode .toggle-pill button.active {
     cursor: pointer;
 }
 .editor-toolbar button:hover {
-    background: var(--blue-100);
-    color: var(--blue);
+    background: var(--primary-100);
+    color: var(--primary);
 }
 
 .reply-area {
@@ -3131,14 +3202,14 @@ body.dark-mode .toggle-pill button.active {
 
 /* ── Misc ── */
 .badge-verified {
-    color: var(--blue);
+    color: var(--primary);
 }
 .progress {
     height: 6px;
     border-radius: 10px;
 }
 .text-primary-custom {
-    color: var(--blue);
+    color: var(--primary);
 }
 .card-custom {
     background: var(--card);
@@ -3153,7 +3224,7 @@ body.dark-mode .toggle-pill button.active {
     text-decoration: none;
 }
 .reply-action:hover {
-    color: var(--blue);
+    color: var(--primary);
 }
 
 /* START OVERVIEW */
@@ -3686,6 +3757,9 @@ body.dark-mode .dash-section-card:hover {
     body.sidebar-collapsed .sidebar:hover {
         width: var(--sidebar-w);
         box-shadow: var(--shadow-lg);
+        transition:
+            width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+            box-shadow 0.3s ease;
     }
     body.sidebar-collapsed .sidebar:hover .brand-text,
     body.sidebar-collapsed .sidebar:hover .user-name,
@@ -3871,8 +3945,8 @@ body.dark-mode .step-card {
     opacity: 0.85;
 }
 .branch-avatar-main {
-    background: var(--blue-100);
-    color: var(--blue);
+    background: var(--primary-100);
+    color: var(--primary);
 }
 .branch-avatar-default {
     background: rgba(107, 114, 128, 0.12);
@@ -3915,8 +3989,8 @@ body.dark-mode .step-card {
     color: var(--warning);
 }
 .notice-avatar-medium {
-    background: var(--blue-100);
-    color: var(--blue);
+    background: var(--primary-100);
+    color: var(--primary);
 }
 .notice-avatar-low {
     background: rgba(107, 114, 128, 0.12);
@@ -4036,9 +4110,9 @@ body.dark-mode .step-card {
     white-space: nowrap;
 }
 .row-action-btn--success {
-    color: var(--success);
-    border-color: var(--success);
-    background: var(--success-100);
+    color: var(--primary);
+    border-color: var(--primary);
+    background: var(--primary-100);
 }
 .row-action-btn--success:hover {
     filter: brightness(0.95);
@@ -5068,8 +5142,8 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     letter-spacing: 0.2px;
 }
 .mark-meta-badge-full {
-    background: var(--blue-100);
-    color: var(--blue);
+    background: var(--primary-100);
+    color: var(--primary);
 }
 .mark-meta-badge-pass {
     background: var(--success-100);

@@ -19,7 +19,7 @@ return new class extends Migration
             $table->unsignedInteger('no_of_seat')->nullable();
             $table->timestamps();
 
-            $table->unique(['institution_id', 'hall_no'], 'exam_halls_institution_hall_no_unique');
+            $table->unique(['institution_id', 'branch_id', 'hall_no'], 'exam_halls_ins_bra_hall_no_unique');
         });
     }
 

@@ -81,9 +81,6 @@ class ScheduleAddComponent extends Component
     public function save(): void
     {
         $this->validate([
-            // FIX (IDOR): plain 'exists' rule Eloquent global scope বাইপাস করে raw
-            // DB query চালায় — তাই institution_id দিয়ে explicit scope করা হলো,
-            // নাহলে অন্য institution-এর exam_setup id পাঠিয়েও validation পাশ হয়ে যেত।
             'filterExam' => [
                 'required',
                 Rule::exists('exam_setups', 'id')->where('institution_id', institution()->id),
@@ -97,9 +94,6 @@ class ScheduleAddComponent extends Component
                     $this->failIfOverlap($attribute, $value, $fail);
                 },
             ],
-            // FIX: আগে end_time শুধু format check হতো, start_time এর চেয়ে পরে
-            // আছে কিনা সেটা validate হতো না — এখন 'after:rows.*.start_time' দিয়ে
-            // সেই ভুল ঠেকানো হচ্ছে।
             'rows.*.end_time'    => [
                 'required',
                 'date_format:H:i',
@@ -119,14 +113,12 @@ class ScheduleAddComponent extends Component
         DB::beginTransaction();
         try {
             foreach ($this->rows as $row) {
-                ExamSchedule::updateOrCreate(
+                $record = ExamSchedule::updateOrCreate(
                     [
                         'exam_setup_id'        => $this->filterExam,
                         'exam_setup_detail_id' => $row['exam_setup_detail_id'],
                     ],
                     [
-                        // FIX: institution_id মিসিং ছিল — established pattern অনুযায়ী
-                        // এটা NOT NULL কলাম, explicit সেট করা লাগবে।
                         'institution_id' => institution()->id,
                         'exam_date'       => $row['exam_date'],
                         'start_time'      => $row['start_time'],
@@ -138,6 +130,16 @@ class ScheduleAddComponent extends Component
                 );
             }
 
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'quiz', 'type' => 'exam'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+                ->log('Exam schedule saved: ' . $record->examSetup->name ?? '—' );
+
             DB::commit();
         } catch (\Throwable $e) {
             DB::rollBack();
@@ -148,14 +150,6 @@ class ScheduleAddComponent extends Component
         $this->dispatch('toast', type: 'success', message: 'Exam schedule saved successfully!');
     }
 
-    /**
-     * একই তারিখে দুইটা subject-এর সময় overlap করছে কিনা চেক করে।
-     *
-     * FIX: আগে শুধু exact start_time == start_time বা end_time == end_time মিলিয়ে
-     * clash ধরা হতো — তাই 10:00–12:00 আর 11:00–13:00 (আসলে overlap করছে)
-     * ধরা পড়ত না, কারণ দুটোরই start/end আলাদা। এখন প্রকৃত সময়-পরিসীমা
-     * (range) তুলনা করে overlap ধরা হচ্ছে।
-     */
     private function failIfOverlap($attribute, $value, $fail): void
     {
         if (!preg_match('/^rows\.(\d+)\.start_time$/', $attribute, $matches)) return;

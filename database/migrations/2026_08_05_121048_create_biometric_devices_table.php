@@ -25,8 +25,8 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
             
-            $table->index(['institution_id', 'is_active'], 'bio_dev_inst_active_idx');
             $table->unique(['device_serial', 'deleted_at'], 'bio_dev_serial_deleted_at_unique');
+            $table->index(['institution_id', 'is_active'], 'bio_dev_inst_active_idx');
         });
     }
 

@@ -24,7 +24,9 @@ return new class extends Migration
             $table->integer('carried_forward_days')->default(0);   // গত বছর থেকে আনা দিন
             $table->timestamps();
  
-            $table->unique(['employee_id', 'leave_category_id', 'year']);
+            $table->unique(['institution_id', 'branch_id', 'employee_id', 'leave_category_id', 'year'], 
+                'leave_balances_ins_bra_emp_cat_year_unique'
+            );
         });
     }
 

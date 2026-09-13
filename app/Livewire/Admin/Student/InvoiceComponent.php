@@ -9,6 +9,7 @@ use App\Models\FeePayment;
 use App\Models\OfficeAccount;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use InvalidArgumentException;
 
 class InvoiceComponent extends Component
 {
@@ -191,9 +192,6 @@ class InvoiceComponent extends Component
         return collect($this->paymentRows)->sum(fn ($row) => (float) $row['pay_amount']);
     }
 
-    // ---------------------------------------------------------------
-    // Payment Save
-    // ---------------------------------------------------------------
     public function savePayment(): void
     {
         $this->validate([
@@ -216,35 +214,41 @@ class InvoiceComponent extends Component
             return;
         }
 
-        DB::transaction(function () {
-            foreach ($this->paymentRows as $invoiceId => $row) {
-                $payAmount = (float) $row['pay_amount'];
+        try {
+            DB::transaction(function () {
+                foreach ($this->paymentRows as $invoiceId => $row) {
+                    $payAmount = (float) $row['pay_amount'];
 
-                if ($payAmount <= 0) {
-                    continue;
+                    if ($payAmount <= 0) {
+                        continue;
+                    }
+
+                    $invoice = FeeInvoice::lockForUpdate()->findOrFail($invoiceId);
+
+                    $itemAmounts = $this->buildItemAllocations($invoice, $payAmount);
+
+                    FeePayment::createWithAllocations([
+                        'student_id'        => $this->student->id,
+                        'fee_invoice_id'    => $invoice->id,
+                        'office_account_id' => $this->officeAccountId,
+                        'payment_date'      => $this->paymentDate,
+                        'payment_method'    => $this->paymentMethod,
+                        'remarks'           => $this->remarks,
+                    ], $itemAmounts);
+
+                    $invoice->recalculate();
+
+                    activity()
+                        ->causedBy(auth()->user())
+                        ->performedOn($invoice)
+                        ->withProperties(['icon' => 'payments', 'type' => 'payment'])
+                        ->log("Invoice #{$invoice->invoice_no} এ {$payAmount} টাকা Payment Collect করা হয়েছে।");
                 }
-
-                $invoice = FeeInvoice::lockForUpdate()->findOrFail($invoiceId);
-
-                FeePayment::create([
-                    'student_id'        => $this->student->id,
-                    'fee_invoice_id'    => $invoice->id,
-                    'office_account_id' => $this->officeAccountId,
-                    'payment_date'      => $this->paymentDate,
-                    'amount'            => $payAmount,
-                    'payment_method'    => $this->paymentMethod,
-                    'remarks'           => $this->remarks,
-                ]);
-
-                $invoice->recalculate();
-
-                activity()
-                    ->causedBy(auth()->user())
-                    ->performedOn($invoice)
-                    ->withProperties(['icon' => 'payments', 'type' => 'payment'])
-                    ->log("Invoice #{$invoice->invoice_no} এ {$payAmount} টাকা Payment Collect করা হয়েছে।");
-            }
-        });
+            });
+        } catch (InvalidArgumentException $e) {
+            $this->dispatch('toast', type: 'error', message: $e->getMessage());
+            return;
+        }
 
         $this->dispatch('toast', type: 'success', message: 'Payment সফলভাবে Collect হয়েছে।');
 
@@ -252,6 +256,39 @@ class InvoiceComponent extends Component
         $this->selectedIds = [];
         $this->selectAll   = false;
         $this->loadInvoices();
+    }
+
+    private function buildItemAllocations(FeeInvoice $invoice, float $amount): array
+    {
+        $itemAmounts         = [];
+        $remainingToAllocate = round($amount, 2);
+
+        $items = $invoice->items()->orderBy('id')->get();
+
+        foreach ($items as $item) {
+            if ($remainingToAllocate <= 0) {
+                break;
+            }
+
+            $itemRemaining = round((float) $item->remaining, 2);
+
+            if ($itemRemaining <= 0) {
+                continue;
+            }
+
+            $allocate = min($itemRemaining, $remainingToAllocate);
+
+            $itemAmounts[$item->id] = $allocate;
+            $remainingToAllocate    = round($remainingToAllocate - $allocate, 2);
+        }
+
+        if ($remainingToAllocate > 0.01) {
+            throw new InvalidArgumentException(
+                "Invoice #{$invoice->invoice_no}: pay amount exceeds the total remaining due across its items."
+            );
+        }
+
+        return $itemAmounts;
     }
 
     public function render()

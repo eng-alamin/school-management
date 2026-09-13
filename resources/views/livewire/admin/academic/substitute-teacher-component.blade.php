@@ -46,7 +46,7 @@
             </div>
 
             @if(empty($periods))
-                <p class="text-muted mt-3 mb-0">Selected date-e kono teacher absent nei, ba oi din tar kono class routine nei.</p>
+                <p class="text-muted mt-3 mb-0">On the selected date, the teacher has no absence recorded, or does not have a class routine for that day.</p>
             @else
 
                 {{-- ══ DESKTOP/TABLET: Table view (hidden on mobile) ══ --}}
@@ -169,43 +169,3 @@
 
     </div>
 </div>
-
-@push('scripts')
-<script>
-    document.addEventListener('livewire:initialized', () => {
-        Livewire.hook('morph.updated', ({ el }) => {
-            setTimeout(() => {
-                el.querySelectorAll('.input-group-outline .form-select').forEach(function(select) {
-                    if (!select.nextElementSibling || !select.nextElementSibling.classList.contains('custom-select-wrapper')) {
-                        buildCustomSelect(select);
-                    }
-                });
-
-                el.querySelectorAll('.input-group-outline input').forEach(function(input) {
-                    var group = input.closest('.input-group');
-                    if (!group) return;
-                    if (input.value && input.value.trim() !== '') {
-                        group.classList.add('is-filled');
-                    } else {
-                        group.classList.remove('is-filled');
-                    }
-                    if (input._materialInit) return;
-                    input._materialInit = true;
-                    input.addEventListener('focus', function() { group.classList.add('is-focused'); });
-                    input.addEventListener('blur', function() {
-                        group.classList.remove('is-focused');
-                        group.classList.toggle('is-filled', !!input.value.trim());
-                    });
-                    input.addEventListener('input', function() {
-                        group.classList.toggle('is-filled', !!input.value.trim());
-                    });
-                });
-
-                el.querySelectorAll('.input-group-outline input[type="date"]').forEach(function(input) {
-                    if (!input._dpInit) { _initDatepickers(); }
-                });
-            }, 0);
-        });
-    });
-</script>
-@endpush

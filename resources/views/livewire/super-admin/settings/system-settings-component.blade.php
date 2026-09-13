@@ -164,12 +164,12 @@
 
         {{-- Action Buttons --}}
         <div class="d-flex gap-3 mt-4 mb-5">
-            <button wire:click="save" class="btn btn-outline bg-dark text-white px-5">
+            <button wire:click="save" class="btn btn-primary px-5">
                 <span wire:loading.remove wire:target="save">
-                    <i class="fas fa-save me-2"></i>{{ __('Save Changes') }}
+                    {{ __('Save Changes') }}
                 </span>
                 <span wire:loading wire:target="save">
-                    <i class="fas fa-spinner fa-spin me-2"></i>{{ __('Saving...') }}
+                    {{ __('Saving...') }}
                 </span>
             </button>
             <button

@@ -70,7 +70,9 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->index(['division', 'district']);
+            $table->unique('eiin', 'institutions_eiin_unique');
+            $table->index('status', 'institutions_status_idx');
+            $table->index(['division', 'district'], 'institutions_division_district_idx');
             $table->index(['verification_status'], 'institutions_verification_status_idx');
         });
     }

@@ -123,34 +123,37 @@ class GroupComponent extends Component
         ];
 
         if ($this->editId) {
-            $record = AcademicGroup::where('institution_id', institution()->id)
-                ->findOrFail($this->editId);
-
+            $record = AcademicGroup::where('institution_id', institution()->id)->findOrFail($this->editId);
             $record->update($data);
+            $savedId = $this->editId;
 
             activity()
+                ->causedBy(auth()->user())
                 ->performedOn($record)
-                ->tap(function ($activity) {
-                    $activity->institution_id = institution()->id;
+                ->withProperties(['icon' => 'menu_book', 'type' => 'academic'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
                 })
-                ->log('Academic group updated');
+                ->log('Group updated: ' . $record->name);
 
-            $savedId = $this->editId;
             $this->dispatch('toast', type: 'success', message: 'Data updated successfully!');
         } else {
             $data['institution_id'] = institution()->id;
-
             $record  = AcademicGroup::create($data);
             $savedId = $record->id;
 
             activity()
+                ->causedBy(auth()->user())
                 ->performedOn($record)
-                ->tap(function ($activity) {
-                    $activity->institution_id = institution()->id;
+                ->withProperties(['icon' => 'menu_book', 'type' => 'academic'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
                 })
-                ->log('Academic group created');
+                ->log('Group created: ' . $record->name);
 
-            $this->dispatch('toast', type: 'success', message: 'Data created successfully!');
+            $this->dispatch('toast', type: 'success', message: 'Group created successfully!');
         }
 
         // current = true হলে একই institution-এর বাকি সব group inactive হয়ে যাবে
@@ -169,17 +172,18 @@ class GroupComponent extends Component
     {
         // abort_unless(auth()->user()->can('academic-group-update'), 403);
 
-        $record = AcademicGroup::where('institution_id', institution()->id)
-            ->findOrFail($id);
-
+        $record = AcademicGroup::where('institution_id', institution()->id)->findOrFail($id);
         $record->update(['is_status' => ! $record->is_status]);
 
         activity()
+            ->causedBy(auth()->user())
             ->performedOn($record)
-            ->tap(function ($activity) {
-                $activity->institution_id = institution()->id;
+            ->withProperties(['icon' => 'menu_book', 'type' => 'academic'])
+            ->tap(function ($activity) use ($record) {
+                $activity->institution_id = $record->institution_id;
+                $activity->branch_id = $record->branch_id;
             })
-            ->log($record->is_status ? 'Academic group activated' : 'Academic group deactivated');
+            ->log('Group status updated: ' . $record->name);
 
         $this->dispatch('toast', type: 'success', message: 'Status updated successfully!');
     }
@@ -196,21 +200,21 @@ class GroupComponent extends Component
     {
         // abort_unless(auth()->user()->can('academic-group-delete'), 403);
 
-        $record = AcademicGroup::where('institution_id', institution()->id)
-            ->findOrFail($this->deleteId);
-
-        // Log BEFORE delete, per project convention
-        activity()
-            ->performedOn($record)
-            ->tap(function ($activity) {
-                $activity->institution_id = institution()->id;
-            })
-            ->log('Academic group deleted');
-
+        $record = AcademicGroup::where('institution_id', institution()->id)->findOrFail($this->deleteId);
         $record->delete();
-
         $this->confirmDelete = false;
         $this->deleteId      = null;
+
+        activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'menu_book', 'type' => 'academic'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+                ->log('Group created: ' . $record->name);
+
         $this->dispatch('toast', type: 'success', message: 'Data deleted successfully!');
     }
 

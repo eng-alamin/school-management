@@ -25,7 +25,8 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->index(['institution_id', 'payment_date'], 'fee_payments_institution_date_idx');
+            $table->index(['institution_id', 'branch_id', 'payment_date'], 
+                'fee_payments_ins_bra_pay_idx');
         });
     }
 

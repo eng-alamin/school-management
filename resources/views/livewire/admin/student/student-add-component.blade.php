@@ -122,7 +122,7 @@
             <div class="col-md-6">
                     <div class="input-group input-group-outline">
                     <label class="form-label">Full Name <span class="req">*</span></label>
-                    <input type="text" wire:model="name" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
+                    <input type="text" wire:model.live.debounce.500ms="name" class="form-control" placeholder=" " autocomplete="off" onfocus="focused(this)" onfocusout="defocused(this)">
                     @error('name') <span class="text-danger">{{ $message }}</span> @enderror
                 </div>
             </div>
@@ -229,9 +229,13 @@
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
                         <label class="form-label">Username <span class="req">*</span></label>
-                        <input type="text" wire:model="username" class="form-control" onfocus="focused(this)" onfocusout="defocused(this)">
+                        <input type="text" wire:model.live.debounce.500ms="username" class="form-control" autocomplete="off" onfocus="focused(this)" onfocusout="defocused(this)">
                         @error('username') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
+                    <button type="button" class="btn-outline" style="margin-top:6px;font-size:.72rem;padding:4px 10px" wire:click="enableUsernameAutoSuggest">
+                        <span class="material-icons-round" style="font-size:14px;vertical-align:middle">autorenew</span>
+                        Suggest from Name
+                    </button>
                 </div>
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
@@ -278,7 +282,7 @@
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
                         <label class="form-label">Name <span class="req">*</span></label>
-                        <input type="text" wire:model="guardian_name" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
+                        <input type="text" wire:model.live.debounce.500ms="guardian_name" class="form-control" placeholder=" " autocomplete="off" onfocus="focused(this)" onfocusout="defocused(this)">
                         @error('guardian_name') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
                 </div>
@@ -363,9 +367,13 @@
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
                         <label class="form-label">Username <span class="req">*</span></label>
-                        <input type="text" wire:model="guardian_username" class="form-control" placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
+                        <input type="text" wire:model.live.debounce.500ms="guardian_username" class="form-control" placeholder=" " autocomplete="off" onfocus="focused(this)" onfocusout="defocused(this)">
                         @error('guardian_username') <span class="text-danger">{{ $message }}</span> @enderror
                     </div>
+                    <button type="button" class="btn-outline" style="margin-top:6px;font-size:.72rem;padding:4px 10px" wire:click="enableGuardianUsernameAutoSuggest">
+                        <span class="material-icons-round" style="font-size:14px;vertical-align:middle">autorenew</span>
+                        Suggest from Name
+                    </button>
                 </div>
                 <div class="col-md-6">
                     <div class="input-group input-group-outline">
@@ -481,85 +489,3 @@
     @endif
 
 </div>
-
-@push('scripts')
-    <script>
-        document.addEventListener('livewire:initialized', () => {
-
-            setTimeout(() => initAllFields(), 100);
-
-            Livewire.hook('morph.updated', ({ el }) => {
-                setTimeout(() => initAllFields(), 0);
-            });
-
-            function initAllFields() {
-
-                document.querySelectorAll('.input-group-outline input, .input-group-outline textarea').forEach(function(input) {
-                    var group = input.closest('.input-group');
-                    if (!group) return;
-                    if (input.value && input.value.trim() !== '') {
-                        group.classList.add('is-filled');
-                    } else {
-                        group.classList.remove('is-filled');
-                    }
-                    if (input._materialInit) return;
-                    input._materialInit = true;
-                    input.addEventListener('focus', function() { group.classList.add('is-focused'); });
-                    input.addEventListener('blur', function() {
-                        group.classList.remove('is-focused');
-                        group.classList.toggle('is-filled', !!input.value.trim());
-                    });
-                    input.addEventListener('input', function() {
-                        group.classList.toggle('is-filled', !!input.value.trim());
-                    });
-                });
-
-                document.querySelectorAll('.input-group-outline select').forEach(function(select) {
-                    var group = select.closest('.input-group');
-                    if (!group) return;
-                    if (select.value && select.value !== '') {
-                        group.classList.add('is-filled');
-                    } else {
-                        group.classList.remove('is-filled');
-                    }
-                    if (select._materialInit) return;
-                    select._materialInit = true;
-                    select.addEventListener('change', function() {
-                        group.classList.toggle('is-filled', !!select.value);
-                    });
-                    select.addEventListener('focus', function() { group.classList.add('is-focused'); });
-                    select.addEventListener('blur', function() { group.classList.remove('is-focused'); });
-                });
-
-                document.querySelectorAll('.input-group-outline .form-select').forEach(function(select) {
-                    var old = select.parentNode.querySelector('.custom-select-wrapper');
-                    if (old) old.remove();
-                    select.style.display = '';
-                    if (typeof buildCustomSelect === 'function') {
-                        buildCustomSelect(select);
-                    }
-                });
-
-                Livewire.on('date-updated', function (event) {
-                    var data = Array.isArray(event) ? event[0] : event;
-                    if (!data || !data.field) return;
-
-                    var input = document.querySelector(
-                        '.input-group-outline input[type="date"][wire\\:model="' + data.field + '"]'
-                    );
-                    if (!input) return;
-
-                    var newDate = data.date || '';
-                    if (newDate) {
-                        input.value = newDate;
-                        input.dataset.dpValue = newDate;
-                        if (input._dpTriggerSync) {
-                            input._dpTriggerSync(newDate);
-                        }
-                    }
-                });
-            }
-
-        });
-    </script>
-@endpush

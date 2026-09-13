@@ -262,23 +262,24 @@ class EmployeeEditComponent extends Component
                 }
 
                 $this->employee->update($employeeData);
+
+                activity()
+                    ->causedBy(auth()->user())
+                    ->performedOn($this->employee)
+                    ->withProperties(['icon' => 'badge', 'type' => 'employee'])
+                    ->tap(function ($activity) use ($employeeData) {
+                        $activity->institution_id = $this->employee->institution_id;
+                        $activity->branch_id = $this->employee->branch_id;
+                    })
+                    ->log('Employee updated: ' . $this->employee->name);
             });
 
             if ($oldPhoto) {
                 Storage::disk('public')->delete($oldPhoto);
             }
 
-            activity()
-                ->performedOn($this->employee)
-                ->causedBy(auth()->user())
-                ->withProperties([
-                    'institution_id' => $institutionId,
-                    'icon' => 'edit',
-                    'type' => 'employee_updated',
-                ])
-                ->log('Employee updated: ' . $this->employee->name);
-
-            $this->dispatch('toast', type: 'success', message: 'Employee updated successfully!');
+            session()->flash('toast_success', 'Employee updated successfully!');
+            $this->redirectRoute('admin.employee.list', navigate: true);
 
         } catch (\Throwable $e) {
 

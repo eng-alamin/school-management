@@ -222,6 +222,7 @@
 
                                             @if ($isDone)
                                                 <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="markIncomplete('{{ $stepKey }}')">
+                                                    <span data-en="Reset" data-bn="রিসেট"></span>
                                                     <span class="material-icons-round">replay</span>
                                                 </button>
                                             @else

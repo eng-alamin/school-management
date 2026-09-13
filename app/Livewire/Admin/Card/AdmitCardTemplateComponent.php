@@ -152,12 +152,28 @@ class AdmitCardTemplateComponent extends Component
             if ($this->editId) {
                 $record = AdmitCardTemplate::findOrFail($this->editId);
                 $record->update($data);
-                activity()->performedOn($record)->log('Admit card template updated');
-                $message = 'Admit card template updated successfully!';
+                
+                activity()
+                    ->causedBy(auth()->user())
+                    ->performedOn($record)
+                    ->withProperties(['icon' => 'credit_card', 'type' => 'card'])
+                    ->tap(function ($activity) use ($record) {
+                        $activity->institution_id = $record->institution_id;
+                        $activity->branch_id = $record->branch_id;
+                    })
+                    ->log('Admit Card Template updated: ' . $record->name);
             } else {
                 $record = AdmitCardTemplate::create($data);
-                activity()->performedOn($record)->log('Admit card template created');
-                $message = 'Admit card template created successfully!';
+
+                activity()
+                    ->causedBy(auth()->user())
+                    ->performedOn($record)
+                    ->withProperties(['icon' => 'credit_card', 'type' => 'card'])
+                    ->tap(function ($activity) use ($record) {
+                        $activity->institution_id = $record->institution_id;
+                        $activity->branch_id = $record->branch_id;
+                    })
+                    ->log('Admit Card Template created: ' . $record->name);
             }
 
             DB::commit();
@@ -180,8 +196,8 @@ class AdmitCardTemplateComponent extends Component
 
         $this->showModal = false;
         $this->resetForm();
+        $this->dispatch('toast', type: 'success', message: $this->editId ? 'Admit Card Template updated successfully!' : 'Admit Card Template created successfully!');
 
-        $this->dispatch('toast', type: 'success', message: $message);
     }
 
     public function confirmDeleteRecord(int $id): void
@@ -197,12 +213,21 @@ class AdmitCardTemplateComponent extends Component
 
         DB::beginTransaction();
         try {
-            activity()->performedOn($record)->log('Admit card template deleted');
             $record->delete();
-            DB::commit();
 
-            // Use the same deletion helper as save() so file location logic never diverges.
             $this->deleteOldFile($logoPath);
+
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'credit_card', 'type' => 'card'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+                ->log('Admit Card Template deleted: ' . $record->name);
+
+            DB::commit();
         } catch (Throwable $e) {
             DB::rollBack();
             $this->confirmDelete = false;
@@ -223,7 +248,17 @@ class AdmitCardTemplateComponent extends Component
         try {
             $record = AdmitCardTemplate::findOrFail($id);
             $record->update(['is_active' => !$record->is_active]);
-            activity()->performedOn($record)->log('Admit card template status toggled');
+
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'credit_card', 'type' => 'card'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+                ->log('Admit Card Template status toggled: ' . $record->name);
+
             DB::commit();
         } catch (Throwable $e) {
             DB::rollBack();

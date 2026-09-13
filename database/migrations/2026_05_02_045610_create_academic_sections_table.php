@@ -20,8 +20,8 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->index(['institution_id', 'deleted_at'], 'academic_sections_ins_del_idx');
-            $table->unique(['institution_id', 'branch_id', 'name', 'deleted_at'],'academic_sections_ins_bra_nam_del_unique');
+            $table->index(['institution_id', 'branch_id', 'deleted_at'], 'academic_sections_ins_bra_del_idx');
+            $table->unique(['institution_id', 'branch_id', 'name', 'deleted_at'], 'academic_sections_ins_bra_nam_del_unique');
         });
     }
 

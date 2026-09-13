@@ -2,11 +2,11 @@
 
 namespace App\Livewire\Admin\Mailbox;
 
+use Livewire\Component;
 use App\Models\Message;
 use App\Models\User;
 use App\Services\NotificationService;
-use Livewire\Component;
-
+use Illuminate\Support\Facades\Auth;
 class ComposeComponent extends Component
 {
     public string $to         = '';
@@ -94,7 +94,12 @@ class ComposeComponent extends Component
     {
         $this->validate();
 
+        $institutionId = Auth::user()->institution_id;
+        $branchId = Auth::user()->branch_id;
+
         $record = Message::create([
+            'institution_id'   => $institutionId,
+            'branch_id'        => $branchId,
             'sender_id'   => auth()->id(),
             'receiver_id' => $this->receiver_id,
             'subject'     => $this->subject,
@@ -120,7 +125,8 @@ class ComposeComponent extends Component
             ->performedOn($record)
             ->withProperties(['icon' => 'mail', 'type' => 'mailbox'])
             ->tap(function ($activity) use ($record) {
-                $activity->institution_id = auth()->user()->institution_id;
+                $activity->institution_id = $record->institution_id;
+                $activity->branch_id = $record->branch_id;
             })
             ->log('Message sent to ' . $this->receiverName . ': ' . $this->subject);
 

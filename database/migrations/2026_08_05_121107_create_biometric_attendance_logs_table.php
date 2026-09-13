@@ -27,13 +27,13 @@ return new class extends Migration
             $table->timestamp('processed_at')->nullable();
             $table->timestamps();
 
-            $table->index(['institution_id', 'processed'], 'bio_log_inst_processed_idx');
-            $table->index(['biometric_device_id', 'device_user_id', 'punch_time'], 'bio_log_device_user_time_idx');
-            // duplicate punch prevent: same device, same user, same exact timestamp আসতে পারে না দুইবার
             $table->unique(
-                ['biometric_device_id', 'device_user_id', 'punch_time'],
+                ['institution_id', 'branch_id', 'biometric_device_id', 'device_user_id', 'punch_time'],
                 'bio_log_unique_punch'
             );
+            
+            $table->index(['institution_id', 'processed'], 'bio_log_inst_processed_idx');
+            $table->index(['biometric_device_id', 'device_user_id', 'punch_time'], 'bio_log_device_user_time_idx');
         });
     }
 

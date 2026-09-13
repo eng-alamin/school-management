@@ -28,11 +28,14 @@ return new class extends Migration
             $table->string('pay_via')->nullable();
             $table->enum('payment_status', ['paid','partial', 'due'])->default('due');
             $table->text('remarks')->nullable();
-
             $table->timestamps();
             $table->softDeletes();
 
-            $table->unique(['institution_id', 'bill_no', 'deleted_at'], 'inventory_sales_institution_bill_no_unique');
+            $table->unique(['institution_id', 'branch_id', 'bill_no', 'deleted_at'], 
+                'inventory_sales_ins_bra_bil_del_unique');
+
+            $table->index(['saleable_type', 'saleable_id'], 'inventory_sales_saleable_idx');
+            
         });
     }
 

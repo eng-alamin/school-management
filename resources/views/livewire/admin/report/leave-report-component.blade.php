@@ -45,6 +45,11 @@
 
             {{-- Toolbar / Filters --}}
             <div class="card-toolbar flex-wrap mb-2">
+                {{-- Search --}}
+                <div class="mb-2" style="position:relative;display:inline-flex;align-items:center;width:100%">
+                    <span class="material-icons-round" style="position:absolute;left:10px;font-size:16px;color:var(--muted);pointer-events:none">search</span>
+                    <input type="text" wire:model.live.debounce.400ms="search" placeholder="নাম ..." class="form-control" style="padding-left:32px;">
+                </div>
                 <div class="col-md-2">
                     <div class="input-group input-group-outline" wire:ignore>
                         <label class="form-label">From</label>
@@ -63,6 +68,7 @@
                         <label class="form-label">Role</label>
                         <select class="form-select form-select-sm" wire:model.live="role">
                             <option value="all">All Roles</option>
+                            <option value="admin">Admin</option>
                             <option value="teacher">Teacher</option>
                             <option value="accountant">Accountant</option>
                             <option value="staff">Staff</option>
@@ -72,7 +78,7 @@
                 </div>
 
                 <div class="col-md-2">
-                    <div class="input-group input-group-outline" wire:ignore>
+                    <div class="input-group input-group-outline">
                         <label class="form-label">Category</label>
                         <select class="form-select form-select-sm" wire:model.live="leaveCategoryId">
                             <option value="all">All Categories</option>
@@ -96,13 +102,6 @@
                     </div>
                 </div>
 
-                <div class="col-md-2">
-                    <label class="form-label">Search</label>
-                    <div style="position:relative;display:inline-flex;align-items:center;width:100%">
-                        <span class="material-icons-round" style="position:absolute;left:10px;font-size:16px;color:var(--muted);pointer-events:none">search</span>
-                        <input type="text" wire:model.live.debounce.400ms="search" placeholder="নাম / ID..." class="form-control form-control-sm" style="padding-left:32px;">
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -196,7 +195,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="8" class="text-center py-5 text-muted">
+                            <td colspan="9" class="text-center py-5 text-muted">
                                 <span class="material-icons-round d-block mb-2" style="font-size:2.5rem;opacity:.25;">fact_check</span>
                                 কোনো leave record পাওয়া যায়নি।
                             </td>

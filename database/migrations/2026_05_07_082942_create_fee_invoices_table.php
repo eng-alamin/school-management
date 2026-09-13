@@ -37,7 +37,9 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->unique(['institution_id', 'branch_id', 'invoice_no', 'deleted_at'], 'fee_invoices_institution_invoice_no_unique');
+            $table->unique(['institution_id', 'branch_id', 'invoice_no', 'deleted_at'], 
+                'fee_invoices_inst_bra_inv_del_unique');
+
             $table->index(['institution_id', 'branch_id', 'payment_status', 'deleted_at'], 'fee_invoices_institution_status_idx');
             $table->index(['institution_id', 'branch_id', 'invoice_date'], 'fee_invoices_institution_date_idx');
         });

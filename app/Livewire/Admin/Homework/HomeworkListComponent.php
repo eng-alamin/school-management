@@ -39,6 +39,11 @@ class HomeworkListComponent extends Component
     {
         $this->routePrefix     = $this->resolveRoutePrefix();
         $this->currentSessionId = $this->resolveCurrentSessionId();
+
+         // Surface a success toast after redirect back from Create/Edit pages.
+        if (session()->has('toast_success')) {
+            $this->dispatch('toast', type: 'success', message: session()->pull('toast_success'));
+        }
     }
 
     protected function resolveRoutePrefix(): string
@@ -133,33 +138,32 @@ class HomeworkListComponent extends Component
         $institutionId = institution()->id;
         $branchId      = $this->activeBranchId();
 
-        $homework = Homework::where('institution_id', $institutionId)
-            ->where('branch_id', $branchId)
-            ->find($this->deleteId);
-
-        if (!$homework) {
-            $this->confirmDelete = false;
-            $this->deleteId      = null;
-            $this->dispatch('toast', type: 'error', message: 'Homework not found.');
-            return;
-        }
-
-        $attachmentPath = $homework->attachment;
-        $title          = $homework->title;
-
         try {
-            DB::transaction(function () use ($homework, $title, $institutionId) {
-                activity()
-                    ->performedOn($homework)
-                    ->tap(fn ($a) => $a->institution_id = $institutionId)
-                    ->log('Homework "' . $title . '" deleted');
+            $record = Homework::where('institution_id', $institutionId)
+                ->where('branch_id', $branchId)
+                ->find($this->deleteId);
 
-                $homework->delete();
-            });
-
-            if ($attachmentPath) {
-                Storage::disk('public')->delete($attachmentPath);
+            if (!$record) {
+                $this->confirmDelete = false;
+                $this->deleteId      = null;
+                $this->dispatch('toast', type: 'error', message: 'Homework not found.');
+                return;
             }
+
+            if ($record->attachment) {
+                Storage::disk('public')->delete($record->attachment);
+            }
+
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'assignment', 'type' => 'homework'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+                ->log('Homework deleted: ' . $record->title);
+
 
             $this->dispatch('toast', type: 'success', message: 'Homework deleted successfully.');
 

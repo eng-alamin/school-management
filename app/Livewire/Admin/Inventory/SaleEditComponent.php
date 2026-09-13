@@ -108,9 +108,9 @@ class SaleEditComponent extends Component
             'id'          => $item->id,
             'category_id' => $item->category_id ?? '',
             'product_id'  => $item->product_id,
-            'unit_price'  => number_format($item->unit_price, 0),
+            'unit_price'  => $item->unit_price,
             'quantity'    => $item->quantity,
-            'discount'    => number_format($item->discount, 0),
+            'discount'    => $item->discount,
             'total_price' => $item->total_price,
         ])->toArray();
 
@@ -152,7 +152,7 @@ class SaleEditComponent extends Component
                 ->find($value);
 
             if ($product) {
-                $this->items[$index]['unit_price'] = number_format($product->sales_price, 0);
+                $this->items[$index]['unit_price'] = $product->sales_price;
             }
         }
 
@@ -305,9 +305,19 @@ class SaleEditComponent extends Component
                     ]);
                 }
             }
+
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($sale)
+                ->withProperties(['icon' => 'inventory_2', 'type' => 'inventory'])
+                ->tap(function ($activity) use ($sale) {
+                    $activity->institution_id = $sale->institution_id;
+                    $activity->branch_id = $sale->branch_id;
+                })
+                ->log('Inventory sale updated: ' . $sale->bill_no);
         });
 
-        session()->flash('toast_success', 'Data updated successfully!');
+        session()->flash('toast_success', 'Sale updated successfully!');
         $this->redirectRoute('admin.inventory.sale.list', navigate: true);
     }
 

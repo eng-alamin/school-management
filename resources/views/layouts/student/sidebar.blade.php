@@ -34,84 +34,84 @@
     <ul>
       <li class="nav1-item">
         <a href="{{route('student.dashboard') }}" class="nav1-link {{ str_contains(request()->url(), 'student/dashboard') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">space_dashboard</span>
+          <span class="material-icons-round">space_dashboard</span>
           <span class="nav-label" id="nav-dashboards">Dashboard</span>
         </a>
       </li>
 
       <li class="nav1-item">
         <a href="{{route('student.attendances') }}" class="nav1-link {{ Route::is('student.attendances') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">school</span>
+          <span class="material-icons-round">school</span>
           <span class="nav-label" id="nav-attendances">Attendances</span>
         </a>
       </li>
 
       <li class="nav1-item">
         <a href="{{route('student.teachers') }}" class="nav1-link {{ Route::is('student.teachers') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">school</span>
+          <span class="material-icons-round">school</span>
           <span class="nav-label" id="nav-teachers">Teachers</span>
         </a>
       </li>
 
       <li class="nav1-item">
         <a href="{{route('student.subjects') }}" class="nav1-link {{ Route::is('student.subjects') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">school</span>
+          <span class="material-icons-round">school</span>
           <span class="nav-label" id="nav-subjects">Subjects</span>
         </a>
       </li>
 
       <li class="nav1-item">
         <a href="{{route('student.classes') }}" class="nav1-link {{ Route::is('student.classes') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">school</span>
+          <span class="material-icons-round">school</span>
           <span class="nav-label" id="nav-classes">Classes</span>
         </a>
       </li>
 
       <li class="nav1-item">
         <a href="{{route('student.leaves')}}" class="nav1-link {{ Route::is('student.leaves') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">school</span>
+          <span class="material-icons-round">school</span>
           <span class="nav-label" id="nav-leaves">Leaves</span>
         </a>
       </li>
 
       <li class="nav1-item">
         <a href="{{route('student.homeworks')}}" class="nav1-link {{ Route::is('student.homeworks') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">school</span>
+          <span class="material-icons-round">school</span>
           <span class="nav-label" id="nav-homeworks">Homeworks</span>
         </a>
       </li>
 
       <li class="nav1-item">
         <a href="{{route('student.exams')}}" class="nav1-link {{ Route::is('student.exams') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">school</span>
+          <span class="material-icons-round">school</span>
           <span class="nav-label" id="nav-exams">Exams</span>
         </a>
       </li>
 
       <li class="nav1-item">
         <a href="{{route('student.events')}}" class="nav1-link {{ Route::is('student.events') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">school</span>
+          <span class="material-icons-round">school</span>
           <span class="nav-label" id="nav-events">Events</span>
         </a>
       </li>
 
       <li class="nav1-item">
         <a href="{{route('student.mailbox.inbox') }}" class="nav1-link {{ str_contains(request()->url(), 'mailbox/') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">chat</span>
+          <span class="material-icons-round">chat</span>
           <span class="nav-label" id="nav-mailbox">Mailbox</span>
         </a>
       </li>
 
       <li class="nav1-item">
         <a href="{{route('student.notifications.index') }}" class="nav1-link {{ str_contains(request()->url(), 'student/notifications') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">chat</span>
+          <span class="material-icons-round">chat</span>
           <span class="nav-label" id="nav-notifications">Notifications</span>
         </a>
       </li>
 
       <li class="nav1-item">
         <a href="{{route('student.notices') }}" class="nav1-link {{ str_contains(request()->url(), 'notices') == true ? 'active' : '' }}">
-          <span class="material-icons-round nav-icon">chat</span>
+          <span class="material-icons-round">chat</span>
           <span class="nav-label" id="nav-notices">Notices</span>
         </a>
       </li>

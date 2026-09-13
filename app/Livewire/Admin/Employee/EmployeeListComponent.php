@@ -32,6 +32,10 @@ class EmployeeListComponent extends Component
     public function mount(): void
     {
         $this->routePrefix = $this->resolveRoutePrefix();
+
+        if (session()->has('toast_success')) {
+            $this->dispatch('toast', type: 'success', message: session()->pull('toast_success'));
+        }
     }
 
     protected function resolveRoutePrefix(): string
@@ -76,21 +80,21 @@ class EmployeeListComponent extends Component
 
     public function deleteRecord(): void
     {
-        $employee = Employee::findOrFail($this->deleteId);
-
-        activity()
-            ->performedOn($employee)
-            ->withProperties([
-                'institution_id' => $employee->institution_id,
-                'icon' => 'delete',
-                'type' => 'employee',
-            ])
-            ->log('Employee deleted: ' . $employee->name);
-
-        $employee->delete();
-
+        $record = Employee::findOrFail($this->deleteId);
+        $record->delete();
         $this->confirmDelete = false;
         $this->deleteId      = null;
+
+         activity()
+            ->causedBy(auth()->user())
+            ->performedOn($record)
+            ->withProperties(['icon' => 'badge', 'type' => 'employee'])
+            ->tap(function ($activity) use ($record) {
+                $activity->institution_id = $record->institution_id;
+                $activity->branch_id = $record->branch_id;
+            })
+            ->log('Employee deleted: ' . $record->name);
+
         $this->dispatch('toast', type: 'success', message: 'Employee deleted successfully!');
     }
 
@@ -122,19 +126,17 @@ class EmployeeListComponent extends Component
 
         $employee->update(['status' => $this->newStatus]);
 
-        activity()
+         activity()
+            ->causedBy(auth()->user())
             ->performedOn($employee)
-            ->withProperties([
-                'institution_id' => $employee->institution_id,
-                'icon' => 'toggle_on',
-                'type' => 'employee',
-                'old_status' => $oldStatus,
-                'new_status' => $this->newStatus,
-            ])
+            ->withProperties(['icon' => 'badge', 'type' => 'employee'])
+            ->tap(function ($activity) use ($employee) {
+                $activity->institution_id = $employee->institution_id;
+                $activity->branch_id = $employee->branch_id;
+            })
             ->log('Employee status changed: ' . $employee->name . ' (' . $oldStatus . ' → ' . $this->newStatus . ')');
 
         $this->dispatch('toast', type: 'success', message: 'Status updated successfully!');
-
         $this->closeStatusModal();
     }
 

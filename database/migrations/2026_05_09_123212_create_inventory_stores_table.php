@@ -20,9 +20,10 @@ return new class extends Migration
             $table->string('mobile')->nullable();
             $table->string('address')->nullable();
             $table->text('description')->nullable();
-
-            $table->unique(['institution_id', 'code']);
             $table->timestamps();
+
+            $table->unique(['institution_id', 'branch_id', 'code'], 
+                'inventory_stores_ins_bra_code_unique');
         });
     }
 

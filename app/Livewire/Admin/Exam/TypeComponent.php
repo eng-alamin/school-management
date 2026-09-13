@@ -75,11 +75,34 @@ class TypeComponent extends Component
         ];
 
         if ($this->editId) {
-            ExamType::findOrFail($this->editId)->update($data);
-            session()->flash('success', 'Data updated successfully!');
+            $record = ExamType::findOrFail($this->editId);
+            $record->update($data);
+
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'quiz', 'type' => 'exam'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+                ->log('Type updated: ' . $record->name);
+
+            $this->dispatch('toast', type: 'success', message: 'Type updated successfully!');
         } else {
-            ExamType::create($data);
-            session()->flash('success', 'Data created successfully!');
+            $record = ExamType::create($data);
+
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'quiz', 'type' => 'exam'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+                ->log('Type created: ' . $record->name);
+
+            $this->dispatch('toast', type: 'success', message: 'Type created successfully!');
         }
 
         $this->showModal = false;
@@ -117,8 +140,20 @@ class TypeComponent extends Component
     {
         $record = ExamType::findOrFail($this->deleteId);
         $record->delete();
+
+        activity()
+            ->causedBy(auth()->user())
+            ->performedOn($record)
+            ->withProperties(['icon' => 'quiz', 'type' => 'exam'])
+            ->tap(function ($activity) use ($record) {
+                $activity->institution_id = $record->institution_id;
+                $activity->branch_id = $record->branch_id;
+            })
+            ->log('Type deleted: ' . $record->name);
+
         $this->confirmDelete = false;
         $this->deleteId = null;
-        session()->flash('success', 'Data deleted successfully!');
+        
+        $this->dispatch('toast', type: 'success', message: 'Type deleted successfully!');
     }
 }

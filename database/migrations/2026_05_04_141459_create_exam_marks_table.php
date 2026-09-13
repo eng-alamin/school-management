@@ -17,6 +17,8 @@ return new class extends Migration
             $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
             $table->string('name')->nullable();
             $table->timestamps();
+
+            $table->unique(['institution_id', 'branch_id', 'name'], 'exam_marks_ins_bra_name_unique');
         });
     }
 

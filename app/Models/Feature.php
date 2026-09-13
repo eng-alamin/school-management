@@ -11,7 +11,7 @@ class Feature extends Model
     use BelongsToInstitution;
     // use BelongsToBranch;
 
-    protected $fillable = ['institution_id', 'feature_key', 'is_active'];
+    protected $fillable = ['institution_id', 'branch_id', 'feature_key', 'is_active'];
 
     protected $casts = [
         'is_active' => 'boolean',

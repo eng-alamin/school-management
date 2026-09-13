@@ -22,11 +22,13 @@ return new class extends Migration
             $table->date('date');
             $table->decimal('net_total', 15, 2)->default(0);
             $table->text('remarks')->nullable();
-            
             $table->timestamps();
             $table->softDeletes();
 
-            $table->unique(['institution_id', 'bill_no', 'deleted_at'], 'inventory_purchases_institution_bill_no_unique');
+            $table->unique(['institution_id', 'branch_id', 'bill_no', 'deleted_at'], 
+            'inventory_purchases_ins_bra_bil_del_unique');
+            
+            $table->index(['institution_id', 'branch_id', 'purchase_status'], 'inventory_purchases_ins_bra_sta_idx');
         });
     }
 

@@ -13,6 +13,7 @@ class BranchScope implements Scope
 {
     protected const BRANCH_EXEMPT_ROLES = [
         User::ROLE_SUPER_ADMIN,
+        User::ROLE_MINISTRY,
     ];
 
     public function apply(Builder $builder, Model $model): void

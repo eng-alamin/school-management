@@ -76,9 +76,6 @@ class ClassComponent extends Component
                 'nullable',
                 'integer',
                 'min:0',
-                Rule::unique('academic_classes', 'numeric')
-                    ->where(fn ($q) => $q->where('institution_id', $institutionId))
-                    ->ignore($this->editId),
             ],
             'hasSection'   => 'boolean',
             'sectionIds'   => 'nullable|array',
@@ -90,7 +87,6 @@ class ClassComponent extends Component
     {
         return [
             'name.unique'    => 'This class name already exists in your institution.',
-            'numeric.unique' => 'This numeric order is already used by another class.',
         ];
     }
 
@@ -168,53 +164,49 @@ class ClassComponent extends Component
                 $institutionId = auth()->user()->institution_id;
 
                 if ($this->editId) {
-                    $class = AcademicClass::where('institution_id', $institutionId)
-                        ->findOrFail($this->editId);
-
-                    // Guard: prevent removing a section that already has students assigned
-                    $removedSectionIds = AcademicClassSection::where('institution_id', $institutionId)
-                        ->where('class_id', $class->id)
-                        ->whereNotIn('section_id', $sectionIds)
-                        ->pluck('section_id')
-                        ->toArray();
-
-                    if (! empty($removedSectionIds) && $this->sectionHasStudents($institutionId, $class->id, $removedSectionIds)) {
-                        throw new \RuntimeException('One or more sections you removed still have students assigned. Please reassign those students first.');
-                    }
-
-                    $class->update($data);
+                    $record = AcademicClass::where('institution_id', $institutionId)->findOrFail($this->editId);
+                    $record->update($data);
 
                     AcademicClassSection::where('institution_id', $institutionId)
-                        ->where('class_id', $class->id)
+                        ->where('class_id', $record->id)
                         ->delete();
 
-                    $message = 'Class updated successfully!';
-                    $logMessage = "Updated class: {$class->name}";
+                    activity()
+                        ->causedBy(auth()->user())
+                        ->performedOn($record)
+                        ->withProperties(['icon' => 'menu_book', 'type' => 'academic'])
+                        ->tap(function ($activity) use ($record) {
+                            $activity->institution_id = $record->institution_id;
+                            $activity->branch_id = $record->branch_id;
+                        })
+                        ->log('Class updated: ' . $record->name);
+
+                    $this->dispatch('toast', type: 'success', message: 'Class updated successfully!');
                 } else {
                     $data['institution_id'] = $institutionId;
-                    $class = AcademicClass::create($data);
+                    $record = AcademicClass::create($data);
 
-                    $message = 'Class created successfully!';
-                    $logMessage = "Created class: {$class->name}";
+                    activity()
+                        ->causedBy(auth()->user())
+                        ->performedOn($record)
+                        ->withProperties(['icon' => 'menu_book', 'type' => 'academic'])
+                        ->tap(function ($activity) use ($record) {
+                            $activity->institution_id = $record->institution_id;
+                            $activity->branch_id = $record->branch_id;
+                        })
+                        ->log('Class created: ' . $record->name);
+
+                    $this->dispatch('toast', type: 'success', message: 'Class created successfully!');
                 }
 
                 foreach ($sectionIds as $sectionId) {
                     AcademicClassSection::create([
                         'institution_id' => $institutionId,
-                        'class_id'       => $class->id,
+                        'class_id'       => $record->id,
                         'section_id'     => $sectionId,
                     ]);
                 }
 
-                if (function_exists('activity')) {
-                    activity()
-                        ->causedBy(auth()->user())
-                        ->performedOn($class)
-                        ->withProperties(['has_section' => $this->hasSection, 'section_ids' => $sectionIds])
-                        ->log($logMessage);
-                }
-
-                $this->dispatch('toast', type: 'success', message: $message);
             });
         } catch (\RuntimeException $e) {
             $this->dispatch('toast', type: 'error', message: $e->getMessage());
@@ -262,12 +254,15 @@ class ClassComponent extends Component
             $className = $class->name;
             $class->delete();
 
-            if (function_exists('activity')) {
-                activity()
-                    ->causedBy(auth()->user())
-                    ->withProperties(['class_id' => $class->id, 'class_name' => $className])
-                    ->log("Deleted class: {$className}");
-            }
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($class)
+                ->withProperties(['icon' => 'menu_book', 'type' => 'academic'])
+                ->tap(function ($activity) use ($class) {
+                    $activity->institution_id = $class->institution_id;
+                    $activity->branch_id = $class->branch_id;
+                })
+                ->log('Class deleted: ' . $className);
         });
 
         $this->confirmDelete = false;
@@ -275,14 +270,6 @@ class ClassComponent extends Component
         $this->dispatch('toast', type: 'success', message: 'Class deleted successfully!');
     }
 
-    /**
-     * Checks whether any student record exists for the given class.
-     *
-     * NOTE: This assumes a `students` table with an `academic_class_id` column
-     * scoped by `institution_id`. If the actual student-to-class relation in
-     * this project uses a different table/column name (e.g. via
-     * `academic_class_assigns`), this method must be updated accordingly.
-     */
     private function classHasStudents(int $institutionId, int $classId): bool
     {
         if (! Schema::hasTable('students')) {
@@ -299,12 +286,6 @@ class ClassComponent extends Component
         return false;
     }
 
-    /**
-     * Checks whether any student record exists for the given sections of a class.
-     *
-     * NOTE: Same assumption as classHasStudents() above regarding table/column
-     * names. Update if the real schema differs.
-     */
     private function sectionHasStudents(int $institutionId, int $classId, array $sectionIds): bool
     {
         if (empty($sectionIds) || ! Schema::hasTable('students')) {

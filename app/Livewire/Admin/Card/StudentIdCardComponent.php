@@ -244,9 +244,14 @@ class StudentIdCardComponent extends Component
                 }
 
                 activity()
-                    ->performedOn($card)
                     ->causedBy(auth()->user())
-                    ->log('Generated/updated ID card for student: '.$student->name);
+                    ->performedOn($card)
+                    ->withProperties(['icon' => 'credit_card', 'type' => 'card'])
+                    ->tap(function ($activity) use ($card) {
+                        $activity->institution_id = $card->institution_id;
+                        $activity->branch_id = $card->branch_id;
+                    })
+                    ->log('Generated/updated ID card for student');
 
                 $cards->push($card->load('template'));
             }

@@ -70,8 +70,18 @@ class InboxComponent extends Component
 
     public function toggleImportant(int $id): void
     {
-        $message = Message::inbox(auth()->id())->findOrFail($id);
-        $message->update(['is_important' => ! $message->is_important]);
+        $record = Message::inbox(auth()->id())->findOrFail($id);
+        $record->update(['is_important' => ! $record->is_important]);
+
+        activity()
+            ->causedBy(auth()->user())
+            ->performedOn($record)
+            ->withProperties(['icon' => 'mail', 'type' => 'mailbox'])
+            ->tap(function ($activity) use ($record) {
+                $activity->institution_id = $record->institution_id;
+                $activity->branch_id = $record->branch_id;
+            })
+            ->log('Message sent to ' . $this->receiverName . ': ' . $this->subject);
 
         // Refresh viewing message if open
         if ($this->viewingId === $id) {
@@ -83,8 +93,18 @@ class InboxComponent extends Component
 
     public function trashMessage(int $id): void
     {
-        Message::inbox(auth()->id())->findOrFail($id)
-               ->update(['is_trashed_by_receiver' => true]);
+        $record = Message::inbox(auth()->id())->findOrFail($id);
+        $record->update(['is_trashed_by_receiver' => true]);
+
+        activity()
+            ->causedBy(auth()->user())
+            ->performedOn($record)
+            ->withProperties(['icon' => 'mail', 'type' => 'mailbox'])
+            ->tap(function ($activity) use ($record) {
+                $activity->institution_id = $record->institution_id;
+                $activity->branch_id = $record->branch_id;
+            })
+            ->log('Message moved to trash: ' . $record->subject);
 
         if ($this->viewingId === $id) {
             $this->backToList();

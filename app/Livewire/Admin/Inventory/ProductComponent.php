@@ -135,18 +135,40 @@ class ProductComponent extends Component
                 $data['code'] = Str::slug($this->name) . '-' . $product->id;
             }
 
-            InventoryProduct::findOrFail($this->editId)->update($data);
-            $this->dispatch('toast', type: 'success', message: 'Data updated successfully!');
+            $record = InventoryProduct::findOrFail($this->editId);
+            $record->update($data);
+
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'inventory_2', 'type' => 'inventory'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+                ->log('Inventory product updated: ' . $record->name);
+
+            $this->dispatch('toast', type: 'success', message: 'Product updated successfully!');
         } else {
-            $product = InventoryProduct::create($data);
+            $record = InventoryProduct::create($data);
 
             if (empty($this->code)) {
-                $product->update([
-                    'code' => Str::slug($this->name) . '-' . $product->id,
+                $record->update([
+                    'code' => Str::slug($this->name) . '-' . $record->id,
                 ]);
             }
+
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'inventory_2', 'type' => 'inventory'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+                ->log('Inventory product created: ' . $record->name);
             
-            $this->dispatch('toast', type: 'success', message: 'Data created successfully!');
+            $this->dispatch('toast', type: 'success', message: 'Product created successfully!');
         }
 
         $this->showModal = false;
@@ -198,6 +220,17 @@ class ProductComponent extends Component
         $record->delete();
         $this->confirmDelete = false;
         $this->deleteId = null;
-        $this->dispatch('toast', type: 'success', message: 'Data deleted successfully!');
+
+        activity()
+            ->causedBy(auth()->user())
+            ->performedOn($record)
+            ->withProperties(['icon' => 'inventory_2', 'type' => 'inventory'])
+            ->tap(function ($activity) use ($record) {
+                $activity->institution_id = $record->institution_id;
+                $activity->branch_id = $record->branch_id;
+            })
+            ->log('Inventory product deleted: ' . $record->name);
+
+        $this->dispatch('toast', type: 'success', message: 'Product deleted successfully!');
     }
 }

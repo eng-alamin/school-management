@@ -20,7 +20,9 @@ return new class extends Migration
             $table->timestamps();
 
             // ── Ekjon teacher-ke ekta exam schedule-e ekbar-i duty deya jabe (duplicate thekano) ──
-            $table->unique(['exam_schedule_id', 'teacher_id'], 'attendance_exam_assigns_schedule_teacher_unique');
+            $table->unique(['exam_schedule_id', 'teacher_id'], 
+                'attendance_exam_assigns_sch_tea_unique'
+            );
         });
     }
 

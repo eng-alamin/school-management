@@ -109,11 +109,31 @@ class DesignationComponent extends Component
                 'name'      => $this->name,
             ]);
 
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'badge', 'type' => 'employee'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+                ->log('Designation updated: ' . $record->name);
+
             $this->dispatch('toast', type: 'success', message: 'Designation updated successfully!');
         } else {
-            EmployeeDesignation::create([
+            $record = EmployeeDesignation::create([
                 'name'      => $this->name,
             ]);
+
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'badge', 'type' => 'employee'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+                ->log('Designation created: ' . $record->name);
 
             $this->dispatch('toast', type: 'success', message: 'Designation created successfully!');
         }
@@ -130,22 +150,21 @@ class DesignationComponent extends Component
 
     public function deleteRecord(): void
     {
-        $designation = EmployeeDesignation::where('institution_id', auth()->user()->institution_id)
-            ->findOrFail($this->deleteId);
-
-        activity()
-            ->performedOn($designation)
-            ->withProperties([
-                'institution_id' => $designation->institution_id,
-                'icon' => 'delete',
-                'type' => 'employee_designation',
-            ])
-            ->log('Designation deleted: ' . $designation->name);
-
-        $designation->delete();
-
+        $record = EmployeeDesignation::where('institution_id', auth()->user()->institution_id)->findOrFail($this->deleteId);
+        $record->delete();
         $this->confirmDelete = false;
         $this->deleteId      = null;
+
+        activity()
+            ->causedBy(auth()->user())
+            ->performedOn($record)
+            ->withProperties(['icon' => 'badge', 'type' => 'employee'])
+            ->tap(function ($activity) use ($record) {
+                $activity->institution_id = $record->institution_id;
+                $activity->branch_id = $record->branch_id;
+            })
+            ->log('Designation deleted: ' . $record->name);
+
         $this->dispatch('toast', type: 'success', message: 'Designation deleted successfully!');
     }
 

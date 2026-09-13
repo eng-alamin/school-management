@@ -107,11 +107,34 @@ class SubjectComponent extends Component
         ];
 
         if ($this->editId) {
-            AcademicSubject::findOrFail($this->editId)->update($data);
-            $this->dispatch('toast', type: 'success', message: 'Data updated successfully!');
+            $record = AcademicSubject::findOrFail($this->editId);
+            $record->update($data);
+
+            activity()
+            ->causedBy(auth()->user())
+            ->performedOn($record)
+            ->withProperties(['icon' => 'menu_book', 'type' => 'academic'])
+            ->tap(function ($activity) use ($record) {
+                $activity->institution_id = $record->institution_id;
+                $activity->branch_id = $record->branch_id;
+            })
+            ->log('Subject updated: ' . $record->name);
+
+            $this->dispatch('toast', type: 'success', message: 'Subject updated successfully!');
         } else {
-            AcademicSubject::create($data);
-            $this->dispatch('toast', type: 'success', message: 'Data created successfully!');
+            $record = AcademicSubject::create($data);
+
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($record)
+                ->withProperties(['icon' => 'menu_book', 'type' => 'academic'])
+                ->tap(function ($activity) use ($record) {
+                    $activity->institution_id = $record->institution_id;
+                    $activity->branch_id = $record->branch_id;
+                })
+                ->log('Subject created: ' . $record->name);
+
+            $this->dispatch('toast', type: 'success', message: 'Subject created successfully!');
         }
 
         $this->showModal = false;
@@ -126,10 +149,22 @@ class SubjectComponent extends Component
 
     public function deleteRecord(): void
     {
-        AcademicSubject::findOrFail($this->deleteId)->delete();
+        $record = AcademicSubject::findOrFail($this->deleteId);
+        $record->delete();
         $this->confirmDelete = false;
         $this->deleteId      = null;
-        $this->dispatch('toast', type: 'success', message: 'Data deleted successfully!');
+
+        activity()
+            ->causedBy(auth()->user())
+            ->performedOn($record)
+            ->withProperties(['icon' => 'menu_book', 'type' => 'academic'])
+            ->tap(function ($activity) use ($record) {
+                $activity->institution_id = $record->institution_id;
+                $activity->branch_id = $record->branch_id;
+            })
+            ->log('Subject deleted: ' . $record->name);
+
+        $this->dispatch('toast', type: 'success', message: 'Subject deleted successfully!');
     }
 
     private function resetForm(): void
