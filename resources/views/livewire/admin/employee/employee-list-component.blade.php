@@ -77,7 +77,7 @@
                                     </span>
                                 </div>
                             </td>
-                            <td> <span class="badge bg-secondary">{{ $employee->user?->role ?? '—' }} </span></td>
+                            <td> <span class="badge bg-secondary">{{ ucwords(str_replace('_', ' ', $employee->user->roles->first()?->name ?? '')) }}</span></td>
                             <td>{{ $employee->designation?->name ?? '—' }}</td>
                             <td>{{ $employee->department?->name ?? '—' }}</td>
                             <td>{{ $employee->email ?? '—' }}</td>

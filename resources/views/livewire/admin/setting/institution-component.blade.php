@@ -84,7 +84,7 @@
                                 <label class="form-label">Institution Medium</label>
                                 <select wire:model="medium" class="form-select">
                                     <option value="">Select Medium</option>
-                                    @foreach (\App\Models\Institution::MEDIUMS as $value => $label)
+                                    @foreach (\App\Models\Institution::MEDIUM_LABELS as $value => $label)
                                         <option value="{{ $value }}">{{ $label }}</option>
                                     @endforeach
                                 </select>
@@ -96,7 +96,7 @@
                         <div class="col-md-6">
                             <div class="input-group input-group-outline" wire:ignore>
                                 <label class="form-label">Division</label>
-                                <select wire:model="division" class="form-select">
+                                <select wire:model.live="division" class="form-select">
                                     <option value="">Select Division</option>
                                     @foreach (\App\Models\Institution::DIVISIONS as $value => $label)
                                         <option value="{{ $value }}">{{ $label }}</option>
@@ -110,8 +110,12 @@
                         <div class="col-md-6">
                             <div class="input-group input-group-outline">
                                 <label class="form-label">District</label>
-                                <input type="text" wire:model="district" class="form-control"
-                                    placeholder=" " onfocus="focused(this)" onfocusout="defocused(this)">
+                                <select wire:model="district" class="form-select" {{ !$division ? 'disabled' : '' }}>
+                                    <option value="">{{ $division ? 'Select District' : 'Select Division First' }}</option>
+                                    @foreach ($this->districts as $district)
+                                        <option value="{{ $district }}">{{ $district }}</option>
+                                    @endforeach
+                                </select>
                             </div>
                             @error('district') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
@@ -136,26 +140,27 @@
                             @error('address') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
 
-                        <!-- Weekends — selectpicker (subjects pattern) -->
-                        <div class="col-md-12">
-                            <label class="form-label">Weekends</label>
-                            <div wire:ignore>
-                                <select
-                                    id="weekendsSelect"
-                                    multiple
-                                    title="Select Weekends..."
-                                    class="form-select w-100 selectpicker">
-                                    <option value="Saturday">Saturday</option>
-                                    <option value="Sunday">Sunday</option>
-                                    <option value="Monday">Monday</option>
-                                    <option value="Tuesday">Tuesday</option>
-                                    <option value="Wednesday">Wednesday</option>
-                                    <option value="Thursday">Thursday</option>
-                                    <option value="Friday">Friday</option>
-                                </select>
+                        <!-- Weekends -->
+                            <div class="col-md-12">
+                                <label class="form-label d-block mb-2">Weekends</label>
+                                <div class="d-flex gap-3 flex-wrap">
+                                    @foreach (['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] as $day)
+                                        <div class="form-check">
+                                            <input
+                                                type="checkbox"
+                                                class="form-check-input"
+                                                id="weekend_{{ $day }}"
+                                                wire:model.live="weekends"
+                                                value="{{ $day }}"
+                                            >
+                                            <label class="form-check-label" for="weekend_{{ $day }}">
+                                                {{ $day }}
+                                            </label>
+                                        </div>
+                                    @endforeach
+                                </div>
+                                @error('weekends') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
-                            @error('weekends') <span class="text-danger">{{ $message }}</span> @enderror
-                        </div>
 
                         <!-- Unique Roll -->
                         <div class="col-md-12">

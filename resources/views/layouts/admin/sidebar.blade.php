@@ -41,7 +41,7 @@
 
       @if(feature_enabled(\App\Support\Feature::BRANCH_MODULE))
         <li class="nav1-item">
-          <a href="{{route('admin.branches') }}" class="nav1-link {{ str_contains(request()->url(), 'branches') == true ? 'active' : '' }}">
+          <a href="{{route('admin.branch.index') }}" class="nav1-link {{ str_contains(request()->url(), 'branches') == true ? 'active' : '' }}">
             <span class="material-icons-round">business</span>
             <span class="nav-label" id="nav-branches">Branches</span>
           </a>
@@ -151,9 +151,9 @@
         </div>
         <div class="nav2-collapse {{ str_contains(request()->url(), 'admin/question-papers') == true ? 'show' : '' }}">
           <ul>
-            <li class="nav2-item"><a href="{{route('admin.question-papers.index') }}" class="nav2-link {{ str_contains(request()->url(), 'admin/question-papers') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-question-papers">Question Papers</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.question-papers.print.authorization') }}" class="nav2-link {{ str_contains(request()->url(), 'admin/question-papers/print') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-print-authorization">Print Authorization</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.question-papers.print.logs') }}" class="nav2-link {{ str_contains(request()->url(), 'admin/question-papers/print-logs') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-print-logs">Print Logs</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.question-papers.index') }}" class="nav2-link {{ Route::is('admin.question-papers.index') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-question-papers">Question Papers</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.question-papers.print.authorization') }}" class="nav2-link {{ Route::is('admin.question-papers.print.authorization') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-print-authorization">Print Authorization</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.question-papers.print.logs') }}" class="nav2-link {{ Route::is('admin.question-papers.print.logs') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-print-logs">Print Logs</span></a></li>
           </ul>
         </div>
       </li>

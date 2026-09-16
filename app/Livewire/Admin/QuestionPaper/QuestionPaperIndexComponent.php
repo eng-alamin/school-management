@@ -24,15 +24,11 @@ class QuestionPaperIndexComponent extends Component
     public ?int $subjectFilter = null;
     public int $perPage = 15;
 
-    // ---------- "নতুন প্রশ্নপত্র" create flow ----------
-    // A question paper is written against one ExamSetup row (= one exam for
-    // one class) and one subject inside that exam's ExamSetupDetail list.
-    // So the picker cascades: Exam name -> Class (resolves the ExamSetup
-    // row) -> Subject (resolves the ExamSetupDetail row).
+
     public bool $showCreateModal = false;
     public ?string $newExamName = null;
-    public ?int $newExamSetupId = null;   // = the chosen Exam+Class row -> becomes route {examId}
-    public ?int $newSubjectId = null;     // = academic_subjects.id from the chosen ExamSetupDetail -> {subjectId}
+    public ?int $newExamSetupId = null;
+    public ?int $newSubjectId = null;
 
     public string $sortField = 'created_at';
     public string $sortDirection = 'desc';
@@ -72,6 +68,46 @@ class QuestionPaperIndexComponent extends Component
         $this->resetPage();
     }
 
+    public function updatingExamFilter(): void
+    {
+        $this->subjectFilter = null;
+        $this->resetPage();
+    }
+
+    public function updatingSubjectFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function clearFilters(): void
+    {
+        $this->reset(['search', 'examFilter', 'subjectFilter']);
+        $this->resetPage();
+    }
+
+    public function getExamFilterOptionsProperty()
+    {
+        return QuestionPaper::query()
+            ->where('institution_id', Auth::user()->institution_id)
+            ->where('branch_id', $this->activeBranchId())
+            ->select('exam_id', 'exam_name')
+            ->distinct()
+            ->orderBy('exam_name')
+            ->get();
+    }
+
+    public function getSubjectFilterOptionsProperty()
+    {
+        return QuestionPaper::query()
+            ->where('institution_id', Auth::user()->institution_id)
+            ->where('branch_id', $this->activeBranchId())
+            ->when($this->examFilter, fn ($q) => $q->where('exam_id', $this->examFilter))
+            ->select('subject_id', 'subject_label')
+            ->distinct()
+            ->orderBy('subject_label')
+            ->get();
+    }
+
     public function sortBy(string $field): void
     {
         if (!in_array($field, self::SORTABLE_FIELDS, true)) {
@@ -97,24 +133,17 @@ class QuestionPaperIndexComponent extends Component
         $this->showCreateModal = false;
     }
 
-    /** Step 1 changed -> forget everything downstream of it. */
     public function updatedNewExamName(): void
     {
         $this->newExamSetupId = null;
         $this->newSubjectId = null;
     }
 
-    /** Step 2 changed -> forget the subject choice. */
     public function updatedNewExamSetupId(): void
     {
         $this->newSubjectId = null;
     }
 
-    /**
-     * STEP 1 — distinct exam names set up for the current institution/branch
-     * and active session. The same exam name (e.g. "Half Yearly Exam") has
-     * one ExamSetup row per class, so we only show the name here.
-     */
     public function getExamNameOptionsProperty()
     {
         return ExamSetup::query()
@@ -126,11 +155,6 @@ class QuestionPaperIndexComponent extends Component
             ->pluck('name');
     }
 
-    /**
-     * STEP 2 — every class this exam name has been set up for. Each option's
-     * value IS the exam_setups.id, since that single row already pins down
-     * both "which exam" and "which class".
-     */
     public function getClassOptionsProperty()
     {
         if (!$this->newExamName) {
@@ -153,15 +177,6 @@ class QuestionPaperIndexComponent extends Component
             ->values();
     }
 
-    /**
-     * STEP 3 — subjects entered under the chosen ExamSetup via its
-     * ExamSetupDetail rows. Option value is the real academic_subjects.id
-     * (subject_id on question_papers is a hard FK to that table).
-     *
-     * NOTE: assumes AcademicClassAssignDetail::subject() -> belongsTo
-     * AcademicSubject. If that relation/column is named differently in the
-     * real models, rename it here — search-and-replace `classAssignDetail.subject`.
-     */
     public function getSubjectOptionsProperty()
     {
         if (!$this->newExamSetupId) {
@@ -194,9 +209,6 @@ class QuestionPaperIndexComponent extends Component
             'newSubjectId' => 'Subject',
         ]);
 
-        // Defense-in-depth: confirm both belong to this institution/branch
-        // before handing them to the builder route — a tampered Livewire
-        // payload must not be trusted just because validation passed.
         $institutionId = Auth::user()->institution_id;
         $branchId = $this->activeBranchId();
 
@@ -218,10 +230,6 @@ class QuestionPaperIndexComponent extends Component
 
         $this->showCreateModal = false;
 
-        // Avoid creating a second QuestionPaper row for an exam+subject pair
-        // that already has one — route straight to editing the existing
-        // paper instead. Without this check, clicking "Add Question Paper"
-        // twice for the same exam/subject silently produced a duplicate.
         $existingPaper = QuestionPaper::query()
             ->where('institution_id', $institutionId)
             ->where('branch_id', $branchId)

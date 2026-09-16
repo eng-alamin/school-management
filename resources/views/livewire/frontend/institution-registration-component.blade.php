@@ -178,6 +178,21 @@
 
                                             <div class="col-md-6 mb-4">
                                                 <label class="form-label">
+                                                    <span class="lang-bn">প্রতিষ্ঠানের ইআইআইএন</span>
+                                                    <span class="lang-en">Institution's EIIN</span>
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    class="form-control @error('institution_eiin') is-invalid @enderror"
+                                                    wire:model.live="institution_eiin"
+                                                >
+                                                @error('institution_eiin')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+
+                                            <div class="col-md-6 mb-4">
+                                                <label class="form-label">
                                                     <span class="lang-bn">প্রতিষ্ঠানের ধরন</span>
                                                     <span class="lang-en">Institution Type</span>
                                                 </label>
@@ -286,6 +301,45 @@
                                                 >
                                                 @error('phone')
                                                     <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+
+                                            <div class="col-md-6 mb-4">
+                                                <label class="form-label d-block">
+                                                    <span class="lang-bn">প্রতিষ্ঠানের শাখা আছে?</span>
+                                                    <span class="lang-en">Does the institution have branches?</span>
+                                                </label>
+
+                                                <div class="form-check form-check-inline">
+                                                    <input
+                                                        type="radio"
+                                                        id="is_branch_yes"
+                                                        class="form-check-input @error('is_branch') is-invalid @enderror"
+                                                        wire:model.live="is_branch"
+                                                        value="1"
+                                                    >
+                                                    <label class="form-check-label" for="is_branch_yes">
+                                                        <span class="lang-bn">হ্যাঁ</span>
+                                                        <span class="lang-en">Yes</span>
+                                                    </label>
+                                                </div>
+
+                                                <div class="form-check form-check-inline">
+                                                    <input
+                                                        type="radio"
+                                                        id="is_branch_no"
+                                                        class="form-check-input @error('is_branch') is-invalid @enderror"
+                                                        wire:model.live="is_branch"
+                                                        value="0"
+                                                    >
+                                                    <label class="form-check-label" for="is_branch_no">
+                                                        <span class="lang-bn">না</span>
+                                                        <span class="lang-en">No</span>
+                                                    </label>
+                                                </div>
+
+                                                @error('is_branch')
+                                                    <div class="invalid-feedback d-block">{{ $message }}</div>
                                                 @enderror
                                             </div>
 
@@ -615,6 +669,13 @@
                                                 </div>
                                                 <div class="summary-value">{{ $institution_name }}</div>
                                             </div>
+                                            <div class="summary-item mt-3">
+                                                <div class="summary-label">
+                                                    <span class="lang-bn">প্রতিষ্ঠানের ইআইআইএন</span>
+                                                    <span class="lang-en">Institution EIIN</span>
+                                                </div>
+                                                <div class="summary-value">{{ $institution_eiin }}</div>
+                                            </div>
                                             <div class="summary-item">
                                                 <div class="summary-label">
                                                     <span class="lang-bn">অ্যাডমিন ইমেইল</span>
@@ -681,6 +742,13 @@
                                                     <span class="lang-en">Institution Name</span>
                                                 </div>
                                                 <div class="summary-value">{{ $institution_name }}</div>
+                                            </div>
+                                            <div class="summary-item">
+                                                <div class="summary-label">
+                                                    <span class="lang-bn">প্রতিষ্ঠানের ইআইআইএন</span>
+                                                    <span class="lang-en">Institution EIIN</span>
+                                                </div>
+                                                <div class="summary-value">{{ $institution_eiin }}</div>
                                             </div>
                                             <div class="summary-item">
                                                 <div class="summary-label">

@@ -11,6 +11,8 @@ class IndexComponent extends Component
 {
     use WithPagination;
 
+    public string $routePrefix = '';
+
     protected string $paginationTheme = 'bootstrap';
 
     public string $search = '';
@@ -28,10 +30,25 @@ class IndexComponent extends Component
 
     public function mount(): void
     {
+        $this->routePrefix = $this->resolveRoutePrefix();
+
         // Surface a success toast after redirect back from Create/Edit pages.
         if (session()->has('toast_success')) {
             $this->dispatch('toast', type: 'success', message: session()->pull('toast_success'));
         }
+    }
+
+    protected function resolveRoutePrefix(): string
+    {
+        $routeName = request()->route()?->getName();
+
+        if ($routeName && str_contains($routeName, '.')) {
+            return explode('.', $routeName)[0] . '.';
+        }
+
+        $segment = request()->segment(1);
+
+        return $segment ? $segment . '.' : '';
     }
 
     public function updatingSearch(): void
@@ -58,6 +75,11 @@ class IndexComponent extends Component
     private function institutionId(): int
     {
         return auth()->user()->institution_id;
+    }
+
+    private function branchId(): int
+    {
+        return auth()->user()->branch_id;
     }
 
     public function openViewModal(int $roleId): void
@@ -129,9 +151,11 @@ class IndexComponent extends Component
     public function render()
     {
         $institutionId = $this->institutionId();
+        $branchId = $this->branchId();
 
         $roles = Role::query()
             ->where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
             ->where('guard_name', 'web')
             ->withCount('permissions')
             ->when($this->search, function ($q) {
@@ -142,6 +166,7 @@ class IndexComponent extends Component
 
         $viewingRole = $this->viewingRoleId
             ? Role::where('institution_id', $institutionId)
+                ->where('branch_id', $branchId)
                 ->with('permissions')
                 ->find($this->viewingRoleId)
             : null;

@@ -5,11 +5,9 @@ namespace App\Livewire\Branch\RolePermission;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\User;
-use App\Models\Employee;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
 class UserComponent extends Component
@@ -24,14 +22,30 @@ class UserComponent extends Component
     public string $sortField = 'name';
     public string $sortDirection = 'asc';
 
+    protected array $sortableFields = ['name'];
+
     // ══ Assign Role Modal ══
     public bool $showRoleModal = false;
-    public ?int $assigningEmployeeId = null;
+    public ?int $assigningUserId = null;
+    public ?int $assigningUserBranchId = null;
     public $selectedRoles = [];
+
+    private const PANEL_ROLES = [
+        User::ROLE_BRANCH,
+        User::ROLE_IT_SUPPORT,
+        User::ROLE_TEACHER,
+        User::ROLE_STAFF,
+        User::ROLE_ACCOUNTANT,
+    ];
 
     private function institutionId(): int
     {
         return auth()->user()->institution_id;
+    }
+
+    private function branchId(): int
+    {
+        return auth()->user()->branch_id;
     }
 
     // ══════════════════════ LISTING ══════════════════════
@@ -59,16 +73,22 @@ class UserComponent extends Component
 
     // ══════════════════════ ASSIGN ROLE MODAL ══════════════════════
 
-    public function openRoleModal(int $employeeId): void
+    public function openRoleModal(int $userId): void
     {
         $institutionId = $this->institutionId();
+        $branchId = $this->branchId();
 
-        $employee = Employee::where('institution_id', $institutionId)
-            ->with('user.roles')
-            ->findOrFail($employeeId);
+        app(PermissionRegistrar::class)->setPermissionsTeamId($institutionId);
 
-        $this->assigningEmployeeId = $employee->id;
-        $this->selectedRoles       = $employee->user?->roles->pluck('name')->toArray() ?? [];
+        $user = User::where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
+            ->with('roles')
+            ->findOrFail($userId);
+
+        $this->assigningUserId       = $user->id;
+        $this->assigningUserBranchId = $user->branch_id;
+        $this->selectedRoles         = $user->roles->pluck('name')->toArray();
+
         $this->resetErrorBag();
 
         $this->showRoleModal = true;
@@ -76,42 +96,33 @@ class UserComponent extends Component
 
     public function closeRoleModal(): void
     {
-        $this->showRoleModal       = false;
-        $this->assigningEmployeeId = null;
-        $this->selectedRoles       = [];
+        $this->showRoleModal         = false;
+        $this->assigningUserId       = null;
+        $this->assigningUserBranchId = null;
+        $this->selectedRoles         = [];
         $this->resetErrorBag();
-    }
-
-    private function generateUniqueUsername(?string $name): string
-    {
-        $base = Str::slug($name ?: 'user', '_');
-        $base = $base !== '' ? $base : 'user';
-
-        $username = $base;
-        $counter  = 1;
-
-        while (User::where('username', $username)->exists()) {
-            $username = $base . '_' . $counter;
-            $counter++;
-        }
-
-        return $username;
     }
 
     public function assignRoles(): void
     {
         $institutionId = $this->institutionId();
+        $userBranchId  = $this->assigningUserBranchId;
 
+        // Roles assignable to this user: strictly scoped to the
+        // user's own branch (no institution-wide roles exist anymore).
         $this->validate([
             'selectedRoles'   => 'array',
             'selectedRoles.*' => Rule::exists('roles', 'name')
                 ->where('guard_name', 'web')
-                ->where('institution_id', $institutionId),
+                ->where('institution_id', $institutionId)
+                ->where('branch_id', $userBranchId),
         ]);
 
-        // Defense-in-depth: re-verify role names actually belong to this institution's guard.
+        // Defense-in-depth: re-verify role names actually belong to this
+        // institution's guard AND are scoped to this user's branch.
         $validRoleNames = Role::where('guard_name', 'web')
             ->where('institution_id', $institutionId)
+            ->where('branch_id', $userBranchId)
             ->whereIn('name', $this->selectedRoles)
             ->pluck('name')
             ->all();
@@ -121,27 +132,8 @@ class UserComponent extends Component
 
                 app(PermissionRegistrar::class)->setPermissionsTeamId($institutionId);
 
-                $employee = Employee::where('institution_id', $institutionId)
-                    ->findOrFail($this->assigningEmployeeId);
-
-                $user = $employee->user;
-
-                $logType = 'user_role_updated';
-
-                if (!$user) {
-                    $user = User::create([
-                        'institution_id' => $institutionId,
-                        'name'           => $employee->name,
-                        'username'       => $this->generateUniqueUsername($employee->name),
-                        'email'          => $employee->email,
-                        'password'       => '12345678',
-                        'status'         => 'active',
-                    ]);
-
-                    $employee->update(['user_id' => $user->id]);
-
-                    $logType = 'user_created';
-                }
+                $user = User::where('institution_id', $institutionId)
+                    ->findOrFail($this->assigningUserId);
 
                 $user->syncRoles($validRoleNames);
 
@@ -149,7 +141,7 @@ class UserComponent extends Component
                     ->performedOn($user)
                     ->causedBy(auth()->user())
                     ->tap(fn($activity) => $activity->institution_id = $institutionId)
-                    ->withProperties(['icon' => 'admin_panel_settings', 'type' => $logType])
+                    ->withProperties(['icon' => 'admin_panel_settings', 'type' => 'user_role_updated'])
                     ->log('Roles assigned to: ' . $user->name);
             });
 
@@ -163,37 +155,44 @@ class UserComponent extends Component
         }
     }
 
-
     // ══════════════════════ RENDER ══════════════════════
 
     public function render()
     {
         $institutionId = $this->institutionId();
+        $branchId = $this->branchId();
 
-        $query = Employee::with('user.roles')
+        app(PermissionRegistrar::class)->setPermissionsTeamId($institutionId);
+
+        $query = User::query()
             ->where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
+            ->whereIn('role', self::PANEL_ROLES)
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->where('name', 'like', "%{$this->search}%")
-                        ->orWhere('employee_id', 'like', "%{$this->search}%")
-                        ->orWhereHas('user.roles', fn($q2) => $q2->where('name', 'like', "%{$this->search}%"));
+                        ->orWhere('phone', 'like', "%{$this->search}%")
+                        ->orWhere('role', 'like', "%{$this->search}%");
                 });
             });
 
-        $employees = $query
+        $users = $query
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
+        // Roles available for the currently-open assign modal: only roles
+        // scoped to the user being edited's own branch.
         $roles = Role::where('institution_id', $institutionId)
             ->where('guard_name', 'web')
+            ->where('branch_id', $this->assigningUserBranchId)
             ->orderBy('name')
             ->get();
 
         return view('livewire.admin.role-permission.user-component')
-            ->with('employees', $employees)
+            ->with('users', $users)
             ->with('roles', $roles)
             ->layout('layouts.branch.app', [
                 'title' => 'User Role Assignment | ' . institution()->name,
             ]);
     }
-} 
+}

@@ -22,10 +22,9 @@
                         <label class="form-label"><span id="emp-edit-lbl-role">Role</span> <span class="req">*</span></label>
                         <select wire:model="role" class="form-select">
                             <option value="">Select Role</option>
-                            <option value="teacher">Teacher</option>
-                            <option value="accountant">Accountant</option>
-                            <option value="staff">Staff</option>
-                            <option value="branch">Branch</option>
+                            @foreach ($roles as $role)
+                                <option value="{{$role->name}}">{{ ucwords(str_replace('_', ' ', $role->name)) }}</option>
+                            @endforeach
                         </select>
                     </div>
                     @error('role') <span class="text-danger">{{ $message }}</span> @enderror
@@ -92,7 +91,7 @@
                 @if($this->selectedDesignationName === 'Principal')
                     <div class="col-12">
                         <div class="input-group input-group-outline">
-                            <label class="form-label">Comments</label>
+                            <label class="form-label" id="emp-edit-lbl-comments">Comments</label>
                             <textarea wire:model="comments" class="form-control" placeholder=" " style="min-height:90px" onfocus="focused(this)" onfocusout="defocused(this)"></textarea>
                         </div>
                         @error('comments') <span class="text-danger">{{ $message }}</span> @enderror
@@ -308,15 +307,7 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('livewire:initialized', () => {
-
-            // ✅ Initial load এ সব ঠিক করো
-            setTimeout(() => initAllFields(), 100);
-
-            // ✅ Livewire update এর পর
-            Livewire.hook('morph.updated', ({ el }) => {
-                setTimeout(() => initAllFields(), 50);
-            });
+        (function () {
 
             function initAllFields() {
 
@@ -391,6 +382,23 @@
                 }
             }
 
-        });
+            // ✅ প্রথম full page load এ (normal request)
+            document.addEventListener('livewire:initialized', () => {
+                setTimeout(() => initAllFields(), 100);
+            });
+
+            // ✅ wire:navigate দিয়ে এই page এ আসলে (SPA navigation)
+            document.addEventListener('livewire:navigated', () => {
+                setTimeout(() => initAllFields(), 100);
+            });
+
+            // ✅ Livewire component update এর পর (role/designation change ইত্যাদি)
+            document.addEventListener('livewire:init', () => {
+                Livewire.hook('morph.updated', ({ el }) => {
+                    setTimeout(() => initAllFields(), 50);
+                });
+            });
+
+        })();
     </script>
 @endpush

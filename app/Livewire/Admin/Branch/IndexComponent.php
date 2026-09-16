@@ -4,9 +4,13 @@ namespace App\Livewire\Admin\Branch;
 
 use Livewire\Component;
 use App\Models\Branch;
+use App\Models\Role;
+use App\Models\User;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Spatie\Permission\PermissionRegistrar;
+use Spatie\Permission\Models\Permission;
 
 class IndexComponent extends Component
 {
@@ -24,7 +28,6 @@ class IndexComponent extends Component
     public bool $showViewModal = false;
     public bool $confirmDelete = false;
     public ?int $deleteId = null;
-    public ?Branch $viewRecord = null;
 
     // Form
     public ?int $editId = null;
@@ -36,11 +39,19 @@ class IndexComponent extends Component
     public string $email = '';
     public bool $is_active = true;
 
+    // Branch-manager account fields — only used on create. Every non-main
+    // branch is created with its own login (role: branch); Main Branch's
+    // manager is the institution's 'admin' user, so this block is skipped
+    // for it (there's no "create main branch from UI" path, but guarded anyway).
+    public string $manager_name = '';
+    public string $username = '';
+    public string $password = '';
+
     protected function rules(): array
     {
         $institutionId = auth()->user()->institution_id;
 
-        return [
+        $rules = [
             'name' => 'required|min:2|max:255',
             'code' => [
                 'required',
@@ -55,6 +66,19 @@ class IndexComponent extends Component
             'email' => 'nullable|email|max:150',
             'is_active' => 'boolean',
         ];
+
+        // Manager account fields only required when creating a new branch.
+        // The branch's "email" doubles as the manager's login email, so on
+        // create it must also be unique against users.email (or the INSERT
+        // fails with a raw DB constraint error instead of a friendly message).
+        if (! $this->editId) {
+            $rules['manager_name'] = 'required|min:2|max:150';
+            $rules['username'] = ['required', 'alpha_dash', 'max:100', Rule::unique('users', 'username')];
+            $rules['password'] = 'required|min:6';
+            $rules['email'] = ['nullable', 'email', 'max:150', Rule::unique('users', 'email')];
+        }
+
+        return $rules;
     }
 
     public function updatingSearch(): void { $this->resetPage(); }
@@ -81,13 +105,6 @@ class IndexComponent extends Component
         $this->email = $record->email ?? '';
         $this->is_active = $record->is_active;
         $this->showModal = true;
-    }
-
-    public function openView(int $id): void
-    {
-        $this->viewRecord = Branch::where('institution_id', auth()->user()->institution_id)
-            ->findOrFail($id);
-        $this->showViewModal = true;
     }
 
     public function save(): void
@@ -140,6 +157,49 @@ class IndexComponent extends Component
                         $activity->institution_id = $record->institution_id;
                     })
                     ->log('New branch created: ' . $record->name);
+
+                // Auto-create the branch-manager login for this branch
+                app(PermissionRegistrar::class)->setPermissionsTeamId($institutionId);
+
+                $branchUser = User::create([
+                    'institution_id' => $institutionId,
+                    'branch_id'      => $record->id,
+                    'role'           => 'branch',
+                    'name'           => $this->manager_name,
+                    'username'       => $this->username,
+                    'email'          => $this->email ?: null,
+                    'phone'          => $this->phone ?: null,
+                    'password'       => $this->password,
+                ]);
+
+                $branchRole = Role::firstOrCreate(
+                    [
+                        'name'           => 'branch',
+                        'guard_name'     => 'web',
+                        'institution_id' => $institutionId,
+                        'branch_id'      => $record->id,
+                    ]
+                );
+
+                if ($branchRole->permissions->isEmpty()) {
+                    $allInstitutionPermissions = Permission::where('guard_name', 'web')
+                        ->where('name', 'like', 'institution.%')
+                        ->pluck('name');
+
+                    $branchRole->syncPermissions($allInstitutionPermissions);
+                }
+
+                $branchUser->assignRole($branchRole);
+
+                activity()
+                    ->causedBy(auth()->user())
+                    ->performedOn($branchUser)
+                    ->withProperties(['icon' => 'store', 'type' => 'branch'])
+                    ->tap(function ($activity) use ($record) {
+                        $activity->institution_id = $record->institution_id;
+                        $activity->branch_id = $record->id;
+                    })
+                    ->log('Branch manager account created: ' . $branchUser->name);
             }
 
             DB::commit();
@@ -151,6 +211,7 @@ class IndexComponent extends Component
 
         } catch (\Throwable $e) {
             DB::rollBack();
+            report($e); // ✅ temporary: root cause log এ ধরতে
             $this->dispatch('toast', type: 'error', message: 'Something went wrong!');
         }
     }
@@ -204,6 +265,7 @@ class IndexComponent extends Component
 
         } catch (\Throwable $e) {
             DB::rollBack();
+            report($e); // ✅ temporary: root cause log এ ধরতে
             $this->dispatch('toast', type: 'error', message: 'Something went wrong!');
         }
     }
@@ -240,13 +302,14 @@ class IndexComponent extends Component
 
         } catch (\Throwable $e) {
             DB::rollBack();
+            report($e); // ✅ temporary: root cause log এ ধরতে
             $this->dispatch('toast', type: 'error', message: 'Something went wrong!');
         }
     }
 
     private function resetForm(): void
     {
-        $this->reset(['name', 'code', 'address', 'phone', 'email', 'editId', 'editIsMain']);
+        $this->reset(['name', 'code', 'address', 'phone', 'email', 'editId', 'editIsMain', 'manager_name', 'username', 'password']);
         $this->is_active = true;
         $this->resetValidation();
     }

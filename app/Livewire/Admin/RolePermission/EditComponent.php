@@ -22,6 +22,8 @@ class EditComponent extends Component
     // creation time and is never re-assigned through edit (no dropdown).
     public ?int $branch_id = null;
 
+    private const SYSTEM_ROLES = ['admin', 'it_support', 'staff', 'accountant', 'teacher'];
+
     private function institutionId(): int
     {
         return auth()->user()->institution_id;
@@ -58,16 +60,6 @@ class EditComponent extends Component
                     ->ignore($this->roleId),
             ],
             'selectedPermissions'   => 'array',
-            // Only 'institution.*' permissions may be selected from the
-            // Admin panel matrix — see CreateComponent for why this prefix
-            // filter is required (guard_name alone can't separate Ministry
-            // vs Institution permissions since both use 'web').
-            //
-            // IMPORTANT: Rule::exists()->where() only supports 2-arg
-            // equality ($column, $value) — a 3rd arg (operator) is SILENTLY
-            // IGNORED, previously collapsing this into `name = 'like'`,
-            // matching nothing and failing validation on every submit.
-            // A Closure is required to run a real LIKE condition here.
             'selectedPermissions.*' => Rule::exists('permissions', 'name')
                 ->where(function ($query) {
                     $query->where('guard_name', 'web')
@@ -111,37 +103,40 @@ class EditComponent extends Component
 
                 app(PermissionRegistrar::class)->setPermissionsTeamId($institutionId);
 
-                // Re-verify ownership server-side (IDOR guard) even though
-                // mount() already checked — public property $roleId could
-                // theoretically be tampered with client-side between requests.
                 $role = Role::where('institution_id', $institutionId)
                     ->where('guard_name', 'web')
                     ->findOrFail($this->roleId);
 
-                // branch_id is passed explicitly on purpose: the trait's
-                // auto-fill only runs on creating(), not on update(), and
-                // this is a read-only carry-forward of the existing value.
+                // System/panel role (users.role enum-এর সাথে bound) —
+                // নাম পরিবর্তন করা যাবে না, শুধু permission customize করা যাবে।
+                $isSystemRole = in_array(strtolower($role->name), self::SYSTEM_ROLES, true);
+
+                if ($isSystemRole && strtolower($this->name) !== strtolower($role->name)) {
+                    throw new \RuntimeException('System role name cannot be changed.');
+                }
+
                 $role->update([
-                    'name'      => $this->name,
+                    'name'      => $isSystemRole ? $role->name : $this->name,
                     'branch_id' => $branchId,
                 ]);
                 $role->syncPermissions($validPermissionNames);
 
                 activity()
-                    ->performedOn($role)
                     ->causedBy(auth()->user())
-                    ->tap(fn($activity) => $activity->institution_id = $institutionId)
-                    ->withProperties([
-                        'icon'      => 'edit',
-                        'type'      => 'role_updated',
-                        'branch_id' => $branchId,
-                    ])
+                    ->performedOn($role)
+                    ->withProperties(['icon' => 'door_front', 'type' => 'role'])
+                    ->tap(function ($activity) use ($role) {
+                        $activity->institution_id = $role->institution_id;
+                        $activity->branch_id = $role->branch_id;
+                    })
                     ->log('Role updated: ' . $role->name);
             });
 
             session()->flash('toast_success', 'Role updated successfully!');
             $this->redirectRoute('admin.role-permission.index', navigate: true);
 
+        } catch (\RuntimeException $e) {
+            $this->dispatch('toast', type: 'error', message: $e->getMessage());
         } catch (\Throwable $e) {
             $this->dispatch('toast', type: 'error', message: 'Something went wrong!');
             throw $e;

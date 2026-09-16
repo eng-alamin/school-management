@@ -13,7 +13,7 @@
             <!-- toolbar -->
             <div class="card-toolbar">
                 {{-- Left side --}}
-                <div class="card-toolbar-title">
+                <div class="card-toolbar-title d-flex align-items-center gap-2 flex-wrap">
                     <!-- search in table -->
                     <div style="position:relative;display:inline-flex;align-items:center">
                         <span class="material-icons-round" style="position:absolute;left:10px;font-size:17px;color:var(--muted);pointer-events:none">search</span>
@@ -34,6 +34,35 @@
                         </div>
                     </div>
                 @endif
+
+                <div class="col-md-2">
+                    <div class="input-group input-group-outline" wire:ignore>
+                        <select class="form-select form-select-sm" style="width:auto;" wire:model.live="examFilter" id="examFilterSelect">
+                            <option value="">All Exams</option>
+                            @foreach($this->examFilterOptions as $exam)
+                                <option value="{{ $exam->exam_id }}">{{ $exam->exam_name ?: '—' }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <div class="input-group input-group-outline" wire:ignore>
+                        <select class="form-select form-select-sm" style="width:auto;" wire:model.live="subjectFilter" id="subjectFilterSelect">
+                            <option value="">All Subjects</option>
+                            @foreach($this->subjectFilterOptions as $subject)
+                                <option value="{{ $subject->subject_id }}">{{ $subject->subject_label ?: '—' }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+
+                @if($search !== '' || $examFilter || $subjectFilter)
+                    <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="clearFilters">
+                        <span class="material-icons-round" style="font-size:14px;vertical-align:middle;">close</span> Clear
+                    </button>
+                @endif
+
                 <button class="btn btn-primary" wire:click="openCreateModal">
                     <span>
                         <span class="material-icons-round">add_circle</span>

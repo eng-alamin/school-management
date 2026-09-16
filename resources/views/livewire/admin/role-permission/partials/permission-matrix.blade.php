@@ -1,6 +1,6 @@
 <div class="table-responsive" style="max-height: 560px; overflow-y: auto;">
     <table class="permission-matrix">
-        <thead>
+        <thead class="position-fixed">
             <tr>
                 <th style="width: 34%;">Module</th>
                 @foreach($actions as $action)

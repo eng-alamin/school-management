@@ -365,7 +365,7 @@ ul {
     font-size: 0.4rem !important;
 }
 
-/* Bootstrap */
+/* Start Bootstrap */
 .input-group
     > :not(:first-child):not(.dropdown-menu):not(.valid-tooltip):not(
         .valid-feedback
@@ -383,6 +383,7 @@ ul {
 .nav-link:hover {
     color: var(--primary-ink);
 }
+/* End Bootstrap */
 
 /* ═══════════════════════════════════════
        DARK MODE — bootstrap-utility overrides

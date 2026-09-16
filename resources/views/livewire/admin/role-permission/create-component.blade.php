@@ -9,12 +9,6 @@
                 <h5 id="role-add-header-title">Role Registration</h5>
                 <p id="role-add-header-subtitle" class="mb-0">Create a new role and assign permissions</p>
             </div>
-            <a href="{{ route('admin.role-permission.index') }}" wire:navigate class="btn btn-light">
-                <span>
-                    <span class="material-icons-round align-middle">arrow_back</span>
-                    <span> Back to List</span>
-                </span>
-            </a>
         </div>
 
         <!-- ══ ROLE DETAILS ══ -->

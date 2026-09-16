@@ -22,11 +22,9 @@
                         <label class="form-label"><span id="emp-add-lbl-role">Role</span> <span class="req">*</span></label>
                         <select wire:model="role" class="form-select">
                             <option value="">Select Role</option>
-                            <option value="teacher">Teacher</option>
-                            <option value="accountant">Accountant</option>
-                            <option value="staff">Staff</option>
-                            <option value="branch">Branch</option>
-                            <option value="it_support">IT Support</option>
+                            @foreach ($roles as $role)
+                                <option value="{{$role->name}}">{{ ucwords(str_replace('_', ' ', $role->name)) }}</option>
+                            @endforeach
                         </select>
                     </div>
                     @error('role') <span class="text-danger">{{ $message }}</span> @enderror

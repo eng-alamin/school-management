@@ -6,14 +6,16 @@ use Livewire\Component;
 use App\Models\Employee;
 use App\Models\EmployeeDepartment;
 use App\Models\EmployeeDesignation;
+use App\Models\Role;
 use App\Models\User;
+
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
-use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
 use Livewire\WithFileUploads;
-use Illuminate\Support\Facades\Storage;
+use Spatie\Permission\PermissionRegistrar;
 
 class EmployeeEditComponent extends Component
 {
@@ -23,6 +25,7 @@ class EmployeeEditComponent extends Component
     public $userId;
     public $employee;
 
+    // Job Details
     public $role;
     public $joining_date;
     public $designation_id;
@@ -32,6 +35,7 @@ class EmployeeEditComponent extends Component
     public $total_experience;
     public $comments;
 
+    // Employee Details
     public $name;
     public $dob;
     public $religion;
@@ -43,11 +47,13 @@ class EmployeeEditComponent extends Component
     public $photo;
     public $photo_upload;
 
+    // Login Details
     public $username;
     public $password;
 
     public bool $usernameManuallyEdited = true;
 
+    // Bank Info
     public $bank_name;
     public $holder_name;
     public $bank_branch;
@@ -55,11 +61,31 @@ class EmployeeEditComponent extends Component
     public $ifsc_code;
     public $account_no;
 
-    private const ASSIGNABLE_ROLES = [
-        User::ROLE_TEACHER,
-        User::ROLE_STAFF,
-        User::ROLE_ACCOUNTANT,
+    // Protected roles that cannot be assigned via this employee form
+    private const PROTECTED_ROLES = ['admin'];
+
+    // users.role কলাম একটা fixed ENUM — এখানের বাইরের কোনো value দিলে
+    // MySQL "Data truncated for column 'role'" error দেয়। এই list
+    // migration ফাইলের enum() এর সাথে হুবহু মিলতে হবে।
+    private const USER_ROLE_ENUM_VALUES = [
+        'super_admin', 'ministry', 'admin', 'it_support',
+        'branch', 'staff', 'accountant', 'teacher', 'student', 'parent',
     ];
+
+    // Custom (non-enum) role হলে users.role কলামে এই fallback value বসবে
+    private const USER_ROLE_ENUM_FALLBACK = 'staff';
+
+    /**
+     * users.role (ENUM) কলামের জন্য safe value বের করে।
+     * Custom role হলে enum এ পড়বে না, তখন fallback ('staff') রিটার্ন করে।
+     * আসল role assignment এর জন্য এটা ব্যবহার হয় না — সেটা Spatie দিয়ে হয়।
+     */
+    private function resolveUserRoleColumn(string $roleName): string
+    {
+        return in_array($roleName, self::USER_ROLE_ENUM_VALUES, true)
+            ? $roleName
+            : self::USER_ROLE_ENUM_FALLBACK;
+    }
 
     public function mount($id)
     {
@@ -72,7 +98,13 @@ class EmployeeEditComponent extends Component
         $this->employeeId = $this->employee->id;
         $this->userId     = $this->employee->user_id;
 
-        $this->role               = $this->employee->user->role;
+        // NOTE: users.role হলো একটা ENUM কলাম, যেখানে custom role এর জন্য
+        // fallback ('staff') সেভ থাকে (দেখো resolveUserRoleColumn())। তাই
+        // dropdown-এ প্রি-সিলেক্ট করার জন্য users.role কলাম না পড়ে, আসল role
+        // Spatie-র model_has_roles পিভট থেকে আনতে হবে — নাহলে custom role
+        // assign করা থাকলেও এডিট ফর্মে সবসময় "staff" দেখাবে।
+        app(PermissionRegistrar::class)->setPermissionsTeamId($this->employee->institution_id);
+        $this->role = $this->employee->user->getRoleNames()->first();
         $this->joining_date       = $this->employee->joining_date;
         $this->designation_id     = $this->employee->designation_id;
         $this->department_id      = $this->employee->department_id;
@@ -101,12 +133,29 @@ class EmployeeEditComponent extends Component
         $this->account_no   = $this->employee->account_no;
     }
 
+    /**
+     * Role name গুলো ডাটাবেস (Spatie Role) থেকে আনা হয়, এই employee-র
+     * নিজের branch-এ scoped, admin/protected role বাদে — assignable role names।
+     */
+    private function assignableRoleNames(): array
+    {
+        $institutionId = $this->employee->institution_id;
+        $branchId      = $this->employee->branch_id;
+
+        return Role::where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
+            ->where('guard_name', 'web')
+            ->whereNotIn('name', self::PROTECTED_ROLES)
+            ->pluck('name')
+            ->all();
+    }
+
     public function rules(): array
     {
         $institutionId = auth()->user()->institution_id;
 
         return [
-            'role' => ['required', Rule::in(self::ASSIGNABLE_ROLES)],
+            'role' => ['required', Rule::in($this->assignableRoleNames())],
             'joining_date' => 'required|date',
             'designation_id' => [
                 'required',
@@ -118,13 +167,13 @@ class EmployeeEditComponent extends Component
             ],
             'comments' => 'nullable|string|max:1000',
 
-            'name' => 'required',
+            'name'   => 'required',
             'mobile' => 'nullable|string|max:20',
-            'email'    => ['nullable', Rule::unique('users', 'email')->ignore($this->userId)],
+            'email'  => ['nullable', Rule::unique('users', 'email')->ignore($this->userId)],
             'photo_upload' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
 
-            'username'    => ['required', Rule::unique('users', 'username')->ignore($this->userId)],
-            'password'    => 'nullable|min:8',
+            'username' => ['required', Rule::unique('users', 'username')->ignore($this->userId)],
+            'password' => 'nullable|min:8',
         ];
     }
 
@@ -202,22 +251,38 @@ class EmployeeEditComponent extends Component
         $this->validateOnly($propertyName, $this->rules());
     }
 
-    public function update()
+    public function update(): void
     {
         $this->validate($this->rules());
 
         $institutionId = auth()->user()->institution_id;
 
+        // Defense-in-depth: role নাম আবার DB থেকে ভেরিফাই, এই employee-র branch scope এ
+        $validRoleName = Role::where('institution_id', $this->employee->institution_id)
+            ->where('branch_id', $this->employee->branch_id)
+            ->where('guard_name', 'web')
+            ->whereNotIn('name', self::PROTECTED_ROLES)
+            ->where('name', $this->role)
+            ->value('name');
+
+        abort_unless($validRoleName, 403);
+
         $oldPhoto = null;
         $newPhotoPath = null;
 
         try {
-            DB::transaction(function () use ($institutionId, &$oldPhoto, &$newPhotoPath) {
+            DB::transaction(function () use ($institutionId, $validRoleName, &$oldPhoto, &$newPhotoPath) {
 
                 abort_unless($this->employee->institution_id === $institutionId, 403);
 
+                app(PermissionRegistrar::class)->setPermissionsTeamId($this->employee->institution_id);
+
+                $user = User::where('institution_id', $institutionId)->lockForUpdate()->findOrFail($this->userId);
+
                 $userData = [
-                    'role'     => $this->role,
+                    // users.role ENUM কলামের জন্য safe fallback ব্যবহার হচ্ছে।
+                    // আসল permission role নিচে syncRoles() দিয়ে সেট হচ্ছে।
+                    'role'     => $this->resolveUserRoleColumn($validRoleName),
                     'name'     => $this->name,
                     'username' => $this->username,
                     'email'    => $this->email,
@@ -227,8 +292,11 @@ class EmployeeEditComponent extends Component
                     $userData['password'] = $this->password;
                 }
 
-                $user = User::where('institution_id', $institutionId)->findOrFail($this->userId);
                 $user->update($userData);
+
+                // Spatie pivot table (model_has_roles) sync করা — শুধু 'role' column
+                // update করলে permission system reflect করবে না
+                $user->syncRoles([$validRoleName]);
 
                 $employeeData = [
                     'joining_date'      => $this->joining_date,
@@ -267,7 +335,7 @@ class EmployeeEditComponent extends Component
                     ->causedBy(auth()->user())
                     ->performedOn($this->employee)
                     ->withProperties(['icon' => 'badge', 'type' => 'employee'])
-                    ->tap(function ($activity) use ($employeeData) {
+                    ->tap(function ($activity) {
                         $activity->institution_id = $this->employee->institution_id;
                         $activity->branch_id = $this->employee->branch_id;
                     })
@@ -295,10 +363,17 @@ class EmployeeEditComponent extends Component
     public function render()
     {
         $institutionId = auth()->user()->institution_id;
+        $branchId      = $this->employee->branch_id;
 
         return view('livewire.admin.employee.employee-edit-component', [
             'departments'  => EmployeeDepartment::where('institution_id', $institutionId)->get(),
             'designations' => EmployeeDesignation::where('institution_id', $institutionId)->get(),
+            'roles'        => Role::where('institution_id', $institutionId)
+                                ->where('branch_id', $branchId)
+                                ->where('guard_name', 'web')
+                                ->whereNotIn('name', self::PROTECTED_ROLES)
+                                ->orderBy('name')
+                                ->get(),
         ])->layout('layouts.admin.app', [
             'title' => 'Edit Employee | ' . institution()->name,
         ]);

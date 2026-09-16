@@ -6,7 +6,7 @@
 
         <div class="mat-card-header header-primary-gradient">
             <h5 id="user-list-header-title">User Role Assignment</h5>
-            <p id="user-list-header-subtitle">Assign roles to employees and manage access.</p>
+            <p id="user-list-header-subtitle">Assign roles to users and manage access.</p>
         </div>
 
         <div class="card-header border-0">
@@ -18,7 +18,7 @@
                     </div>
                 </div>
 
-                @if($employees->total() > 10)
+                @if($users->total() > 10)
                     <div class="col-md-2">
                         <select class="form-select form-select-sm" wire:model.live="perPage">
                             <option value="10">10 / page</option>
@@ -37,10 +37,7 @@
                         <tr>
                             <th id="th-sl">SL</th>
                             <th wire:click="sortBy('name')" style="cursor:pointer">
-                                <span id="th-name">Employee</span> @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
-                            </th>
-                            <th wire:click="sortBy('employee_id')" style="cursor:pointer">
-                                <span id="th-employee-id">Employee ID</span> @if($sortField === 'employee_id') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
+                                <span id="th-name">User</span> @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
                             <th id="th-roles">Roles</th>
                             <th id="th-status">Status</th>
@@ -48,55 +45,52 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($employees as $i => $employee)
-                        <tr wire:key="employee-{{ $employee->id }}">
-                            <td class="text-muted">{{ $employees->firstItem() + $i }}</td>
+                        @forelse($users as $i => $user)
+                        <tr wire:key="user-{{ $user->id }}">
+                            <td class="text-muted">{{ $users->firstItem() + $i }}</td>
                             <td>
                                 <div class="d-flex align-items-center gap-2">
-                                    <img src="{{ $employee->photo ? asset('storage/' . $employee->photo) : 'https://ui-avatars.com/api/?name=' . urlencode($employee->name) . '&size=64&background=random' }}"
-                                        alt="{{ $employee->name }}"
+                                    <img src="{{ $user->photo ? asset('storage/' . $user->photo) : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&size=64&background=random' }}"
+                                        alt="{{ $user->name }}"
                                         style="width:32px;height:32px;border-radius:50%;object-fit:cover;"/>
-                                    <span>{{ $employee->name }}</span>
+                                    <span>{{ $user->name }}</span>
                                 </div>
                             </td>
-                            <td>{{ $employee->employee_id }}</td>
                             <td>
-                                @forelse($employee->user?->roles ?? [] as $role)
-                                    <span class="badge bg-secondary">{{ $role->name }}</span>
+                                @forelse($user->roles as $role)
+                                    <span class="badge bg-secondary">{{ ucwords(str_replace('_', ' ', $role->name)) }}</span>
                                 @empty
                                     <span class="text-muted">No role assigned</span>
                                 @endforelse
                             </td>
                             <td>
-                                @if($employee->user)
-                                    @php
-                                        $statusColors = [
-                                            'active'    => 'bg-success',
-                                            'inactive'  => 'bg-secondary',
-                                            'suspended' => 'bg-danger',
-                                        ];
-                                        $status = $employee->user->status ?? 'active';
-                                    @endphp
-                                    <span class="badge {{ $statusColors[$status] ?? 'bg-secondary' }} text-capitalize">
-                                        {{ $status }}
-                                    </span>
-                                @else
-                                    <span class="badge bg-light text-dark border">No account</span>
-                                @endif
+                                @php
+                                    $statusColors = [
+                                        'active'    => 'bg-success',
+                                        'inactive'  => 'bg-secondary',
+                                        'suspended' => 'bg-danger',
+                                    ];
+                                    $status = $user->status ?? 'active';
+                                @endphp
+                                <span class="badge {{ $statusColors[$status] ?? 'bg-secondary' }} text-capitalize">
+                                    {{ $status }}
+                                </span>
                             </td>
                             <td>
-                                <div class="d-flex gap-1">
-                                    <button class="act-btn edit" title="Assign Role" wire:click="openRoleModal({{ $employee->id }})">
-                                        <span class="material-icons-round">admin_panel_settings</span>
-                                    </button>
-                                </div>
+                                @if ($user->role !== 'admin' && $user->role !== 'branch')
+                                    <div class="d-flex gap-1">
+                                        <button class="act-btn edit" title="Assign Role" wire:click="openRoleModal({{ $user->id }})">
+                                            <span class="material-icons-round">admin_panel_settings</span>
+                                        </button>
+                                    </div>
+                                @endif
                             </td>
                         </tr>
                         @empty
                         <tr>
                             <td colspan="6" class="text-center py-5 text-muted">
                                 <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
-                                No employees found.
+                                No users found.
                             </td>
                         </tr>
                         @endforelse
@@ -106,8 +100,8 @@
         </div>
 
         <div class="card-footer border-0 bg-white d-flex align-items-center justify-content-between flex-wrap gap-2 py-2 px-3">
-            <small class="text-muted">Showing {{ $employees->firstItem() ?? 0 }}–{{ $employees->lastItem() ?? 0 }} of {{ $employees->total() }}</small>
-            {{ $employees->links('vendor.pagination.custom') }}
+            <small class="text-muted">Showing {{ $users->firstItem() ?? 0 }}–{{ $users->lastItem() ?? 0 }} of {{ $users->total() }}</small>
+            {{ $users->links('vendor.pagination.custom') }}
         </div>
 
     </div>

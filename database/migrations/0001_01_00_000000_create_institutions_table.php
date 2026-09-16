@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('district')->nullable();
             $table->string('city')->nullable();
             $table->text('address')->nullable();
+            $table->boolean('is_branch')->default(false);
             $table->json('weekends')->nullable();
             $table->enum('unique_roll', ['class_wise', 'section_wise', 'disabled'])->default('class_wise');
             $table->string('academic_year')->nullable();

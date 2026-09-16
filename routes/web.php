@@ -685,7 +685,10 @@ Route::middleware(['auth', 'role:it_support', 'billing.check'])->prefix('itsuppo
 // Admin
 Route::middleware(['auth', 'role:admin', 'billing.check', 'setup.wizard', 'permission.team'])->group(function () {
     Route::get('admin/dashboard', \App\Livewire\Admin\DashboardComponent::class)->name('admin.dashboard');
-    Route::get('admin/branches', \App\Livewire\Admin\Branch\IndexComponent::class)->name('admin.branches');
+    Route::get('admin/branches', \App\Livewire\Admin\Branch\IndexComponent::class)->name('admin.branch.index');
+    Route::get('admin/branch/{id}/view', \App\Livewire\Admin\Branch\ViewComponent::class)->name('admin.branch.view');
+    Route::get('admin/branch/{id}/edit', \App\Livewire\Admin\Branch\EditComponent::class)->name('admin.branch.edit');
+    Route::get('admin/branch/{id}/account', \App\Livewire\Admin\Branch\AccountComponent::class)->name('admin.branch.account');
 
     // Inventory
     Route::get('inventory/units', \App\Livewire\Admin\Inventory\UnitComponent::class)->name('admin.inventory.units');

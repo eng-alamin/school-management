@@ -1,4 +1,5 @@
 <div>
+    {{-- resources/views/livewire/admin/student/overview-component.blade.php --}}
     <div class="card border-0 bg-transparent">
         <div class="container-xl mt-4">
 

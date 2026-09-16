@@ -8,9 +8,6 @@
                 <h5 id="role-edit-header-title">Edit Role</h5>
                 <p id="role-edit-header-subtitle" class="mb-0">Update role details and assigned permissions</p>
             </div>
-            <a href="{{ route('admin.role-permission.index') }}" wire:navigate class="btn btn-light">
-                <span class="material-icons-round align-middle">arrow_back</span> Back to List
-            </a>
         </div>
 
         <!-- ══ ROLE DETAILS ══ -->

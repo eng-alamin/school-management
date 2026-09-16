@@ -135,6 +135,13 @@ h6 {
     color: #fff;
 }
 
+/* Start Bootstrap */
+.form-check-input:checked {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+/* End Bootstrap */
+
 /* ── NAVBAR ── */
 .navbar {
     box-shadow: 0 2px 15px rgba(0, 0, 0, 0.06);

@@ -64,6 +64,7 @@ class RegistrationPaymentController extends Controller
             'status'         => 'pending',
             'meta'           => json_encode([
                 'institution_name'     => $data['institution_name'],
+                'institution_eiin'     => $data['institution_eiin'],
                 'institution_type'     => $data['institution_type'] ?? '',
                 'institution_medium'   => $data['institution_medium'] ?? '',
                 'institution_division' => $data['institution_division'] ?? '',
@@ -155,6 +156,7 @@ class RegistrationPaymentController extends Controller
             DB::transaction(function () use ($meta, $tran_id, $request, &$user) {
                 $institution = Institution::create([
                     'name'     => $meta['institution_name'],
+                    'eiin'     => $meta['institution_eiin'],
                     'type'     => $meta['institution_type'] ?? null,
                     'medium'   => $meta['institution_medium'] ?? null,   // আগের #3 fix ও এখানে লাগবে
                     'division' => $meta['institution_division'] ?? null,
@@ -296,6 +298,7 @@ class RegistrationPaymentController extends Controller
 
         session(['pending_registration' => [
             'institution_name' => $meta['institution_name'] ?? null,
+            'institution_eiin' => $meta['institution_eiin'] ?? null,
             'institution_type' => $meta['institution_type'] ?? null,
             'email'             => $meta['email'] ?? null,
             'phone'             => $meta['phone'] ?? null,

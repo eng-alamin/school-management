@@ -6,6 +6,7 @@ use Livewire\Component;
 use App\Models\Employee;
 use App\Models\EmployeeDepartment;
 use App\Models\EmployeeDesignation;
+use App\Models\Role;
 use App\Models\User;
 
 use Illuminate\Support\Facades\DB;
@@ -14,6 +15,7 @@ use Illuminate\Support\Str;
 
 use Illuminate\Validation\Rule;
 use Livewire\WithFileUploads;
+use Spatie\Permission\PermissionRegistrar;
 
 class EmployeeAddComponent extends Component
 {
@@ -56,12 +58,31 @@ class EmployeeAddComponent extends Component
     public $ifsc_code;
     public $account_no;
 
-    private const ASSIGNABLE_ROLES = [
-        User::ROLE_TEACHER,
-        User::ROLE_STAFF,
-        User::ROLE_ACCOUNTANT,
-        User::ROLE_BRANCH,
+    // Protected roles that cannot be assigned via this employee form
+    private const PROTECTED_ROLES = ['admin'];
+
+    // users.role কলাম একটা fixed ENUM — এখানের বাইরের কোনো value দিলে
+    // MySQL "Data truncated for column 'role'" error দেয়। এই list
+    // migration ফাইলের enum() এর সাথে হুবহু মিলতে হবে।
+    private const USER_ROLE_ENUM_VALUES = [
+        'super_admin', 'ministry', 'admin', 'it_support',
+        'branch', 'staff', 'accountant', 'teacher', 'student', 'parent',
     ];
+
+    // Custom (non-enum) role হলে users.role কলামে এই fallback value বসবে
+    private const USER_ROLE_ENUM_FALLBACK = 'staff';
+
+    /**
+     * users.role (ENUM) কলামের জন্য safe value বের করে।
+     * Custom role হলে enum এ পড়বে না, তখন fallback ('staff') রিটার্ন করে।
+     * আসল role assignment এর জন্য এটা ব্যবহার হয় না — সেটা Spatie দিয়ে হয়।
+     */
+    private function resolveUserRoleColumn(string $roleName): string
+    {
+        return in_array($roleName, self::USER_ROLE_ENUM_VALUES, true)
+            ? $roleName
+            : self::USER_ROLE_ENUM_FALLBACK;
+    }
 
     public function mount()
     {
@@ -69,12 +90,29 @@ class EmployeeAddComponent extends Component
         $this->employee_id  = $this->previewNextEmployeeId(auth()->user()->institution_id);
     }
 
+    /**
+     * Role name গুলো ডাটাবেস (Spatie Role) থেকে আনা হয়, নিজের branch-এ
+     * scoped, admin/branch role বাদে — assignable role names।
+     */
+    private function assignableRoleNames(): array
+    {
+        $institutionId = auth()->user()->institution_id;
+        $branchId      = auth()->user()->branch_id;
+
+        return Role::where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
+            ->where('guard_name', 'web')
+            ->whereNotIn('name', self::PROTECTED_ROLES)
+            ->pluck('name')
+            ->all();
+    }
+
     public function rules(): array
     {
         $institutionId = auth()->user()->institution_id;
 
         return [
-            'role' => ['required', Rule::in(self::ASSIGNABLE_ROLES)],
+            'role' => ['required', Rule::in($this->assignableRoleNames())],
             'joining_date'   => 'required|date',
             'designation_id' => [
                 'required',
@@ -198,7 +236,6 @@ class EmployeeAddComponent extends Component
         return $prefix . $year . str_pad($serial, $digit, '0', STR_PAD_LEFT);
     }
 
-
     protected function failedValidation($validator)
     {
         $this->dispatch('validation-failed');
@@ -225,24 +262,38 @@ class EmployeeAddComponent extends Component
         $this->validate($this->rules());
 
         $institutionId = auth()->user()->institution_id;
-        $branchId      = auth()->user()->branch_id;
+        $branchId = auth()->user()->branch_id;
+
+        // Defense-in-depth: role নাম আবার DB থেকে ভেরিফাই
+        $validRoleName = Role::where('institution_id', $institutionId)
+            ->where('branch_id', $branchId)
+            ->where('guard_name', 'web')
+            ->whereNotIn('name', self::PROTECTED_ROLES)
+            ->where('name', $this->role)
+            ->value('name');
+
+        abort_unless($validRoleName, 403);
 
         $photoPath = null;
 
         try {
-            [$user, $employee] = DB::transaction(function () use ($institutionId, $branchId, &$photoPath) {
+            [$user, $employee] = DB::transaction(function () use ($institutionId, $branchId, $validRoleName, &$photoPath) {
 
                 DB::table('institutions')->where('id', $institutionId)->lockForUpdate()->first();
+
+                app(PermissionRegistrar::class)->setPermissionsTeamId($institutionId);
 
                 $user = User::create([
                     'institution_id' => $institutionId,
                     'branch_id'      => $branchId,
-                    'role'           => $this->role,
+                    'role'           => $this->resolveUserRoleColumn($validRoleName),
                     'name'           => $this->name,
                     'username'       => $this->username,
                     'email'          => $this->email,
                     'password'       => !empty($this->password) ? $this->password : '12345678',
                 ]);
+
+                $user->assignRole($validRoleName);
 
                 $photoPath = $this->photo_upload
                     ? $this->photo_upload->store('employees', 'public')
@@ -277,23 +328,21 @@ class EmployeeAddComponent extends Component
                     'account_no'        => $this->account_no,
                 ]);
 
+                activity()
+                    ->causedBy(auth()->user())
+                    ->performedOn($employee)
+                    ->withProperties(['icon' => 'badge', 'type' => 'employee'])
+                    ->tap(function ($activity) use ($employee) {
+                        $activity->institution_id = $employee->institution_id;
+                        $activity->branch_id = $employee->branch_id;
+                    })
+                    ->log('Employee created: ' . $employee->name);
+
                 return [$user, $employee];
             });
 
-            activity()
-                ->performedOn($employee)
-                ->causedBy(auth()->user())
-                ->withProperties([
-                    'institution_id' => $institutionId,
-                    'branch_id' => $branchId,
-                    'icon' => 'person_add',
-                    'type' => 'employee_created',
-                ])
-                ->log('Employee created: ' . $employee->name);
-
-            $this->resetForm();
-
-            $this->dispatch('toast', type: 'success', message: 'Employee created successfully!');
+            session()->flash('toast_success', 'Employee created successfully!');
+            $this->redirectRoute('admin.employee.list', navigate: true);
 
         } catch (\Throwable $e) {
 
@@ -308,11 +357,15 @@ class EmployeeAddComponent extends Component
 
     public function render()
     {
-        $institutionId = auth()->user()->institution_id;
-
         return view('livewire.admin.employee.employee-add-component', [
-            'departments'  => EmployeeDepartment::where('institution_id', $institutionId)->get(),
-            'designations' => EmployeeDesignation::where('institution_id', $institutionId)->get(),
+            'departments'  => EmployeeDepartment::where('institution_id', auth()->user()->institution_id)->get(),
+            'designations' => EmployeeDesignation::where('institution_id', auth()->user()->institution_id)->get(),
+            'roles'        => Role::where('institution_id', auth()->user()->institution_id)
+                                ->where('branch_id', auth()->user()->branch_id)
+                                ->where('guard_name', 'web')
+                                ->whereNotIn('name', self::PROTECTED_ROLES)
+                                ->orderBy('name')
+                                ->get(),
         ])->layout('layouts.branch.app', [
             'title' => 'Create Employee | ' . institution()->name,
         ]);

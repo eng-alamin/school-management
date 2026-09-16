@@ -541,6 +541,16 @@ class DashboardComponent extends Component
 
         $institution = Auth::user()->institution;
 
+
+        // dd([
+        //     'user' => auth()->user(),
+        //     'roles' => auth()->user()->getRoleNames(),
+        //     'permissions' => auth()->user()->getAllPermissions()->pluck('name'),
+        // ]);
+        // $user = auth()->user();
+        // app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId($institution->id);
+        //     $user->assignRole('admin');
+
         return view('livewire.admin.dashboard-component', [
                 'progressPercent' => $institution->setupProgressPercent(),
             ])

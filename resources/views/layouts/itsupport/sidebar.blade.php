@@ -34,15 +34,24 @@
     <ul>
 
       @if(feature_enabled(\App\Support\Feature::BRANCH_MODULE))
+        @can('institution.branch.view')
         <li class="nav1-item">
           <a href="{{route('itsupport.branches') }}" class="nav1-link {{ str_contains(request()->url(), 'branches') == true ? 'active' : '' }}">
             <span class="material-icons-round">business</span>
             <span class="nav-label" id="nav-branches">Branches</span>
           </a>
         </li>
+        @endcan
       @endif
 
       @if(feature_enabled(\App\Support\Feature::INVENTORY_MODULE))
+        @canany([
+          'institution.inventory_product.view',
+          'institution.inventory_store.view',
+          'institution.inventory_supplier.view',
+          'institution.inventory_purchase.view',
+          'institution.inventory_sale.view',
+        ])
         <li class="nav1-item">
           <div class="nav1-link {{ str_contains(request()->url(), 'inventory/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
             <span class="material-icons-round">inventory_2</span>
@@ -51,16 +60,28 @@
           </div>
           <div class="nav2-collapse {{ str_contains(request()->url(), 'inventory/') == true ? 'show' : '' }}">
             <ul>
+              @can('institution.inventory_product.view')
               <li class="nav2-item"><a href="{{ route('itsupport.inventory.products') }}" class="nav2-link {{ Route::is('itsupport.inventory.products') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-products">Products</span></a></li>
+              @endcan
+              @can('institution.inventory_store.view')
               <li class="nav2-item"><a href="{{route('itsupport.inventory.stores') }}" class="nav2-link {{ Route::is('itsupport.inventory.stores') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-stores">Stores</span></a></li>
+              @endcan
+              @can('institution.inventory_supplier.view')
               <li class="nav2-item"><a href="{{route('itsupport.inventory.suppliers') }}" class="nav2-link {{ Route::is('itsupport.inventory.suppliers') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-suppliers">Suppliers</span></a></li>
+              @endcan
+              @can('institution.inventory_purchase.view')
               <li class="nav2-item"><a href="{{route('itsupport.inventory.purchase.list') }}" class="nav2-link {{ str_contains(request()->url(), 'purchase') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-purchases">Purchases</span></a></li>
+              @endcan
+              @can('institution.inventory_sale.view')
               <li class="nav2-item"><a href="{{route('itsupport.inventory.sale.list') }}" class="nav2-link {{ str_contains(request()->url(), 'sale') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-sales">Sales</span></a></li>
+              @endcan
             </ul>
           </div>
         </li>
+        @endcanany
       @endif
 
+      @canany(['institution.student.create', 'institution.admission.view'])
       <li class="nav1-item">
         <div class="nav1-link {{ Route::is('itsupport.student.add') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
           <span class="material-icons-round">how_to_reg</span>
@@ -69,12 +90,18 @@
         </div>
         <div class="nav2-collapse {{ Route::is('itsupport.student.add') || Route::is('itsupport.admission.online') == true ? 'show' : '' }}">
           <ul>
+            @can('institution.student.create')
             <li class="nav2-item"><a href="{{route('itsupport.student.add') }}" class="nav2-link {{ Route::is('itsupport.student.add') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-create-admission">Create Admission</span></a></li>
+            @endcan
+            @can('institution.admission.view')
             <li class="nav2-item"><a href="{{ route('itsupport.admission.online') }}" class="nav2-link {{ Route::is('itsupport.admission.online') == true ? 'active' : '' }}"><span class="nav2-icon">O</span><span class="nav2-label" id="nav-online-admission">Online Admission</span></a></li>
+            @endcan
           </ul>
         </div>
       </li>
+      @endcanany
 
+      @can('institution.student.view')
       <li class="nav1-item">
         <div class="nav1-link {{ Route::is('itsupport.student.list', 'itsupport.student.edit') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
           <span class="material-icons-round">school</span>
@@ -87,14 +114,18 @@
           </ul>
         </div>
       </li>
+      @endcan
 
+      @can('institution.parent.view')
       <li class="nav1-item">
         <a class="nav1-link {{ str_contains(request()->url(), 'parent/') == true ? 'active' : '' }}" href="{{route('itsupport.parent.list') }}">
           <span class="material-icons-round">groups</span>
           <span class="nav-label" id="nav-parents">Parents</span>
         </a>
       </li>
+      @endcan
 
+      @canany(['institution.employee.view', 'institution.employee_department.view', 'institution.employee_designation.view'])
       <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), 'employee/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
           <span class="material-icons-round">badge</span>
@@ -103,13 +134,30 @@
         </div>
         <div class="nav2-collapse {{ str_contains(request()->url(), 'employee/') == true ? 'show' : '' }}">
           <ul>
+            @can('institution.employee.view')
             <li class="nav2-item"><a href="{{route('itsupport.employee.list') }}" class="nav2-link {{ request()->is('employee/list', 'employee/add', 'employee/edit/*') ? 'active' : '' }}"><span class="nav2-icon">L</span><span class="nav2-label" id="nav-employee-list">Employee List</span></a></li>
+            @endcan
+            @can('institution.employee_department.view')
             <li class="nav2-item"><a href="{{route('itsupport.employee.departments') }}" class="nav2-link {{ str_contains(request()->url(), 'employee/departments') == true ? 'active' : '' }}"><span class="nav2-icon">D</span><span class="nav2-label" id="nav-department">Department</span></a></li>
+            @endcan
+            @can('institution.employee_designation.view')
             <li class="nav2-item"><a href="{{route('itsupport.employee.designations') }}" class="nav2-link {{ str_contains(request()->url(), 'employee/designations') == true ? 'active' : '' }}"><span class="nav2-icon">D</span><span class="nav2-label" id="nav-designation">Designation</span></a></li>
+            @endcan
           </ul>
         </div>
       </li>
+      @endcanany
 
+      @canany([
+        'institution.academic_session.view',
+        'institution.academic_class.view',
+        'institution.academic_class_assign.view',
+        'institution.academic_class_schedule.view',
+        'institution.academic_teacher_schedule.view',
+        'institution.academic_substitute_teacher.view',
+        'institution.academic_student_promotion.view',
+        'institution.academic_student_enrollment.view',
+      ])
       <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), 'academic') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
           <span class="material-icons-round">menu_book</span>
@@ -118,25 +166,45 @@
         </div>
         <div class="nav2-collapse {{ str_contains(request()->url(), 'academic') == true ? 'show' : '' }}">
           <ul>
+            @can('institution.academic_session.view')
             <li class="nav2-item"><a href="{{route('itsupport.academic.sessions') }}" class="nav2-link {{ str_contains(request()->url(), 'academic/sessions') == true ? 'active' : '' }}"><span class="nav2-icon">S</span><span class="nav2-label" id="nav-sessions">Sessions</span></a></li>
+            @endcan
+            @can('institution.academic_class.view')
             <li class="nav2-item"><a href="{{route('itsupport.academic.classes') }}" class="nav2-link {{ str_contains(request()->url(), 'academic/classes') || str_contains(request()->url(), 'academic/sections') || str_contains(request()->url(), 'academic/subjects') || str_contains(request()->url(), 'academic/groups') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-class-section">Class Setup</span></a></li>
+            @endcan
+            @can('institution.academic_class_assign.view')
             <li class="nav2-item"><a href="{{route('itsupport.academic.class-assign') }}" class="nav2-link {{ str_contains(request()->url(), 'academic/class-assign') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-class-assign">Class Assign</span></a></li>
+            @endcan
+            @can('institution.academic_class_schedule.view')
             <li class="nav2-item"><a href="{{route('itsupport.academic.class-schedule.list') }}" class="nav2-link {{ str_contains(request()->url(), 'academic/class-schedule') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-class-schedule">Class Schedule</span></a></li>
+            @endcan
+            @can('institution.academic_teacher_schedule.view')
             <li class="nav2-item"><a href="{{route('itsupport.academic.teacher-schedule') }}" class="nav2-link {{ str_contains(request()->url(), 'academic/teacher-schedule') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-teacher-schedule">Teacher Schedule</span></a></li>
+            @endcan
+            @can('institution.academic_substitute_teacher.view')
             <li class="nav2-item"><a href="{{route('itsupport.academic.substitute-teacher') }}" class="nav2-link {{ str_contains(request()->url(), 'academic/substitute-teacher') == true ? 'active' : '' }}"><span class="nav2-icon">S</span><span class="nav2-label" id="nav-substitute-teacher">Substitute Teacher</span></a></li>
+            @endcan
+            @can('institution.academic_student_promotion.view')
             <li class="nav2-item"><a href="{{route('itsupport.academic.student-promotion') }}" class="nav2-link {{ str_contains(request()->url(), 'academic/student-promotion') == true ? 'active' : '' }}"><span class="nav2-icon">S</span><span class="nav2-label" id="nav-student-promotion">Student Promotion</span></a></li>
+            @endcan
+            @can('institution.academic_student_enrollment.view')
             <li class="nav2-item"><a href="{{route('itsupport.academic.student-enrollment') }}" class="nav2-link {{ str_contains(request()->url(), 'academic/student-enrollment') == true ? 'active' : '' }}"><span class="nav2-icon">S</span><span class="nav2-label" id="nav-student-enrollment">Student Enrollment</span></a></li>
+            @endcan
           </ul>
         </div>
       </li>
+      @endcanany
 
+      @can('institution.homework.view')
       <li class="nav1-item">
         <a class="nav1-link {{ str_contains(request()->url(), 'homework') == true ? 'active' : '' }}" href="{{ route('itsupport.homework.list')  }}">
           <span class="material-icons-round">assignment</span>
           <span class="nav-label" id="nav-homework">Home Work</span>
         </a>
       </li>
+      @endcan
 
+      @canany(['institution.question_paper.view', 'institution.question_paper_authorization.view', 'institution.question_paper_log.view'])
       <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), 'itsupport/question-papers') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
           <span class="material-icons-round">quiz</span>
@@ -145,13 +213,27 @@
         </div>
         <div class="nav2-collapse {{ str_contains(request()->url(), 'itsupport/question-papers') == true ? 'show' : '' }}">
           <ul>
+            @can('institution.question_paper.view')
             <li class="nav2-item"><a href="{{route('itsupport.question-papers.index') }}" class="nav2-link {{ str_contains(request()->url(), 'itsupport/question-papers') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-question-papers">Question Papers</span></a></li>
+            @endcan
+            @can('institution.question_paper_authorization.view')
             <li class="nav2-item"><a href="{{route('itsupport.question-papers.print.authorization') }}" class="nav2-link {{ str_contains(request()->url(), 'itsupport/question-papers/print') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-print-authorization">Print Authorization</span></a></li>
+            @endcan
+            @can('institution.question_paper_log.view')
             <li class="nav2-item"><a href="{{route('itsupport.question-papers.print.logs') }}" class="nav2-link {{ str_contains(request()->url(), 'itsupport/question-papers/print-logs') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-print-logs">Print Logs</span></a></li>
+            @endcan
           </ul>
         </div>
       </li>
+      @endcanany
 
+      @canany([
+        'institution.exam_setup.view',
+        'institution.exam_schedule.view',
+        'institution.exam_entry.view',
+        'institution.exam_position.view',
+        'institution.exam_grade.view',
+      ])
       <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), 'exam/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
           <span class="material-icons-round">quiz</span>
@@ -160,15 +242,32 @@
         </div>
         <div class="nav2-collapse {{ str_contains(request()->url(), 'exam') == true ? 'show' : '' }}">
           <ul>
+            @can('institution.exam_setup.view')
             <li class="nav2-item"><a href="{{route('itsupport.exam.setups') }}" class="nav2-link {{ str_contains(request()->url(), 'exam/setups') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-exam-setup">Exam Setup</span></a></li>
+            @endcan
+            @can('institution.exam_schedule.view')
             <li class="nav2-item"><a href="{{route('itsupport.exam.schedule.list') }}" class="nav2-link {{ str_contains(request()->url(), 'exam/schedule') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-exam-schedule">Exam Schedule</span></a></li>
+            @endcan
+            @can('institution.exam_entry.view')
             <li class="nav2-item"><a href="{{route('itsupport.exam.entries') }}" class="nav2-link {{ str_contains(request()->url(), 'exam/entries') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-mark-entries">Mark Entries</span></a></li>
+            @endcan
+            @can('institution.exam_position.view')
             <li class="nav2-item"><a href="{{route('itsupport.exam.positions') }}" class="nav2-link {{ str_contains(request()->url(), 'exam/positions') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-exam-positions">Generate Positions</span></a></li>
+            @endcan
+            @can('institution.exam_grade.view')
             <li class="nav2-item"><a href="{{route('itsupport.exam.grades') }}" class="nav2-link {{ str_contains(request()->url(), 'exam/grades') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-grades-range">Grades Range</span></a></li>
+            @endcan
           </ul>
         </div>
       </li>
+      @endcanany
 
+      @canany([
+        'institution.attendance_student.view',
+        'institution.attendance_employee.view',
+        'institution.attendance_exam.view',
+        'institution.attendance_duty_assign.view',
+      ])
       <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), '/attendance/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
           <span class="material-icons-round">event_available</span>
@@ -177,15 +276,27 @@
         </div>
         <div class="nav2-collapse {{ str_contains(request()->url(), '/attendance/') == true ? 'show' : '' }}">
           <ul>
+            @can('institution.attendance_student.view')
             <li class="nav2-item"><a href="{{route('itsupport.attendance.students') }}" class="nav2-link {{ str_contains(request()->url(), 'attendance/students') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-attendance-student">Student</span></a></li>
+            @endcan
+            @can('institution.attendance_employee.view')
             <li class="nav2-item"><a href="{{route('itsupport.attendance.employees') }}" class="nav2-link {{ str_contains(request()->url(), 'attendance/employees') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-attendance-employee">Employee</span></a></li>
+            @endcan
+            @can('institution.attendance_exam.view')
             <li class="nav2-item"><a href="{{route('itsupport.attendance.exams') }}" class="nav2-link {{ str_contains(request()->url(), 'attendance/exams') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-attendance-exam">Exam</span></a></li>
+            @endcan
+            @can('institution.attendance_duty_assign.view')
             <li class="nav2-item"><a href="{{route('itsupport.attendance.duty-assign') }}" class="nav2-link {{ str_contains(request()->url(), 'attendance/duty-assign') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-attendance-duty-assign">Attendance Duty Assign</span></a></li>
+            @endcan
+            @can('institution.attendance_duty_assign.view')
             <li class="nav2-item"><a href="{{route('itsupport.attendance.exam-duty-assign') }}" class="nav2-link {{ str_contains(request()->url(), 'attendance/exam-duty-assign') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-exam-duty-assign">Exam Duty Assign</span></a></li>
+            @endcan
           </ul>
         </div>
       </li>
+      @endcanany
 
+      @canany(['institution.biometric_device.view', 'institution.biometric_mapping.view'])
       <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), '/biometric/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
           <span class="material-icons-round">fingerprint</span>
@@ -194,13 +305,24 @@
         </div>
         <div class="nav2-collapse {{ str_contains(request()->url(), '/biometric/') == true ? 'show' : '' }}">
           <ul>
+            @can('institution.biometric_device.view')
             <li class="nav2-item"><a href="{{route('itsupport.biometric.devices') }}" class="nav2-link {{ str_contains(request()->url(), 'biometric/devices') == true ? 'active' : '' }}"><span class="nav2-icon">BD</span><span class="nav2-label" id="nav-biometric-devices">Biometric Devices</span></a></li>
+            @endcan
+            @can('institution.biometric_mapping.view')
             <li class="nav2-item"><a href="{{route('itsupport.biometric.mapping.index') }}" class="nav2-link {{ str_contains(request()->url(), 'biometric/mapping/') == true ? 'active' : '' }}"><span class="nav2-icon">DUM</span><span class="nav2-label" id="nav-biometric-device-mappings">Device User Mappings</span></a></li>
+            @endcan
           </ul>
         </div>
       </li>
+      @endcanany
 
-
+      @canany([
+        'institution.student_accounting_fee_type.view',
+        'institution.student_accounting_fee_setup.view',
+        'institution.student_accounting_fee_fine.view',
+        'institution.student_accounting_student_fine.view',
+        'institution.student_accounting_fee_invoice.view',
+      ])
       <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), 'student-accounting') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
           <span class="material-icons-round">account_balance_wallet</span>
@@ -209,15 +331,33 @@
         </div>
         <div class="nav2-collapse {{ str_contains(request()->url(), 'student-accounting') == true ? 'show' : '' }}">
           <ul>
+            @can('institution.student_accounting_fee_type.view')
             <li class="nav2-item"><a href="{{route('itsupport.student-accounting.fee.types') }}" class="nav2-link {{ Route::is('itsupport.student-accounting.fee.types') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-fees-type">Fees Type</span></a></li>
+            @endcan
+            @can('institution.student_accounting_fee_setup.view')
             <li class="nav2-item"><a href="{{route('itsupport.student-accounting.fee.setups') }}" class="nav2-link {{ Route::is('itsupport.student-accounting.fee.setups') == true ? 'active' : '' }}"><span class="nav2-icon">S</span><span class="nav2-label" id="nav-fees-setup">Fees Setup</span></a></li>
+            @endcan
+            @can('institution.student_accounting_fee_fine.view')
             <li class="nav2-item"><a href="{{route('itsupport.student-accounting.fee.fines') }}" class="nav2-link {{ Route::is('itsupport.student-accounting.fee.fines') == true ? 'active' : '' }}"><span class="nav2-icon">S</span><span class="nav2-label" id="nav-fine-setup">Fine Setup</span></a></li>
+            @endcan
+            @can('institution.student_accounting_student_fine.view')
             <li class="nav2-item"><a href="{{route('itsupport.student-accounting.student.fines') }}" class="nav2-link {{ Route::is('itsupport.student-accounting.student.fines') == true ? 'active' : '' }}"><span class="nav2-icon">F</span><span class="nav2-label" id="nav-student-fine">Student Fine</span></a></li>
+            @endcan
+            @can('institution.student_accounting_fee_invoice.view')
             <li class="nav2-item"><a href="{{route('itsupport.student-accounting.fee.invoices') }}" class="nav2-link {{ Route::is('itsupport.student-accounting.fee.invoices') == true ? 'active' : '' }}"><span class="nav2-icon">I</span><span class="nav2-label" id="nav-fees-pay-invoice">Fees Pay / Invoice</span></a></li>
+            @endcan
           </ul>
         </div>
       </li>
+      @endcanany
 
+      @canany([
+        'institution.office_accounting_account.view',
+        'institution.office_accounting_deposit.view',
+        'institution.office_accounting_expense.view',
+        'institution.office_accounting_transaction.view',
+        'institution.office_accounting_head.view',
+      ])
       <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), 'office-accounting') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
           <span class="material-icons-round">business_center</span>
@@ -226,15 +366,32 @@
         </div>
         <div class="nav2-collapse {{ str_contains(request()->url(), 'office-accounting') == true ? 'show' : '' }}">
           <ul>
+            @can('institution.office_accounting_account.view')
             <li class="nav2-item"><a href="{{route('itsupport.office-accounting.accounts') }}" class="nav2-link {{ str_contains(request()->url(), 'office-accounting/accounts') == true ? 'active' : '' }}"><span class="nav2-icon">A</span><span class="nav2-label" id="nav-account">Account</span></a></li>
+            @endcan
+            @can('institution.office_accounting_deposit.view')
             <li class="nav2-item"><a href="{{route('itsupport.office-accounting.deposit.list') }}" class="nav2-link {{ str_contains(request()->url(), 'office-accounting/deposit-list') == true ? 'active' : '' }}"><span class="nav2-icon">D</span><span class="nav2-label" id="nav-deposit">Deposit</span></a></li>
+            @endcan
+            @can('institution.office_accounting_expense.view')
             <li class="nav2-item"><a href="{{route('itsupport.office-accounting.expense.list') }}" class="nav2-link {{ str_contains(request()->url(), 'office-accounting/expense-list') == true ? 'active' : '' }}"><span class="nav2-icon">E</span><span class="nav2-label" id="nav-expense">Expense</span></a></li>
+            @endcan
+            @can('institution.office_accounting_transaction.view')
             <li class="nav2-item"><a href="{{route('itsupport.office-accounting.transactions') }}" class="nav2-link {{ str_contains(request()->url(), 'office-accounting/transactions') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-transactions">Transactions</span></a></li>
+            @endcan
+            @can('institution.office_accounting_head.view')
             <li class="nav2-item"><a href="{{route('itsupport.office-accounting.heads') }}" class="nav2-link {{ str_contains(request()->url(), 'office-accounting/voucher-head') == true ? 'active' : '' }}"><span class="nav2-icon">H</span><span class="nav2-label" id="nav-voucher-head">Voucher Head</span></a></li>
+            @endcan
           </ul>
         </div>
       </li>
+      @endcanany
 
+      @canany([
+        'institution.salary_template.view',
+        'institution.salary_assign.view',
+        'institution.salary_payment.view',
+        'institution.salary_advance.view',
+      ])
       <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), 'salary') ? 'active open' : '' }}" onclick="toggleNav1(this)">
           <span class="material-icons-round">manage_accounts</span>
@@ -243,15 +400,31 @@
         </div>
         <div class="nav2-collapse {{ str_contains(request()->url(), 'salary') == true ? 'show' : '' }}">
           <ul>
+            @can('institution.salary_template.view')
             <li class="nav2-item"><a href="{{route('itsupport.salary.list-template') }}" class="nav2-link {{ str_contains(request()->url(), 'salary/list-template') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-salary-template">Salary Template</span></a></li>
+            @endcan
+            @can('institution.salary_assign.view')
             <li class="nav2-item"><a href="{{route('itsupport.salary.assign') }}" class="nav2-link {{ str_contains(request()->url(), 'salary/assign') == true ? 'active' : '' }}"><span class="nav2-icon">A</span><span class="nav2-label" id="nav-salary-assign">Salary Assign</span></a></li>
+            @endcan
+            @can('institution.salary_payment.view')
             <li class="nav2-item"><a href="{{route('itsupport.salary.payment') }}" class="nav2-link {{ str_contains(request()->url(), 'salary/payment') == true ? 'active' : '' }}"><span class="nav2-icon">P</span><span class="nav2-label" id="nav-salary-payment">Salary Payment</span></a></li>
+            @endcan
+            @can('institution.salary_advance.view')
             <li class="nav2-item"><a href="{{route('itsupport.salary.advance') }}" class="nav2-link {{ str_contains(request()->url(), 'salary/advance') == true ? 'active' : '' }}"><span class="nav2-icon">P</span><span class="nav2-label" id="nav-salary-advance">Salary Advance</span></a></li>
+            @endcan
           </ul>
         </div>
       </li>
+      @endcanany
 
       @if(feature_enabled(\App\Support\Feature::CARD_MODULE))
+        @canany([
+          'institution.card_id_template.view',
+          'institution.card_student_id.view',
+          'institution.card_employee_id.view',
+          'institution.card_admit_template.view',
+          'institution.card_generate_admit.view',
+        ])
         <li class="nav1-item">
           <div class="nav1-link {{ str_contains(request()->url(), 'card/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
             <span class="material-icons-round">credit_card</span>
@@ -260,17 +433,29 @@
           </div>
           <div class="nav2-collapse {{ str_contains(request()->url(), 'card/') == true ? 'show' : '' }}">
             <ul>
+              @can('institution.card_id_template.view')
               <li class="nav2-item"><a href="{{route('itsupport.card.id-card-templates') }}" class="nav2-link {{ str_contains(request()->url(), 'card/id-card-templates') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-id-card-template">Id Card Template</span></a></li>
+              @endcan
+              @can('institution.card_student_id.view')
               <li class="nav2-item"><a href="{{route('itsupport.card.student-id-cards') }}" class="nav2-link {{ str_contains(request()->url(), 'card/student-id-cards') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-student-id-card">Student Id Card</span></a></li>
+              @endcan
+              @can('institution.card_employee_id.view')
               <li class="nav2-item"><a href="{{route('itsupport.card.employee-id-cards') }}" class="nav2-link {{ str_contains(request()->url(), 'card/employee-id-cards') == true ? 'active' : '' }}"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-employee-id-card">Employee Id Card</span></a></li>
+              @endcan
+              @can('institution.card_admit_template.view')
               <li class="nav2-item"><a href="{{route('itsupport.card.admit-card-templates') }}" class="nav2-link {{ str_contains(request()->url(), 'card/admit-card-templates') == true ? 'active' : '' }}"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-admit-card-template">Admit Card Template</span></a></li>
+              @endcan
+              @can('institution.card_generate_admit.view')
               <li class="nav2-item"><a href="{{route('itsupport.card.generate-admit-cards') }}" class="nav2-link {{ str_contains(request()->url(), 'card/generate-admit-cards') == true ? 'active' : '' }}"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-admit-card-generate">Admit Card Generate</span></a></li>
+              @endcan
             </ul>
           </div>
         </li>
+        @endcanany
       @endif
 
       @if(feature_enabled(\App\Support\Feature::CERTIFICATE_MODULE))
+        @canany(['institution.certificate_template.view', 'institution.certificate_generate.view'])
         <li class="nav1-item">
           <div class="nav1-link {{ str_contains(request()->url(), 'certificate/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
             <span class="material-icons-round">workspace_premium</span>
@@ -279,49 +464,72 @@
           </div>
           <div class="nav2-collapse {{ str_contains(request()->url(), 'certificate/') == true ? 'show' : '' }}">
             <ul>
+              @can('institution.certificate_template.view')
               <li class="nav2-item"><a href="{{route('itsupport.certificate.list-template') }}" class="nav2-link {{ str_contains(request()->url(), 'certificate/list-template') == true ? 'active' : '' }}"><span class="nav2-icon">G</span><span class="nav2-label" id="nav-certificate-template">Certificate Template</span></a></li>
+              @endcan
+              @can('institution.certificate_generate.view')
               <li class="nav2-item"><a href="{{route('itsupport.certificate.generate-student') }}" class="nav2-link {{ str_contains(request()->url(), 'certificate/generate-student') == true ? 'active' : '' }}"><span class="nav2-icon">T</span><span class="nav2-label" id="nav-generate-student">Generate Student</span></a></li>
+              @endcan
+              @can('institution.certificate_generate.view')
               <li class="nav2-item"><a href="{{route('itsupport.certificate.generate-employee') }}" class="nav2-link {{ str_contains(request()->url(), 'certificate/generate-employee') == true ? 'active' : '' }}"><span class="nav2-icon">N</span><span class="nav2-label" id="nav-generate-employee">Generate Employee</span></a></li>
+              @endcan
             </ul>
           </div>
         </li>
+        @endcanany
       @endif
 
+      @can('institution.leave_application.view')
       <li class="nav1-item">
         <a href="{{route('itsupport.leave.applications') }}" class="nav1-link {{ str_contains(request()->url(), 'leave/applications') || str_contains(request()->url(), 'leave/categories') == true ? 'active' : '' }}">
           <span class="material-icons-round">exit_to_app</span>
           <span class="nav-label" id="nav-leaves">Leaves</span>
         </a>
       </li>
+      @endcan
 
+      @can('institution.event.view')
       <li class="nav1-item">
         <a href="{{route('itsupport.event.list') }}" class="nav1-link {{ str_contains(request()->url(), 'event') == true ? 'active' : '' }}">
           <span class="material-icons-round">event</span>
           <span class="nav-label" id="nav-events">Events</span>
         </a>
       </li>
+      @endcan
 
+      @can('institution.mailbox.view')
       <li class="nav1-item">
         <a href="{{route('itsupport.mailbox.inbox') }}" class="nav1-link {{ str_contains(request()->url(), 'mailbox/') == true ? 'active' : '' }}">
           <span class="material-icons-round">chat</span>
           <span class="nav-label" id="nav-mailbox">Mailbox</span>
         </a>
       </li>
+      @endcan
 
+      @can('institution.notice.view')
       <li class="nav1-item">
         <a href="{{route('itsupport.notices') }}" class="nav1-link {{ str_contains(request()->url(), 'notices') == true ? 'active' : '' }}">
           <span class="material-icons-round">chat</span>
           <span class="nav-label" id="nav-notices">Notices</span>
         </a>
       </li>
+      @endcan
 
+      @can('institution.notification.view')
       <li class="nav1-item">
         <a href="{{route('itsupport.notifications.index') }}" class="nav1-link {{ str_contains(request()->url(), 'notifications') == true ? 'active' : '' }}">
           <span class="material-icons-round">notifications</span>
           <span class="nav-label" id="nav-notifications">Notifications</span>
         </a>
       </li>
-       
+      @endcan
+
+      @canany([
+        'institution.report_attendance.view',
+        'institution.inventory_product.view',
+        'institution.salary_payment.view',
+        'institution.leave_application.view',
+      ])
       <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), 'reports') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
           <span class="material-icons-round">bar_chart</span>
@@ -330,44 +538,66 @@
         </div>
         <div class="nav2-collapse {{ str_contains(request()->url(), 'reports') == true ? 'show' : '' }}">
           <ul>
-            <li class="nav2-item"><a href="{{ route('itsupport.reports.inventory.stock') }}" class="nav2-link {{ str_contains(request()->url(), 'reports/inventory/stock') == true ? 'active' : '' }}"><span class="nav2-icon">A</span><span class="nav2-label" id="nav-inventory">Inventory</span></a></li>
-            <li class="nav2-item"><a href="{{ route('itsupport.reports.attendances.student') }}" class="nav2-link {{ str_contains(request()->url(), 'reports/attendances/') == true ? 'active' : '' }}"><span class="nav2-icon">A</span><span class="nav2-label" id="nav-attendances">Attendances</span></a></li>
-            <li class="nav2-item"><a href="{{ route('itsupport.reports.salary.payments') }}" class="nav2-link {{ str_contains(request()->url(), 'reports/salary/payments') == true ? 'active' : '' }}"><span class="nav2-icon">A</span><span class="nav2-label" id="nav-attendances">Salary</span></a></li>
-            <li class="nav2-item"><a href="{{ route('itsupport.reports.leaves') }}" class="nav2-link {{ str_contains(request()->url(), 'reports/leaves') == true ? 'active' : '' }}"><span class="nav2-icon">A</span><span class="nav2-label" id="nav-leaves">Leaves</span></a></li>
+            @can('institution.inventory_product.view')
+            <li class="nav2-item"><a href="{{ route('itsupport.reports.inventory.stock') }}" class="nav2-link {{ str_contains(request()->url(), 'reports/inventory/stock') == true ? 'active' : '' }}"><span class="nav2-icon">A</span><span class="nav2-label" id="nav-report-inventory">Inventory</span></a></li>
+            @endcan
+            @can('institution.report_attendance.view')
+            <li class="nav2-item"><a href="{{ route('itsupport.reports.attendances.student') }}" class="nav2-link {{ str_contains(request()->url(), 'reports/attendances/') == true ? 'active' : '' }}"><span class="nav2-icon">A</span><span class="nav2-label" id="nav-report-attendances">Attendances</span></a></li>
+            @endcan
+            @can('institution.salary_payment.view')
+            <li class="nav2-item"><a href="{{ route('itsupport.reports.salary.payments') }}" class="nav2-link {{ str_contains(request()->url(), 'reports/salary/payments') == true ? 'active' : '' }}"><span class="nav2-icon">A</span><span class="nav2-label" id="nav-report-salary">Salary</span></a></li>
+            @endcan
+            @can('institution.leave_application.view')
+            <li class="nav2-item"><a href="{{ route('itsupport.reports.leaves') }}" class="nav2-link {{ str_contains(request()->url(), 'reports/leaves') == true ? 'active' : '' }}"><span class="nav2-icon">A</span><span class="nav2-label" id="nav-report-leaves">Leaves</span></a></li>
+            @endcan
           </ul>
         </div>
       </li>
+      @endcanany
 
+      @canany(['institution.log_activity.view', 'institution.log_session.view', 'institution.log_login.view'])
       <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), 'activity-logs') || str_contains(request()->url(), 'session-logs') || str_contains(request()->url(), 'login-logs') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
           <span class="material-icons-round">security</span>
-          <span class="nav-label" id="nav-audit-security">Audit & Security Logs</span>
+          <span class="nav-label" id="nav-audit-security">Audit &amp; Security Logs</span>
           <span class="material-icons-round nav-arrow">expand_more</span>
         </div>
         <div class="nav2-collapse {{ str_contains(request()->url(), 'activity-logs') || str_contains(request()->url(), 'session-logs') || str_contains(request()->url(), 'login-logs') == true ? 'show' : '' }}">
           <ul>
+            @can('institution.log_activity.view')
             <li class="nav2-item"><a href="{{ route('itsupport.activitylog') }}" class="nav2-link {{ Route::is('itsupport.activitylog') == true ? 'active' : '' }}"><span class="nav2-icon">AL</span><span class="nav2-label" id="nav-activity-logs">Activity Logs</span></a></li>
+            @endcan
+            @can('institution.log_session.view')
             <li class="nav2-item"><a href="{{ route('itsupport.sessionlog') }}" class="nav2-link {{ Route::is('itsupport.sessionlog') == true ? 'active' : '' }}"><span class="nav2-icon">SL</span><span class="nav2-label" id="nav-session-logs">Session Logs</span></a></li>
+            @endcan
+            @can('institution.log_login.view')
             <li class="nav2-item"><a href="{{ route('itsupport.loginlog') }}" class="nav2-link {{ Route::is('itsupport.loginlog') == true ? 'active' : '' }}"><span class="nav2-icon">LL</span><span class="nav2-label" id="nav-login-logs">Login Logs</span></a></li>
+            @endcan
           </ul>
         </div>
       </li>
+      @endcanany
 
+      @can('institution.role_permission.view')
       <li class="nav1-item">
         <div class="nav1-link {{ request()->is('roles-permissions/*') ? 'active open' : '' }}" onclick="toggleNav1(this)">
           <span class="material-icons-round">door_front</span>
-          <span class="nav-label" id="nav-roles-permission">Role & Permission</span>
+          <span class="nav-label" id="nav-roles-permission">Role &amp; Permission</span>
           <span class="material-icons-round nav-arrow">expand_more</span>
         </div>
         <div class="nav2-collapse {{ request()->is('roles-permissions/*') ? 'show' : '' }}">
           <ul>
-            <li class="nav2-item"><a href="{{route('itsupport.role-permission.index') }}" class="nav2-link {{ str_contains(request()->url(), 'roles-permissions/index') == true ? 'active' : '' }}"><span class="nav2-icon">I</span><span class="nav2-label" id="nav-committees">Index</span></a></li>
-            <li class="nav2-item"><a href="{{route('itsupport.role-permission.create') }}" class="nav2-link {{ str_contains(request()->url(), 'roles-permissions/create') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-facilities">Create</span></a></li>
-            <li class="nav2-item"><a href="{{route('itsupport.role-permission.users') }}" class="nav2-link {{ str_contains(request()->url(), 'roles-permissions/users') == true ? 'active' : '' }}"><span class="nav2-icon">U</span><span class="nav2-label" id="nav-facilities">Users</span></a></li>
+            <li class="nav2-item"><a href="{{route('itsupport.role-permission.index') }}" class="nav2-link {{ str_contains(request()->url(), 'roles-permissions/index') == true ? 'active' : '' }}"><span class="nav2-icon">I</span><span class="nav2-label" id="nav-role-permission-index">Index</span></a></li>
+            @can('institution.role_permission.create')
+            <li class="nav2-item"><a href="{{route('itsupport.role-permission.create') }}" class="nav2-link {{ str_contains(request()->url(), 'roles-permissions/create') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-role-permission-create">Create</span></a></li>
+            @endcan
+            <li class="nav2-item"><a href="{{route('itsupport.role-permission.users') }}" class="nav2-link {{ str_contains(request()->url(), 'roles-permissions/users') == true ? 'active' : '' }}"><span class="nav2-icon">U</span><span class="nav2-label" id="nav-role-permission-users">Users</span></a></li>
           </ul>
         </div>
       </li>
+      @endcan
 
+      @canany(['institution.information_committee.view', 'institution.information_facility.view'])
       <li class="nav1-item">
         <div class="nav1-link {{ request()->is('information/*') ? 'active open' : '' }}" onclick="toggleNav1(this)">
           <span class="material-icons-round">door_front</span>
@@ -376,11 +606,16 @@
         </div>
         <div class="nav2-collapse {{ request()->is('information/*') ? 'show' : '' }}">
           <ul>
-            <li class="nav2-item"><a href="{{route('itsupport.information.committees') }}" class="nav2-link {{ str_contains(request()->url(), 'information/committees') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-committees">Committees</span></a></li>
-            <li class="nav2-item"><a href="{{route('itsupport.information.facilities') }}" class="nav2-link {{ str_contains(request()->url(), 'information/facilities') == true ? 'active' : '' }}"><span class="nav2-icon">F</span><span class="nav2-label" id="nav-facilities">Facilities</span></a></li>
+            @can('institution.information_committee.view')
+            <li class="nav2-item"><a href="{{route('itsupport.information.committees') }}" class="nav2-link {{ str_contains(request()->url(), 'information/committees') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-info-committees">Committees</span></a></li>
+            @endcan
+            @can('institution.information_facility.view')
+            <li class="nav2-item"><a href="{{route('itsupport.information.facilities') }}" class="nav2-link {{ str_contains(request()->url(), 'information/facilities') == true ? 'active' : '' }}"><span class="nav2-icon">F</span><span class="nav2-label" id="nav-info-facilities">Facilities</span></a></li>
+            @endcan
           </ul>
         </div>
       </li>
+      @endcanany
 
     </ul>
 

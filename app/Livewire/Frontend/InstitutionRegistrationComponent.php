@@ -9,8 +9,10 @@ use App\Models\Invoice;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use App\Services\InstitutionDefaultsService;
+use Spatie\Permission\PermissionRegistrar;
 
 class InstitutionRegistrationComponent extends Component
 {
@@ -20,12 +22,14 @@ class InstitutionRegistrationComponent extends Component
 
     // Step 1 — Institution Information
     public string $institution_name = '';
+    public string $institution_eiin = '';
     public string $institution_type = '';
     public string $institution_medium = '';
     public string $institution_division = '';
     public string $institution_district = '';
     public string $phone = '';
     public string $email = '';
+    public $is_branch = false;
     public $logo;
     public ?string $existing_logo_path = null;
 
@@ -44,22 +48,34 @@ class InstitutionRegistrationComponent extends Component
         }
 
         $this->institution_name     = $pending['institution_name'] ?? '';
+        $this->institution_eiin     = $pending['institution_eiin'] ?? '';
         $this->institution_type     = $pending['institution_type'] ?? '';
         $this->institution_medium   = $pending['institution_medium'] ?? '';
         $this->institution_division = $pending['institution_division'] ?? '';
         $this->institution_district = $pending['institution_district'] ?? '';
         $this->email                = $pending['email'] ?? '';
         $this->phone                = $pending['phone'] ?? '';
+        // ✅ Fix: is_branch আগে restore হতো না — payment flow থেকে ফিরে এলে
+        // এই মান হারিয়ে যেত এবং সবসময় default false ধরা হতো।
+        $this->is_branch            = $pending['is_branch'] ?? false;
         $this->admin_name           = $pending['admin_name'] ?? '';
         $this->admin_email          = $pending['admin_email'] ?? '';
-        $this->password              = $pending['password'] ?? '12345678';
-        $this->password_confirmation = $pending['password'] ?? '12345678';
+
+        if (!empty($pending['password'])) {
+            try {
+                $this->password              = $pending['password'];
+                $this->password_confirmation = $this->password;
+            } catch (\Throwable $e) {
+                $this->password              = '';
+                $this->password_confirmation = '';
+            }
+        }
 
         $this->existing_logo_path = session('pending_logo');
 
         $this->currentStep = 3;
 
-        session()->flash('info', 'Ager fill kora tothyo restore kora hoyeche. Password ta abar diye continue korun.');
+        session()->flash('info', 'Previously filled-in information has been restored. If necessary, re-enter your password and continue.');
     }
 
     /**
@@ -87,12 +103,14 @@ class InstitutionRegistrationComponent extends Component
     {
         $this->validate([
             'institution_name'     => 'required|min:3|max:255',
+            'institution_eiin'     => 'required|min:6|max:255',
             'institution_type'     => 'required|string',
             'institution_medium'   => ['required', 'string', Rule::in(Institution::MEDIUMS)],
             'institution_division' => ['required', 'string', Rule::in(array_keys(Institution::DIVISIONS))],
             'institution_district' => ['required', 'string', Rule::in($this->districts)],
             'phone'                => 'required|string|max:30',
             'email'                => 'required|email|max:255',
+            'is_branch'            => ['required', Rule::in(['0', '1', 0, 1, true, false])],
             'logo'                 => 'nullable|image|max:2048',
         ]);
     }
@@ -130,22 +148,24 @@ class InstitutionRegistrationComponent extends Component
 
     public function initiatePayment(): mixed
     {
+        $this->stepOneValidation();
         $this->stepTwoValidation();
 
-        $logoPath = null;
-        if ($this->logo) {
-            $logoPath = $this->logo->store('institution/system/logo', 'public');
-        }
+        $logoPath = $this->logo
+            ? $this->logo->store('institution/system/logo', 'public')
+            : $this->existing_logo_path;
 
         session([
             'pending_registration' => [
                 'institution_name'     => $this->institution_name,
+                'institution_eiin'     => $this->institution_eiin,
                 'institution_type'     => $this->institution_type,
                 'institution_medium'   => $this->institution_medium,
                 'institution_division' => $this->institution_division,
                 'institution_district' => $this->institution_district,
                 'email'       => $this->email,
                 'phone'       => $this->phone,
+                'is_branch'   => (bool) $this->is_branch,
                 'admin_name'  => $this->admin_name,
                 'admin_email' => $this->admin_email,
                 'password'    => $this->password,
@@ -159,19 +179,52 @@ class InstitutionRegistrationComponent extends Component
 
     public function initiateFree(): mixed
     {
+        $this->stepOneValidation();
         $this->stepTwoValidation();
 
-        DB::transaction(function () {
-            $institution = Institution::create([
-                'name'     => $this->institution_name,
-                'type'     => $this->institution_type,
-                'medium'   => $this->institution_medium,
-                'division' => $this->institution_division,
-                'district' => $this->institution_district,
-                'email'    => $this->email,
-                'phone'    => $this->phone,
-                'status'   => true,
-            ]);
+        try {
+            $institution = null;
+
+            DB::transaction(function () use (&$institution) {
+                $institution = Institution::create([
+                    'name'      => $this->institution_name,
+                    'eiin'      => $this->institution_eiin,
+                    'type'      => $this->institution_type,
+                    'medium'    => $this->institution_medium,
+                    'division'  => $this->institution_division,
+                    'district'  => $this->institution_district,
+                    'email'     => $this->email,
+                    'phone'     => $this->phone,
+                    'status'    => true,
+                    'is_branch' => (bool) $this->is_branch,
+                ]);
+
+                $branch = InstitutionDefaultsService::create($institution);
+
+                $user = User::create([
+                    'name'           => $this->admin_name,
+                    'email'          => $this->admin_email,
+                    'password'       => $this->password,
+                    'role'           => User::ROLE_ADMIN,
+                    'institution_id' => $institution->id,
+                    'branch_id'      => $branch->id,
+                ]);
+
+                app(PermissionRegistrar::class)->setPermissionsTeamId($institution->id);
+                $user->assignRole('admin');
+
+                Invoice::create([
+                    'institution_id' => $institution->id,
+                    'branch_id'      => $branch->id,
+                    'type'           => 'registration',
+                    'invoice_no'     => 'REG_' . strtoupper(Str::random(12)),
+                    'total_amount'   => (float) setting('register_fee', 0),
+                    'status'         => 'free',
+                ]);
+
+                Auth::login($user);
+                session()->regenerate();
+            });
 
             if ($this->logo) {
                 $path = $this->logo->storeAs(
@@ -180,34 +233,19 @@ class InstitutionRegistrationComponent extends Component
                     'public'
                 );
                 $institution->update(['system_logo' => 'storage/' . $path]);
+            } elseif ($this->existing_logo_path) {
+                $institution->update(['system_logo' => 'storage/' . $this->existing_logo_path]);
             }
 
-            // ✅ Defaults seed + main branch তৈরি (একসাথেই)
-            $branch = InstitutionDefaultsService::create($institution);
+            session()->forget(['pending_registration', 'pending_logo']);
 
-            $user = User::create([
-                'name'            => $this->admin_name,
-                'email'           => $this->admin_email,
-                'password'        => $this->password,
-                'role'            => User::ROLE_ADMIN,   // magic string বাদ, constant
-                'institution_id'  => $institution->id,
-                'branch_id'       => $branch->id,        // ✅ এখন আর null থাকবে না
-            ]);
+            return redirect()->route('admin.dashboard')->with('success', 'Institution setup complete!!');
 
-            Invoice::create([
-                'institution_id' => $institution->id,
-                'branch_id'      => $branch->id,
-                'type'           => 'registration',
-                'invoice_no'     => 'REG_' . strtoupper(uniqid()),
-                'total_amount'   => (float) setting('register_fee', 0),
-                'status'         => 'free',
-            ]);
-
-            Auth::login($user);
-            session()->regenerate();
-        });
-
-        return redirect()->route('admin.dashboard')->with('success', 'Institution setup complete!!');
+        } catch (\Throwable $e) {
+            report($e);
+            session()->flash('error', 'Registration could not be completed; please try again.');
+            return back();
+        }
     }
 
     public function render()

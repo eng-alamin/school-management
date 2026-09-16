@@ -28,7 +28,7 @@
                     </div>
                 @endif
 
-                <a href="{{ route('admin.role-permission.create') }}" wire:navigate class="btn btn-primary">
+                <a href="{{ route($routePrefix . 'role-permission.create') }}" wire:navigate class="btn btn-primary">
                     <span>
                         <span class="material-icons-round">add_circle</span>
                         <span>New Role</span>
@@ -60,7 +60,7 @@
                             <td>
                                 <div class="d-flex align-items-center gap-2">
                                     <span class="material-icons-round" style="font-size:20px;color:var(--muted)">admin_panel_settings</span>
-                                    <span>{{ $role->name }}</span>
+                                    <span>{{ ucwords(str_replace('_', ' ', $role->name)) }}</span>
                                 </div>
                             </td>
                             <td>
@@ -73,13 +73,15 @@
                                             wire:click="openViewModal({{ $role->id }})">
                                         <span class="material-icons-round">visibility</span>
                                     </button>
-                                    <a href="{{ route('admin.role-permission.edit', $role->id) }}" wire:navigate class="act-btn edit" title="Edit">
+                                    <a href="{{ route($routePrefix . 'role-permission.edit', $role->id) }}" wire:navigate class="act-btn edit" title="Edit">
                                         <span class="material-icons-round">drive_file_rename_outline</span>
                                     </a>
-                                    <button class="act-btn delete" title="Delete"
-                                            wire:click="confirmDeleteRecord({{ $role->id }})">
-                                        <span class="material-icons-round">delete</span>
-                                    </button>
+                                    @if (!in_array($role->name, ['admin', 'it_support', 'staff', 'accountant', 'teacher']))
+                                        <button class="act-btn delete" title="Delete"
+                                                wire:click="confirmDeleteRecord({{ $role->id }})">
+                                            <span class="material-icons-round">delete</span>
+                                        </button>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
@@ -88,7 +90,7 @@
                             <td colspan="5" class="text-center py-5 text-muted">
                                 <i class="bi bi-inbox display-5 d-block mb-2 opacity-25"></i>
                                 No roles found.
-                                <a href="{{ route('admin.role-permission.create') }}" wire:navigate>Add one now</a>.
+                                <a href="{{ route($routePrefix . 'role-permission.create',) }}" wire:navigate>Add one now</a>.
                             </td>
                         </tr>
                         @endforelse
@@ -122,7 +124,7 @@
                     </div>
                     <div class="modal-footer">
                         <button class="btn btn-light" wire:click="$set('showViewModal',false)">Close</button>
-                        <a href="{{route('admin.role-permission.edit', $this->viewingRoleId)}}" class="btn btn-primary">
+                        <a href="{{ route($routePrefix . 'role-permission.edit', $this->viewingRoleId) }}" class="btn btn-primary">
                             <i class="bi bi-pencil me-1"></i>Edit
                         </a>
                     </div>

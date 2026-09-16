@@ -230,6 +230,7 @@ class QuestionPaperPrintAuthorizationComponent extends Component
 
         $auth = QuestionPaperPrintAuthorization::query()
             ->where('institution_id', $institutionId)
+            ->where('branch_id', $this->activeBranchId())
             ->findOrFail($authorizationId);
 
         $auth->update(['is_revoked' => true]);

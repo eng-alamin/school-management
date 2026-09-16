@@ -136,10 +136,10 @@ class QuestionPaperPdfGenerator
     .q-text-cell { display: table-cell; }
     .q-marks-cell { display: table-cell; width: 34px; text-align: right; vertical-align: top; }
     .q-num { font-weight: 700; margin-right: 3px; }
-    .marks-tag {
+    /* .marks-tag {
         display: inline-block; font-size: 10px; font-weight: 700; color: {$primary};
         background: #eaf1fe; border-radius: 20px; padding: 1px 8px;
-    }
+    } */
 
     .figure-wrap { margin: 8px 0 4px 18px; }
     .figure-wrap img { max-width: 220px; max-height: 170px; border: 1px solid {$border}; }

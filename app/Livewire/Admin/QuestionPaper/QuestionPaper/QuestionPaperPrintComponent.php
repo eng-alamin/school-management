@@ -29,6 +29,8 @@ class QuestionPaperPrintComponent extends Component
             ->where('user_id', Auth::id())
             ->where('exam_id', $examId)
             ->where('subject_id', $subjectId)
+            ->where('is_revoked', false)
+            ->orderByDesc('valid_until')
             ->first();
 
         $this->examId = $examId;

@@ -5,6 +5,9 @@ namespace App\Services;
 use Carbon\Carbon;
 use App\Models\Institution;
 use App\Models\Branch;
+use Spatie\Permission\PermissionRegistrar;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 use App\Models\Feature;
 use App\Models\InventoryCategory;
 use App\Models\InventoryUnit;
@@ -36,6 +39,8 @@ class InstitutionDefaultsService
         $branch = self::resolveMainBranch($institution);
 
         self::createFeatures($institution, $branch);
+
+        self::createRoles($institution, $branch);
 
         self::createInventoryCategories($institution, $branch);
         self::createInventoryUnits($institution, $branch);
@@ -76,13 +81,43 @@ class InstitutionDefaultsService
             ->firstOrFail();
     }
 
+    private static function createRoles(Institution $institution, Branch $branch): void
+    {
+        app(PermissionRegistrar::class)->setPermissionsTeamId($institution->id);
+
+        $institutionWideRoles = [
+            'admin',
+            'it_support',
+            'staff',
+            'accountant',
+            'teacher',
+        ];
+
+        foreach ($institutionWideRoles as $roleName) {
+            $role = Role::firstOrCreate([
+                'institution_id' => $institution->id,
+                'branch_id'      => $branch->id,
+                'guard_name'     => 'web',
+                'name'           => $roleName,
+            ]);
+
+            if ($roleName === 'admin') {
+                $allInstitutionPermissions = Permission::where('guard_name', 'web')
+                    ->where('name', 'like', 'institution.%')
+                    ->pluck('name');
+
+                $role->syncPermissions($allInstitutionPermissions);
+            }
+        }
+    }
+
     private static function createFeatures(Institution $institution, Branch $branch): void
     {
         $features = [
             'inventory_module'    => false,
             'card_module'         => true,
             'certificate_module'  => true,
-            'branch_module'       => false,
+            'branch_module'       => $institution->is_branch,
         ];
 
         foreach ($features as $featureKey => $isActive) {

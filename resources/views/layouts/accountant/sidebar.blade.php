@@ -13,7 +13,7 @@
 
   <!-- User -->
   <div class="sidebar-user" id="userToggle">
-    <img src="{{ auth()->user()->avatar ? asset(auth()->user()->avatar) : asset('assets/img/default-avatar.jpg') }}" class="user-avatar" alt="{{ auth()->user()->name}}">
+    <img src="{{ auth()->user()->avatar ? asset('storage/' . auth()->user()->avatar) : asset('assets/img/default-avatar.jpg') }}" class="user-avatar" alt="{{ auth()->user()->name}}">
     <span class="user-name">{{ auth()->user()->name}}</span>
     <span class="material-icons-round user-arrow" id="userArrow">expand_more</span>
   </div>
@@ -41,10 +41,14 @@
       </li>
       @endcan
 
-      @if(feature_enabled(\App\Support\Feature::INVENTORY_MODULE) && auth()->user()->hasAnyPermission([
-          'institution.inventory_product.view', 'institution.inventory_store.view', 'institution.inventory_supplier.view',
-          'institution.inventory_purchase.view', 'institution.inventory_sale.view',
-      ]))
+      @if(feature_enabled(\App\Support\Feature::INVENTORY_MODULE))
+        @canany([
+          'institution.inventory_product.view',
+          'institution.inventory_store.view',
+          'institution.inventory_supplier.view',
+          'institution.inventory_purchase.view',
+          'institution.inventory_sale.view',
+        ])
         <li class="nav1-item">
           <div class="nav1-link {{ str_contains(request()->url(), 'accountant/inventory/') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
             <span class="material-icons-round">inventory_2</span>
@@ -57,20 +61,21 @@
               <li class="nav2-item"><a href="{{ route('accountant.inventory.products') }}" class="nav2-link {{ Route::is('accountant.inventory.products') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-products">Products</span></a></li>
               @endcan
               @can('institution.inventory_store.view')
-              <li class="nav2-item"><a href="{{route('accountant.inventory.stores') }}" class="nav2-link {{ Route::is('accountant.inventory.stores') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-products">Stores</span></a></li>
+              <li class="nav2-item"><a href="{{route('accountant.inventory.stores') }}" class="nav2-link {{ Route::is('accountant.inventory.stores') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-stores">Stores</span></a></li>
               @endcan
               @can('institution.inventory_supplier.view')
-              <li class="nav2-item"><a href="{{route('accountant.inventory.suppliers') }}" class="nav2-link {{ Route::is('accountant.inventory.suppliers') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-products">Suppliers</span></a></li>
+              <li class="nav2-item"><a href="{{route('accountant.inventory.suppliers') }}" class="nav2-link {{ Route::is('accountant.inventory.suppliers') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-suppliers">Suppliers</span></a></li>
               @endcan
               @can('institution.inventory_purchase.view')
-              <li class="nav2-item"><a href="{{route('accountant.inventory.purchase.list') }}" class="nav2-link {{ Route::is('accountant.inventory.purchase.list') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-products">Purchases</span></a></li>
+              <li class="nav2-item"><a href="{{route('accountant.inventory.purchase.list') }}" class="nav2-link {{ Route::is('accountant.inventory.purchase.list') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-purchases">Purchases</span></a></li>
               @endcan
               @can('institution.inventory_sale.view')
-              <li class="nav2-item"><a href="{{route('accountant.inventory.sale.list') }}" class="nav2-link {{ Route::is('accountant.inventory.sale.list') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-products">Sales</span></a></li>
+              <li class="nav2-item"><a href="{{route('accountant.inventory.sale.list') }}" class="nav2-link {{ Route::is('accountant.inventory.sale.list') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-sales">Sales</span></a></li>
               @endcan
             </ul>
           </div>
         </li>
+        @endcanany
       @endif
 
       @can('institution.student.view')
@@ -93,18 +98,20 @@
 
       @can('institution.employee.view')
       <li class="nav1-item">
-        <a class="nav1-link {{ str_contains(request()->url(), 'accountant/employee/') == true ? 'active' : '' }}" href="{{route('accountant.parent.list') }}">
-          <span class="material-icons-round">groups</span>
+        <a class="nav1-link {{ str_contains(request()->url(), 'accountant/employee/') == true ? 'active' : '' }}" href="{{route('accountant.employee.list') }}">
+          <span class="material-icons-round">badge</span>
           <span class="nav-label" id="nav-employees">Employees</span>
         </a>
       </li>
       @endcan
 
-      @if(auth()->user()->hasAnyPermission([
-          'institution.student_accounting_fee_type.view', 'institution.student_accounting_fee_setup.view',
-          'institution.student_accounting_fee_fine.view', 'institution.student_accounting_student_fine.view',
-          'institution.student_accounting_fee_invoice.view',
-      ]))
+      @canany([
+        'institution.student_accounting_fee_type.view',
+        'institution.student_accounting_fee_setup.view',
+        'institution.student_accounting_fee_fine.view',
+        'institution.student_accounting_student_fine.view',
+        'institution.student_accounting_fee_invoice.view',
+      ])
       <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), 'accountant/student-accounting') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
           <span class="material-icons-round">account_balance_wallet</span>
@@ -131,13 +138,15 @@
           </ul>
         </div>
       </li>
-      @endif
+      @endcanany
 
-      @if(auth()->user()->hasAnyPermission([
-          'institution.office_accounting_account.view', 'institution.office_accounting_deposit.view',
-          'institution.office_accounting_expense.view', 'institution.office_accounting_transaction.view',
-          'institution.office_accounting_head.view',
-      ]))
+      @canany([
+        'institution.office_accounting_account.view',
+        'institution.office_accounting_deposit.view',
+        'institution.office_accounting_expense.view',
+        'institution.office_accounting_transaction.view',
+        'institution.office_accounting_head.view',
+      ])
       <li class="nav1-item">
         <div class="nav1-link {{ str_contains(request()->url(), 'accountant/office-accounting') == true ? 'active open' : '' }}" onclick="toggleNav1(this)">
           <span class="material-icons-round">business_center</span>
@@ -164,9 +173,14 @@
           </ul>
         </div>
       </li>
-      @endif
+      @endcanany
 
-      @if(auth()->user()->hasAnyPermission(['institution.salary_template.view', 'institution.salary_assign.view', 'institution.salary_payment.view', 'institution.salary_advance.view',]))
+      @canany([
+        'institution.salary_template.view',
+        'institution.salary_assign.view',
+        'institution.salary_payment.view',
+        'institution.salary_advance.view',
+      ])
         <li class="nav1-item">
           <div class="nav1-link {{ str_contains(request()->url(), 'salary') ? 'active open' : '' }}" onclick="toggleNav1(this)">
             <span class="material-icons-round">manage_accounts</span>
@@ -190,7 +204,7 @@
             </ul>
           </div>
         </li>
-      @endif
+      @endcanany
 
       @can('institution.leave_application.view')
       <li class="nav1-item">
@@ -231,7 +245,7 @@
       @can('institution.notification.view')
       <li class="nav1-item">
         <a href="{{route('accountant.notifications.index') }}" class="nav1-link {{ str_contains(request()->url(), 'accountant/notifications') == true ? 'active' : '' }}">
-          <span class="material-icons-round">chat</span>
+          <span class="material-icons-round">notifications</span>
           <span class="nav-label" id="nav-notifications">Notifications</span>
         </a>
       </li>

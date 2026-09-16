@@ -35,11 +35,11 @@
                 @else
                     <span class="text-white-50" style="font-size:.8rem;">This paper is locked and can no longer be edited.</span>
                 @endif
-                <button class="btn-chrome" type="button" onclick="window.print()">
+                <button class="btn-chrome" type="button" onclick="printQuestionPaper()">
                     <span class="material-icons-round" style="font-size:16px;">print</span>
                     Print / PDF
                 </button>
-                
+
                 <button type="button" class="btn-chrome" onclick="history.back()">
                     <span class="material-icons-round" style="font-size:16px">arrow_back</span>
                     Back
@@ -74,27 +74,27 @@
                             </div>
                             <div class="col-12">
                                 <div class="form-label-sm">Institute Name</div>
-                                <input type="text" wire:model.live="instituteName" class="form-control" @disabled($isLocked)>
+                                <input type="text" wire:model.live.debounce.500ms="instituteName" class="form-control" @disabled($isLocked)>
                             </div>
                             <div class="col-12">
                                 <div class="form-label-sm">Exam Name</div>
-                                <input type="text" wire:model.live="examName" class="form-control" @disabled($isLocked)>
+                                <input type="text" wire:model.live.debounce.500ms="examName" class="form-control" @disabled($isLocked)>
                             </div>
                             <div class="col-6">
                                 <div class="form-label-sm">Class</div>
-                                <input type="text" wire:model.live="classLabel" class="form-control" @disabled($isLocked)>
+                                <input type="text" wire:model.live.debounce.500ms="classLabel" class="form-control" @disabled($isLocked)>
                             </div>
                             <div class="col-6">
                                 <div class="form-label-sm">Subject</div>
-                                <input type="text" wire:model.live="subjectLabel" class="form-control" @disabled($isLocked)>
+                                <input type="text" wire:model.live.debounce.500ms="subjectLabel" class="form-control" @disabled($isLocked)>
                             </div>
                             <div class="col-6">
                                 <div class="form-label-sm">Full Marks</div>
-                                <input type="number" step="0.5" wire:model.live="fullMarks" class="form-control" @disabled($isLocked)>
+                                <input type="number" step="0.5" wire:model.live.debounce.500ms="fullMarks" class="form-control" @disabled($isLocked)>
                             </div>
                             <div class="col-6">
                                 <div class="form-label-sm">Time</div>
-                                <input type="text" wire:model.live="timeLabel" class="form-control" placeholder="e.g. 3 Hours" @disabled($isLocked)>
+                                <input type="text" wire:model.live.debounce.500ms="timeLabel" class="form-control" placeholder="e.g. 3 Hours" @disabled($isLocked)>
                             </div>
                         </div>
                     </div>
@@ -112,8 +112,9 @@
                     <div class="section-body" id="qBody">
 
                         @unless($isLocked)
-                            <div class="dropdown mb-3 text-center">
-                                <button class="btn btn-brand dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <div class="dropdown mb-3 text-center" wire:ignore>
+                                <button class="btn btn-brand dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                                        wire:loading.attr="disabled" wire:target="questions">
                                     <span class="material-icons-round">add_circle</span> Add Question
                                 </button>
                                 <ul class="dropdown-menu" style="max-height: 360px; overflow-y: auto;">
@@ -129,6 +130,13 @@
                             </div>
                         @endunless
 
+                        {{-- Small, non-blocking "syncing" hint instead of the whole
+                             panel visibly freezing/flashing on every debounced update. --}}
+                        <div wire:loading.flex wire:target="questions" class="mb-2 align-items-center gap-2 text-muted" style="font-size:.72rem;display:none;">
+                            <span class="spinner-border spinner-border-sm" style="width:12px;height:12px;"></span>
+                            Syncing...
+                        </div>
+
                         <div id="qBuilderList" wire:ignore.self
                              x-data
                              x-init="
@@ -136,8 +144,12 @@
                                     handle: '.drag-handle',
                                     disabled: {{ $isLocked ? 'true' : 'false' }},
                                     animation: 150,
-                                    onEnd: () => {
-                                        const ids = Array.from($el.querySelectorAll('.q-block')).map(el => el.dataset.id);
+                                    onEnd: (evt) => {
+                                        const list = evt.from;
+                                        const refNode = list.children[evt.oldIndex] || null;
+                                        list.insertBefore(evt.item, refNode);
+
+                                        const ids = Array.from(list.querySelectorAll('.q-block')).map(el => el.dataset.id);
                                         $wire.reorder(ids);
                                     }
                                 });
@@ -167,23 +179,32 @@
 
                                     <div class="mb-2">
                                         <input type="text" class="form-control form-control-sm"
-                                               list="sectionHeaderSuggestions"
                                                placeholder="Section / Chapter heading"
-                                               wire:model.live="questions.{{ $qIndex }}.section_header"
+                                               wire:model="questions.{{ $qIndex }}.section_header"
                                                @disabled($isLocked)>
+                                        @if(!$isLocked && count($this->sectionHeaders))
+                                            <div class="section-chip-row">
+                                                @foreach($this->sectionHeaders as $header)
+                                                    <button type="button" class="section-chip"
+                                                            wire:click="setSectionHeader({{ $qIndex }}, @js($header))">
+                                                        {{ $header }}
+                                                    </button>
+                                                @endforeach
+                                            </div>
+                                        @endif
                                     </div>
 
                                     @if($q['family'] === 'options')
                                         <textarea class="form-control mb-2 q-text" rows="2" placeholder="Type the question..."
-                                                  wire:model.live="questions.{{ $qIndex }}.question_text" @disabled($isLocked)></textarea>
+                                                  wire:model.live.debounce.800ms="questions.{{ $qIndex }}.question_text" @disabled($isLocked)></textarea>
                                         <div class="options-wrap">
                                             @foreach($q['options'] as $optIndex => $opt)
-                                                <div class="opt-row">
+                                                <div class="opt-row" wire:key="opt-{{ $q['id'] }}-{{ $optIndex }}">
                                                     <span class="part-label" style="flex:0 0 24px;height:24px;font-size:.75rem;">{{ chr(65 + $optIndex) }}</span>
                                                     <input type="text" class="form-control form-control-sm opt-text" placeholder="Option {{ $optIndex + 1 }}"
-                                                           wire:model.live="questions.{{ $qIndex }}.options.{{ $optIndex }}.text" @disabled($isLocked)>
+                                                           wire:model.live.debounce.500ms="questions.{{ $qIndex }}.options.{{ $optIndex }}.text" @disabled($isLocked)>
                                                     <input type="checkbox" class="form-check-input mt-0" title="Correct answer"
-                                                           wire:model="questions.{{ $qIndex }}.options.{{ $optIndex }}.is_correct" @disabled($isLocked)>
+                                                           wire:model.live.debounce.500ms="questions.{{ $qIndex }}.options.{{ $optIndex }}.is_correct" @disabled($isLocked)>
                                                 </div>
                                             @endforeach
                                         </div>
@@ -191,21 +212,21 @@
                                             <div class="col-6">
                                                 <div class="marks-side-label" style="text-align:left;">Marks</div>
                                                 <input type="number" step="0.5" class="form-control form-control-sm"
-                                                       wire:model.live="questions.{{ $qIndex }}.marks" @disabled($isLocked)>
+                                                       wire:model.live.debounce.500ms="questions.{{ $qIndex }}.marks" @disabled($isLocked)>
                                             </div>
                                         </div>
 
                                     @elseif($q['family'] === 'matching_pairs')
                                         <input type="text" class="form-control form-control-sm mb-2 q-text" placeholder="Match column A with column B"
-                                               wire:model.live="questions.{{ $qIndex }}.question_text" @disabled($isLocked)>
+                                               wire:model.live.debounce.500ms="questions.{{ $qIndex }}.question_text" @disabled($isLocked)>
                                         <div class="match-wrap">
                                             @foreach($q['matches'] as $mIndex => $m)
-                                                <div class="match-row">
+                                                <div class="match-row" wire:key="match-{{ $q['id'] }}-{{ $mIndex }}">
                                                     <input type="text" class="form-control form-control-sm match-left" placeholder="Left item"
-                                                           wire:model.live="questions.{{ $qIndex }}.matches.{{ $mIndex }}.left" @disabled($isLocked)>
+                                                           wire:model.live.debounce.500ms="questions.{{ $qIndex }}.matches.{{ $mIndex }}.left" @disabled($isLocked)>
                                                     <span class="material-icons-round match-arrow">east</span>
                                                     <input type="text" class="form-control form-control-sm match-right" placeholder="Right item"
-                                                           wire:model.live="questions.{{ $qIndex }}.matches.{{ $mIndex }}.right" @disabled($isLocked)>
+                                                           wire:model.live.debounce.500ms="questions.{{ $qIndex }}.matches.{{ $mIndex }}.right" @disabled($isLocked)>
                                                 </div>
                                             @endforeach
                                         </div>
@@ -218,23 +239,23 @@
                                             <div class="col-6">
                                                 <div class="marks-side-label" style="text-align:left;">Marks</div>
                                                 <input type="number" step="0.5" class="form-control form-control-sm"
-                                                       wire:model.live="questions.{{ $qIndex }}.marks" @disabled($isLocked)>
+                                                       wire:model.live.debounce.500ms="questions.{{ $qIndex }}.marks" @disabled($isLocked)>
                                             </div>
                                         </div>
 
                                     @elseif($q['family'] === 'stimulus_parts')
                                         <div class="form-label-sm stimulus-label">Stimulus / passage</div>
                                         <textarea class="form-control mb-2 stimulus-text" rows="3" placeholder="Type the stimulus or passage..."
-                                                  wire:model.live="questions.{{ $qIndex }}.stimulus_text" @disabled($isLocked)></textarea>
+                                                  wire:model.live.debounce.800ms="questions.{{ $qIndex }}.stimulus_text" @disabled($isLocked)></textarea>
                                         <div class="parts-wrap">
                                             @foreach($q['parts'] as $pIndex => $part)
-                                                <div class="part-row">
+                                                <div class="part-row" wire:key="part-{{ $q['id'] }}-{{ $pIndex }}">
                                                     <span class="part-label">{{ $part['label'] }}</span>
                                                     <textarea class="form-control part-text" rows="1" placeholder="Sub-question {{ $pIndex + 1 }}"
-                                                              wire:model.live="questions.{{ $qIndex }}.parts.{{ $pIndex }}.text" @disabled($isLocked)></textarea>
+                                                              wire:model.live.debounce.500ms="questions.{{ $qIndex }}.parts.{{ $pIndex }}.text" @disabled($isLocked)></textarea>
                                                     <div>
                                                         <input type="number" class="form-control marks-input part-marks"
-                                                               wire:model.live="questions.{{ $qIndex }}.parts.{{ $pIndex }}.marks" @disabled($isLocked)>
+                                                               wire:model.live.debounce.500ms="questions.{{ $qIndex }}.parts.{{ $pIndex }}.marks" @disabled($isLocked)>
                                                         <div class="marks-side-label">marks</div>
                                                     </div>
                                                 </div>
@@ -243,12 +264,12 @@
 
                                     @else
                                         <textarea class="form-control mb-2 q-text" rows="2" placeholder="Type the question..."
-                                                  wire:model.live="questions.{{ $qIndex }}.question_text" @disabled($isLocked)></textarea>
+                                                  wire:model.live.debounce.800ms="questions.{{ $qIndex }}.question_text" @disabled($isLocked)></textarea>
                                         <div class="row g-2 mb-2">
                                             <div class="col-6">
                                                 <div class="marks-side-label" style="text-align:left;">Marks</div>
                                                 <input type="number" step="0.5" class="form-control form-control-sm"
-                                                       wire:model.live="questions.{{ $qIndex }}.marks" @disabled($isLocked)>
+                                                       wire:model.live.debounce.500ms="questions.{{ $qIndex }}.marks" @disabled($isLocked)>
                                             </div>
                                         </div>
                                     @endif
@@ -288,7 +309,7 @@
 
                                                 <div x-show="tab === 'upload'">
                                                     <input type="file" class="form-control form-control-sm" accept="image/*"
-                                                           wire:model="questions.{{ $qIndex }}.figure">
+                                                           wire:model.live.debounce.500ms="questions.{{ $qIndex }}.figure">
                                                     <div wire:loading wire:target="questions.{{ $qIndex }}.figure" class="text-muted mt-1" style="font-size:.72rem;">
                                                         Uploading...
                                                     </div>
@@ -335,12 +356,6 @@
                                 </div>
                             @endif
                         </div>
-
-                        <datalist id="sectionHeaderSuggestions">
-                            @foreach($this->sectionHeaders as $header)
-                                <option value="{{ $header }}">
-                            @endforeach
-                        </datalist>
                     </div>
                 </div>
             </div>
@@ -356,7 +371,7 @@
                         <span class="marks-pill">Total: {{ rtrim(rtrim(number_format($this->totalMarks, 1), '0'), '.') }} marks</span>
                     </div>
 
-                    <div class="sheet" data-lang="{{ $language }}">
+                    <div class="sheet" id="qpPrintable" data-lang="{{ $language }}">
                         <div class="sheet-head">
                             <div class="inst-name">{{ $instituteName ?: 'Institute Name' }}</div>
                             <div class="exam-title">{{ $examName }}</div>
@@ -595,6 +610,236 @@
             },
         }));
     });
+
+    // ---------------------------------------------------------------
+    // Print: Question Paper — Overview Component pattern.
+    // Opens a dedicated blank window, injects only the `.sheet`
+    // (the live-preview exam paper) markup, together with a fully
+    // self-contained, print-optimized stylesheet (own Google Fonts
+    // import, own borders/spacing/columns) so the printed output
+    // never depends on the builder's on-screen theme, browser default
+    // print margins, or unresolved CSS variables.
+    // ---------------------------------------------------------------
+    function printQuestionPaper() {
+        const printableEl = document.getElementById('qpPrintable');
+
+        if (!printableEl) {
+            return;
+        }
+
+        const printContent = printableEl.innerHTML;
+        const printWindow = window.open('', '_blank', 'width=950,height=700');
+
+        if (!printWindow) {
+            alert('Print window block hoye গেছে। Browser-er popup blocker check korun.');
+            return;
+        }
+
+        const paperTitle = @json($examName ?: 'Question Paper');
+        const isBangla = @json($language === 'bn');
+
+        printWindow.document.write(`
+            <html>
+                <head>
+                    <title>${paperTitle}</title>
+                    <link rel="preconnect" href="https://fonts.googleapis.com">
+                    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;600;700&family=Hind+Siliguri:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+                    <style>
+                        * { box-sizing: border-box; }
+
+                        @page {
+                            size: A4;
+                            margin: 14mm 16mm;
+                        }
+
+                        html, body {
+                            margin: 0;
+                            padding: 0;
+                            background: #ffffff;
+                        }
+
+                        body {
+                            font-family: ${isBangla ? "'Noto Serif Bengali', 'Hind Siliguri', serif" : "'Fraunces', 'Georgia', serif"};
+                            color: #1c1c1c;
+                            line-height: 1.85;
+                            font-size: 13.5px;
+                            -webkit-print-color-adjust: exact;
+                            print-color-adjust: exact;
+                        }
+
+                        .no-print { display: none !important; }
+
+                        /* ---------- Paper wrapper ---------- */
+                        .print-sheet {
+                            max-width: 780px;
+                            margin: 0 auto;
+                            position: relative;
+                        }
+
+                        /* Thin double-rule accent at the very top, standard exam-paper style */
+                        .print-sheet::before {
+                            content: "";
+                            display: block;
+                            height: 4px;
+                            margin-bottom: 3px;
+                            background: linear-gradient(90deg, #00402f 0 70%, #c8102e 70% 100%);
+                        }
+                        .print-sheet::after {
+                            content: "";
+                            display: block;
+                            height: 1px;
+                            background: #d8d3c4;
+                            margin: 6px 0 0;
+                        }
+
+                        /* ---------- Head block ---------- */
+                        .sheet-head {
+                            text-align: center;
+                            border-bottom: 2px solid #1c1c1c;
+                            padding: 4px 0 12px;
+                            margin-bottom: 16px;
+                        }
+                        .sheet-head .inst-name {
+                            font-size: 20px;
+                            font-weight: 700;
+                            letter-spacing: .3px;
+                        }
+                        .sheet-head .exam-title {
+                            font-size: 14.5px;
+                            margin-top: 4px;
+                            color: #3d3327;
+                            font-family: 'Hind Siliguri', 'Inter', sans-serif;
+                        }
+
+                        .sheet-meta {
+                            display: flex;
+                            justify-content: space-between;
+                            gap: 10px;
+                            font-size: 13px;
+                            font-family: 'Hind Siliguri', 'Inter', sans-serif;
+                            color: #3d3327;
+                            border-bottom: 1px dashed #b9b2a0;
+                            padding-bottom: 10px;
+                            margin-bottom: 20px;
+                            flex-wrap: wrap;
+                        }
+
+                        /* ---------- Section titles ---------- */
+                        .sheet-section-title {
+                            font-weight: 700;
+                            font-size: 14.5px;
+                            text-align: center;
+                            margin: 26px 0 14px;
+                            font-family: 'Hind Siliguri', 'Inter', sans-serif;
+                            position: relative;
+                        }
+                        .sheet-section-title::after {
+                            content: "";
+                            display: block;
+                            width: 70px;
+                            height: 2px;
+                            background: #c8102e;
+                            opacity: .6;
+                            margin: 6px auto 0;
+                        }
+
+                        /* ---------- Question blocks ---------- */
+                        .q-item, .mcq-item { margin-bottom: 15px; page-break-inside: avoid; break-inside: avoid; }
+                        .q-item .q-num, .mcq-item .q-num { font-weight: 700; }
+
+                        .cq-part {
+                            display: flex;
+                            justify-content: space-between;
+                            gap: 12px;
+                            padding-left: 22px;
+                            margin-bottom: 4px;
+                            font-size: 13.5px;
+                        }
+                        .cq-part .marks-tag {
+                            white-space: nowrap;
+                            font-family: 'Hind Siliguri', 'Inter', sans-serif;
+                            font-size: 11.5px;
+                            color: #55483a;
+                            border-radius: 3px;
+                            padding: 0 7px;
+                            height: fit-content;
+                        }
+
+                        .stimulus-box {
+                            background: #f7f3e8;
+                            border-left: 3px solid #00402f;
+                            padding: 8px 12px;
+                            margin: 6px 0 8px 22px;
+                            font-size: 13.5px;
+                            border-radius: 0 4px 4px 0;
+                        }
+
+                        .mcq-opts {
+                            display: grid;
+                            grid-template-columns: 1fr 1fr;
+                            gap: 3px 16px;
+                            padding-left: 22px;
+                            font-size: 13px;
+                            margin-top: 4px;
+                            font-family: 'Hind Siliguri', 'Inter', sans-serif;
+                        }
+
+                        .match-table {
+                            padding-left: 22px;
+                            font-size: 13px;
+                            margin-top: 6px;
+                            font-family: 'Hind Siliguri', 'Inter', sans-serif;
+                        }
+                        .match-table div { display: flex; align-items: center; gap: 10px; margin-bottom: 3px; }
+                        .match-table span:first-child { width: 20px; font-weight: 700; }
+                        .match-table .material-icons-round { display: none; }
+                        .match-table div span:nth-child(3)::before { content: "→"; margin: 0 2px; }
+
+                        .pv-figure {
+                            margin: 8px 0 10px 22px;
+                            page-break-inside: avoid;
+                            break-inside: avoid;
+                        }
+                        .pv-figure img {
+                            max-width: 300px;
+                            max-height: 220px;
+                            border: 1px solid #d8d3c4;
+                            border-radius: 4px;
+                        }
+
+                        /* ---------- Footer / signature strip ---------- */
+                        .print-footer {
+                            margin-top: 34px;
+                            padding-top: 10px;
+                            border-top: 1px dashed #b9b2a0;
+                            display: flex;
+                            justify-content: space-between;
+                            font-size: 11px;
+                            color: #7a7264;
+                            font-family: 'Inter', sans-serif;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="print-sheet">
+                        ${printContent}
+                        <div class="print-footer">
+                            <span>${isBangla ? 'সমাপ্ত' : 'End of Question Paper'}</span>
+                            <span>${paperTitle}</span>
+                        </div>
+                    </div>
+                </body>
+            </html>
+        `);
+
+        printWindow.document.close();
+        printWindow.focus();
+
+        setTimeout(() => {
+            printWindow.print();
+            printWindow.close();
+        }, 300);
+    }
 </script>
 @endpush
 
@@ -610,7 +855,7 @@
   :root {
     --btn-primary: #111111;
   }
-  
+
   /* Start Buttons */
 .btn-primary {
     --bs-btn-bg: var(--btn-primary);
@@ -781,6 +1026,15 @@
   .qp-scope .empty-note { text-align: center; color: var(--muted); font-family: "Hind Siliguri",sans-serif; font-size: .9rem; padding: 40px 0; }
   .qp-scope .empty-note .material-icons-round { color: var(--brass); }
 
+  /* ---------- section header reuse chips (replaces native <input list>/<datalist>) ---------- */
+  .qp-scope .section-chip-row { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+  .qp-scope .section-chip {
+    font-size: .68rem; font-weight: 600; padding: 3px 9px; border-radius: 999px;
+    border: 1px solid var(--line); background: var(--navy-soft); color: var(--navy);
+    font-family: "Inter",sans-serif; line-height: 1.4;
+  }
+  .qp-scope .section-chip:hover { background: #d3ece1; }
+
   /* ---------- figure: upload / draw ---------- */
   .qp-scope .figure-panel {
     border: 1px dashed var(--line); border-radius: var(--radius-sm); padding: 10px; background: #fff; margin-top: 8px;
@@ -858,11 +1112,6 @@
 
   @media print {
     .no-print { display: none !important; }
-    .qp-scope { margin: 0; }
-    .qp-scope .workspace { padding: 0; background: #fff; }
-    .qp-scope .sheet { box-shadow: none; border: none; border-top: none; padding: 0; }
-    .qp-scope .sheet::before { display: none; }
-    .qp-scope .preview-wrap { position: static; }
   }
   @media (max-width: 991px) {
     .qp-scope .preview-wrap { position: static; margin-top: 22px; }

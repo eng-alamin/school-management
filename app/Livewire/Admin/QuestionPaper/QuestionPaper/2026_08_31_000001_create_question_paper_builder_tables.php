@@ -35,7 +35,7 @@ return new class extends Migration
             $table->foreignId('created_by')->constrained('users');
             $table->timestamps();
 
-            $table->index(['institution_id', 'branch_id', 'exam_id', 'subject_id'], 'qp_ins_bra_exa_sub_idx');
+            $table->unique(['institution_id', 'branch_id', 'exam_id', 'subject_id'], 'question_papers_ins_bra_exa_sub_unique');
         });
 
         // Dynamic per-paper section headings + their Bangla label override.

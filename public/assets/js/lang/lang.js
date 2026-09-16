@@ -95,6 +95,9 @@ const translations = {
         modal: "Modal",
         tables: "Tables",
 
+        // Branches
+        branches: "Branches",
+
         // Inventory
         inventory: "Inventory",
         inventoryCategoryTitle: "Inventory Category",
@@ -133,6 +136,7 @@ const translations = {
         // Students & Parents
         category: "Category",
         students: "Students",
+        studentList: "Student List",
         parents: "Parents",
 
         // Employees
@@ -166,21 +170,39 @@ const translations = {
         teacherAssign: "Teacher Assign",
         classSchedule: "Class Schedule",
         teacherSchedule: "Teacher Schedule",
+        substituteTeacher: "Substitute Teacher",
         studentPromotion: "Student Promotion",
+        studentEnrollment: "Student Enrollment",
 
         homeWork: "Home Work",
+
+        // Question Paper
+        questionPaper: "Question Paper",
+        questionPapers: "Question Papers",
+        printAuthorization: "Print Authorization",
+        printLogs: "Print Logs",
 
         // Exam Master
         examMaster: "Exam Master",
         examSetup: "Exam Setup",
         examSchedule: "Exam Schedule",
         marks: "Marks",
+        markEntries: "Mark Entries",
+        examPositions: "Generate Positions",
+        gradesRange: "Grades Range",
 
         // Attendance
         attendance: "Attendance",
         attendanceStudent: "Student",
         attendanceEmployee: "Employee",
         attendanceExam: "Exam",
+        attendanceDutyAssign: "Attendance Duty Assign",
+        examDutyAssign: "Exam Duty Assign",
+
+        // Biometric
+        biometric: "Biometric",
+        biometricDevices: "Biometric Devices",
+        biometricDeviceMappings: "Device User Mappings",
 
         events: "Events",
         bulkSmsEmail: "Bulk Sms And Email",
@@ -189,7 +211,9 @@ const translations = {
         studentAccounting: "Student Accounting",
         feesType: "Fees Type",
         feesGroup: "Fees Group",
+        feesSetup: "Fees Setup",
         fineSetup: "Fine Setup",
+        studentFine: "Student Fine",
         feesAllocation: "Fees Allocation",
         feesPayInvoice: "Fees Pay / Invoice",
 
@@ -205,14 +229,40 @@ const translations = {
         salaryTemplate: "Salary Template",
         salaryAssign: "Salary Assign",
         salaryPayment: "Salary Payment",
+        salaryAdvance: "Salary Advance",
+
+        // Simple "Salary" menu (Teacher panel) + submenu
+        salary: "Salary",
+        salaryHistory: "History",
+        advance: "Advance",
 
         leaves: "Leaves",
         mailbox: "Mailbox",
         notices: "Notices",
         alumni: "Alumni",
 
+        // Audit & Security
+        auditSecurity: "Audit & Security Logs",
+        sessionLogs: "Session Logs",
+
+        // Role & Permission / Informations
+        rolesPermission: "Role & Permission",
+        informations: "Informations",
+        committees: "Committees",
+        facilities: "Facilities",
+        index: "Index",
+        create: "Create",
+        users: "Users",
+
+        // Reports
+        reportInventory: "Inventory",
+        reportAttendances: "Attendances",
+        reportSalary: "Salary",
+        reportLeaves: "Leaves",
+
         // Settings
         institutionSettings: "Institution Settings",
+        featureControl: "Feature Control",
         cronJob: "Cron Job",
         activityLogs: "Activity Logs",
         loginLogs: "Login Logs",
@@ -309,6 +359,9 @@ const translations = {
         modal: "মডাল",
         tables: "টেবিল",
 
+        // Branches
+        branches: "শাখাসমূহ",
+
         // Inventory
         inventory: "ইনভেন্টরি",
         inventoryCategoryTitle: "ইনভেন্টরি বিভাগ",
@@ -347,6 +400,7 @@ const translations = {
         // Students & Parents
         category: "বিভাগ",
         students: "ছাত্রছাত্রী",
+        studentList: "ছাত্র তালিকা",
         parents: "পিতা-মাতা",
 
         // Employees
@@ -380,21 +434,39 @@ const translations = {
         teacherAssign: "শিক্ষক নির্ধারণ",
         classSchedule: "ক্লাস সময়সূচি",
         teacherSchedule: "শিক্ষক সময়সূচি",
+        substituteTeacher: "বিকল্প শিক্ষক",
         studentPromotion: "ছাত্র পদোন্নতি",
+        studentEnrollment: "শিক্ষার্থী তালিকাভুক্তি",
 
         homeWork: "হোম ওয়ার্ক",
+
+        // Question Paper
+        questionPaper: "প্রশ্নপত্র",
+        questionPapers: "প্রশ্নপত্রসমূহ",
+        printAuthorization: "প্রিন্ট অনুমোদন",
+        printLogs: "প্রিন্ট লগ",
 
         // Exam Master
         examMaster: "পরীক্ষার মাস্টার",
         examSetup: "পরীক্ষা সেটআপ",
         examSchedule: "পরীক্ষার সময়সূচি",
         marks: "নম্বর",
+        markEntries: "নম্বর এন্ট্রি",
+        examPositions: "মেধাক্রম তৈরি করুন",
+        gradesRange: "গ্রেড রেঞ্জ",
 
         // Attendance
         attendance: "উপস্থিতি",
         attendanceStudent: "ছাত্র",
         attendanceEmployee: "কর্মচারী",
         attendanceExam: "পরীক্ষা",
+        attendanceDutyAssign: "উপস্থিতি দায়িত্ব নির্ধারণ",
+        examDutyAssign: "পরীক্ষার দায়িত্ব নির্ধারণ",
+
+        // Biometric
+        biometric: "বায়োমেট্রিক",
+        biometricDevices: "বায়োমেট্রিক ডিভাইস",
+        biometricDeviceMappings: "ডিভাইস ব্যবহারকারী ম্যাপিং",
 
         events: "ইভেন্ট",
         bulkSmsEmail: "বাল্ক এসএমএস এবং ইমেইল",
@@ -403,7 +475,9 @@ const translations = {
         studentAccounting: "ছাত্র অ্যাকাউন্টিং",
         feesType: "ফি প্রকার",
         feesGroup: "ফি গ্রুপ",
+        feesSetup: "ফি সেটআপ",
         fineSetup: "জরিমানা সেটআপ",
+        studentFine: "ছাত্র জরিমানা",
         feesAllocation: "ফি বরাদ্দ",
         feesPayInvoice: "ফি পরিশোধ / চালান",
 
@@ -419,14 +493,40 @@ const translations = {
         salaryTemplate: "বেতন টেমপ্লেট",
         salaryAssign: "বেতন নির্ধারণ",
         salaryPayment: "বেতন পরিশোধ",
+        salaryAdvance: "বেতন অগ্রিম",
+
+        // Simple "Salary" menu (Teacher panel) + submenu
+        salary: "বেতন",
+        salaryHistory: "ইতিহাস",
+        advance: "অগ্রিম",
 
         leaves: "ছুটি",
         mailbox: "মেইলবক্স",
         notices: "নোটিশ",
         alumni: "অ্যালামনাই",
 
+        // Audit & Security
+        auditSecurity: "অডিট ও নিরাপত্তা লগ",
+        sessionLogs: "সেশন লগ",
+
+        // Role & Permission / Informations
+        rolesPermission: "রোল ও পারমিশন",
+        informations: "তথ্যাবলী",
+        committees: "কমিটি",
+        facilities: "সুবিধাসমূহ",
+        index: "সূচি",
+        create: "তৈরি করুন",
+        users: "ব্যবহারকারী",
+
+        // Reports
+        reportInventory: "ইনভেন্টরি",
+        reportAttendances: "উপস্থিতিসমূহ",
+        reportSalary: "বেতন",
+        reportLeaves: "ছুটি",
+
         // Settings
         institutionSettings: "প্রতিষ্ঠানের সেটিংস",
+        featureControl: "ফিচার কন্ট্রোল",
         cronJob: "ক্রন জব",
         activityLogs: "কার্যক্রম লগ",
         loginLogs: "লগইন লগ",
@@ -481,6 +581,7 @@ function applyLang(lang) {
 
     // Sidebar nav labels
     setText("nav-dashboard", t.dashboard);
+    setText("nav-dashboards", t.dashboard);
     setText("nav-analytics", t.analytics);
     setText("nav-discover", t.discover);
     setText("nav-automotive", t.automotive);
@@ -539,6 +640,9 @@ function applyLang(lang) {
     setText("nav-basic", t.basicLabel);
     setText("nav-components", t.components);
 
+    // Branches
+    setText("nav-branches", t.branches);
+
     // Inventory sidebar
     setText("nav-inventory", t.inventory);
 
@@ -578,6 +682,7 @@ function applyLang(lang) {
     // Students & Parents
     setText("nav-category", t.category);
     setText("nav-students", t.students);
+    setText("nav-student-list", t.studentList);
     setText("nav-parents", t.parents);
 
     // Employees
@@ -590,33 +695,55 @@ function applyLang(lang) {
     setText("nav-academic", t.academic);
     setText("nav-sessions", t.sessions);
     setText("nav-class-setup", t.classSetup);
+    setText("nav-class-section", t.classSetup);
     setText("nav-subject", t.subject);
     setText("nav-class-assign", t.classAssign);
     setText("nav-teacher-assign", t.teacherAssign);
     setText("nav-class-schedule", t.classSchedule);
     setText("nav-teacher-schedule", t.teacherSchedule);
+    setText("nav-substitute-teacher", t.substituteTeacher);
     setText("nav-student-promotion", t.studentPromotion);
+    setText("nav-student-enrollment", t.studentEnrollment);
 
-    // Homework
+    // Homework (both id variants used across panels)
     setText("nav-homework", t.homeWork);
+    setText("nav-home-work", t.homeWork);
+
+    // Question Paper
+    setText("nav-question-paper", t.questionPaper);
+    setText("nav-question-papers", t.questionPapers);
+    setText("nav-print-authorization", t.printAuthorization);
+    setText("nav-print-logs", t.printLogs);
 
     // Exam Master
     setText("nav-exam-master", t.examMaster);
     setText("nav-exam-setup", t.examSetup);
     setText("nav-exam-schedule", t.examSchedule);
     setText("nav-marks", t.marks);
+    setText("nav-mark-entries", t.markEntries);
+    setText("nav-exam-positions", t.examPositions);
+    setText("nav-grades-range", t.gradesRange);
 
     // Attendance
     setText("nav-attendance", t.attendance);
     setText("nav-attendance-student", t.attendanceStudent);
     setText("nav-attendance-employee", t.attendanceEmployee);
     setText("nav-attendance-exam", t.attendanceExam);
+    setText("nav-attendance-duty-assign", t.attendanceDutyAssign);
+    setText("nav-exam-duty-assign", t.examDutyAssign);
+
+    // Biometric
+    setText("nav-biometric", t.biometric);
+    setText("nav-biometric-devices", t.biometricDevices);
+    setText("nav-biometric-device-mappings", t.biometricDeviceMappings);
 
     // Student Accounting
     setText("nav-student-accounting", t.studentAccounting);
     setText("nav-fees-type", t.feesType);
     setText("nav-fees-group", t.feesGroup);
+    setText("nav-fees-setup", t.feesSetup);
     setText("nav-fine-setup", t.fineSetup);
+    setText("nav-student-fine", t.studentFine);
     setText("nav-fees-allocation", t.feesAllocation);
     setText("nav-fees-pay-invoice", t.feesPayInvoice);
 
@@ -627,11 +754,17 @@ function applyLang(lang) {
     setText("nav-transactions", t.transactions);
     setText("nav-voucher-head", t.voucherHead);
 
-    // Salary Management
+    // Salary Management (module block)
     setText("nav-salary-management", t.salaryManagement);
     setText("nav-salary-template", t.salaryTemplate);
     setText("nav-salary-assign", t.salaryAssign);
     setText("nav-salary-payment", t.salaryPayment);
+    setText("nav-salary-advance", t.salaryAdvance);
+
+    // Simple Salary menu (Teacher panel: nav-salary / nav-history / nav-advance)
+    setText("nav-salary", t.salary);
+    setText("nav-history", t.salaryHistory);
+    setText("nav-advance", t.advance);
 
     // Card Management
     setText("nav-card-management", t.cardManagement);
@@ -655,8 +788,31 @@ function applyLang(lang) {
     setText("nav-bulk-sms-email", t.bulkSmsEmail);
     setText("nav-alumni", t.alumni);
 
+    // Audit & Security
+    setText("nav-audit-security", t.auditSecurity);
+    setText("nav-session-logs", t.sessionLogs);
+
+    // Role & Permission / Informations
+    setText("nav-roles-permission", t.rolesPermission);
+    setText("nav-informations", t.informations);
+    setText("nav-committees", t.committees);
+    setText("nav-facilities", t.facilities);
+    setText("nav-info-committees", t.committees);
+    setText("nav-info-facilities", t.facilities);
+    setText("nav-role-permission-index", t.index);
+    setText("nav-role-permission-create", t.create);
+    setText("nav-role-permission-users", t.users);
+
+    // Reports (sub-menu items)
+    setText("nav-report-inventory", t.reportInventory);
+    setText("nav-report-attendances", t.reportAttendances);
+    setText("nav-report-salary", t.reportSalary);
+    setText("nav-report-leaves", t.reportLeaves);
+    setText("nav-attendances", t.reportAttendances);
+
     // Settings
     setText("nav-institution-settings", t.institutionSettings);
+    setText("nav-features", t.featureControl);
     setText("nav-cron-job", t.cronJob);
     setText("nav-activity-logs", t.activityLogs);
     setText("nav-login-logs", t.loginLogs);

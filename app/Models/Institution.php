@@ -14,6 +14,7 @@ class Institution extends Model
     protected $guarded = [];
 
     protected $casts = [
+        'is_branch'                     => 'boolean',
         'weekends'                       => 'array',
         'enable_registration_prefix'     => 'boolean',
         'due_fees_calculation_with_fine' => 'boolean',

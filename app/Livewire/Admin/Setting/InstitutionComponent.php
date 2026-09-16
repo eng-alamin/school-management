@@ -16,8 +16,8 @@ class InstitutionComponent extends Component
 
     // General
     public string $name         = '';
-    public string $medium         = '';
-    public ?string $eiin         = null;
+    public ?string $eiin        = '';
+    public string $medium       = '';
     public ?string $email       = null;
     public ?string $phone       = null;
     public ?string $division    = null;
@@ -65,7 +65,7 @@ class InstitutionComponent extends Component
     {
         return [
             'name'              => 'required|string|max:255',
-            'medium'            => ['nullable', 'string', \Illuminate\Validation\Rule::in(array_keys(Institution::MEDIUMS))],
+            'medium'            => ['nullable', 'string', \Illuminate\Validation\Rule::in(Institution::MEDIUMS)],
             'eiin'              => 'nullable|string|max:255',
             'email'             => 'nullable|email|max:255',
             'phone'             => 'nullable|string|max:30',
@@ -144,6 +144,16 @@ class InstitutionComponent extends Component
         $this->text_logo    = $setting->text_logo;
         $this->print_logo   = $setting->print_logo;
         $this->report_logo  = $setting->report_logo;
+    }
+
+    public function getDistrictsProperty(): array
+    {
+        return Institution::districtsFor($this->division);
+    }
+
+    public function updatedDivision(): void
+    {
+        $this->district = '';
     }
 
     // ── Save ──────────────────────────────────────────────────────────────────

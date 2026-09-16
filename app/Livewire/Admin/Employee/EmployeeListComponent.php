@@ -142,7 +142,7 @@ class EmployeeListComponent extends Component
 
     public function render()
     {
-        $query = Employee::with('designation', 'department', 'user')
+        $query = Employee::with('designation', 'department', 'user.roles')
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->where('name', 'like', "%{$this->search}%")

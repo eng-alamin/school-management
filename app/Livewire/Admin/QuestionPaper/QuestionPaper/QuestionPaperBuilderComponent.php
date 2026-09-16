@@ -361,11 +361,13 @@ class QuestionPaperBuilderComponent extends Component
             }
 
             // Persist dynamic Bangla section label overrides.
+            $paper->sectionLabels()->delete();
             foreach ($sectionLabelsBn as $order => $entry) {
-                $paper->sectionLabels()->updateOrCreate(
-                    ['section_key' => $entry['key']],
-                    ['label_bn' => $entry['label_bn'], 'sort_order' => $order]
-                );
+                $paper->sectionLabels()->create([
+                    'section_key' => $entry['key'],
+                    'label_bn' => $entry['label_bn'],
+                    'sort_order' => $order,
+                ]);
             }
 
             activity()

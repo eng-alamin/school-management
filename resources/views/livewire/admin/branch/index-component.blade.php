@@ -39,7 +39,10 @@
                     </div>
                 @endif
                 <button class="btn btn-primary" wire:click="openCreate">
-                    <span class="material-icons-round">add_circle</span> <span id="newSectionBtn">Add Branch</span>
+                    <span>
+                        <span class="material-icons-round">add_circle</span>
+                        <span id="newSectionBtn">Add Branch</span>
+                    </span>
                 </button>
             </div>
         </div>
@@ -96,9 +99,11 @@
 
                             <td>
                                 <div class="d-flex gap-1">
-                                    <button class="act-btn view" title="View" wire:click="openView({{ $branch->id }})">
+                                     <a href="{{ route('admin.branch.view', ['id' => $branch->id]) }}" target="_blank"
+                                        class="act-btn view" title="View">
                                         <span class="material-icons-round">visibility</span>
-                                    </button>
+                                    </a>
+
                                     <button class="act-btn edit" title="Edit" wire:click="openEdit({{ $branch->id }})">
                                         <span class="material-icons-round">drive_file_rename_outline</span>
                                     </button>
@@ -185,7 +190,14 @@
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Email <span class="text-muted" style="font-weight:400;">(optional)</span></label>
+                                    <label class="form-label">
+                                        Email
+                                        @if(! $editId)
+                                            <span class="text-muted" style="font-weight:400;">(also used as manager's login email, optional)</span>
+                                        @else
+                                            <span class="text-muted" style="font-weight:400;">(optional)</span>
+                                        @endif
+                                    </label>
                                     <input type="email" class="form-control @error('email') is-invalid @enderror" wire:model.defer="email" placeholder="branch@school.com">
                                     @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
@@ -209,6 +221,38 @@
                                     @endif
                                 </div>
 
+                                {{-- ══ BRANCH MANAGER ACCOUNT — create only ══ --}}
+                                @if(! $editId)
+                                    <div class="col-12">
+                                        <hr class="my-2">
+                                        <div class="d-flex align-items-center gap-2 mb-2">
+                                            <span class="material-icons-round text-primary" style="font-size:18px;">admin_panel_settings</span>
+                                            <span class="fw-600" style="font-size:.85rem;">Branch Manager Account</span>
+                                        </div>
+                                        <small class="text-muted d-block mb-2">
+                                            This login will be created automatically for the new branch, with the "Branch" role.
+                                        </small>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label">Manager Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control @error('manager_name') is-invalid @enderror" wire:model.defer="manager_name" placeholder="e.g. Rahim Uddin">
+                                        @error('manager_name') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label">Username <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control @error('username') is-invalid @enderror" wire:model.defer="username" placeholder="e.g. mirpur_manager" autocomplete="off">
+                                        @error('username') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label">Password <span class="text-danger">*</span></label>
+                                        <input type="password" class="form-control @error('password') is-invalid @enderror" wire:model.defer="password" placeholder="Min 6 characters" autocomplete="new-password">
+                                        @error('password') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    </div>
+                                @endif
+
                             </div>
                         </form>
                     </div>
@@ -217,67 +261,6 @@
                         <button type="button" class="btn btn-primary" wire:click="save" wire:loading.attr="disabled">
                             <span wire:loading wire:target="save" class="spinner-border spinner-border-sm me-1"></span>
                             {{ $editId ? 'Update' : 'Create' }} Branch
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    @endif
-
-    {{-- ===== VIEW MODAL ===== --}}
-    @if($showViewModal && $viewRecord)
-        <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,.5);">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Branch Details</h5>
-                        <button class="btn-close" wire:click="$set('showViewModal',false)"></button>
-                    </div>
-                    <div class="modal-body">
-
-                        <div style="border-left:4px solid #2563eb;padding:12px 16px;background:#f8f9fa;border-radius:0 8px 8px 0;margin-bottom:16px;">
-                            <div style="font-size:.7rem;font-weight:600;color:#2563eb;text-transform:uppercase;letter-spacing:.05em;">
-                                {{ $viewRecord->code }}
-                            </div>
-                            <div style="font-weight:700;font-size:.95rem;margin-top:4px;">
-                                {{ $viewRecord->name }}
-                                @if($viewRecord->is_main)
-                                    <span class="badge bg-primary-subtle text-primary ms-1" style="font-size:.65rem;">Main</span>
-                                @endif
-                            </div>
-                        </div>
-
-                        <table class="table table-sm">
-                            <tr>
-                                <th class="text-muted" style="width:40%">Address</th>
-                                <td>{{ $viewRecord->address ?: '—' }}</td>
-                            </tr>
-                            <tr>
-                                <th class="text-muted">Phone</th>
-                                <td>{{ $viewRecord->phone ?: '—' }}</td>
-                            </tr>
-                            <tr>
-                                <th class="text-muted">Email</th>
-                                <td>{{ $viewRecord->email ?: '—' }}</td>
-                            </tr>
-                            <tr>
-                                <th class="text-muted">Status</th>
-                                <td>
-                                    <span class="badge rounded-pill {{ $viewRecord->is_active ? 'badge-active' : 'badge-inactive' }}">
-                                        {{ $viewRecord->is_active ? 'Active' : 'Inactive' }}
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th class="text-muted">Created</th>
-                                <td>{{ $viewRecord->created_at->format('d M Y') }}</td>
-                            </tr>
-                        </table>
-                    </div>
-                    <div class="modal-footer">
-                        <button class="btn btn-light" wire:click="$set('showViewModal',false)">Close</button>
-                        <button class="btn btn-primary" wire:click="openEdit({{ $viewRecord->id }}); $set('showViewModal',false)">
-                            <i class="bi bi-pencil me-1"></i>Edit
                         </button>
                     </div>
                 </div>
