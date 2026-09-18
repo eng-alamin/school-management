@@ -43,12 +43,12 @@
                     <thead>
                         <tr>
                             <th id="th-sl">SL</th>
-                            <th wire:click="sortBy('name')" style="cursor:pointer">
-                                <span id="th-name">Role Name</span> @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
+                            <th id="th-role-name" wire:click="sortBy('name')" style="cursor:pointer">
+                                Role Name @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
                             <th id="th-permissions">Permissions</th>
-                            <th wire:click="sortBy('created_at')" style="cursor:pointer">
-                                <span id="th-created">Created At</span> @if($sortField === 'created_at') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
+                            <th id="th-created-at" wire:click="sortBy('created_at')" style="cursor:pointer">
+                                <span>Created At</span> @if($sortField === 'created_at') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
                             <th id="th-actions">Actions</th>
                         </tr>

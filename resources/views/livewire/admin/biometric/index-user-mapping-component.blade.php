@@ -107,13 +107,13 @@
                         <tr>
                             <th id="th-sl">SL</th>
                             <th id="th-device">Device</th>
-                            <th id="th-devuid" role="button" wire:click="sortBy('device_user_id')">
+                            <th id="th-device-user-id" role="button" wire:click="sortBy('device_user_id')">
                                 Device User ID
                                 @if($sortField === 'device_user_id')
                                     <span class="material-icons-round" style="font-size:.9rem;vertical-align:middle;">{{ $sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>
                                 @endif
                             </th>
-                            <th id="th-cardno" role="button" wire:click="sortBy('card_number')">
+                            <th id="th-card-number" role="button" wire:click="sortBy('card_number')">
                                 Card Number
                                 @if($sortField === 'card_number')
                                     <span class="material-icons-round" style="font-size:.9rem;vertical-align:middle;">{{ $sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>
@@ -121,7 +121,7 @@
                             </th>
                             <th id="th-type" role="button" wire:click="sortBy('attendable_type')">Type</th>
                             <th id="th-name">Name</th>
-                            <th id="th-idno">ID No.</th>
+                            <th id="th-id-no">ID No</th>
                             <th id="th-actions">Actions</th>
                         </tr>
                     </thead>

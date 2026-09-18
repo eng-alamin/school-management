@@ -72,14 +72,14 @@
                 <table class="table table-hover align-middle mb-0">
                     <thead>
                         <tr>
-                            <th style="min-width:150px">Subject</th>
-                            <th style="min-width:100px">Full / Pass</th>
-                            <th style="min-width:160px">Date <span class="req">*</span></th>
-                            <th style="min-width:140px">Start <span class="req">*</span></th>
-                            <th style="min-width:140px">End <span class="req">*</span></th>
-                            <th style="min-width:130px">Room</th>
-                            <th style="min-width:160px">Remarks</th>
-                            <th style="min-width:80px" class="text-center">Publish</th>
+                            <th id="th-subject" style="min-width:150px">Subject</th>
+                            <th id="th-full-pass" style="min-width:100px">Full / Pass</th>
+                            <th id="th-date" style="min-width:160px">Date <span class="req">*</span></th>
+                            <th id="th-start" style="min-width:140px">Start <span class="req">*</span></th>
+                            <th id="th-end" style="min-width:140px">End <span class="req">*</span></th>
+                            <th id="th-room" style="min-width:130px">Room</th>
+                            <th id="th-remarks" style="min-width:160px">Remarks</th>
+                            <th id="th-publish" style="min-width:80px" class="text-center">Publish</th>
                         </tr>
                     </thead>
                     <tbody>

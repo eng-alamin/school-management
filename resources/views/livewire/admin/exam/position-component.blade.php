@@ -78,22 +78,22 @@
                 <table class="position-table">
                     <thead>
                         <tr>
-                            <th>Students</th>
-                            <th>Register No</th>
-                            <th>Class</th>
-                            <th>Section</th>
-                            <th>Roll</th>
-                            <th>Total Marks</th>
-                            <th>Percentage</th>
-                            <th>Result</th>
+                            <th id="th-students">Students</th>
+                            <th id="th-register-no">Register No</th>
+                            <th id="th-class">Class</th>
+                            <th id="th-section">Section</th>
+                            <th id="th-role-no">Roll No</th>
+                            <th id="th-total-marks">Total Marks</th>
+                            <th id="th-percentage">Percentage</th>
+                            <th id="th-result">Result</th>
                             @if ($displayMode !== 'mark')
-                                <th>GPA</th>
-                                <th>Grade</th>
+                                <th id="th-gpa">GPA</th>
+                                <th id="th-grade">Grade</th>
                             @endif
-                            <th>Previous Position</th>
-                            <th>Position <span class="text-danger">*</span></th>
-                            <th>Principal Comments</th>
-                            <th>Teacher Comments</th>
+                            <th id="th-previous-position">Previous Position</th>
+                            <th id="th-position">Position <span class="text-danger">*</span></th>
+                            <th id="th-principal-comments">Principal Comments</th>
+                            <th id="th-teacher-comments">Teacher Comments</th>
                         </tr>
                     </thead>
                     <tbody>

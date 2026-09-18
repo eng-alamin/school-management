@@ -109,23 +109,20 @@
             <table class="table table-hover mb-0">
                 <thead>
                     <tr>
-                        <th>Staff Id</th>
-                        <th>Name</th>
-                        <th>Designation</th>
-                        <th>Department</th>
-                        <th>Mobile No</th>
-                        <th>Salary Grade (GPA)</th>
-                        <th>Basic Salary</th>
-                        <th>Status</th>
-                        <th>Action</th>
+                        <th id="th-staff-id">Staff Id</th>
+                        <th id="th-name">Name</th>
+                        <th id="th-designation">Designation</th>
+                        <th id="th-department">Department</th>
+                        <th id="th-mobile-no">Mobile No</th>
+                        <th id="th-salary-grade">Salary Grade</th>
+                        <th id="basic-salary">Basic Salary</th>
+                        <th id="th-status">Status</th>
+                        <th id="th-actions">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($employees as $employee)
                         @php
-                            // FIX: Existence of a salary_payments row (salary_payment_id) is the
-                            // reliable signal — NOT salary_status, which is null both when no
-                            // row exists AND (theoretically) when a row exists with a null status.
                             $recordExists = !is_null($employee->salary_payment_id);
                         @endphp
                         <tr wire:key="emp-{{ $employee->id }}">

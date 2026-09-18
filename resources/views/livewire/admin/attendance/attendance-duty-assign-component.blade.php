@@ -67,7 +67,7 @@
                                 @endif
                             </th>
                             <th id="th-teacher" wire:click="sortBy('teacher_name')" style="cursor:pointer">
-                                Duty Teacher
+                                Teacher
                                 @if($sortField === 'teacher_name')
                                     <span class="material-icons-round" style="font-size:14px;vertical-align:middle">
                                         {{ $sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward' }}

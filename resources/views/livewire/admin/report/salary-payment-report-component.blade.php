@@ -125,14 +125,14 @@
                                     <span class="material-icons-round" style="font-size:.9rem;vertical-align:middle;">{{ $sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>
                                 @endif
                             </th>
-                            <th id="th-advance">Advance Deduct</th>
-                            <th id="th-net" role="button" wire:click="sortBy('net_salary')">
+                            <th id="th-advance-deduct">Advance Deduct</th>
+                            <th id="th-net-salary" role="button" wire:click="sortBy('net_salary')">
                                 Net Salary
                                 @if($sortField === 'net_salary')
                                     <span class="material-icons-round" style="font-size:.9rem;vertical-align:middle;">{{ $sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>
                                 @endif
                             </th>
-                            <th id="th-paydate" role="button" wire:click="sortBy('payment_date')">
+                            <th id="th-payment-date" role="button" wire:click="sortBy('payment_date')">
                                 Payment Date
                                 @if($sortField === 'payment_date')
                                     <span class="material-icons-round" style="font-size:.9rem;vertical-align:middle;">{{ $sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>

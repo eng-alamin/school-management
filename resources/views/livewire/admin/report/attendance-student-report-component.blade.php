@@ -118,10 +118,10 @@
                                 @endif
                             </th>
                             <th id="th-name">Name</th>
-                            <th id="th-idno">Student ID</th>
-                            <th id="th-classsec">Class / Section</th>
-                            <th id="th-checkin" role="button" wire:click="sortBy('check_in')">Check In</th>
-                            <th id="th-checkout" role="button" wire:click="sortBy('check_out')">Check Out</th>
+                            <th id="th-student-id">Student ID</th>
+                            <th id="th-class-section">Class / Section</th>
+                            <th id="th-check-in" role="button" wire:click="sortBy('check_in')">Check In</th>
+                            <th id="th-check-out" role="button" wire:click="sortBy('check_out')">Check Out</th>
                             <th id="th-status" role="button" wire:click="sortBy('status')">Status</th>
                             <th id="th-remarks">Remarks</th>
                         </tr>

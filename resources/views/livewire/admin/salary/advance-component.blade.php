@@ -45,15 +45,15 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>SL</th>
-                            <th>Staff ID</th>
-                            <th>Name</th>
-                            <th>Advance Date</th>
-                            <th>Amount</th>
-                            <th>Installment</th>
-                            <th>Remaining</th>
-                            <th>Status</th>
-                            <th>Actions</th>
+                            <th id="th-sl">SL</th>
+                            <th id="th-staff">Staff ID</th>
+                            <th id="th-name">Name</th>
+                            <th id="th-advance-date">Advance Date</th>
+                            <th id="th-amount">Amount</th>
+                            <th id="th-installment">Installment</th>
+                            <th id="th-remaining">Remaining</th>
+                            <th id="th-status">Status</th>
+                            <th id="th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>

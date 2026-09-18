@@ -343,10 +343,10 @@
         </div>
         <div class="nav2-collapse {{ str_contains(request()->url(), 'reports/') == true ? 'show' : '' }}">
           <ul>
-            <li class="nav2-item"><a href="{{ route('admin.reports.inventory.stock') }}" class="nav2-link {{ str_contains(request()->url(), 'reports/inventory/stock') == true ? 'active' : '' }}"><span class="nav2-icon">A</span><span class="nav2-label" id="nav-inventory">Inventory</span></a></li>
-            <li class="nav2-item"><a href="{{ route('admin.reports.attendances.student') }}" class="nav2-link {{ str_contains(request()->url(), 'reports/attendances/') == true ? 'active' : '' }}"><span class="nav2-icon">A</span><span class="nav2-label" id="nav-attendances">Attendances</span></a></li>
-            <li class="nav2-item"><a href="{{ route('admin.reports.salary.payments') }}" class="nav2-link {{ str_contains(request()->url(), 'reports/salary/payments') == true ? 'active' : '' }}"><span class="nav2-icon">A</span><span class="nav2-label" id="nav-attendances">Salary</span></a></li>
-            <li class="nav2-item"><a href="{{ route('admin.reports.leaves') }}" class="nav2-link {{ str_contains(request()->url(), 'reports/leaves') == true ? 'active' : '' }}"><span class="nav2-icon">A</span><span class="nav2-label" id="nav-leaves">Leaves</span></a></li>
+            <li class="nav2-item"><a href="{{ route('admin.reports.inventory.stock') }}" class="nav2-link {{ str_contains(request()->url(), 'reports/inventory/stock') == true ? 'active' : '' }}"><span class="nav2-icon">A</span><span class="nav2-label" id="nav-report-inventory">Inventory</span></a></li>
+            <li class="nav2-item"><a href="{{ route('admin.reports.attendances.student') }}" class="nav2-link {{ str_contains(request()->url(), 'reports/attendances/') == true ? 'active' : '' }}"><span class="nav2-icon">A</span><span class="nav2-label" id="nav-report-attendances">Attendances</span></a></li>
+            <li class="nav2-item"><a href="{{ route('admin.reports.salary.payments') }}" class="nav2-link {{ str_contains(request()->url(), 'reports/salary/payments') == true ? 'active' : '' }}"><span class="nav2-icon">A</span><span class="nav2-label" id="nav-report-salary">Salary</span></a></li>
+            <li class="nav2-item"><a href="{{ route('admin.reports.leaves') }}" class="nav2-link {{ str_contains(request()->url(), 'reports/leaves') == true ? 'active' : '' }}"><span class="nav2-icon">A</span><span class="nav2-label" id="nav-report-leaves">Leaves</span></a></li>
           </ul>
         </div>
       </li>
@@ -374,9 +374,9 @@
         </div>
         <div class="nav2-collapse {{ request()->is('roles-permissions/*') ? 'show' : '' }}">
           <ul>
-            <li class="nav2-item"><a href="{{route('admin.role-permission.index') }}" class="nav2-link {{ str_contains(request()->url(), 'roles-permissions/index') == true ? 'active' : '' }}"><span class="nav2-icon">I</span><span class="nav2-label" id="nav-committees">Index</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.role-permission.create') }}" class="nav2-link {{ str_contains(request()->url(), 'roles-permissions/create') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-facilities">Create</span></a></li>
-            <li class="nav2-item"><a href="{{route('admin.role-permission.users') }}" class="nav2-link {{ str_contains(request()->url(), 'roles-permissions/users') == true ? 'active' : '' }}"><span class="nav2-icon">U</span><span class="nav2-label" id="nav-facilities">Users</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.role-permission.index') }}" class="nav2-link {{ str_contains(request()->url(), 'roles-permissions/index') == true ? 'active' : '' }}"><span class="nav2-icon">I</span><span class="nav2-label" id="nav-role-permission-index">Index</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.role-permission.create') }}" class="nav2-link {{ str_contains(request()->url(), 'roles-permissions/create') == true ? 'active' : '' }}"><span class="nav2-icon">C</span><span class="nav2-label" id="nav-role-permission-create">Create</span></a></li>
+            <li class="nav2-item"><a href="{{route('admin.role-permission.users') }}" class="nav2-link {{ str_contains(request()->url(), 'roles-permissions/users') == true ? 'active' : '' }}"><span class="nav2-icon">U</span><span class="nav2-label" id="nav-role-permission-users">Users</span></a></li>
           </ul>
         </div>
       </li>

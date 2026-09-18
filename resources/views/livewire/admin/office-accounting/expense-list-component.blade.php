@@ -45,22 +45,22 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>SL</th>
-                            <th>Voucher No</th>
-                            <th>Account</th>
-                            <th>Head</th>
-                            <th wire:click="sortBy('pay_via')" style="cursor:pointer">
+                            <th id="th-sl">SL</th>
+                            <th id="th-voucher-no">Voucher No</th>
+                            <th id="th-account">Account</th>
+                            <th id="th-head">Head</th>
+                            <th id="th-pay-via" wire:click="sortBy('pay_via')" style="cursor:pointer">
                                 Pay Via @if($sortField === 'pay_via') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th>Reference</th>
-                            <th wire:click="sortBy('amount')" style="cursor:pointer">
+                            <th id="th-reference">Reference</th>
+                            <th id="th-amount" wire:click="sortBy('amount')" style="cursor:pointer">
                                 Amount @if($sortField === 'amount') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th wire:click="sortBy('date')" style="cursor:pointer">
+                            <th id="th-date" wire:click="sortBy('date')" style="cursor:pointer">
                                 Date @if($sortField === 'date') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th>Attachment</th>
-                            <th>Actions</th>
+                            <th id="th-attachment">Attachment</th>
+                            <th id="th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>

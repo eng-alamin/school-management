@@ -36,8 +36,8 @@
                     <thead>
                         <tr>
                             <th id="th-sl">SL</th>
-                            <th wire:click="sortBy('name')" style="cursor:pointer">
-                                <span id="th-name">User</span> @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
+                            <th id="th-user" wire:click="sortBy('name')" style="cursor:pointer">
+                                User @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
                             <th id="th-roles">Roles</th>
                             <th id="th-status">Status</th>

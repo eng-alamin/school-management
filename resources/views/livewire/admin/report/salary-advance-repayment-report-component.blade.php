@@ -59,14 +59,14 @@
                     <thead>
                         <tr>
                             <th id="th-sl">SL</th>
-                            <th id="th-date" role="button" wire:click="sortBy('deducted_date')">
+                            <th id="th-deducted-date" role="button" wire:click="sortBy('deducted_date')">
                                 Deducted Date
                                 @if($sortField === 'deducted_date')
                                     <span class="material-icons-round" style="font-size:.9rem;vertical-align:middle;">{{ $sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>
                                 @endif
                             </th>
                             <th id="th-employee">Employee</th>
-                            <th id="th-salarymonth">Salary Month</th>
+                            <th id="th-salary-month">Salary Month</th>
                             <th id="th-amount" role="button" wire:click="sortBy('amount')">
                                 Amount
                                 @if($sortField === 'amount')

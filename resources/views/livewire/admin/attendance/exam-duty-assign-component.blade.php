@@ -89,7 +89,7 @@
                                 @endif
                             </th>
                             <th id="th-room">Room</th>
-                            <th id="th-duty">Invigilators</th>
+                            <th id="th-invigilators">Invigilators</th>
                             <th id="th-actions">Actions</th>
                         </tr>
                     </thead>

@@ -106,10 +106,10 @@
                                 @endif
                             </th>
                             <th id="th-name">Name</th>
-                            <th id="th-idno">Employee ID</th>
+                            <th id="th-employee-id">Employee ID</th>
                             <th id="th-designation">Designation</th>
-                            <th id="th-checkin" role="button" wire:click="sortBy('check_in')">Check In</th>
-                            <th id="th-checkout" role="button" wire:click="sortBy('check_out')">Check Out</th>
+                            <th id="th-check-in" role="button" wire:click="sortBy('check_in')">Check In</th>
+                            <th id="th-check-out" role="button" wire:click="sortBy('check_out')">Check Out</th>
                             <th id="th-status" role="button" wire:click="sortBy('status')">Status</th>
                             <th id="th-remarks">Remarks</th>
                         </tr>

@@ -47,13 +47,13 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>SL</th>
-                            <th wire:click="sortBy('name')" style="cursor:pointer">Name @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif </th>
-                            <th wire:click="sortBy('grade_point')" style="cursor:pointer">Grade Point @if($sortField === 'grade_point') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif </th>
-                            <th wire:click="sortBy('min_percentage')" style="cursor:pointer">Min Percentage @if($sortField === 'min_percentage') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif </th>
-                            <th wire:click="sortBy('max_percentage')" style="cursor:pointer">Max Percentage @if($sortField === 'max_percentage') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif </th>
-                            <th wire:click="sortBy('remarks')" style="cursor:pointer">Remarks @if($sortField === 'remarks') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif </th>
-                            <th>Actions</th>
+                            <th id="th-sl">SL</th>
+                            <th id="th-name" wire:click="sortBy('name')" style="cursor:pointer">Name @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif </th>
+                            <th id="th-grade-point" wire:click="sortBy('grade_point')" style="cursor:pointer">Grade Point @if($sortField === 'grade_point') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif </th>
+                            <th id="th-min-percentage" wire:click="sortBy('min_percentage')" style="cursor:pointer">Min Percentage @if($sortField === 'min_percentage') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif </th>
+                            <th id="th-max-percentage" wire:click="sortBy('max_percentage')" style="cursor:pointer">Max Percentage @if($sortField === 'max_percentage') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif </th>
+                            <th id="th-remarks" wire:click="sortBy('remarks')" style="cursor:pointer">Remarks @if($sortField === 'remarks') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif </th>
+                            <th id="th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>

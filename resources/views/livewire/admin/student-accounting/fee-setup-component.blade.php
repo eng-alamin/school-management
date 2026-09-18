@@ -2,15 +2,15 @@
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Fee Setup</h5>
-            <small class="text-muted">Set the amount, frequency এবং billing month প্রতিটা Class-Fee Type combination এর জন্য।</small>
+            <small class="text-muted">Set the amount, frequency, and billing month for each Class-Fee Type combination.</small>
         </div>
 
         <div class="card-body">
 
             @if ($classes->isEmpty())
-                <div class="alert alert-warning">কোনো Class পাওয়া যায়নি। আগে Academic Class Assign করুন।</div>
+                <div class="alert alert-warning">No class found. Please assign an academic class first.</div>
             @elseif ($feeTypes->isEmpty())
-                <div class="alert alert-warning">কোনো Fee Type পাওয়া যায়নি। আগে Fee Type যোগ করুন।</div>
+                <div class="alert alert-warning">No Fee Type found. Please add a Fee Type first.</div>
             @else
                 <div class="fee-setup-table-wrapper">
                     <table class="table table-bordered align-middle">

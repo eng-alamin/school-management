@@ -87,14 +87,14 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>Sl</th>
-                            <th>Staff Id</th>
-                            <th>Name</th>
-                            <th>Designation</th>
-                            <th>Department</th>
-                            <th>Salary Template</th>
-                            <th>Net Salary (Preview)</th>
-                            <th>Status</th>
+                            <th id="th-sl">Sl</th>
+                            <th id="th-staff-id">Staff Id</th>
+                            <th id="th-name">Name</th>
+                            <th id="th-designation">Designation</th>
+                            <th id="th-department">Department</th>
+                            <th id="th-salary-template">Salary Template</th>
+                            <th id="th-net-salary">Net Salary</th>
+                            <th id="th-status">Status</th>
                         </tr>
                     </thead>
                     <tbody>

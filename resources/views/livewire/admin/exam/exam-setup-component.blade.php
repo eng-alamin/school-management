@@ -54,17 +54,17 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>SL</th>
-                            <th wire:click="sortBy('name')" style="cursor:pointer">
+                            <th id="th-sl">SL</th>
+                            <th id="th-name" wire:click="sortBy('name')" style="cursor:pointer">
                                 Name @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th>Class</th>
-                            <th>Term</th>
-                            <th>Type</th>
-                            <th>Total Subjects</th>
-                            <th>Publish</th>
-                            <th>Result</th>
-                            <th>Actions</th>
+                            <th id="th-class">Class</th>
+                            <th id="th-term">Term</th>
+                            <th id="th-type">Type</th>
+                            <th id="th-total-subjects">Total Subjects</th>
+                            <th id="th-publish">Publish</th>
+                            <th id="th-result">Result</th>
+                            <th id="th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>

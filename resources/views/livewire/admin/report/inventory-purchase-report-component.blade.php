@@ -112,7 +112,7 @@
                     <thead>
                         <tr>
                             <th id="th-sl">SL</th>
-                            <th id="th-billno" role="button" wire:click="sortBy('bill_no')">
+                            <th id="th-bill-no" role="button" wire:click="sortBy('bill_no')">
                                 Bill No
                                 @if($sortField === 'bill_no')
                                     <span class="material-icons-round" style="font-size:.9rem;vertical-align:middle;">{{ $sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>
@@ -127,7 +127,7 @@
                             <th id="th-supplier">Supplier</th>
                             <th id="th-store">Store</th>
                             <th id="th-items">Items</th>
-                            <th id="th-nettotal" role="button" wire:click="sortBy('net_total')">
+                            <th id="th-net-total" role="button" wire:click="sortBy('net_total')">
                                 Net Total
                                 @if($sortField === 'net_total')
                                     <span class="material-icons-round" style="font-size:.9rem;vertical-align:middle;">{{ $sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>

@@ -65,8 +65,8 @@
                             </th>
                             <th id="th-serial" role="button" wire:click="sortBy('device_serial')">Serial</th>
                             <th id="th-type" role="button" wire:click="sortBy('device_type')">Type</th>
-                            <th id="th-users">Mapped Users</th>
-                            <th id="th-lastseen" role="button" wire:click="sortBy('last_seen_at')">Last Seen</th>
+                            <th id="th-mapped-users">Mapped Users</th>
+                            <th id="th-last-seen" role="button" wire:click="sortBy('last_seen_at')">Last Seen</th>
                             <th id="th-status" role="button" wire:click="sortBy('is_active')">Status</th>
                             <th id="th-actions">Actions</th>
                         </tr>

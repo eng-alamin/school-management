@@ -79,7 +79,7 @@
                             <th id="th-section">Section</th>
                             <th id="th-group">Group</th>
                             <th id="th-roll-no">Roll No</th>
-                            <th id="th-carry-forward">Carry Forward Due</th>
+                            <th id="th-carry-forward-due">Carry Forward Due</th>
                             <th id="th-status">Status</th>
                             <th id="th-actions">Actions</th>
                         </tr>

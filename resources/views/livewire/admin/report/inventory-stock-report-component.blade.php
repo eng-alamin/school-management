@@ -98,13 +98,13 @@
                                     <span class="material-icons-round" style="font-size:.9rem;vertical-align:middle;">{{ $sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>
                                 @endif
                             </th>
-                            <th id="th-stock" role="button" wire:click="sortBy('current_stock')">
+                            <th id="th-current-stock" role="button" wire:click="sortBy('current_stock')">
                                 Current Stock
                                 @if($sortField === 'current_stock')
                                     <span class="material-icons-round" style="font-size:.9rem;vertical-align:middle;">{{ $sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>
                                 @endif
                             </th>
-                            <th id="th-value">Stock Value</th>
+                            <th id="th-stock-value">Stock Value</th>
                         </tr>
                     </thead>
                     <tbody>

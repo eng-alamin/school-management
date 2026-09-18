@@ -70,7 +70,7 @@
                                 Role @if($sortField === 'applicable_type') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
                             <th id="th-applicant">Applicant</th>
-                            <th wire:click="sortBy('leave_category_id')" style="cursor:pointer">
+                            <th id="th-leave-category" wire:click="sortBy('leave_category_id')" style="cursor:pointer">
                                 Leave Category @if($sortField === 'leave_category_id') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
                             <th id="th-date-of-start" wire:click="sortBy('start_date')" style="cursor:pointer">

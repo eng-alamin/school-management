@@ -89,20 +89,20 @@
                 <table class="entry-table">
                     <thead>
                         <tr>
-                            <th class="col-sl">SL</th>
-                            <th class="col-name">Student Name</th>
-                            <th>Roll</th>
-                            <th>Register No</th>
-                            <th>Category</th>
-                            <th class="text-center">Is Absent</th>
+                            <th class="th-sl">SL</th>
+                            <th class="th-student-name">Student Name</th>
+                            <th id="th-role-no">Roll No</th>
+                            <th id="th-register-no">Register No</th>
+                            <th id="th-category">Category</th>
+                            <th id="th-is-absent" class="text-center">Is Absent</th>
                             @if($selectedDetail->practical_mark > 0)
-                                <th class="text-center">Practical <span class="col-max">({{ $selectedDetail->practical_mark }})</span></th>
+                                <th id="th-practical" class="text-center">Practical <span class="col-max">({{ $selectedDetail->practical_mark }})</span></th>
                             @endif
                             @if($selectedDetail->written_mark > 0)
-                                <th class="text-center">Written <span class="col-max">({{ $selectedDetail->written_mark }})</span></th>
+                                <th id="th-written" class="text-center">Written <span class="col-max">({{ $selectedDetail->written_mark }})</span></th>
                             @endif
                             @if($selectedDetail->mcq_mark > 0)
-                                <th class="text-center">MCQ <span class="col-max">({{ $selectedDetail->mcq_mark }})</span></th>
+                                <th id="th-mcq" class="text-center">MCQ <span class="col-max">({{ $selectedDetail->mcq_mark }})</span></th>
                             @endif
                         </tr>
                     </thead>

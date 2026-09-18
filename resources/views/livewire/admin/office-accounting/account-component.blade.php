@@ -42,15 +42,15 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>SL</th>
-                            <th wire:click="sortBy('name')" style="cursor:pointer">
+                            <th id="th-sl">SL</th>
+                            <th id="th-account-name" wire:click="sortBy('name')" style="cursor:pointer">
                                 Account Name @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th>Account Number</th>
-                            <th>Opening Balance</th>
-                            <th>Description</th>
-                            {{-- <th>Status</th> --}}
-                            <th>Actions</th>
+                            <th id="th-account-number">Account Number</th>
+                            <th id="th-opening-balance">Opening Balance</th>
+                            <th id="th-description">Description</th>
+                            {{-- <th id="th-status">Status</th> --}}
+                            <th id="th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>

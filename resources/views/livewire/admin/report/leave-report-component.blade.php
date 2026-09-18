@@ -113,14 +113,14 @@
                             <th id="th-sl">SL</th>
                             <th id="th-role">Role</th>
                             <th id="th-applicant">Applicant</th>
-                            <th id="th-category">Leave Category</th>
-                            <th id="th-startdate" role="button" wire:click="sortBy('start_date')">
+                            <th id="th-leave-category">Leave Category</th>
+                            <th id="th-start-date" role="button" wire:click="sortBy('start_date')">
                                 Start Date
                                 @if($sortField === 'start_date')
                                     <span class="material-icons-round" style="font-size:.9rem;vertical-align:middle;">{{ $sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>
                                 @endif
                             </th>
-                            <th id="th-enddate" role="button" wire:click="sortBy('end_date')">
+                            <th id="th-end-date" role="button" wire:click="sortBy('end_date')">
                                 End Date
                                 @if($sortField === 'end_date')
                                     <span class="material-icons-round" style="font-size:.9rem;vertical-align:middle;">{{ $sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>
@@ -138,7 +138,7 @@
                                     <span class="material-icons-round" style="font-size:.9rem;vertical-align:middle;">{{ $sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</span>
                                 @endif
                             </th>
-                            <th id="th-reviewedby">Reviewed By</th>
+                            <th id="th-reviewed-by">Reviewed By</th>
                         </tr>
                     </thead>
                     <tbody>

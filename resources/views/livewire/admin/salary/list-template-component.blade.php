@@ -46,27 +46,27 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>SL</th>
-                            <th wire:click="sortBy('name')" style="cursor:pointer">
+                            <th id="th-sl">SL</th>
+                            <th id="th-template-name" wire:click="sortBy('name')" style="cursor:pointer">
                                 Template Name
                                 @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th wire:click="sortBy('salary_grade')" style="cursor:pointer">
+                            <th id="th-salary-grade" wire:click="sortBy('salary_grade')" style="cursor:pointer">
                                 Salary Grade
                                 @if($sortField === 'salary_grade') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th wire:click="sortBy('basic_salary')" style="cursor:pointer">
+                            <th id="th-basic-salary" wire:click="sortBy('basic_salary')" style="cursor:pointer">
                                 Basic Salary
                                 @if($sortField === 'basic_salary') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th>Overtime Rate</th>
-                            <th>Total Allowance</th>
-                            <th>Total Deduction</th>
-                            <th wire:click="sortBy('net_salary')" style="cursor:pointer">
+                            <th id="th-overtime-rate">Overtime Rate</th>
+                            <th id="th-total-allowance">Total Allowance</th>
+                            <th id="th-total-deduction">Total Deduction</th>
+                            <th id="th-net-salary" wire:click="sortBy('net_salary')" style="cursor:pointer">
                                 Net Salary
                                 @if($sortField === 'net_salary') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
-                            <th>Actions</th>
+                            <th id="th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>

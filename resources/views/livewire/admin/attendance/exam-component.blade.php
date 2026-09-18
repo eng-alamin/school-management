@@ -126,10 +126,10 @@
                                 <th id="th-sl">SL</th>
                                 <th id="th-name">Name</th>
                                 <th id="th-section">Section</th>
-                                <th id="th-roll">Roll</th>
+                                <th id="th-roll-no">Roll No</th>
                                 <th id="th-register-no">Register No</th>
                                 <th id="th-status">Status</th>
-                                <th id="th-remark">Remarks</th>
+                                <th id="th-remarks">Remarks</th>
                             </tr>
                         </thead>
 

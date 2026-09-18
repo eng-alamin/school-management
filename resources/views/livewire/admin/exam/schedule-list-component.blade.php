@@ -44,7 +44,7 @@
                                 Exam Name @if($sortField === 'name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                             </th>
                             <th id="th-class">Class</th>
-                            <th id="th-subjects">Subjects Scheduled</th>
+                            <th id="th-subjects-scheduled">Subjects Scheduled</th>
                             <th id="th-actions">Actions</th>
                         </tr>
                     </thead>
@@ -54,8 +54,6 @@
                             <td class="text-muted">{{ $schedules->firstItem() + $i }}</td>
                             <td>{{ $setup->name }}</td>
                             <td>
-                                {{-- FIX: class/section relation নাম ভুল ছিল — real relation
-                                     academicClass/academicSection ব্যবহার করা হলো --}}
                                 @if($setup->classAssign)
                                     <span class="badge bg-info-subtle text-dark">
                                         {{ $setup->classAssign->academicClass->name ?? '—' }}

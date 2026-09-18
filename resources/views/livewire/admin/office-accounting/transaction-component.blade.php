@@ -122,28 +122,28 @@
                     <table class="table table-hover mb-0">
                         <thead>
                             <tr>
-                                <th style="font-size:12px">SL</th>
-                                <th wire:click="sortBy('account_name')" class="no-print-cursor" style="font-size:12px; cursor:pointer">
+                                <th id="th-sl" style="font-size:12px">SL</th>
+                                <th id="th-account-name" wire:click="sortBy('account_name')" class="no-print-cursor" style="font-size:12px; cursor:pointer">
                                     Account Name @if($sortField === 'account_name') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                                 </th>
-                                <th wire:click="sortBy('type')" style="font-size:12px; cursor:pointer">
+                                <th id="th-type" wire:click="sortBy('type')" style="font-size:12px; cursor:pointer">
                                     Type @if($sortField === 'type') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                                 </th>
-                                <th style="font-size:12px">Voucher No</th>
-                                <th style="font-size:12px">Voucher Head</th>
-                                <th wire:click="sortBy('reference')" style="font-size:12px; cursor:pointer">
+                                <th id="th-voucher-no" style="font-size:12px">Voucher No</th>
+                                <th id="th-voucher-head" style="font-size:12px">Voucher Head</th>
+                                <th id="th-ref-no" wire:click="sortBy('reference')" style="font-size:12px; cursor:pointer">
                                     Ref No @if($sortField === 'reference') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                                 </th>
-                                <th wire:click="sortBy('pay_via')" style="font-size:12px; cursor:pointer">
+                                <th id="th-pay-via" wire:click="sortBy('pay_via')" style="font-size:12px; cursor:pointer">
                                     Pay Via @if($sortField === 'pay_via') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                                 </th>
-                                <th wire:click="sortBy('amount')" style="font-size:12px; cursor:pointer">
+                                <th id="th-amount" wire:click="sortBy('amount')" style="font-size:12px; cursor:pointer">
                                     Amount @if($sortField === 'amount') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                                 </th>
-                                <th style="font-size:12px">Dr</th>
-                                <th style="font-size:12px">Cr</th>
-                                <th style="font-size:12px">Balance</th>
-                                <th wire:click="sortBy('date')" style="font-size:12px; cursor:pointer">
+                                <th id="th-dr" style="font-size:12px">Dr</th>
+                                <th id="th-cr" style="font-size:12px">Cr</th>
+                                <th id="th-balance" style="font-size:12px">Balance</th>
+                                <th id="th-date" wire:click="sortBy('date')" style="font-size:12px; cursor:pointer">
                                     Date @if($sortField === 'date') {!! $sortDirection === 'asc' ? '↑' : '↓' !!} @endif
                                 </th>
                             </tr>

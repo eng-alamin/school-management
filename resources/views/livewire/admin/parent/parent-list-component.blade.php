@@ -45,12 +45,12 @@
                 <table class="table table-hover mb-0" id="parentTable">
                     <thead>
                         <tr>
-                            <th>Name</th>
-                            <th>Occupation</th>
-                            <th>Email</th>
-                            <th>Mobile</th>
-                            <th>Students</th>
-                            <th class="no-print">Actions</th>
+                            <th id="th-name">Name</th>
+                            <th id="th-occupation">Occupation</th>
+                            <th id="th-email">Email</th>
+                            <th id="th-mobile">Mobile</th>
+                            <th id="th-students">Students</th>
+                            <th id="th-actions" class="no-print">Actions</th>
                         </tr>
                     </thead>
                     <tbody>

@@ -78,16 +78,16 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>Applicant</th>
-                            <th>Application No</th>
-                            <th>Type</th>
-                            <th>Class</th>
-                            <th>Session</th>
-                            <th>Mobile</th>
-                            <th>Guardian</th>
-                            <th>Applied On</th>
-                            <th>Status</th>
-                            <th class="no-print">Actions</th>
+                            <th id="th-applicant">Applicant</th>
+                            <th id="th-application-no">Application No</th>
+                            <th id="th-type">Type</th>
+                            <th id="th-class">Class</th>
+                            <th id="th-session">Session</th>
+                            <th id="th-mobile">Mobile</th>
+                            <th id="th-guardian">Guardian</th>
+                            <th id="th-applied-no">Applied On</th>
+                            <th id="th-status">Status</th>
+                            <th id="th-actions" class="no-print">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
