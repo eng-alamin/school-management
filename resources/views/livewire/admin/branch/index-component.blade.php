@@ -5,8 +5,8 @@
 
         <!-- floating header -->
         <div class="mat-card-header header-primary-gradient">
-            <h5 id="cardHeaderTitleAllsections">Branches</h5>
-            <p id="cardHeaderSubtitle">Manage your institution's branches / campuses.</p>
+            <h5 id="cHTBranchIndex">Branches</h5>
+            <p id="cHSBranchIndex">Manage your institution's branches / campuses.</p>
         </div>
 
         <div class="card-header border-0">

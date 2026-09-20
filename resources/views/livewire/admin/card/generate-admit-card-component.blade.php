@@ -4,8 +4,8 @@
 
         <!-- floating header -->
         <div class="mat-card-header header-primary-gradient">
-            <h5 id="cardHeaderTitleAllsections">Admit Card Generate</h5>
-            <p id="cardHeaderSubtitle">Generate exam admit cards for selected class, section and exam.</p>
+            <h5 id="cHTGenerateAdmitCard">Admit Card Generate</h5>
+            <p id="cHSGenerateAdmitCard">Generate exam admit cards for selected class, section and exam.</p>
         </div>
 
         <div class="row g-4 mt-2 px-4">

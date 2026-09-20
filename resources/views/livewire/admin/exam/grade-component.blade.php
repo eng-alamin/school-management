@@ -4,8 +4,8 @@
 
       <!-- floating header -->
       <div class="mat-card-header header-primary-gradient">
-        <h5 id="cardHeaderTitleAllsections">Grades Range</h5>
-        <p id="cardHeaderSubtitle">Manage exam grades, create, update, and organize academic grades easily.</p>
+        <h5 id="cHTExamGrade">Grades Range</h5>
+        <p id="cHSExamGrade">Manage exam grades, create, update, and organize academic grades easily.</p>
       </div>
 
         <div class="card-header border-0">

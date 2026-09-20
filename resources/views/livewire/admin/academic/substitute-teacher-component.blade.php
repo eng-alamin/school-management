@@ -3,8 +3,8 @@
 
         {{-- Floating Header --}}
         <div class="mat-card-header header-primary-gradient">
-            <h5>Substitute Teacher Assignment</h5>
-            <p>Find absent teacher periods and assign substitutes</p>
+            <h5 id="cHTSubstituteTeacher">Substitute Teacher Assignment</h5>
+            <p id="cHSSubstituteTeacher">Find absent teacher periods and assign substitutes</p>
         </div>
 
         <div class="row g-4 p-5">

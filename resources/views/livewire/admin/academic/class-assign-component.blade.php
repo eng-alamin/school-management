@@ -3,8 +3,8 @@
     <div class="card">
 
         <div class="mat-card-header header-primary-gradient">
-            <h5 id="cardHeaderTitleAllassigns">All Class Assign</h5>
-            <p id="cardHeaderSubtitle">Manage class assignments, create, update, and organize easily.</p>
+            <h5 id="cHTClassAssign">All Class Assign</h5>
+            <p id="cHSClassAssign">Manage class assignments, create, update, and organize easily.</p>
         </div>
 
         <div class="card-header border-0">

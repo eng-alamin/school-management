@@ -4,8 +4,8 @@
 
         <!-- floating header -->
         <div class="mat-card-header header-primary-gradient">
-            <h5 id="cardHeaderTitleAllsections">Billing & Invoices</h5>
-            <p id="cardHeaderSubtitle">View your monthly usage bills and payment status.</p>
+            <h5 id="cHTBillingShow">Billing & Invoices</h5>
+            <p id="cHSBillingShow">View your monthly usage bills and payment status.</p>
         </div>
 
         {{-- Current Month Usage Estimate --}}

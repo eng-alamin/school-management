@@ -3,8 +3,8 @@
     <div class="card">
 
       <div class="card-header-floating card-header-gradient">
-        <h5 id="cardHeaderTitleAllsections">Event Type</h5>
-        <p id="cardHeaderSubtitle">Manage event types, create, update, and organize academic types easily.</p>
+        <h5 id="cHTEventType">Event Type</h5>
+        <p id="cHSEventType">Manage event types, create, update, and organize academic types easily.</p>
       </div>
 
         <div class="card-header border-0">

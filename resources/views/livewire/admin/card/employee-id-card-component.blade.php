@@ -4,8 +4,8 @@
 
         <!-- floating header -->
         <div class="mat-card-header header-primary-gradient">
-            <h5 id="cardHeaderTitleAllsections">Employee Id Card Generate</h5>
-            <p id="cardHeaderSubtitle">A lightweight, extendable, dependency-free javascript HTML table plugin.</p>
+            <h5 id="cHTEmployeeIdCard">Employee Id Card Generate</h5>
+            <p id="cHSEmployeeIdCard">A lightweight, extendable, dependency-free javascript HTML table plugin.</p>
         </div>
 
         <div class="row g-4 p-5">

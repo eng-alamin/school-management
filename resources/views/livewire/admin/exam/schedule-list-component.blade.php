@@ -2,8 +2,8 @@
     <div class="card">
 
       <div class="mat-card-header header-primary-gradient">
-        <h5 id="cardHeaderTitleAllsections">Exam Schedule</h5>
-        <p id="cardHeaderSubtitle">Manage exam schedules, create, update, and organize academic schedules easily.</p>
+        <h5 id="cHTExamScheduleList">Exam Schedule</h5>
+        <p id="cHSExamScheduleList">Manage exam schedules, create, update, and organize academic schedules easily.</p>
       </div>
 
         <div class="card-header border-0">

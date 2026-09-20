@@ -4,11 +4,8 @@
     <div class="card">
 
         <div class="mat-card-header header-primary-gradient">
-            <h5>Add Mapping</h5>
-            <p data-en="Manage students, filter by Device, type, class and section."
-               data-bn="Manage students, filter by Device, type, class and section.">
-                Manage students, filter by device, type, class and section.
-            </p>
+            <h5 id="cHTBiometricCUM">Add Mapping</h5>
+            <p id="cHSBiometricCUM"> Manage students, filter by device, type, class and section.</p>
         </div>
 
         {{-- ===== FILTER GROUND: Device / Type / Class / Section ===== --}}

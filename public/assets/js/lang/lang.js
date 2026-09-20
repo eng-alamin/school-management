@@ -865,4 +865,5 @@ window.setLang = setLang;
 window.setLangFromSettings = setLangFromSettings;
 
 export { translations, currentLang, applyLang, setLang, setLangFromSettings };
+import("./header.js");
 import("./table.js");

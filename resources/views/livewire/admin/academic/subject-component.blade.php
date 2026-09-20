@@ -3,8 +3,8 @@
     <div class="card">
 
         <div class="mat-card-header header-primary-gradient">
-            <h5 id="cardHeaderTitleAllsubjects">All Subjects</h5>
-            <p id="cardHeaderSubtitle">Manage subjects, create, update, and organize easily.</p>
+            <h5 id="cHTSubject">All Subjects</h5>
+            <p id="cHSSubject">Manage subjects, create, update, and organize easily.</p>
         </div>
 
         <div class="card-header border-0">

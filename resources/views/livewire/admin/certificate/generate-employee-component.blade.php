@@ -4,8 +4,8 @@
 
         <!-- floating header -->
         <div class="mat-card-header header-primary-gradient">
-            <h5>Employee Certificate Generate</h5>
-            <p>Select role and template, then generate certificates for employees.</p>
+            <h5 id="cHTCertificateGenerateEmployee">Employee Certificate Generate</h5>
+            <p id="cHSCertificateGenerateEmployee">Select role and template, then generate certificates for employees.</p>
         </div>
 
         {{-- ── FILTER SECTION ── --}}

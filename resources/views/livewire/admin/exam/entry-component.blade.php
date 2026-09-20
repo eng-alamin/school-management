@@ -2,8 +2,8 @@
     <div class="card">
 
         <div class="mat-card-header header-primary-gradient">
-            <h5> Mark Entries</h5>
-            <p>Enter or update student marks for an exam subject</p>
+            <h5 id="cHTExamEntry"> Mark Entries</h5>
+            <p id="cHSExamEntry">Enter or update student marks for an exam subject</p>
         </div>
 
         {{-- Select Ground --}}

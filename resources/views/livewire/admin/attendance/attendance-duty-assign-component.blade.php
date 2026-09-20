@@ -3,8 +3,8 @@
     <div class="card">
 
         <div class="mat-card-header header-primary-gradient">
-            <h5 id="cardHeaderTitleAllassigns">Attendance Duty Assign</h5>
-            <p id="cardHeaderSubtitle">Assign a teacher to take daily student attendance for each class/section.</p>
+            <h5 id="cHTAttendanceTeacherDuty">Attendance Duty Assign</h5>
+            <p id="cHSAttendanceTeacherDuty">Assign a teacher to take daily student attendance for each class/section.</p>
         </div>
 
         <div class="card-header border-0">

@@ -5,8 +5,8 @@
     <div class="card">
 
         <div class="mat-card-header header-primary-gradient">
-            <h5 id="branch-edit-header-title">Branch Registration</h5>
-            <p id="branch-edit-header-subtitle">Update existing branch record</p>
+            <h5 id="cHTBranchEdit">Branch Registration</h5>
+            <p id="cHSBranchEdit">Update existing branch record</p>
         </div>
 
         <!-- ══ BRANCH DETAILS ══ -->

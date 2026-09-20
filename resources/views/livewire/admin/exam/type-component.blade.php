@@ -4,8 +4,8 @@
 
       <!-- floating header -->
       <div class="mat-card-header header-primary-gradient">
-        <h5 id="cardHeaderTitleAllsections">Exam Type</h5>
-        <p id="cardHeaderSubtitle">Manage exam types, create, update, and organize academic types easily.</p>
+        <h5 id="cHTExamType">Exam Type</h5>
+        <p id="cHSExamType">Manage exam types, create, update, and organize academic types easily.</p>
       </div>
 
         <div class="card-header border-0">

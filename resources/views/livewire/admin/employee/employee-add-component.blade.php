@@ -5,8 +5,8 @@
     <div class="card">
 
         <div class="mat-card-header header-primary-gradient">
-            <h5 id="emp-add-header-title">Employee Registration</h5>
-            <p id="emp-add-header-subtitle">Create new employee record</p>
+            <h5 id="cHTEmployeeAdd">Employee Registration</h5>
+            <p id="cHSEmployeeAdd">Create new employee record</p>
         </div>
 
         <!-- ══ JOB DETAILS ══ -->

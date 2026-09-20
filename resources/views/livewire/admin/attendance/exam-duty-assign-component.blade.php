@@ -3,8 +3,8 @@
     <div class="card">
 
         <div class="mat-card-header header-primary-gradient">
-            <h5 id="cardHeaderTitleAllassigns">Exam Duty Assign</h5>
-            <p id="cardHeaderSubtitle">Assign invigilator teachers to each exam schedule.</p>
+            <h5 id="cHTAttendanceExamDuty">Exam Duty Assign</h5>
+            <p id="cHSAttendanceExamDuty">Assign invigilator teachers to each exam schedule.</p>
         </div>
 
         <div class="card-header border-0">

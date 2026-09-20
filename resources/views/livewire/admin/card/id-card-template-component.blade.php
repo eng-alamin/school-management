@@ -5,8 +5,8 @@
 
       <!-- floating header -->
       <div class="mat-card-header header-primary-gradient">
-        <h5 id="cardHeaderTitleAllsections">ID Card Templates</h5>
-        <p id="cardHeaderSubtitle">A lightweight, extendable, dependency-free javascript HTML table plugin.</p>
+        <h5 id="cHTIdCardTemplate">ID Card Templates</h5>
+        <p id="cHSIdCardTemplate">A lightweight, extendable, dependency-free javascript HTML table plugin.</p>
       </div>
 
         <div class="card-header border-0">

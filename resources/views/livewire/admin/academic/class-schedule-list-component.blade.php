@@ -3,8 +3,8 @@
     <div class="card">
 
         <div class="mat-card-header header-primary-gradient">
-            <h5>Class Schedules</h5>
-            <p>View class schedule by class and section</p>
+            <h5 id="cHTClassScheduleList">Class Schedules</h5>
+            <p id="cHSClassScheduleList">View class schedule by class and section</p>
         </div>
 
         <div id="classSchedulePrintable">

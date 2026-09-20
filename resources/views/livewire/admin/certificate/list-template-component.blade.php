@@ -4,8 +4,8 @@
 
         <!-- floating header -->
         <div class="mat-card-header header-primary-gradient">
-            <h5>Certificate Templates</h5>
-            <p>Manage certificate templates, create, update, and organize them easily.</p>
+            <h5 id="cHTCertificateListTemplate">Certificate Templates</h5>
+            <p id="cHSCertificateListTemplate">Manage certificate templates, create, update, and organize them easily.</p>
         </div>
 
         <div class="card-header border-0">

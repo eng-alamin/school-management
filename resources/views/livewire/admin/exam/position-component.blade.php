@@ -3,8 +3,8 @@
 
         {{-- Header --}}
         <div class="mat-card-header header-primary-gradient">
-            <h5>Class Position</h5>
-            <p>Generate and review student exam rank / position</p>
+            <h5 id="cHTExamPosition">Class Position</h5>
+            <p id="cHSExamPosition">Generate and review student exam rank / position</p>
         </div>
 
         {{-- Select Ground --}}

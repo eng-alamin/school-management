@@ -3,8 +3,8 @@
     <div class="card">
 
         <div class="mat-card-header header-primary-gradient">
-            <h5 id="desig-header-title">All Designations</h5>
-            <p id="desig-header-subtitle">Manage designations, create, update, and organize easily.</p>
+            <h5 id="cHTEmployeeDesignation">All Designations</h5>
+            <p id="cHSEmployeeDesignation">Manage designations, create, update, and organize easily.</p>
         </div>
 
         <div class="card-header border-0">

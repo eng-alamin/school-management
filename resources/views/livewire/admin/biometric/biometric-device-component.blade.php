@@ -5,8 +5,8 @@
 
         <!-- floating header -->
         <div class="mat-card-header header-primary-gradient">
-            <h5 id="cardHeaderTitleAllsections">Biometric Devices</h5>
-            <p id="cardHeaderSubtitle">Register and manage attendance / access control devices.</p>
+            <h5 id="cHTBiometricDevice">Biometric Devices</h5>
+            <p id="cHSBiometricDevice">Register and manage attendance / access control devices.</p>
         </div>
 
         <div class="card-header border-0">

@@ -3,8 +3,8 @@
 
     <div class="card">
         <div class="mat-card-header header-primary-gradient">
-            <h5>Edit Mapping</h5>
-            <p>{{ $device->device_name }} ({{ $device->device_serial }})</p>
+            <h5 id="cHTBiometricEUM">Edit Mapping</h5>
+            <p id="cHSBiometricEUM">{{ $device->device_name }} ({{ $device->device_serial }})</p>
         </div>
 
         <div class="card-body">

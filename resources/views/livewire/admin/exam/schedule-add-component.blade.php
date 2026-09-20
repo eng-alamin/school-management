@@ -2,8 +2,8 @@
     <div class="card">
 
         <div class="mat-card-header header-primary-gradient">
-            <h5>Exam Schedule</h5>
-            <p>Create or update the date, time and room for each subject.</p>
+            <h5 id="cHTExamScheduleAdd">Exam Schedule</h5>
+            <p id="cHSExamScheduleAdd">Create or update the date, time and room for each subject.</p>
         </div>
 
         {{-- Select Ground --}}

@@ -3,8 +3,8 @@
     <div class="card">
 
         <div class="mat-card-header header-primary-gradient">
-            <h5>Student Promotion</h5>
-            <p>Promote students to the next session/class</p>
+            <h5 id="cHTStudentPromotion">Student Promotion</h5>
+            <p id="cHTStudentPromotion">Promote students to the next session/class</p>
         </div>
 
         <div class="form-section" style="padding:32px 28px 20px">

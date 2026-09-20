@@ -3,8 +3,8 @@
     <div class="card">
 
         <div class="mat-card-header header-primary-gradient">
-            <h5>Add Schedule</h5>
-            <p>Create new class schedule</p>
+            <h5 id="cHTClassScheduleCreate">Add Schedule</h5>
+            <p id="cHSClassScheduleCreate">Create new class schedule</p>
         </div>
 
         <div class="form-section" style="padding-top:40px; padding-bottom:20px">

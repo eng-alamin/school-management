@@ -3,8 +3,8 @@
     <div class="card">
 
         <div class="mat-card-header header-primary-gradient">
-            <h5>Exam Setup</h5>
-            <p>Manage exam setups, create, update, and organize academic setups easily.</p>
+            <h5 id="cHTExamSetup">Exam Setup</h5>
+            <p id="cHSExamSetup">Manage exam setups, create, update, and organize academic setups easily.</p>
         </div>
 
         <div class="card-header border-0">

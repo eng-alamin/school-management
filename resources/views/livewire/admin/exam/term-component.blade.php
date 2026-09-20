@@ -4,8 +4,8 @@
 
       <!-- floating header -->
       <div class="mat-card-header header-primary-gradient">
-        <h5 id="cardHeaderTitleAllsections">Exam Term</h5>
-        <p id="cardHeaderSubtitle">Manage exam terms, create, update, and organize academic terms easily.</p>
+        <h5 id="cHTExamTerm">Exam Term</h5>
+        <p id="cHSExamTerm">Manage exam terms, create, update, and organize academic terms easily.</p>
       </div>
 
         <div class="card-header border-0">

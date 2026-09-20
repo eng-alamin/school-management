@@ -3,11 +3,8 @@
     <div class="card">
 
         <div class="mat-card-header header-primary-gradient">
-            <h5 id="cardHeaderTitleAllAdmissions">
-                <span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">how_to_reg</span>
-                Online Admissions
-            </h5>
-            <p id="cardHeaderSubtitle">Review, approve or reject student admission applications.</p>
+            <h5 id="cHTOnlineAdmission">Online Admissions</h5>
+            <p id="cHSOnlineAdmission">Review, approve or reject student admission applications.</p>
         </div>
 
         {{-- ===== TOOLBAR (search + live filter) ===== --}}

@@ -2,8 +2,8 @@
     <div class="card">     
 
         <div class="card-header-floating card-header-gradient">   
-            <h5>Add Event</h5>
-            <p>Create new event record</p>
+            <h5 id="cHTEventAdd">Add Event</h5>
+            <p id="cHSEventAdd">Create new event record</p>
         </div>
 
         <!-- ══ EVENT DETAILS ══ -->

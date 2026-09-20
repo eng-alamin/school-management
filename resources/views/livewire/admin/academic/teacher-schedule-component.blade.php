@@ -3,8 +3,8 @@
     <div class="card">
 
         <div class="mat-card-header header-primary-gradient">
-            <h5 id="cardHeaderTitleAllschedules">Teacher Schedule</h5>
-            <p id="cardHeaderSubtitle">View weekly class schedule assigned to a specific teacher.</p>
+            <h5 id="cHTTeacherSchedule">Teacher Schedule</h5>
+            <p id="cHSTeacherSchedule">View weekly class schedule assigned to a specific teacher.</p>
         </div>
 
         <div id="teacherSchedulePrintable">

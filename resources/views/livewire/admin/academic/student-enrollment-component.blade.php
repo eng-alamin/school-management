@@ -3,10 +3,8 @@
     <div class="card">
 
         <div class="mat-card-header header-primary-gradient">
-            <h5 id="cardHeaderTitleAllEnrollments">
-                Student Enrollments
-            </h5>
-            <p id="cardHeaderSubtitle">Manage enrollments, filter by class and section.</p>
+            <h5 id="cHTStudentEnrollment">Student Enrollments</h5>
+            <p id="cHSStudentEnrollment">Manage enrollments, filter by class and section.</p>
         </div>
 
         {{-- ===== TOOLBAR (search + live filter + actions) ===== --}}

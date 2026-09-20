@@ -4,8 +4,8 @@
 
       <!-- floating header -->
       <div class="mat-card-header header-primary-gradient">
-        <h5 id="cardHeaderTitleAllsections">Exam Mark Distribution</h5>
-        <p id="cardHeaderSubtitle">Manage exam marks, create, update, and organize academic marks easily.</p>
+        <h5 id="cHTExamMark">Exam Mark Distribution</h5>
+        <p id="cHSExamMark">Manage exam marks, create, update, and organize academic marks easily.</p>
       </div>
 
         <div class="card-header border-0">

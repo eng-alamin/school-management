@@ -3,8 +3,8 @@
     <div class="card">
 
         <div class="mat-card-header header-primary-gradient">
-            <h5 id="cardHeaderTitleAllsections">All Sections</h5>
-            <p id="cardHeaderSubtitle">Manage sections, create, update, and organize easily.</p>
+            <h5 id="cHTSection">All Sections</h5>
+            <p id="cHSSection">Manage sections, create, update, and organize easily.</p>
         </div>
 
         <div class="card-header border-0">

@@ -3,8 +3,8 @@
 
         <!-- floating header -->
         <div class="mat-card-header header-primary-gradient">
-            <h5 id="cardHeaderTitleAllsections">Admit Card Templates</h5>
-            <p id="cardHeaderSubtitle">A lightweight, extendable, dependency-free javascript HTML table plugin.</p>
+            <h5 id="cHTAdmitCardTemplate">Admit Card Templates</h5>
+            <p id="cHSAdmitCardTemplate">A lightweight, extendable, dependency-free javascript HTML table plugin.</p>
         </div>
 
         <div class="card-header border-0">

@@ -4,8 +4,8 @@
     <div class="card">
 
         <div class="mat-card-header header-primary-gradient">
-            <h5 id="cardHeaderTitleAllsections">Device User Mapping</h5>
-            <p id="cardHeaderSubtitle">Link biometric device user IDs with students and employees.</p>
+            <h5 id="cHTBiometricIUM">Device User Mapping</h5>
+            <p id="cHSBiometricIUM">Link biometric device user IDs with students and employees.</p>
         </div>
 
           {{-- ===== TOOLBAR (search + live filter + actions) ===== --}}

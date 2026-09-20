@@ -4,8 +4,8 @@
 
       <!-- floating header -->
       <div class="mat-card-header header-primary-gradient">
-        <h5 id="cardHeaderTitleAllsections">Academic Session</h5>
-        <p id="cardHeaderSubtitle">Manage academic sessions, create, update, and organize sessions easily.</p>
+        <h5 id="cHTSession">Academic Session</h5>
+        <p id="cHSSession">Manage academic sessions, create, update, and organize sessions easily.</p>
       </div>
 
         <div class="card-header border-0">

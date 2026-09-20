@@ -4,8 +4,8 @@
 
         <!-- floating header -->
         <div class="mat-card-header header-primary-gradient">
-            <h5>Student Certificate Generate</h5>
-            <p>Select class, section and template, then generate certificates for students.</p>
+            <h5 id="cHTCertificateGenerateStudent">Student Certificate Generate</h5>
+            <p id="cHSCertificateGenerateStudent">Select class, section and template, then generate certificates for students.</p>
         </div>
 
         {{-- ── FILTER SECTION ── --}}

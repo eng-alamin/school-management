@@ -3,8 +3,8 @@
     <div class="card">
 
         <div class="mat-card-header header-primary-gradient">
-            <h5 id="cardHeaderTitleAllgroups">All Groups</h5>
-            <p id="cardHeaderSubtitle">Manage groups, create, update, and organize easily.</p>
+            <h5 id="cHTGroup">All Groups</h5>
+            <p id="cHSGroup">Manage groups, create, update, and organize easily.</p>
         </div>
 
         <div class="card-header border-0">

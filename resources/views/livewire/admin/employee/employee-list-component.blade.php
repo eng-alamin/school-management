@@ -5,8 +5,8 @@
     <div class="card">
 
         <div class="mat-card-header header-primary-gradient">
-            <h5 id="emp-list-header-title">All Employees</h5>
-            <p id="emp-list-header-subtitle">Manage employees, view details, and organize easily.</p>
+            <h5 id="cHTEmployeeList">All Employees</h5>
+            <p id="cHSEmployeeList">Manage employees, view details, and organize easily.</p>
         </div>
 
         <div class="card-header border-0">

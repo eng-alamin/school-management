@@ -3,8 +3,8 @@
     <div class="card">
 
         <div class="mat-card-header header-primary-gradient">
-            <h5 id="dept-header-title">All Departments</h5>
-            <p id="dept-header-subtitle">Manage departments, create, update, and organize easily.</p>
+            <h5 id="cHTEmployeeDepartment">All Departments</h5>
+            <p id="cHSEmployeeDepartment">Manage departments, create, update, and organize easily.</p>
         </div>
 
         <div class="card-header border-0">

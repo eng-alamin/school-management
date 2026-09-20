@@ -3,13 +3,8 @@
 
         <!-- Floating Header -->
         <div class="mat-card-header header-primary-gradient">
-            <h5>
-                <span class="material-icons-round" style="font-size:18px;vertical-align:middle;margin-right:6px">
-                    workspace_premium
-                </span>
-                New Certificate Template
-            </h5>
-            <p>Design your certificate in {{ $totalSteps }} simple steps</p>
+            <h5 id="cHTCertificateAddTemplate">New Certificate Template</h5>
+            <p id="cHSCertificateAddTemplate">Design your certificate in {{ $totalSteps }} simple steps</p>
         </div>
 
         <!-- ══ STEP PROGRESS BAR (mobile-friendly, always visible) ══ -->

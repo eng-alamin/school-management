@@ -3,8 +3,8 @@
 
         {{-- Floating Header --}}
         <div class="mat-card-header header-primary-gradient">
-            <h5>Student Attendance</h5>
-            <p>Mark or update student attendance</p>
+            <h5 id="cHTAttendanceStudent">Student Attendance</h5>
+            <p id="cHSAttendanceStudent">Mark or update student attendance</p>
         </div>
 
         {{-- Select Ground --}}

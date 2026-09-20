@@ -4,8 +4,8 @@
 
       <!-- floating header -->
       <div class="mat-card-header header-primary-gradient">
-        <h5 id="cardHeaderTitleAllsections">Exam Hall</h5>
-        <p id="cardHeaderSubtitle">Manage exam halls, create, update, and organize academic halls easily.</p>
+        <h5 id="cHTExamHall">Exam Hall</h5>
+        <p id="cHSExamHall">Manage exam halls, create, update, and organize academic halls easily.</p>
       </div>
 
         <div class="card-header border-0">

@@ -3,8 +3,8 @@
     <div class="card">
 
         <div class="card-header-floating card-header-gradient">
-            <h5>Events</h5>
-            <p>Manage events, create, update, and organize academic events easily.</p>
+            <h5 id="cHTEventList">Events</h5>
+            <p id="cHSEventList">Manage events, create, update, and organize academic events easily.</p>
         </div>
 
         <div class="card-header border-0">
