@@ -71,6 +71,7 @@ class RegistrationPaymentController extends Controller
                 'institution_district' => $data['institution_district'] ?? '',
                 'email'                => $data['email'],
                 'phone'                => $data['phone'],
+                'is_branch'            => (bool) ($data['is_branch'] ?? false),
                 'admin_name'           => $data['admin_name'],
                 'admin_email'          => $data['admin_email'],
                 'password'             => $data['password'],
@@ -164,6 +165,7 @@ class RegistrationPaymentController extends Controller
                     'email'    => $meta['email'],
                     'phone'    => $meta['phone'],
                     'status'   => true,
+                    'is_branch' => (bool) ($meta['is_branch'] ?? false),
                 ]);
 
                 if (!empty($meta['system_logo'])) {
@@ -300,8 +302,12 @@ class RegistrationPaymentController extends Controller
             'institution_name' => $meta['institution_name'] ?? null,
             'institution_eiin' => $meta['institution_eiin'] ?? null,
             'institution_type' => $meta['institution_type'] ?? null,
+            'institution_medium'   => $meta['institution_medium'] ?? null,
+            'institution_division' => $meta['institution_division'] ?? null,
+            'institution_district' => $meta['institution_district'] ?? null,
             'email'             => $meta['email'] ?? null,
             'phone'             => $meta['phone'] ?? null,
+            'is_branch'         => (bool) ($meta['is_branch'] ?? false),
             'admin_name'        => $meta['admin_name'] ?? null,
             'admin_email'       => $meta['admin_email'] ?? null,
             'password'          => $meta['password'] ?? null,

@@ -117,7 +117,7 @@ class InstitutionDefaultsService
             'inventory_module'    => false,
             'card_module'         => true,
             'certificate_module'  => true,
-            'branch_module'       => $institution->is_branch,
+            'branch_module'       => (bool) $institution->is_branch,
         ];
 
         foreach ($features as $featureKey => $isActive) {
