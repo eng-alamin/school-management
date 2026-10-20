@@ -3,10 +3,8 @@
 
         <!-- Floating Header -->
         <div class="mat-card-header header-primary-gradient">
-            <h5>
-                Add Homework
-            </h5>
-            <p>Create new homework record</p>
+            <h5 id="cHTHomeworkAdd">Add Homework</h5>
+            <p id="cHSHomeworkAdd">Create new homework record</p>
         </div>
 
         <div class="form-section" style="padding-top:40px; padding-bottom:20px">

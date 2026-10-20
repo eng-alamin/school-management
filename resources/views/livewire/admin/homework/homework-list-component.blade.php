@@ -3,8 +3,8 @@
     <div class="card">
 
         <div class="mat-card-header header-primary-gradient">
-            <h5>All Homeworks</h5>
-            <p>Manage homework records, view details, and organize easily.</p>
+            <h5 id="cHTHomeworkList">All Homeworks</h5>
+            <p id="cHSHomeworkList">Manage homework records, view details, and organize easily.</p>
         </div>
 
         <div class="card-header border-0">
